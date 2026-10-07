@@ -97,7 +97,7 @@ function gameCard(g){const c=el('article',null,'card'+(g.state==='LIVE'?' live':
     const tiles=el('div',null,'tiles');const tile=(l,v)=>{const t=el('div',null,'tile');t.append(l,el('b',v));return t;};
     if(g.pregame)tiles.append(tile('Pregame call',g.pregame.team+' '+pct(g.pregame.chance)));
     if(typeof g.kalshi==='number')tiles.append(tile('Kalshi price',pct(g.kalshi)));
-    const s=g.sources||{};for(const [k,l] of [['line','Sportsbook'],['espn','ESPN model'],['score','Scoreboard']])if(typeof s[k]==='number')tiles.append(tile(l,pct(s[k])));
+    const s=g.sources||{};for(const [k,l] of [['line','Sportsbook'],['espn','ESPN model'],['score','Scoreboard'],['stats','Team stats']])if(typeof s[k]==='number')tiles.append(tile(l,pct(s[k])));
     c.append(tiles);
     if(g.trend&&g.pregame){const msg={up:'▲ More confident than pregame',down:'▼ Less confident than pregame',steady:'● Holding steady since pregame',flipped:'⇄ Flipped since pregame'}[g.trend];
       c.append(el('div',msg+': '+(g.trend==='flipped'?g.pregame.team+' '+pct(g.pregame.chance)+' → '+g.pick.team+' '+pct(g.pick.chance):pct(g.pregame.chance)+' → '+pct(g.pick.chance)),'trend '+g.trend));}
@@ -119,7 +119,7 @@ function render(d){
   if(!sc.graded)sb.append(el('p','No finished games graded yet.','hint'));
   else{sb.append(el('p',sc.graded+' picks graded.','hint'));
     const table=(title,tbl)=>{const w=el('div',null,'tablewrap');const t=el('table');const h=el('tr');for(const x of ['Source','Picks','Hit rate','Accuracy (Brier)'])h.append(el('th',x));t.append(h);
-      for(const k of ['blend','her','line','espn','score','kalshi']){const s=tbl[k];if(!s)continue;const tr=el('tr');tr.append(el('td',sc.labels[k]||k),el('td',String(s.n)),el('td',pct(s.hit)),el('td',s.brier.toFixed(3)));t.append(tr);}
+      for(const k of ['blend','her','line','espn','score','stats','kalshi']){const s=tbl[k];if(!s)continue;const tr=el('tr');tr.append(el('td',sc.labels[k]||k),el('td',String(s.n)),el('td',pct(s.hit)),el('td',s.brier.toFixed(3)));t.append(tr);}
       w.append(t);sb.append(el('h3',title),w);};
     table('All picks',sc.overall);for(const [lg,tbl] of Object.entries(sc.by_league))table(lg,tbl);}
   const betsTab=tabs.find(x=>x.dataset.tab==='bets');betsTab.hidden=!d.bets;if(!d.bets){if(betsTab.getAttribute('aria-selected')==='true')show('picks');return;}
