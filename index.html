@@ -55,6 +55,14 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .stat{background:#120c1acc;border:1px solid var(--line);border-radius:12px;padding:12px}.stat small{color:var(--muted);display:block}.stat strong{font-size:22px}
 footer{max-width:1200px;margin:24px auto;padding:0 16px 30px;color:var(--muted);font-size:12px}
 @media(max-width:420px){.grid{grid-template-columns:1fr}}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.chips button{font:inherit;font-size:13px;font-weight:700;cursor:pointer;border-radius:999px;padding:6px 13px;background:transparent;color:var(--text);border:1px solid var(--line)}
+.chips button[aria-pressed=true]{border-color:var(--pink);color:var(--pink);box-shadow:0 0 10px #ff4fd855}
+#rtPick{display:block;margin:0 0 10px;background:#120c1a;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:8px 12px;font:inherit}#rtPick[hidden]{display:none}
+.r-hi{color:var(--green);font-weight:800}.r-mid{color:var(--yellow);font-weight:700}.r-lo{color:var(--muted)}
+.mpick{background:#120c1a;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:7px 10px;font:inherit;max-width:240px}
+#rtFind{width:100%;max-width:340px;margin:0 0 10px;background:#120c1a;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:9px 12px;font:inherit}
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}.cats h4{margin:6px 0;font-size:14px;color:var(--yellow)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -65,6 +73,7 @@ footer{max-width:1200px;margin:24px auto;padding:0 16px 30px;color:var(--muted);
     <button role="tab" data-tab="picks" aria-selected="true">Picks</button>
     <button role="tab" data-tab="combos" aria-selected="false">Combo ideas</button>
     <button role="tab" data-tab="score" aria-selected="false">Scorecard</button>
+    <button role="tab" data-tab="ratings" aria-selected="false">Ratings</button>
     <button role="tab" data-tab="bets" aria-selected="false">Bets &amp; results</button>
   </nav>
 </header>
@@ -72,6 +81,7 @@ footer{max-width:1200px;margin:24px auto;padding:0 16px 30px;color:var(--muted);
   <section class="panel on" id="picks" role="tabpanel"><p class="hint">Today's games and the next 24 hours: who she thinks wins, her pregame call, and how her confidence has moved.</p><div class="grid" id="games"></div></section>
   <section class="panel" id="combos" role="tabpanel"><p class="hint">Her best multi-game combos right now. Every leg has to win. Combos lose most of the time.</p><div class="grid" id="comboList"></div></section>
   <section class="panel" id="score" role="tabpanel"><p class="hint">Every finished pick is graded against the official result. Hit = picked side won. Accuracy score (Brier): 0 is perfect, 0.25 is a coin flip, lower is better.</p><div id="scoreBox"></div></section>
+  <section class="panel" id="ratings" role="tabpanel"><p class="hint">Team strength from real final scores (Elo: 1500 is average, +100 is about a 64% favorite) and each league's player leaders. Tennis: player Elo overall and by surface.</p><div class="chips" id="rtChips"></div><div class="chips" id="rtViews"></div><select id="rtPick" aria-label="Choose team or position" hidden></select><input id="rtFind" type="search" placeholder="Find a team or player…" aria-label="Find a team or player"><div id="rtBox"></div></section>
   <section class="panel" id="bets" role="tabpanel"><div class="stats" id="betStats"></div><div class="tablewrap" id="betTable"></div></section>
 </main>
 <footer id="disclaimer">Entertainment only. Model estimates, not betting advice.</footer>
@@ -97,7 +107,7 @@ function gameCard(g){const c=el('article',null,'card'+(g.state==='LIVE'?' live':
     const tiles=el('div',null,'tiles');const tile=(l,v)=>{const t=el('div',null,'tile');t.append(l,el('b',v));return t;};
     if(g.pregame)tiles.append(tile('Pregame call',g.pregame.team+' '+pct(g.pregame.chance)));
     if(typeof g.kalshi==='number')tiles.append(tile('Kalshi price',pct(g.kalshi)));
-    const s=g.sources||{};for(const [k,l] of [['sharp','Other markets'],['line','Sportsbook'],['espn','ESPN model'],['score','Scoreboard'],['stats','Team stats']])if(typeof s[k]==='number')tiles.append(tile(l,pct(s[k])));
+    const s=g.sources||{};for(const [k,l] of [['sharp','Other markets'],['line','Sportsbook'],['espn','ESPN model'],['score','Scoreboard'],['stats','Team stats'],['elo','Elo']])if(typeof s[k]==='number')tiles.append(tile(l,pct(s[k])));
     c.append(tiles);
     if(g.trend&&g.pregame){const msg={up:'▲ More confident than pregame',down:'▼ Less confident than pregame',steady:'● Holding steady since pregame',flipped:'⇄ Flipped since pregame'}[g.trend];
       c.append(el('div',msg+': '+(g.trend==='flipped'?g.pregame.team+' '+pct(g.pregame.chance)+' → '+g.pick.team+' '+pct(g.pick.chance):pct(g.pregame.chance)+' → '+pct(g.pick.chance)),'trend '+g.trend));}
@@ -119,7 +129,7 @@ function render(d){
   if(!sc.graded)sb.append(el('p','No finished games graded yet.','hint'));
   else{sb.append(el('p',sc.graded+' picks graded.','hint'));
     const table=(title,tbl)=>{const w=el('div',null,'tablewrap');const t=el('table');const h=el('tr');for(const x of ['Source','Picks','Hit rate','Accuracy (Brier)'])h.append(el('th',x));t.append(h);
-      for(const k of ['blend','her','line','espn','score','stats','sharp','kalshi']){const s=tbl[k];if(!s)continue;const tr=el('tr');tr.append(el('td',sc.labels[k]||k),el('td',String(s.n)),el('td',pct(s.hit)),el('td',s.brier.toFixed(3)));t.append(tr);}
+      for(const k of ['blend','news','her','line','espn','score','stats','elo','sharp','kalshi']){const s=tbl[k];if(!s)continue;const tr=el('tr');tr.append(el('td',sc.labels[k]||k),el('td',String(s.n)),el('td',pct(s.hit)),el('td',s.brier.toFixed(3)));t.append(tr);}
       w.append(t);sb.append(el('h3',title),w);};
     table('All picks',sc.overall);for(const [lg,tbl] of Object.entries(sc.by_league))table(lg,tbl);}
   const betsTab=tabs.find(x=>x.dataset.tab==='bets');betsTab.hidden=!d.bets;if(!d.bets){if(betsTab.getAttribute('aria-selected')==='true')show('picks');return;}
@@ -134,7 +144,52 @@ function render(d){
   tw.replaceChildren(tb);}
 async function load(){try{const r=await fetch('data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error();render(await r.json());}
   catch(e){$('updated').textContent='Waiting for her first update…';}}
-load();setInterval(load,30000);
+// ratings: separate file, refreshed every 30 minutes
+const NAMES={NFL:'NFL',NCAAF:'College football',NBA:'NBA',WNBA:'WNBA',NHL:'NHL',MLB:'MLB',ATP:'Tennis ATP',WTA:'Tennis WTA'};
+let rt=null,rtLeague='NFL',rtView='teams';
+const RVIEWS={teams:'Teams',matchup:'Matchup',byteam:'Players by team',bypos:'Players by position',leaders:'Leaders'};
+const erf=x=>{const t=1/(1+.3275911*Math.abs(x));const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x);return x>=0?y:-y;};
+const phi=z=>.5*(1+erf(z/Math.SQRT2));const sg=v=>v==null?'—':(v>0?'+':'')+v;
+const mh=el('select'),ma=el('select');[mh,ma].forEach(s=>{s.className='mpick';s.onchange=()=>drawRatings();});
+const rcell=v=>el('span',v==null?'—':String(v),v==null?'':v>=80?'r-hi':v>=50?'r-mid':'r-lo');
+function tableOf(cols,rows){const w=el('div',null,'tablewrap');const t=el('table');const h=el('tr');for(const c of cols)h.append(el('th',c));t.append(h);for(const r of rows){const tr=el('tr');for(const c of r){if(c instanceof Node){const td=el('td');td.append(c);tr.append(td);}else tr.append(el('td',c==null?'—':String(c)));}t.append(tr);}w.append(t);return w;}
+function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').value.trim().toLowerCase();const hit=s=>!q||String(s||'').toLowerCase().includes(q);
+  const avail=Object.keys(NAMES).filter(k=>rt.leagues[k]);if(!avail.includes(rtLeague))rtLeague=avail[0];
+  $('rtChips').replaceChildren(...avail.map(k=>{const b=el('button',NAMES[k]);b.setAttribute('aria-pressed',String(k===rtLeague));b.onclick=()=>{rtLeague=k;drawRatings();};return b;}));
+  const L=rt.leagues[rtLeague];if(!L){box.replaceChildren(el('p','No ratings yet.','hint'));return;}
+  const pick=$('rtPick');pick.hidden=true;
+  $('rtViews').replaceChildren(...(L.tennis?[]:Object.entries(RVIEWS).map(([k,l])=>{const b=el('button',l);b.setAttribute('aria-pressed',String(k===rtView));b.onclick=()=>{rtView=k;pick.value='';drawRatings();};return b;})));
+  if(!L.tennis&&rtView==='matchup'){const M=L.matchups||{};
+    if(!M.ready){box.replaceChildren(el('p',M.note||'Matchup model not ready yet.','hint'));return;}
+    const names=M.teams.map(t=>t.team).sort();[mh,ma].forEach((s,i)=>{const cur=s.value&&names.includes(s.value)?s.value:names[i];s.replaceChildren(...names.map(n=>{const o=el('option',n);o.value=n;return o;}));s.value=cur;});
+    const T=Object.fromEntries(M.teams.map(t=>[t.team,t]));const h=T[mh.value],a=T[ma.value];const pair=el('div',null,'row');pair.append(el('span','Home','hint'),mh,el('span','vs Away','hint'),ma);const parts=[pair];
+    if(h&&a&&h!==a){const ph=M.average_points+M.home_edge/2+h.offense-a.defense,pa=M.average_points-M.home_edge/2+a.offense-h.defense,mg=ph-pa,w=phi(mg/Math.max(M.margin_sd,.5));
+      const c=el('article',null,'card');c.append(el('div',h.team+' '+ph.toFixed(1)+' – '+pa.toFixed(1)+' '+a.team,'pick'),el('p',(mg>=0?h.team:a.team)+' by '+Math.abs(mg).toFixed(1)+' · total '+(ph+pa).toFixed(1)+' · '+h.team+' win chance '+Math.round(w*100)+'%','hint'),
+        tableOf(['Team','Offense','Defense','Net'],[h,a].map(t=>[t.team,sg(t.offense),sg(t.defense),sg(t.net)])));parts.push(c);
+      const R=L.roster||{};if(R.ready)for(const t of [h,a]){const s=(R.players||[]).find(p=>p.team_name&&(p.team_name===t.team||t.team.endsWith(' '+p.team_name)));const best=s?R.players.filter(p=>p.team===s.team&&p.rating!=null).sort((x,y)=>y.rating-x.rating).slice(0,6):[];
+        if(best.length)parts.push(el('h4','Key players · '+t.team),tableOf(['Player','Pos','Rating','Season'],best.map(p=>[p.name,p.pos,rcell(p.rating),p.stats])));}}
+    const bt=M.backtest;parts.push(el('p',M.note+(bt?' Backtest (last '+bt.days+' days, refit weekly): misses the margin by '+bt.avg_margin_miss+' pts on average; win-chance Brier '+bt.brier_matchup+' vs Elo '+bt.brier_elo+'.':''),'hint'));
+    box.replaceChildren(...parts);return;}
+  if(!L.tennis&&(rtView==='byteam'||rtView==='bypos')){const R=L.roster||{};
+    if(!R.ready||!(R.players||[]).length){box.replaceChildren(el('p',R.note||'Player ratings are not available for this league yet.','hint'));return;}
+    const byTeam=rtView==='byteam';const keys=[...new Set(R.players.map(p=>byTeam?p.team:p.group))].filter(Boolean).sort();
+    const cur=pick.value&&keys.includes(pick.value)?pick.value:keys[0];pick.replaceChildren(...keys.map(k=>{const o=el('option',k);o.value=k;return o;}));pick.value=cur;pick.hidden=false;
+    const list=R.players.filter(p=>(byTeam?p.team===cur:p.group===cur)&&(hit(p.name)||hit(p.team))).sort((a,b)=>(b.rating??-1)-(a.rating??-1));
+    const parts=[el('p',R.note,'hint')];
+    if(byTeam){for(const g of [...new Set(list.map(p=>p.group))]){const sub=list.filter(p=>p.group===g);parts.push(el('h4',g+' · '+sub.length),tableOf(['Player','Pos','Rating','Season'],sub.map(p=>[p.name,p.pos,rcell(p.rating),p.stats])));}}
+    else parts.push(tableOf(['#','Player','Team','Pos','Rating','Season'],list.map((p,i)=>[p.rating==null?'—':i+1,p.name,p.team,p.pos,rcell(p.rating),p.stats])));
+    box.replaceChildren(el('h3',byTeam?cur+' roster':'Best at '+cur),...parts);return;}
+  if(L.tennis){box.replaceChildren(el('h3','Player Elo'),tableOf(['Rank','Player','Elo','Hard','Clay','Grass'],L.tennis.filter(p=>hit(p.name)).map(p=>[p.rank,p.name,p.elo,p.surface.hard,p.surface.clay,p.surface.grass])));return;}
+  const parts=rtView==='leaders'?[]:[el('h3','Team ratings')];
+  if(rtView==='leaders'){}else if(!L.ready)parts.push(el('p',L.note||'Ratings are still being built.','hint'));
+  else {const MT=Object.fromEntries((((L.matchups||{}).teams)||[]).map(x=>[x.team,x]));parts.push(tableOf(['Rank','Team','Rating','Beats an average team','Last 30 days','This season','Offense','Defense'],L.teams.filter(t=>hit(t.team)).map(t=>{const mt=MT[t.team]||{};const tr=el('span',t.trend_30d==null?'—':(t.trend_30d>0?'▲ +':t.trend_30d<0?'▼ ':'')+t.trend_30d,t.trend_30d>0?'up':t.trend_30d<0?'down':'');return [t.rank,t.team,t.rating,pct(t.vs_average),tr,t.record,sg(mt.offense),sg(mt.defense)];})));}
+  const cats=(L.players.categories||[]).map(c=>{const rs=c.leaders.filter(l=>hit(l.name)||hit(l.team));if(!rs.length)return null;const d=el('div');d.append(el('h4',c.category),tableOf(['Player','Team','Pos','Value'],rs.map(l=>[l.name,l.team,l.position,l.value])));return d;}).filter(Boolean);
+  if(cats.length&&rtView==='leaders'){const g=el('div',null,'cats');g.append(...cats);parts.push(el('h3','Player leaders'+(L.players.season?' · '+L.players.season:'')),g);}
+  box.replaceChildren(...parts);}
+$('rtFind').oninput=drawRatings;$('rtPick').onchange=drawRatings;
+async function loadRatings(){try{const r=await fetch('ratings.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error();rt=await r.json();drawRatings();}
+  catch(e){$('rtBox').replaceChildren(el('p','Ratings will appear after her next update.','hint'));}}
+load();setInterval(load,30000);loadRatings();setInterval(loadRatings,600000);
 })();
 </script>
 </body>
