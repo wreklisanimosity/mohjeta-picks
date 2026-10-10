@@ -147,10 +147,11 @@ async function load(){try{const r=await fetch('data.json?t='+Date.now(),{cache:'
 // ratings: separate file, refreshed every 30 minutes
 const NAMES={NFL:'NFL',NCAAF:'College football',NBA:'NBA',WNBA:'WNBA',NHL:'NHL',MLB:'MLB',ATP:'Tennis ATP',WTA:'Tennis WTA'};
 let rt=null,rtLeague='NFL',rtView='teams';
-const RVIEWS={teams:'Teams',matchup:'Matchup',byteam:'Players by team',bypos:'Players by position',leaders:'Leaders'};
+const RVIEWS={teams:'Teams',matchup:'Matchup',byteam:'Players by team',bypos:'Players by position',dvp:'vs Position',leaders:'Leaders'};
 const erf=x=>{const t=1/(1+.3275911*Math.abs(x));const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x);return x>=0?y:-y;};
 const phi=z=>.5*(1+erf(z/Math.SQRT2));const sg=v=>v==null?'—':(v>0?'+':'')+v;
 const mh=el('select'),ma=el('select');[mh,ma].forEach(s=>{s.className='mpick';s.onchange=()=>drawRatings();});
+const spct=x=>x==null?'—':(x>0?'+':'')+Math.round(x*100)+'%';const pcell=a=>el('span',a?spct(a.pct):'—',a&&a.pct>0.05?'up':a&&a.pct<-0.05?'down':'');
 const rcell=v=>el('span',v==null?'—':String(v),v==null?'':v>=80?'r-hi':v>=50?'r-mid':'r-lo');
 function tableOf(cols,rows){const w=el('div',null,'tablewrap');const t=el('table');const h=el('tr');for(const c of cols)h.append(el('th',c));t.append(h);for(const r of rows){const tr=el('tr');for(const c of r){if(c instanceof Node){const td=el('td');td.append(c);tr.append(td);}else tr.append(el('td',c==null?'—':String(c)));}t.append(tr);}w.append(t);return w;}
 function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').value.trim().toLowerCase();const hit=s=>!q||String(s||'').toLowerCase().includes(q);
@@ -167,9 +168,16 @@ function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').va
       const c=el('article',null,'card');c.append(el('div',h.team+' '+ph.toFixed(1)+' – '+pa.toFixed(1)+' '+a.team,'pick'),el('p',(mg>=0?h.team:a.team)+' by '+Math.abs(mg).toFixed(1)+' · total '+(ph+pa).toFixed(1)+' · '+h.team+' win chance '+Math.round(w*100)+'%','hint'),
         tableOf(['Team','Offense','Defense','Net'],[h,a].map(t=>[t.team,sg(t.offense),sg(t.defense),sg(t.net)])));parts.push(c);
       const R=L.roster||{};if(R.ready)for(const t of [h,a]){const s=(R.players||[]).find(p=>p.team_name&&(p.team_name===t.team||t.team.endsWith(' '+p.team_name)));const best=s?R.players.filter(p=>p.team===s.team&&p.rating!=null).sort((x,y)=>y.rating-x.rating).slice(0,6):[];
-        if(best.length)parts.push(el('h4','Key players · '+t.team),tableOf(['Player','Pos','Rating','Season'],best.map(p=>[p.name,p.pos,rcell(p.rating),p.stats])));}}
+        if(best.length)parts.push(el('h4','Key players · '+t.team),tableOf(['Player','Pos','Rating','Season'],best.map(p=>[p.name,p.pos,rcell(p.rating),p.stats])));}
+      const D=L.dvp||{};if(D.ready)for(const [t,o] of [[h,a],[a,h]]){const A=(D.allowed||{})[o.team]||{};const fs=(D.form||{})[t.team]||[];
+        if(fs.length)parts.push(el('h4',t.team+' players vs '+o.team+' defense'),tableOf(['Player','Group','Recent avg','Defense allows','Projected'],fs.map(f=>{const x=A[f[1]];return [f[0],f[1],f[2],pcell(x),x?(f[2]*(1+x.pct)).toFixed(1):f[2]];})));}}
     const bt=M.backtest;parts.push(el('p',M.note+(bt?' Backtest (last '+bt.days+' days, refit weekly): misses the margin by '+bt.avg_margin_miss+' pts on average; win-chance Brier '+bt.brier_matchup+' vs Elo '+bt.brier_elo+'.':''),'hint'));
     box.replaceChildren(...parts);return;}
+  if(!L.tennis&&rtView==='dvp'){const D=L.dvp||{};
+    if(!D.ready){box.replaceChildren(el('p',D.note||'Defense vs position is not ready yet.','hint'));return;}
+    const teams=Object.keys(D.allowed||{}).filter(hit).sort();
+    box.replaceChildren(el('h3','What each defense gives up, by position'),el('p',D.note+' Green = soft for that position, red = tough. Built from '+D.games+' box scores.','hint'),
+      tableOf(['Defense',...D.groups],teams.map(t=>[t,...D.groups.map(g=>pcell(D.allowed[t][g]))])));return;}
   if(!L.tennis&&(rtView==='byteam'||rtView==='bypos')){const R=L.roster||{};
     if(!R.ready||!(R.players||[]).length){box.replaceChildren(el('p',R.note||'Player ratings are not available for this league yet.','hint'));return;}
     const byTeam=rtView==='byteam';const keys=[...new Set(R.players.map(p=>byTeam?p.team:p.group))].filter(Boolean).sort();
