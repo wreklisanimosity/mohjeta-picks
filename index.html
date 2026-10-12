@@ -2,10 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>try{if(localStorage.getItem('mohjeta.cb')==='1')document.documentElement.classList.add('cb')}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mohjeta Picks</title>
 <meta name="description" content="Mohjeta's live sports picks, pregame calls, combo ideas and track record. View only.">
 <style>
+html.cb{--green:#56b4e9;--red:#e69f00;--yellow:#f0e442}
+html.cb .trend.up{color:#cfe8f8}html.cb .trend.flipped{color:#fde3b0}html.cb .pick span{text-shadow:0 0 8px #56b4e966}
+html.cb .card.live{border-color:#e69f0088}
+html.cb td.up::before,html.cb span.up::before,html.cb b.up::before{content:'▲ '}html.cb td.down::before,html.cb span.down::before,html.cb b.down::before{content:'▼ '}
+.cbt{margin-left:10px;display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:12px;font-weight:700;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 6px;cursor:pointer}
+.cbt i{position:relative;width:30px;height:16px;border-radius:999px;background:#2d1f3d;transition:background .15s}
+.cbt i::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#f1e9ff;transition:left .15s}
+.cbt[aria-checked=true]{color:var(--text);border-color:var(--green)}.cbt[aria-checked=true] i{background:var(--green)}.cbt[aria-checked=true] i::after{left:16px}
+.cbt:focus-visible{outline:2px solid var(--yellow);outline-offset:3px}
 :root{--bg:#07050b;--card:#120c1a;--line:#2d1f3d;--text:#f1e9ff;--muted:#a99cbc;--purple:#b44dff;--pink:#ff4fd8;--green:#39ff88;--red:#ff3b5c;--yellow:#ffe14d}
 *{box-sizing:border-box}
 html{background:var(--bg)}
@@ -68,7 +78,7 @@ footer{max-width:1200px;margin:24px auto;padding:0 16px 30px;color:var(--muted);
 </head>
 <body>
 <header>
-  <div class="top"><div class="brand">MOHJETA<b>.</b></div><span class="tag">VIEW ONLY</span><span class="updated" id="updated">Loading…</span></div>
+  <div class="top"><div class="brand">MOHJETA<b>.</b></div><span class="tag">VIEW ONLY</span><span class="updated" id="updated">Loading…</span><button type="button" class="cbt" id="cbToggle" role="switch" aria-checked="false" title="Swaps green / red for blue / orange and adds ▲ ▼ to gains and losses"><i aria-hidden="true"></i>Color-blind mode</button></div>
   <nav role="tablist" aria-label="Sections">
     <button role="tab" data-tab="picks" aria-selected="true">Picks</button>
     <button role="tab" data-tab="combos" aria-selected="false">Combo ideas</button>
@@ -86,6 +96,9 @@ footer{max-width:1200px;margin:24px auto;padding:0 16px 30px;color:var(--muted);
 </main>
 <footer id="disclaimer">Entertainment only. Model estimates, not betting advice.</footer>
 <script>
+(function(){const t=document.getElementById('cbToggle');let on=false;try{on=localStorage.getItem('mohjeta.cb')==='1';}catch{}
+  const set=v=>{document.documentElement.classList.toggle('cb',v);t.setAttribute('aria-checked',String(v));try{localStorage.setItem('mohjeta.cb',v?'1':'0');}catch{}};
+  set(on);t.onclick=()=>set(t.getAttribute('aria-checked')!=='true');})();
 (function(){'use strict';
 const $=id=>document.getElementById(id);
 const el=(t,txt,cls)=>{const n=document.createElement(t);if(txt!=null)n.textContent=txt;if(cls)n.className=cls;return n;};
