@@ -51,6 +51,9 @@ main{max-width:1200px;margin:auto;padding:16px}
 @keyframes blink{50%{opacity:.35}}
 .team{display:flex;justify-content:space-between;font-size:16px;padding:2px 0}.team b{font-size:19px}
 .pick{margin-top:10px;font-weight:800;font-size:16px}.pick span{color:var(--green);text-shadow:0 0 8px #39ff8866}
+.why td{background:#0d0913;color:var(--muted);font-size:13px;white-space:normal}.why b{color:var(--text)}.betrow{cursor:pointer}.betrow:hover td{background:#1a1124}
+.cal{display:grid;grid-template-columns:70px 1fr 1fr 60px;gap:6px 10px;align-items:center;font-size:13px;margin:8px 0}.cal .bar{height:10px;border-radius:5px;background:var(--line);position:relative}.cal .bar i{position:absolute;inset:0 auto 0 0;border-radius:5px}
+.cal .said i{background:var(--purple)}.cal .hap i{background:var(--green)}.mono{font-family:ui-monospace,Consolas,monospace;font-size:12px;word-break:break-all}
 .tiles{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
 .tile{border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--muted)}.tile b{display:block;color:var(--text);font-size:15px}
 .trend{margin:8px 0;padding:6px 10px;border-radius:8px;font-weight:700;font-size:13px;background:#1a1024;border-left:3px solid #c77dff}
@@ -92,7 +95,7 @@ footer{max-width:1200px;margin:24px auto;padding:0 16px 30px;color:var(--muted);
   <section class="panel" id="combos" role="tabpanel"><p class="hint">Her best multi-game combos right now. Every leg has to win. Combos lose most of the time.</p><div class="grid" id="comboList"></div></section>
   <section class="panel" id="score" role="tabpanel"><p class="hint">Every finished pick is graded against the official result. Hit = picked side won. Accuracy score (Brier): 0 is perfect, 0.25 is a coin flip, lower is better.</p><div id="scoreBox"></div></section>
   <section class="panel" id="ratings" role="tabpanel"><p class="hint">Team strength from real final scores (Elo: 1500 is average, +100 is about a 64% favorite) and each league's player leaders. Tennis: player Elo overall and by surface.</p><div class="chips" id="rtChips"></div><div class="chips" id="rtViews"></div><select id="rtPick" aria-label="Choose team or position" hidden></select><input id="rtFind" type="search" placeholder="Find a team or player…" aria-label="Find a team or player"><div id="rtBox"></div></section>
-  <section class="panel" id="bets" role="tabpanel"><div id="dayCard"></div><div class="stats" id="betStats"></div><div class="tablewrap" id="betTable"></div></section>
+  <section class="panel" id="bets" role="tabpanel"><div id="dayCard"></div><div class="stats" id="betStats"></div><div class="tablewrap" id="betTable"></div><p class="hint">Click any bet to ask her why. 🔒 = sealed: fingerprinted the moment she placed it.</p><div id="calib"></div><div id="proof"></div></section>
 </main>
 <footer id="disclaimer">Entertainment only. Model estimates, not betting advice.</footer>
 <script>
@@ -160,10 +163,35 @@ function render(d){
   stat('Mode',b.mode==='paper'?'PAPER (pretend money)':b.mode.toUpperCase());stat('Bets',String(t.bets));stat('Win rate',t.win_rate==null?'—':pct(t.win_rate));
   stat('Profit / loss',signed(t.net),t.net>0?'up':t.net<0?'down':'');stat('Spent',usd(t.spent));stat('Still riding',usd(t.at_risk),'open');
   const tw=$('betTable');const tb=el('table');const hr=el('tr');for(const x of ['Placed','Bet','Paid','Result','Profit'])hr.append(el('th',x));tb.append(hr);
-  for(const r of b.rows){const tr=el('tr');const res=el('td',r.result,r.result==='WON'||r.result.startsWith('SOLD')?'up':r.result==='LOST'?'down':'open');
-    tr.append(el('td',when(r.opened)),el('td',r.side+' · '+r.title),el('td',usd(r.paid)),res,el('td',signed(r.pnl),r.pnl>0?'up':r.pnl<0?'down':''));tb.append(tr);}
+  for(const r of b.rows){const tr=el('tr',null,'betrow');const res=el('td',r.result,r.result==='WON'||r.result.startsWith('SOLD')?'up':r.result==='LOST'?'down':'open');
+    tr.tabIndex=0;tr.setAttribute('aria-expanded','false');
+    tr.append(el('td',when(r.opened)),el('td',(r.stamp?'🔒 ':'')+r.side+' · '+r.title+(r.carried?' (from before the fresh start)':'')),el('td',usd(r.paid)),res,el('td',signed(r.pnl),r.pnl>0?'up':r.pnl<0?'down':''));tb.append(tr);
+    const wr=el('tr',null,'why');wr.hidden=true;const wd=el('td');wd.colSpan=5;
+    wd.append(el('b','Why she bet: '),document.createTextNode(r.why||'No reason recorded.'));
+    if(typeof r.fair==='number')wd.append(el('div','She put '+r.side+' at '+Math.round(r.fair*100)+'% and paid '+Math.round(r.price*100)+'¢: an edge of '+Math.round((r.fair-r.price)*100)+' points.'));
+    if(r.stamp)wd.append(el('div','Sealed '+new Date(r.sealed).toLocaleString()+' · fingerprint ','mono'),el('div',r.stamp,'mono'));
+    wr.append(wd);tb.append(wr);
+    const tog=()=>{wr.hidden=!wr.hidden;tr.setAttribute('aria-expanded',String(!wr.hidden));};tr.onclick=tog;tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tog();}};}
   if(!b.rows.length){const tr=el('tr');const td=el('td','No bets yet.');td.colSpan=5;tr.append(td);tb.append(tr);}
-  tw.replaceChildren(tb);}
+  tw.replaceChildren(tb);
+  const cal=$('calib');cal.replaceChildren();const C=d.calibration;
+  if(C&&(C.picks.length||C.bets.length)){cal.append(el('h3','How honest are her numbers?'),el('p',C.note,'hint'));
+    for(const [label,rows,n] of [['Her game picks',C.picks,C.n_picks],['Her real bets',C.bets,C.n_bets]]){if(!rows.length)continue;
+      cal.append(el('h4',label+' · '+n+' graded'));const g=el('div',null,'cal');g.append(el('b','Sure'),el('b','Said'),el('b','Happened'),el('b','Count'));
+      for(const r of rows){const bar=(v,c)=>{const x=el('div',null,'bar '+c);const i=el('i');i.style.width=Math.round(v*100)+'%';x.append(i);x.title=Math.round(v*100)+'%';return x;};
+        g.append(el('span',r.range),bar(r.said,'said'),bar(r.happened,'hap'),el('span',Math.round(r.happened*100)+'% of '+r.n));}
+      cal.append(g);}}
+  void proof();}
+let proofAt=0;
+async function proof(){if(Date.now()-proofAt<600000)return;proofAt=Date.now();const box=$('proof');
+  try{const r=await fetch('stamps.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const S=await r.json();
+    const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(x=>x.toString(16).padStart(2,'0')).join('');
+    let prev='0'.repeat(64),ok=true,at=-1;
+    for(const [i,x] of S.rows.entries()){const body=x.at+'|'+x.ticker+'|'+x.side+'|'+Number(x.price).toFixed(4)+'|'+Number(x.fair||0).toFixed(4)+'|'+(x.title||'').slice(0,200);
+      const h=await sha(prev+'|'+body);if(x.prev!==prev||h!==x.hash){ok=false;at=i;break;}prev=x.hash;}
+    box.replaceChildren(el('h3','Proof nothing was edited'),el('p',ok?('✓ All '+S.rows.length+' sealed bets check out: your browser just re-computed every fingerprint and they all match.'):('✗ The chain breaks at bet #'+(at+1)+'.'),ok?'up':'down'),
+      el('p','Every bet is fingerprinted the moment she places it, chained to the bet before it, so changing or removing any old bet would break every fingerprint after it. Each update of this site is also a dated GitHub commit. '+S.how,'hint'));}
+  catch(e){}}
 async function load(){try{const r=await fetch('data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error();render(await r.json());}
   catch(e){$('updated').textContent='Waiting for her first update…';}}
 // ratings: separate file, refreshed every 30 minutes
