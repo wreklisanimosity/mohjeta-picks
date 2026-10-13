@@ -92,7 +92,7 @@ footer{max-width:1200px;margin:24px auto;padding:0 16px 30px;color:var(--muted);
   <section class="panel" id="combos" role="tabpanel"><p class="hint">Her best multi-game combos right now. Every leg has to win. Combos lose most of the time.</p><div class="grid" id="comboList"></div></section>
   <section class="panel" id="score" role="tabpanel"><p class="hint">Every finished pick is graded against the official result. Hit = picked side won. Accuracy score (Brier): 0 is perfect, 0.25 is a coin flip, lower is better.</p><div id="scoreBox"></div></section>
   <section class="panel" id="ratings" role="tabpanel"><p class="hint">Team strength from real final scores (Elo: 1500 is average, +100 is about a 64% favorite) and each league's player leaders. Tennis: player Elo overall and by surface.</p><div class="chips" id="rtChips"></div><div class="chips" id="rtViews"></div><select id="rtPick" aria-label="Choose team or position" hidden></select><input id="rtFind" type="search" placeholder="Find a team or player…" aria-label="Find a team or player"><div id="rtBox"></div></section>
-  <section class="panel" id="bets" role="tabpanel"><div class="stats" id="betStats"></div><div class="tablewrap" id="betTable"></div></section>
+  <section class="panel" id="bets" role="tabpanel"><div id="dayCard"></div><div class="stats" id="betStats"></div><div class="tablewrap" id="betTable"></div></section>
 </main>
 <footer id="disclaimer">Entertainment only. Model estimates, not betting advice.</footer>
 <script>
@@ -146,6 +146,15 @@ function render(d){
       w.append(t);sb.append(el('h3',title),w);};
     table('All picks',sc.overall);for(const [lg,tbl] of Object.entries(sc.by_league))table(lg,tbl);}
   const betsTab=tabs.find(x=>x.dataset.tab==='bets');betsTab.hidden=!d.bets;if(!d.bets){if(betsTab.getAttribute('aria-selected')==='true')show('picks');return;}
+  const dc=$('dayCard');dc.replaceChildren();const c=d.daily;
+  if(c&&(c.placed||c.finished)){const box=el('article',null,'card');const sg=v=>(v>=0?'+':'-')+'$'+Math.abs(v).toFixed(2);
+    box.append(el('div',"Yesterday's report card · "+c.day,'pick'));
+    const row=el('div',null,'tiles');const tl=(l,v,cls)=>{const x=el('div',null,'tile');x.append(document.createTextNode(l));x.append(el('b',v,cls||''));row.append(x);};
+    tl('Placed',c.placed+' ($'+c.spent.toFixed(2)+')');tl('Finished',c.wins+' won · '+c.losses+' lost');tl("Day's profit",sg(c.net),c.net>0?'up':c.net<0?'down':'');
+    if(c.beat_price)tl('Beat the price',Math.round(c.beat_price.beat*100)+'%');
+    if(c.spending_left!=null){tl('Spending cash left','$'+c.spending_left.toFixed(2));tl('Winnings pot','$'+c.winnings.toFixed(2));}
+    box.append(row);if(c.leagues&&c.leagues.length)box.append(el('p','By sport: '+c.leagues.map(r=>r.league+' '+sg(r.net)).join(' · '),'hint'));
+    dc.append(box);}
   const b=d.bets,t=b.totals,st=$('betStats');st.replaceChildren();
   const stat=(l,v,cls)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cls||''));st.append(s);};
   stat('Mode',b.mode==='paper'?'PAPER (pretend money)':b.mode.toUpperCase());stat('Bets',String(t.bets));stat('Win rate',t.win_rate==null?'—':pct(t.win_rate));
