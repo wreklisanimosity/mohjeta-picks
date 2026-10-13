@@ -1,1 +1,1 @@
-{"ok":true,"broken_at":null,"count":0,"rows":[],"how":"fingerprint = SHA-256(previous fingerprint + \"|\" + time|ticker|side|price|her chance|title), prices and chances with 4 decimals. The first bet uses 64 zeros as the previous fingerprint.","updated":"2026-10-13T16:06:02.180670+00:00"}
+{"ok":true,"broken_at":null,"count":0,"rows":[],"how":"fingerprint = SHA-256(previous fingerprint + \"|\" + time|ticker|side|price|her chance|title), prices and chances with 4 decimals. The first bet uses 64 zeros as the previous fingerprint.","updated":"2026-10-13T16:57:59.488608+00:00"}
