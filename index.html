@@ -165,10 +165,10 @@ function render(d){
   const tw=$('betTable');const tb=el('table');const hr=el('tr');for(const x of ['Placed','Bet','Paid','Result','Profit'])hr.append(el('th',x));tb.append(hr);
   for(const r of b.rows){const tr=el('tr',null,'betrow');const res=el('td',r.result,r.result==='WON'||r.result.startsWith('SOLD')?'up':r.result==='LOST'?'down':'open');
     tr.tabIndex=0;tr.setAttribute('aria-expanded','false');
-    tr.append(el('td',when(r.opened)),el('td',(r.stamp?'🔒 ':'')+r.side+' · '+r.title+(r.carried?' (from before the fresh start)':'')),el('td',usd(r.paid)),res,el('td',signed(r.pnl),r.pnl>0?'up':r.pnl<0?'down':''));tb.append(tr);
+    tr.append(el('td',when(r.opened)),el('td',(r.stamp?'🔒 ':'')+(r.bet?(r.count?r.count+' × ':'')+r.bet:r.side+' · '+r.title)+(r.carried?' (from before the fresh start)':'')),el('td',usd(r.paid)),res,(r.result==='OPEN'&&r.pnl==null&&r.count?el('td','+'+usd(r.count-r.paid)+' if it wins','open'):el('td',signed(r.pnl),r.pnl>0?'up':r.pnl<0?'down':'')));tb.append(tr);
     const wr=el('tr',null,'why');wr.hidden=true;const wd=el('td');wd.colSpan=5;
     wd.append(el('b','Why she bet: '),document.createTextNode(r.why||'No reason recorded.'));
-    if(typeof r.fair==='number')wd.append(el('div','She put '+r.side+' at '+Math.round(r.fair*100)+'% and paid '+Math.round(r.price*100)+'¢: an edge of '+Math.round((r.fair-r.price)*100)+' points.'));
+    if(typeof r.fair==='number')wd.append(el('div','She put '+(r.bet||r.side)+' at '+Math.round(r.fair*100)+'% and paid '+Math.round(r.price*100)+'¢: an edge of '+Math.round((r.fair-r.price)*100)+' points.'));
     if(r.stamp)wd.append(el('div','Sealed '+new Date(r.sealed).toLocaleString()+' · fingerprint ','mono'),el('div',r.stamp,'mono'));
     wr.append(wd);tb.append(wr);
     const tog=()=>{wr.hidden=!wr.hidden;tr.setAttribute('aria-expanded',String(!wr.hidden));};tr.onclick=tog;tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tog();}};}
