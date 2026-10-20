@@ -122,7 +122,7 @@ function gameCard(g){const c=el('article',null,'card'+(g.state==='LIVE'?' live':
   if(g.pick){const p=el('div',null,'pick');p.append('Her pick: ',el('span',g.pick.team+' '+pct(g.pick.chance)));c.append(p);
     const tiles=el('div',null,'tiles');const tile=(l,v)=>{const t=el('div',null,'tile');t.append(l,el('b',v));return t;};
     if(g.pregame)tiles.append(tile('Pregame call',g.pregame.team+' '+pct(g.pregame.chance)));
-    if(typeof g.kalshi==='number')tiles.append(tile('Kalshi price',pct(g.kalshi)));
+    if(typeof g.kalshi==='number')tiles.append(tile('Kalshi price',Math.round(g.kalshi*100)+'¢'));
     const s=g.sources||{};for(const [k,l] of [['sharp','Other markets'],['line','Sportsbook'],['espn','ESPN model'],['score','Scoreboard'],['stats','Team stats'],['elo','Elo']])if(typeof s[k]==='number')tiles.append(tile(l,pct(s[k])));
     c.append(tiles);
     if(g.trend&&g.pregame){const msg={up:'▲ More confident than pregame',down:'▼ Less confident than pregame',steady:'● Holding steady since pregame',flipped:'⇄ Flipped since pregame'}[g.trend];
