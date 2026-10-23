@@ -155,7 +155,8 @@ function render(d){
      top.append(el('span',nm(g.league),'tag'),el('span',g.state==='LIVE'?'● LIVE':st.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}),g.state==='LIVE'?'livetag':'hint'),el('span',g.lane||'','hint'));a.append(top);
      a.append(el('div',g.name||g.teams.map(t=>t.name).join(' vs '),'pick'));
      if(g.pick){const p=el('div');p.append('Her pick: ',el('b',g.pick.team+' '+pct(g.pick.chance)),document.createTextNode(typeof g.kalshi==='number'?' · Kalshi '+Math.round(g.kalshi*100)+'¢':''));a.append(p);
-       if(g.thesis)a.append(el('p','Her hypothesis: '+g.thesis,'hint'));}
+       if(g.own_team)a.append(el('p','Note: her own read favored '+g.own_team+'; her final pick leans on Kalshi\u2019s price, so the two can differ.','hint'));
+       if(g.thesis)a.append(el('p','Her hypothesis'+(g.own_team?' (her own read)':'')+': '+g.thesis,'hint'));}
      else a.append(el('p','Her read is coming soon.','hint'));
      list.append(a);}
    if(!gs.length)list.append(el('p','No games in the next 24 hours.','hint'));}
