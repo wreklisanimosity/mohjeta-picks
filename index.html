@@ -76,12 +76,34 @@ footer{max-width:1200px;margin:24px auto;padding:0 16px 30px;color:var(--muted);
 .mpick{background:#120c1a;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:7px 10px;font:inherit;max-width:240px}
 #rtFind{width:100%;max-width:340px;margin:0 0 10px;background:#120c1a;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:9px 12px;font:inherit}
 .cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}.cats h4{margin:6px 0;font-size:14px;color:var(--yellow)}
+.tagline{color:var(--muted);font-size:13px}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font-size:11px;font-weight:800;color:#fff;margin-right:8px;flex:none;text-shadow:0 1px 2px #0008;border:1px solid #ffffff33}
+.team span{display:inline-flex;align-items:center}
+.banner{display:flex;gap:10px 18px;flex-wrap:wrap;align-items:baseline;background:linear-gradient(135deg,#1d1030cc,#120c1acc);border:1px solid #b44dff66;border-radius:14px;padding:12px 16px;margin:0 0 14px}
+.banner strong{font-size:22px}.banner .hint{flex-basis:100%}
+.notice{background:#1a1408cc;border:1px solid #ffe14d55;border-left:3px solid var(--yellow);border-radius:10px;padding:10px 14px;margin:0 0 14px;font-size:13px;color:#fff1c2}
+.best{margin:0 0 16px}.best h3{margin:0 0 8px}
+.bestlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.bp{background:#120c1acc;border:1px solid #39ff8855;border-radius:12px;padding:10px 12px}
+.bp .who{display:flex;align-items:center;font-weight:800;font-size:16px}.bp .who em{margin-left:auto;font-style:normal;color:var(--green)}
+.bp .why{color:var(--muted);font-size:12px;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.recent{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}.recent span{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.alerts{display:inline-block;margin:0 0 14px;padding:8px 14px;border-radius:10px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--purple),var(--pink));text-decoration:none}
+.how{max-width:760px}.how h3{color:var(--yellow);margin:18px 0 6px}.how p,.how li{color:var(--text)}.how li{margin:4px 0}
+@media(max-width:640px){
+  body{font-size:14px}.top{padding:10px 12px;gap:8px}.brand{font-size:20px}.tagline{display:none}.updated{margin-left:0;flex-basis:100%;order:5;font-size:12px}
+  .cbt{margin-left:auto;font-size:11px}nav{padding:0 12px 10px}nav button{padding:7px 12px;font-size:13px}
+  main{padding:12px}.grid{grid-template-columns:1fr}.card{padding:12px}.team{font-size:15px}.team b{font-size:17px}
+  .stats{grid-template-columns:repeat(2,1fr)}.stat strong{font-size:18px}.banner strong{font-size:19px}
+  th,td{padding:6px 6px}#betTable tr:not(.sporthead):not(.why) > :nth-child(3){display:none}
+  .cal{grid-template-columns:56px 1fr 1fr 64px}
+  body::before{animation:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <header>
-  <div class="top"><div class="brand">MOHJETA<b>.</b></div><span class="tag">VIEW ONLY</span><span class="updated" id="updated">Loading…</span><button type="button" class="cbt" id="cbToggle" role="switch" aria-checked="false" title="Swaps green / red for blue / orange and adds ▲ ▼ to gains and losses"><i aria-hidden="true"></i>Color-blind mode</button></div>
+  <div class="top"><div class="brand">MOHJETA<b>.</b></div><span class="tagline">AI sports picks, tracked in public</span><span class="tag">VIEW ONLY</span><span class="updated" id="updated">Loading…</span><button type="button" class="cbt" id="cbToggle" role="switch" aria-checked="false" title="Swaps green / red for blue / orange and adds ▲ ▼ to gains and losses"><i aria-hidden="true"></i>Color-blind mode</button></div>
   <nav role="tablist" aria-label="Sections">
     <button role="tab" data-tab="picks" aria-selected="true">Picks</button>
     <button role="tab" data-tab="today" aria-selected="false">Today's schedule</button>
@@ -89,15 +111,42 @@ footer{max-width:1200px;margin:24px auto;padding:0 16px 30px;color:var(--muted);
     <button role="tab" data-tab="score" aria-selected="false">Scorecard</button>
     <button role="tab" data-tab="ratings" aria-selected="false">Ratings</button>
     <button role="tab" data-tab="bets" aria-selected="false">Bets &amp; results</button>
+    <button role="tab" data-tab="how" aria-selected="false">How she picks</button>
   </nav>
 </header>
 <main>
-  <section class="panel on" id="picks" role="tabpanel"><p class="hint">Today's games and the next 24 hours: who she thinks wins, her pregame call, and how her confidence has moved.</p><div class="grid" id="games"></div></section>
+  <section class="panel on" id="picks" role="tabpanel"><div id="record"></div><div id="alertsBox"></div><div id="best"></div><div id="recent"></div><h3>Every game</h3><p class="hint">Today's games and the next 24 hours: who she thinks wins, her pregame call, and how her confidence has moved.</p><div class="grid" id="games"></div></section>
   <section class="panel" id="today" role="tabpanel"><p class="hint">Every game in the next 24 hours in start order, with her pick, Kalshi's price, whether she bets it, and her hypothesis. Picks keep updating until about 20 minutes before each start.</p><div class="chips" id="todayChips"></div><div id="todayList"></div></section>
   <section class="panel" id="combos" role="tabpanel"><p class="hint">Her best multi-game combos right now. Every leg has to win. Combos lose most of the time.</p><div class="grid" id="comboList"></div></section>
   <section class="panel" id="score" role="tabpanel"><p class="hint">Every finished pick is graded against the official result. Hit = picked side won. Accuracy score (Brier): 0 is perfect, 0.25 is a coin flip, lower is better.</p><div id="scoreBox"></div></section>
   <section class="panel" id="ratings" role="tabpanel"><p class="hint">Team strength from real final scores (Elo: 1500 is average, +100 is about a 64% favorite) and each league's player leaders. Tennis: player Elo overall and by surface.</p><div class="chips" id="rtChips"></div><div class="chips" id="rtViews"></div><select id="rtPick" aria-label="Choose team or position" hidden></select><input id="rtFind" type="search" placeholder="Find a team or player…" aria-label="Find a team or player"><div id="rtBox"></div></section>
-  <section class="panel" id="bets" role="tabpanel"><div id="dayCard"></div><div class="stats" id="betStats"></div><div id="bySport"></div><div class="chips" id="sportChips"></div><div class="tablewrap" id="betTable"></div><p class="hint">Click any bet to ask her why. 🔒 = sealed: fingerprinted the moment she placed it.</p><div id="calib"></div><div id="proof"></div></section>
+  <section class="panel" id="bets" role="tabpanel"><div id="dropNote"></div><div id="dayCard"></div><div class="stats" id="betStats"></div><div id="bySport"></div><div class="chips" id="sportChips"></div><div class="tablewrap" id="betTable"></div><p class="hint">Click any bet to ask her why. 🔒 = sealed: fingerprinted the moment she placed it.</p><div id="calib"></div><div id="proof"></div></section>
+  <section class="panel how" id="how" role="tabpanel">
+    <h2>How she picks</h2>
+    <p>Mohjeta is a computer model that runs on one home PC. For every game she covers, she works out how likely each side is to win, compares that with the price on Kalshi (a regulated prediction market), and places a small bet. Everything she does is shown on this site, wins and losses alike.</p>
+    <h3>1. She gathers the evidence</h3>
+    <ul>
+      <li><b>Sportsbook lines and other markets:</b> what the betting world already thinks.</li>
+      <li><b>ESPN's win model and the live scoreboard:</b> updated as the game goes.</li>
+      <li><b>Team strength ratings (Elo) and team stats:</b> built from real final scores.</li>
+      <li><b>Injuries and news:</b> who is in or out, and how much that player matters.</li>
+    </ul>
+    <h3>2. She turns it into one number</h3>
+    <p>She blends those sources into one chance for each side, for example "Chiefs 62%". The Scorecard tab grades every source against real results, so you can see which ones have earned their place. Her pick keeps updating until about 20 minutes before the start.</p>
+    <h3>3. She compares it with the price</h3>
+    <p>A Kalshi price of 59¢ means the market gives that side about a 59% chance. If she says 62%, she thinks the market is slightly low. Each pick card shows both numbers so you can see the gap yourself.</p>
+    <h3>4. She bets small and the same every time</h3>
+    <p>About $5 a game in the sports she covers, so no single game can swing the record. Right now these are <b>paper bets</b>: real Kalshi prices, pretend money, while the record builds.</p>
+    <h3>5. Everything is recorded and sealed</h3>
+    <p>The moment she places a bet it is fingerprinted and chained to the bet before it. If anyone changed or deleted an old bet, the check on the Bets &amp; results tab would fail. Every finished pick is also graded against the official result on the Scorecard tab.</p>
+    <h3>What to keep in mind</h3>
+    <ul>
+      <li>Favorites win more often, but they pay less: a 60¢ bet wins about $4 and loses $6.</li>
+      <li>A few days of results is mostly luck. Judge her over hundreds of games.</li>
+      <li>She dropped soccer in October 2026 after it lost money (draws count as losses on "to win" bets). Its record is shown on the Bets &amp; results tab.</li>
+    </ul>
+    <p class="hint">Entertainment only. Model estimates, not betting advice. Past results do not predict future results.</p>
+  </section>
 </main>
 <footer id="disclaimer">Entertainment only. Model estimates, not betting advice.</footer>
 <script>
@@ -111,6 +160,40 @@ const pct=v=>typeof v==='number'?Math.round(v*100)+'%':'—';
 const usd=v=>typeof v==='number'?(v<0?'-$':'$')+Math.abs(v).toFixed(2):'—';
 const signed=v=>typeof v==='number'?(v>0?'+':v<0?'-':'')+'$'+Math.abs(v).toFixed(2):'—';
 const when=s=>{if(!s)return '';const d=new Date(s);return isNaN(d)?'':d.toLocaleString([], {weekday:'short',hour:'numeric',minute:'2-digit'});};
+// team badge: initials on a color picked from the name (the same team always gets the same color)
+function badge(name){const n=String(name||'?');let h=0;for(const ch of n)h=(h*31+ch.charCodeAt(0))>>>0;
+  const words=n.replace(/[^A-Za-z0-9 ]/g,'').split(' ').filter(Boolean);const ini=(words.length>1?words[0][0]+words[words.length-1][0]:n.slice(0,2)).toUpperCase();
+  const b=el('span',ini,'badge');b.style.background='hsl('+(h%360)+' 65% 38%)';b.setAttribute('aria-hidden','true');return b;}
+const named=name=>{const s=el('span');s.append(badge(name),document.createTextNode(name));return s;};
+const icon=r=>r==='WON'||String(r).startsWith('SOLD')?'✅':r==='LOST'?'❌':r==='EVEN'?'➖':'⏳';
+const firstLine=t=>{const s=String(t||'').replace(/\s+/g,' ').trim();const m=s.match(/^.{20,180}?[.!?](\s|$)/);return m?m[0].trim():s.slice(0,160)+(s.length>160?'…':'');};
+function renderTop(d){
+  const b=d.bets,rec=$('record');rec.replaceChildren();
+  if(b&&b.totals&&b.totals.settled){const t=b.totals;const since=b.since;
+    const box=el('div',null,'banner');const s=el('strong',t.wins+'-'+t.losses);
+    box.append(el('span','Record'+(since?' since '+new Date(since).toLocaleDateString([], {month:'short',day:'numeric'}):'')+':'),s,
+      el('span','('+pct(t.win_rate)+' win rate)'),el('strong',signed(t.net),t.net>0?'up':t.net<0?'down':''),
+      el('span',b.mode==='paper'?'paper money, real prices':'','hint'));
+    if(b.dropped)box.append(el('span','Soccer is not counted: she stopped betting it in '+b.dropped.when+'. See Bets & results.','hint'));
+    rec.append(box);}
+  const ab=$('alertsBox');ab.replaceChildren();
+  if(d.alerts_url){const a=el('a','🔔 Get her picks as they happen','alerts');a.href=d.alerts_url;a.target='_blank';a.rel='noopener';ab.append(a);}
+  // today's best picks: her strongest calls among games not yet finished
+  const best=d.games.filter(g=>g.pick&&typeof g.pick.chance==='number').sort((x,y)=>y.pick.chance-x.pick.chance).slice(0,5);
+  const bx=$('best');bx.replaceChildren();
+  if(best.length){bx.className='best';bx.append(el('h3','Her strongest picks right now'));const list=el('div',null,'bestlist');
+    for(const g of best){const c=el('article',null,'bp');const who=el('div',null,'who');who.append(badge(g.pick.team),document.createTextNode(g.pick.team),el('em',pct(g.pick.chance)));
+      const k=typeof g.kalshi==='number'?Math.round(g.kalshi*100):null;
+      c.append(who,el('div',(g.name||g.teams.map(t=>t.name).join(' vs '))+' · '+(g.state==='LIVE'?'LIVE':when(g.start))+(k!=null?' · Kalshi '+k+'¢':''),'hint'));
+      if(k!=null){const gap=Math.round(g.pick.chance*100)-k;c.append(el('div',gap>0?'She is '+gap+' points above the market':gap<0?'She is '+(-gap)+' points below the market':'She agrees with the market',gap>0?'up':''));}
+      if(g.thesis)c.append(el('div',firstLine(g.thesis),'why'));list.append(c);}
+    bx.append(list);}
+  else bx.className='';
+  // recent results strip
+  const rc=$('recent');rc.replaceChildren();
+  if(b&&b.rows){const done=b.rows.filter(r=>r.pnl!=null&&!r.carried).sort((x,y)=>String(y.opened).localeCompare(String(x.opened))).slice(0,12);
+    if(done.length){rc.className='recent';rc.append(el('span','Latest results:','hint'));
+      for(const r of done)rc.append(el('span',icon(r.result)+' '+(r.bet||r.title).replace(/ to win$/,'')+' '+signed(r.pnl),r.pnl>0?'up':r.pnl<0?'down':''));}}}
 // tabs: click or use arrow keys
 const tabs=[...document.querySelectorAll('nav button')];
 function show(name){for(const b of tabs){const on=b.dataset.tab===name;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;$(b.dataset.tab).classList.toggle('on',on);}
@@ -120,7 +203,7 @@ if(location.hash&&tabs.some(b=>b.dataset.tab===location.hash.slice(1)))show(loca
 
 function gameCard(g){const c=el('article',null,'card'+(g.state==='LIVE'?' live':''));
   const top=el('div',null,'row');top.append(el('span',g.league,'tag'),g.state==='LIVE'?el('span','● LIVE','livetag'):el('span','Starts '+when(g.start),'hint'),el('span',g.state==='LIVE'?(g.detail||''):'','hint'));c.append(top);
-  for(const t of g.teams){const r=el('div',null,'team');r.append(el('span',t.name),el('b',g.state==='LIVE'?String(t.score??0):(t.record||'')));c.append(r);}
+  for(const t of g.teams){const r=el('div',null,'team');r.append(named(t.name),el('b',g.state==='LIVE'?String(t.score??0):(t.record||'')));c.append(r);}
   if(g.pick){const p=el('div',null,'pick');p.append('Her pick: ',el('span',g.pick.team+' '+pct(g.pick.chance)));c.append(p);
     const tiles=el('div',null,'tiles');const tile=(l,v)=>{const t=el('div',null,'tile');t.append(l,el('b',v));return t;};
     if(g.pregame)tiles.append(tile('Pregame call',g.pregame.team+' '+pct(g.pregame.chance)));
@@ -138,6 +221,7 @@ function gameCard(g){const c=el('article',null,'card'+(g.state==='LIVE'?' live':
 function render(d){
   $('updated').textContent='Updated '+new Date(d.updated).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
   $('disclaimer').textContent=d.disclaimer;
+  renderTop(d);
   const live=d.games.filter(g=>g.state==='LIVE'),up=d.games.filter(g=>g.state!=='LIVE');
   $('games').replaceChildren(...[...live,...up].map(gameCard));if(!d.games.length)$('games').append(el('p','No games in the next 24 hours.','hint'));
   $('comboList').replaceChildren(...d.combos.map(c=>{const a=el('article',null,'card');a.append(el('div',c.legs.length+'-leg combo · pays about '+c.pays_x+'x','pick'));
@@ -162,12 +246,14 @@ function render(d){
    if(!gs.length)list.append(el('p','No games in the next 24 hours.','hint'));}
   const sc=d.scorecard,sb=$('scoreBox');sb.replaceChildren();
   if(!sc.graded)sb.append(el('p','No finished games graded yet.','hint'));
-  else{sb.append(el('p',sc.graded+' picks graded.','hint'));
+  else{sb.append(el('p',sc.graded+' picks graded.'+(d.bets&&d.bets.dropped?' Soccer is left out (she stopped betting it in '+d.bets.dropped.when+').':''),'hint'));
     const table=(title,tbl)=>{const w=el('div',null,'tablewrap');const t=el('table');const h=el('tr');for(const x of ['Source','Picks','Hit rate','Accuracy (Brier)'])h.append(el('th',x));t.append(h);
       for(const k of ['blend','news','her','line','espn','score','stats','elo','sharp','kalshi']){const s=tbl[k];if(!s)continue;const tr=el('tr');tr.append(el('td',sc.labels[k]||k),el('td',String(s.n)),el('td',pct(s.hit)),el('td',s.brier.toFixed(3)));t.append(tr);}
       w.append(t);sb.append(el('h3',title),w);};
     table('All picks',sc.overall);for(const [lg,tbl] of Object.entries(sc.by_league))table(lg,tbl);}
   const betsTab=tabs.find(x=>x.dataset.tab==='bets');betsTab.hidden=!d.bets;if(!d.bets){if(betsTab.getAttribute('aria-selected')==='true')show('picks');return;}
+  const dn=$('dropNote');dn.replaceChildren();const X=d.bets.dropped;
+  if(X)dn.append(el('div','Soccer was dropped in '+X.when+' after a '+X.won+'-'+X.lost+' run ('+signed(X.net)+') since the record started. The numbers below cover only the sports she still bets. Every soccer bet is still in the sealed record at the bottom of this page.','notice'));
   const dc=$('dayCard');dc.replaceChildren();const c=d.daily;
   if(c&&(c.placed||c.finished)){const box=el('article',null,'card');const sg=v=>(v>=0?'+':'-')+'$'+Math.abs(v).toFixed(2);
     box.append(el('div',"Yesterday's report card · "+c.day,'pick'));
@@ -201,7 +287,7 @@ function render(d){
   const rowsShown=b.rows.filter(r=>pick==='ALL'||r.league===pick).slice().sort((x,y)=>rank(x.league)-rank(y.league)||String(y.opened).localeCompare(String(x.opened)));
   const tw=$('betTable');const tb=el('table');const hr=el('tr');for(const x of ['Placed','Bet','Paid','Result','Profit'])hr.append(el('th',x));tb.append(hr);
   let lastLg=null;
-  for(const r of rowsShown){if(r.league!==lastLg){lastLg=r.league;const g=BS.find(x=>x.league===r.league);const hd=el('tr','', 'sporthead');const td=el('td',sname(r.league)+(g?' · '+(g.won||0)+' won of '+(g.settled||0)+' · '+signed(g.net):''));td.colSpan=5;hd.append(td);tb.append(hd);}const tr=el('tr',null,'betrow');const res=el('td',r.result,r.result==='WON'||r.result.startsWith('SOLD')?'up':r.result==='LOST'?'down':'open');
+  for(const r of rowsShown){if(r.league!==lastLg){lastLg=r.league;const g=BS.find(x=>x.league===r.league);const hd=el('tr','', 'sporthead');const td=el('td',sname(r.league)+(g?' · '+(g.won||0)+' won of '+(g.settled||0)+' · '+signed(g.net):''));td.colSpan=5;hd.append(td);tb.append(hd);}const tr=el('tr',null,'betrow');const res=el('td',icon(r.result)+' '+r.result,r.result==='WON'||r.result.startsWith('SOLD')?'up':r.result==='LOST'?'down':'open');
     tr.tabIndex=0;tr.setAttribute('aria-expanded','false');
     tr.append(el('td',when(r.opened)),el('td',(r.stamp?'🔒 ':'')+(r.bet?(r.count?r.count+' × ':'')+r.bet:r.side+' · '+r.title)+(r.carried?' (from before the fresh start)':'')),el('td',usd(r.paid)),res,(r.result==='OPEN'&&r.pnl==null&&r.count?el('td','+'+usd(r.count-r.paid)+' if it wins','open'):el('td',signed(r.pnl),r.pnl>0?'up':r.pnl<0?'down':'')));tb.append(tr);
     const wr=el('tr',null,'why');wr.hidden=true;const wd=el('td');wd.colSpan=5;
