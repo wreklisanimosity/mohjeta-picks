@@ -115,7 +115,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 .hero .side .badge{width:52px;height:52px;font-size:18px}.hero .sc{font-size:30px;font-weight:800}
 .chart{width:100%;height:auto;display:block}
 .notice{background:#1a1408cc;border:1px solid #ffe14d55;border-left:3px solid var(--yellow);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px;color:#fff1c2}
-.install{display:flex;gap:12px;align-items:center}.install img{width:48px;height:48px;border-radius:12px}
+.install{display:flex;gap:12px;align-items:center}.appicon{flex:none;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:#f1e9ff;background:linear-gradient(180deg,#4a1580,#5c1f70)}.appicon::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--pink);margin:12px 0 0 2px}
 .btn{display:inline-block;border:0;border-radius:12px;padding:10px 16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--purple),var(--pink));cursor:pointer;text-decoration:none}
 .btn.ghost{background:none;border:1px solid var(--line);color:var(--text)}
 .menu button{display:flex;width:100%;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 10px;cursor:pointer;text-align:left;font-size:16px;font-weight:700}
@@ -274,7 +274,7 @@ function installHelp(){if(deferred){deferred.prompt();deferred.userChoice.finall
     const ol=el('ol');for(const s of (isIOS?['Tap the Share button (the square with an arrow) at the bottom of Safari.','Scroll down and tap "Add to Home Screen".','Tap "Add". Mohjeta now opens full-screen from your home screen.']:['Tap the ⋮ menu at the top right of Chrome.','Tap "Install app" or "Add to Home screen".','Tap "Install". Mohjeta now opens full-screen from your home screen.']))ol.append(el('li',s));
     b.append(ol,el('p','It is the same view-only site: no account, no sign-in, nothing to pay.','hint'));return b;},'Install');}
 function drawInstall(){const box=$('installBox');box.replaceChildren();let hidden=false;try{hidden=localStorage.getItem('mohjeta.noinstall')==='1';}catch(e){}
-  if(standalone()||hidden)return;const c=el('div',null,'card install');const img=el('img');img.src='icon-192.png';img.alt='';
+  if(standalone()||hidden)return;const c=el('div',null,'card install');const img=el('span','M','appicon');img.setAttribute('aria-hidden','true');
   const t=el('div');t.append(el('b','Get the app'),el('div','Opens full-screen from your home screen.','hint small'));t.style.cssText='flex:1;min-width:0';
   const go=el('button','Install','btn');go.onclick=installHelp;const x=el('button','✕','back');x.setAttribute('aria-label','Hide');x.onclick=()=>{try{localStorage.setItem('mohjeta.noinstall','1');}catch(e){}drawInstall();};
   c.append(img,t,go,x);box.append(c);}
