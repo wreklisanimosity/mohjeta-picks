@@ -114,6 +114,9 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 .hero .side{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:700;min-width:0}
 .hero .side .badge{width:52px;height:52px;font-size:18px}.hero .sc{font-size:30px;font-weight:800}
 .chart{width:100%;height:auto;display:block}
+.gate{position:fixed;inset:0;z-index:99;background:#07050bf2;display:flex;align-items:center;justify-content:center;padding:16px}.gate[hidden]{display:none}
+.gatebox{max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}.gatebox h2{margin-top:0}
+.odds{color:var(--muted)}
 .notice{background:#1a1408cc;border:1px solid #ffe14d55;border-left:3px solid var(--yellow);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px;color:#fff1c2}
 .install{display:flex;gap:12px;align-items:center}.appicon{flex:none;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:#f1e9ff;background:linear-gradient(180deg,#4a1580,#5c1f70)}.appicon::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--pink);margin:12px 0 0 2px}
 .btn{display:inline-block;border:0;border-radius:12px;padding:10px 16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--purple),var(--pink));cursor:pointer;text-decoration:none}
@@ -178,10 +181,14 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
       <button type="button" data-go="combos"><span>Combo ideas<small>Her best multi-game combos right now</small></span>›</button>
       <button type="button" data-go="score"><span>Scorecard<small>Every source she uses, graded against real results</small></span>›</button>
       <button type="button" data-go="how"><span>How she picks<small>Plain-English explanation of her method</small></span>›</button>
+      <button type="button" data-go="odds"><span>Using her picks anywhere<small>Fair odds and the price where a pick has value, for any sportsbook or market</small></span>›</button>
+      <button type="button" data-go="safe"><span>Play responsibly<small>21+, limits and where to get help</small></span>›</button>
+      <button type="button" data-go="terms"><span>Terms of use<small>What this site is and is not</small></span>›</button>
+      <button type="button" data-go="privacy"><span>Privacy<small>What we collect (almost nothing)</small></span>›</button>
       <button type="button" id="installMenu"><span>Install the app<small>Put Mohjeta on your home screen</small></span>›</button>
       <button type="button" id="cbToggle" role="switch" aria-checked="false"><span>Color-blind mode<small>Blue / orange instead of green / red, with ▲ ▼ on gains and losses</small></span><i class="switch" aria-hidden="true"></i></button>
     </div>
-    <div class="notice">Entertainment only. Mohjeta's numbers are model estimates, not betting advice, and her bets use paper money. If you bet, you must be of legal age where you live; never bet more than you can afford to lose.</div>
+    <div class="notice">Entertainment and information only. Mohjeta's numbers are model estimates, not betting, financial or investment advice, and her bets use paper money. 21+ only. If you bet, follow the law where you live and never bet more than you can afford to lose. Gambling problem? Call 1-800-GAMBLER.</div>
   </section>
   <section class="panel" id="combos" role="tabpanel" aria-label="Combo ideas"><button class="back" data-go="more">‹ More</button><h2>Combo ideas</h2><p class="hint">Her best multi-game combos right now. Every leg has to win, so combos lose most of the time.</p><div class="grid" id="comboList"></div></section>
   <section class="panel" id="score" role="tabpanel" aria-label="Scorecard"><button class="back" data-go="more">‹ More</button><h2>Scorecard</h2><p class="hint">Every finished pick is graded against the official result. Hit = picked side won. Accuracy (Brier): 0 is perfect, 0.25 is a coin flip, lower is better.</p><div id="scoreBox"></div></section>
@@ -211,12 +218,68 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
       <li>She dropped soccer in October 2026 after it lost money. Its record is shown on the Record tab.</li>
     </ul>
   </section>
+  <section class="panel how" id="odds" role="tabpanel" aria-label="Using her picks anywhere">
+    <button class="back" data-go="more">‹ More</button>
+    <h2>Using her picks anywhere</h2>
+    <p>Her picks are not tied to one site. Each pick shows three numbers you can check against any sportsbook or prediction market:</p>
+    <ul>
+      <li><b>Her chance:</b> how likely she thinks the side is to win, for example 53%.</li>
+      <li><b>Fair odds:</b> the same chance written as American odds (53% ≈ −113). At fair odds a bet breaks even over time.</li>
+      <li><b>Value at:</b> the price where the pick has some value, with a 3-point cushion for fees and her own errors. If your site offers that price or better, the pick has value <i>if her number is right</i>. If not, it is a pass.</li>
+    </ul>
+    <h3>Reading the price</h3>
+    <ul>
+      <li>American odds: −150 means bet $150 to win $100; +130 means bet $100 to win $130. A bigger plus number or a smaller minus number is a better price.</li>
+      <li>Prediction markets: a 48¢ price is the same as about 48%. Lower is a better price.</li>
+    </ul>
+    <h3>Be honest with yourself</h3>
+    <p>So far the betting markets have been about as accurate as she is, or more. Her record and the Scorecard show where she stands. Until her record shows she beats the market over hundreds of games, treat "value at" as a guide, not a promise.</p>
+  </section>
+  <section class="panel how" id="safe" role="tabpanel" aria-label="Play responsibly">
+    <button class="back" data-go="more">‹ More</button>
+    <h2>Play responsibly</h2>
+    <ul>
+      <li><b>21+ only.</b> Betting is only legal for adults, and only in some places. Follow the law where you live.</li>
+      <li><b>Expect to lose.</b> Even good models lose often, and most bettors lose money over time.</li>
+      <li><b>Set a limit before you start</b> and stop when you hit it. Never chase losses or bet money you need.</li>
+      <li><b>Take breaks.</b> If betting stops being fun, stop.</li>
+    </ul>
+    <p>Need help? Call or text <b>1-800-GAMBLER</b> (free, confidential, 24/7), or visit <a href="https://www.ncpgambling.org/help-treatment/" rel="noopener">ncpgambling.org</a>.</p>
+  </section>
+  <section class="panel how" id="terms" role="tabpanel" aria-label="Terms of use">
+    <button class="back" data-go="more">‹ More</button>
+    <h2>Terms of use</h2>
+    <p class="hint small">Last updated October 30, 2026.</p>
+    <ul>
+      <li><b>Information and entertainment only.</b> Mohjeta is a computer model. Her picks, chances, odds and ratings are estimates and opinions, not betting, financial, investment or legal advice, and not a recommendation that any person place any bet.</li>
+      <li><b>No guarantees.</b> Past results do not predict future results. Data can be late, missing or wrong. You use this site at your own risk.</li>
+      <li><b>We do not take bets or hold money.</b> This site does not accept wagers, hold funds or place bets for anyone. Any bet you make is your own decision, on a site you choose.</li>
+      <li><b>21+ and legal use only.</b> You must be at least 21 and follow the laws where you live.</li>
+      <li><b>Paper bets.</b> The bets shown are paper bets at real market prices, recorded and sealed the moment they are made.</li>
+      <li><b>Not affiliated.</b> Mohjeta is independent and not affiliated with or endorsed by Kalshi, any sportsbook, league or team. Team and league names are used only to identify games.</li>
+      <li><b>Limitation of liability.</b> To the fullest extent the law allows, Mohjeta and its owner are not liable for any loss or damage from using this site or acting on anything shown here.</li>
+      <li><b>Changes.</b> These terms and the site may change at any time. Using the site means you accept the current terms.</li>
+    </ul>
+  </section>
+  <section class="panel how" id="privacy" role="tabpanel" aria-label="Privacy">
+    <button class="back" data-go="more">‹ More</button>
+    <h2>Privacy</h2>
+    <p class="hint small">Last updated October 30, 2026.</p>
+    <ul>
+      <li><b>No accounts, no tracking cookies, no ads.</b> We do not ask for your name, email or payment details.</li>
+      <li><b>Saved on your phone only:</b> your settings (color-blind mode, the 21+ check, the install tip) are stored in your browser and never sent to us.</li>
+      <li><b>Hosting:</b> the site is hosted on GitHub Pages. Like any web host, GitHub may log basic technical data such as IP addresses for security. See GitHub's privacy statement.</li>
+      <li><b>Visitor counts:</b> if we add a visitor counter, it will be a cookie-free, privacy-friendly one that counts visits without identifying you, and it will be named here.</li>
+      <li><b>Changes:</b> if this ever changes (for example, accounts for a paid version), this page will be updated first.</li>
+    </ul>
+  </section>
 </main>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Game details">
   <div class="sheethead"><button class="back" id="sheetBack">‹ Back</button><span class="sp"></span><button class="share" id="sheetShare">Share</button></div>
   <div class="sheetbody" id="sheetBody"></div>
 </div>
 <footer id="disclaimer">Entertainment only. Model estimates, not betting advice.</footer>
+<div id="ageGate" class="gate" role="dialog" aria-modal="true" aria-label="Age check" hidden><div class="gatebox"><h2>21+ only</h2><p>Mohjeta shows sports picks and betting odds. Her numbers are model estimates for information and entertainment, not betting advice.</p><p>By continuing you confirm you are at least 21 and will follow the law where you live.</p><button type="button" class="btn" id="ageYes">I am 21 or older</button><p class="hint small">Gambling problem? Call 1-800-GAMBLER.</p></div></div>
 <script>
 (function(){'use strict';
 const $=id=>document.getElementById(id);
@@ -249,7 +312,7 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['picks','games','record','ratings','more'];const SUB={combos:'more',score:'more',how:'more'};
+const TABS=['picks','games','record','ratings','more'];const SUB={combos:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button')];
 function show(name,push){name=LEGACY[name]||name;const panel=name==='record'?'recordp':name;
@@ -264,6 +327,13 @@ function route(){const h=location.hash.slice(1);if(h.startsWith('game/')){openGa
 window.addEventListener('popstate',route);
 
 // ---------------- color-blind switch
+function amer(p){if(!(p>0&&p<1))return null;const v=p>=0.5?-100*p/(1-p):100*(1-p)/p;const r=Math.round(v);return (r>0?'+':'')+r;}
+// the price where a pick has value: her chance minus a 3-point cushion for fees and her own errors
+function valueAt(p){const q=p-0.03;return q>0.02&&q<0.98?{odds:amer(q),cents:Math.floor(q*100)}:null;}
+function oddsLine(g){if(!g.pick||g.state!=='UPCOMING')return null;const f=amer(g.pick.chance),v=valueAt(g.pick.chance);if(!f)return null;
+  return 'Fair odds '+f+(v?' · value at '+v.odds+' or better ('+v.cents+'¢ or less)':'');}
+(function(){let ok=false;try{ok=localStorage.getItem('mohjeta.21')==='1';}catch(e){}const gate=$('ageGate');if(!ok)gate.hidden=false;
+  $('ageYes').onclick=()=>{try{localStorage.setItem('mohjeta.21','1');}catch(e){}gate.hidden=true;};})();
 (function(){const t=$('cbToggle');let on=false;try{on=localStorage.getItem('mohjeta.cb')==='1';}catch(e){}
   const set=v=>{document.documentElement.classList.toggle('cb',v);t.setAttribute('aria-checked',String(v));try{localStorage.setItem('mohjeta.cb',v?'1':'0');}catch(e){}};
   set(on);t.onclick=()=>set(t.getAttribute('aria-checked')!=='true');})();
@@ -293,6 +363,7 @@ function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');c.
   const tms=el('div',null,'teams');for(const t of g.teams){const r=el('div',null,'tm'+(g.pick&&g.pick.team===t.name?' mine':''));r.append(badge(t.name),el('span',t.name,'nm'),el('b',g.state==='LIVE'?String(t.score??0):(t.record||''),'hint'));tms.append(r);}c.append(tms);
   if(g.pick){const pl=el('div',null,'pickline');pl.append(el('span','Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'));c.append(pl);
     const gt=gapText(g);const k=kal(g);const sub=el('div',null,'row small');if(k!=null)sub.append(el('span','Kalshi '+k+'¢','hint'));if(gt)sub.append(el('span','· '+gt[0],'gap '+gt[1]));c.append(sub);
+    const ol=oddsLine(g);if(ol)c.append(el('div',ol,'small odds'));
     if(g.pick.held)c.append(el('div','Too close to call: her earlier pick stays shown.','hint small'));
     if(g.bet)c.append(el('div','💵 Her bet: '+g.bet.team+' at '+Math.round(g.bet.price*100)+'¢'+(g.bet.result==='OPEN'?'':' · '+g.bet.result.toLowerCase()+' '+signed(g.bet.pnl)),'small'));
     if(flipped(g))c.append(el('div','⇄ Her read has changed since she bet: she now favors '+g.pick.team+', but her bet stays on '+g.bet.team+'.','small open'));
@@ -329,7 +400,9 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
   if(g.pick){const c=el('div',null,'card');const pl=el('div',null,'pickline');pl.append(el('span','Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'));c.append(pl);
     const tiles=el('div',null,'tiles');const tile=(l,v)=>{const t=el('div',null,'tile');t.append(l,el('b',v));tiles.append(t);};
     const k=kal(g);if(k!=null)tile('Kalshi price',k+'¢');const gt=gapText(g);if(gt)tile('Gap',gt[0].replace('She is ','').replace('She agrees with Kalshi','none'));
-    if(g.pregame)tile('Pregame call',g.pregame.team+' '+pct(g.pregame.chance));c.append(tiles);
+    if(g.pregame)tile('Pregame call',g.pregame.team+' '+pct(g.pregame.chance));
+    if(g.state==='UPCOMING'){const f=amer(g.pick.chance),v=valueAt(g.pick.chance);if(f)tile('Fair odds',f);if(v)tile('Value at',v.odds+' or better');}c.append(tiles);
+    if(g.state==='UPCOMING')c.append(el('p','Works on any sportsbook or market: the pick has value if your site pays at least the "value at" price, assuming her number is right. ','hint small'));
     if(g.pick.held)c.append(el('p','Too close to call right now, so her earlier pick stays shown.','hint small'));
     if(g.trend&&g.pregame){const msg={up:'▲ More confident than before the game',down:'▼ Less confident than before the game',steady:'● Holding steady since the start',flipped:'⇄ Changed her pick during the game'}[g.trend];if(msg)c.append(el('p',msg,g.trend==='up'?'up':g.trend==='flipped'?'down':'hint'));}
     if(g.own_team)c.append(el('p','Her own read favored '+g.own_team+'; her final number leans on Kalshi’s price, so the two can differ.','hint small'));
