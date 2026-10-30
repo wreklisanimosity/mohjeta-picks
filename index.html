@@ -124,6 +124,22 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 .simin{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}.simin label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 .simin input{width:110px;background:var(--card2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:8px 10px;font:inherit}
 .hist{width:100%;height:120px;display:block}
+.hist .bar{transform-box:fill-box;transform-origin:50% 100%;animation:grow .55s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes grow{from{transform:scaleY(0);opacity:.2}to{transform:scaleY(1);opacity:1}}
+.btn,.tog,.chips button,nav.tabs button,.menu button{transition:transform .12s ease,box-shadow .2s ease,background .2s ease}
+.btn:active,.tog:active,.chips button:active,.menu button:active{transform:scale(.94)}
+.btn:hover{box-shadow:0 0 18px #ff4fd877}
+.btn.rolling{animation:shake .45s ease-in-out}
+@keyframes shake{0%,100%{transform:rotate(0)}20%{transform:rotate(-6deg) scale(1.05)}40%{transform:rotate(6deg) scale(1.05)}60%{transform:rotate(-4deg)}80%{transform:rotate(3deg)}}
+.tog{transition:transform .12s ease,background .25s ease,color .25s ease}
+.tog:active{transform:scale(.88)}
+.panel.on .card{animation:rise .35s ease both}.panel.on .card:nth-child(2){animation-delay:.05s}.panel.on .card:nth-child(3){animation-delay:.1s}.panel.on .card:nth-child(4){animation-delay:.15s}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#simBox .tile{animation:pop .4s ease both}
+@keyframes pop{0%{transform:scale(.9);opacity:0}70%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
+nav.tabs button[aria-selected=true] svg{animation:navglow .4s ease}
+@keyframes navglow{0%{transform:scale(.8)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .notice{background:#1a1408cc;border:1px solid #ffe14d55;border-left:3px solid var(--yellow);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px;color:#fff1c2}
 .install{display:flex;gap:12px;align-items:center}.appicon{flex:none;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:#f1e9ff;background:linear-gradient(180deg,#4a1580,#5c1f70)}.appicon::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--pink);margin:12px 0 0 2px}
 .btn{display:inline-block;border:0;border-radius:12px;padding:10px 16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--purple),var(--pink));cursor:pointer;text-decoration:none}
@@ -440,11 +456,11 @@ function drawNbaSim(g,box,rerun){
     tile('Average margin',(result.margin>=0?s.home:s.away)+' by '+Math.abs(result.margin).toFixed(1));
     if(Number.isFinite(parseFloat(st.spread)))tile(s.home+' '+st.spread+' covers',pct(result.cover)+' · push '+pct(result.push));
     if(Number.isFinite(parseFloat(st.total)))tile('Over '+st.total,pct(result.over)+' · push '+pct(result.total_push));
-    card.append(tiles,el('p','Middle 80% of outcomes: home margin '+result.margin80.join(' to ')+'; total '+result.total80.join(' to ')+'. These ranges are provisional until validated.','hint small'));
+    card.append(tiles,marginChart(result.margins,result.margin,model.sd,s.home,s.away),el('p','Middle 80% of outcomes: home margin '+result.margin80.join(' to ')+'; total '+result.total80.join(' to ')+'. These ranges are provisional until validated.','hint small'));
   }
   card.append(el('p','Lineup inputs updated '+new Date(model.built_at*1000).toLocaleString()+'. Questionable and doubtful players are sampled as plays/sits using estimated availability. Choose Plays or Sits to test a specific lineup.','hint small'));
   if(Date.now()/1000-model.built_at>3600)card.append(el('p','These lineup inputs are over an hour old. Check the latest injury report before interpreting this projection.','hint'));
-  const again=el('button','Run again','btn');again.type='button';again.onclick=()=>drawSim('resample');
+  const again=el('button','Run again','btn');again.type='button';rollButton(again,()=>drawSim('resample'));
   const reset=el('button','Reset to injury report','btn');reset.type='button';reset.onclick=()=>{st.sits={};st.seed=20261030;drawSim();};card.append(again,reset);box.append(card);
   const inputs=el('div',null,'simin');for(const [label,key,placeholder] of [[s.home+' spread','spread','e.g. -3.5'],['Total (over/under)','total','Enter a total']]){
     const l=el('label',label),i=el('input');i.type='number';i.step='0.5';i.inputMode='decimal';i.value=st[key];i.placeholder=placeholder;i.onchange=()=>{st[key]=i.value;drawSim();};l.append(i);inputs.append(l);
@@ -460,10 +476,29 @@ function drawNbaSim(g,box,rerun){
     }
   }box.append(lineup);
   box.append(el('p','This is a model of final scores, not a possession-by-possession game. Score variability and injury probabilities remain estimates. Lineup effects do not include every matchup or coaching interaction. Entertainment only.','hint small'));
+  countUp(box);
   simulationScorecard(box);
 }
 
 // END EMBEDDED NBA SIMULATOR
+// ---------------- shared sim visuals: animated margin chart, count-up numbers, dice button
+function marginChart(ms,center,sd,home,away){
+  const lo=Math.floor(center-2.5*sd),hi=Math.ceil(center+2.5*sd),bins=24,w=(hi-lo)/bins,cnt=new Array(bins).fill(0);
+  for(const m of ms){const k=Math.floor((m-lo)/w);if(k>=0&&k<bins)cnt[k]++;}
+  const mx=Math.max(...cnt)||1,NS='http://www.w3.org/2000/svg',svg=document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox','0 0 240 120');svg.setAttribute('class','hist');svg.setAttribute('role','img');svg.setAttribute('aria-label','How often each final margin happened');
+  cnt.forEach((c,i)=>{const r=document.createElementNS(NS,'rect');const mid=lo+(i+0.5)*w;const h=c/mx*100;
+    r.setAttribute('x',String(i*10+0.5));r.setAttribute('width','9');r.setAttribute('y',String(104-h));r.setAttribute('height',String(h));
+    r.setAttribute('fill',mid>0?'var(--green)':'var(--pink)');r.setAttribute('rx','1.5');r.setAttribute('class','bar');r.style.animationDelay=(i*28)+'ms';svg.append(r);});
+  const zx=(0-lo)/w*10;if(zx>0&&zx<240){const l=document.createElementNS(NS,'line');l.setAttribute('x1',zx);l.setAttribute('x2',zx);l.setAttribute('y1','0');l.setAttribute('y2','106');l.setAttribute('stroke','var(--muted)');l.setAttribute('stroke-dasharray','3 3');svg.append(l);}
+  const lab=(x,t,anchor)=>{const e=document.createElementNS(NS,'text');e.setAttribute('x',x);e.setAttribute('y','118');e.setAttribute('fill','var(--dim)');e.setAttribute('font-size','9');e.setAttribute('text-anchor',anchor);e.textContent=t;svg.append(e);};
+  lab(2,away.split(' ').pop()+' by '+Math.max(0,-lo),'start');lab(238,home.split(' ').pop()+' by '+Math.max(0,hi),'end');
+  const wrap=el('div');wrap.append(svg,el('p','Each bar is how often a final margin happened. Green = '+home+' won, pink = '+away+' won.','hint small'));return wrap;}
+const calm=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){return false;}};
+function countUp(box){if(calm())return;for(const b of box.querySelectorAll('.tile b')){const txt=b.textContent;const m=txt.match(/-?\d+(\.\d+)?/);if(!m)continue;
+  const end=parseFloat(m[0]),dec=(m[1]||'').length?m[1].length-1:0,t0=performance.now(),dur=700;
+  const step=now=>{const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,3);b.textContent=txt.replace(m[0],(end*e).toFixed(dec));if(k<1)requestAnimationFrame(step);};requestAnimationFrame(step);}}
+function rollButton(btn,go){btn.textContent='🎲 Run again';btn.onclick=()=>{if(calm()){go();return;}btn.classList.add('rolling');btn.disabled=true;btn.textContent='🎲 Rolling…';setTimeout(go,450);};}
 let simId=null;const simState={};
 function simGames(){return (D&&D.games||[]).filter(g=>g.sim&&g.state==='UPCOMING');}
 function renderSim(){const gs=simGames();const sel=$('simPick');sel.replaceChildren();
@@ -499,17 +534,12 @@ function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId);const b
   if(!isNaN(sp))tile(s.home+' '+(sp>0?'+':'')+sp+' covers',pct(cover/N)+(push?' (push '+pct(push/N)+')':''));
   if(T0!=null&&!isNaN(tl))tile('Over '+tl,pct(over/N));res.append(tiles);
   if(shift)res.append(el('p','Your lineup changes moved the margin '+Math.abs(shift).toFixed(1)+' '+s.unit+' toward '+(shift>0?s.home:s.away)+'.','small'));
-  // histogram of margins
-  const lo=Math.floor(m0-2.5*sd),hi=Math.ceil(m0+2.5*sd),bins=24,w=(hi-lo)/bins,cnt=new Array(bins).fill(0);for(const m of ms){const k=Math.floor((m-lo)/w);if(k>=0&&k<bins)cnt[k]++;}
-  const mx=Math.max(...cnt)||1,NS='http://www.w3.org/2000/svg',svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox','0 0 240 120');svg.setAttribute('class','hist');svg.setAttribute('role','img');svg.setAttribute('aria-label','How often each margin happened');
-  cnt.forEach((c,i)=>{const r=document.createElementNS(NS,'rect');const mid=lo+(i+0.5)*w;r.setAttribute('x',String(i*10+0.5));r.setAttribute('width','9');const h=c/mx*100;r.setAttribute('y',String(104-h));r.setAttribute('height',String(h));r.setAttribute('fill',mid>0?'var(--green)':'var(--pink)');r.setAttribute('rx','1.5');svg.append(r);});
-  const zx=(0-lo)/w*10;if(zx>0&&zx<240){const l=document.createElementNS(NS,'line');l.setAttribute('x1',zx);l.setAttribute('x2',zx);l.setAttribute('y1','0');l.setAttribute('y2','106');l.setAttribute('stroke','var(--muted)');l.setAttribute('stroke-dasharray','3 3');svg.append(l);}
-  const lab=(x,t,anchor)=>{const e=document.createElementNS(NS,'text');e.setAttribute('x',x);e.setAttribute('y','118');e.setAttribute('fill','var(--dim)');e.setAttribute('font-size','9');e.setAttribute('text-anchor',anchor);e.textContent=t;svg.append(e);};
-  lab(2,s.away.split(' ').pop()+' by '+Math.max(0,-lo),'start');lab(238,s.home.split(' ').pop()+' by '+Math.max(0,hi),'end');
-  res.append(svg,el('p','Each bar is how often a final margin happened. Green = '+s.home+' won, pink = '+s.away+' won.','hint small'));
-  const again=el('button','Run again','btn');again.type='button';again.onclick=()=>drawSim(true);res.append(again);
+  // histogram of margins (animated)
+  res.append(marginChart(ms,m0,sd,s.home,s.away));
+  const again=el('button','Run again','btn');again.type='button';rollButton(again,()=>drawSim(true));res.append(again);
   const pk=g.pick?el('p','Her pick tonight: '+g.pick.team+' '+pct(g.pick.chance)+(g.kalshi!=null?' · Kalshi '+Math.round(g.kalshi*100)+'¢':'')+'. Her pick also weighs the markets, Elo and more, so it can differ from this player-only simulation.','hint small'):null;
   box.append(res);box.append(ins);box.append(teamsCard);if(pk)box.append(pk);
+  countUp(box);
   box.append(el('p','A what-if tool, not a promise. Spread: '+sd+' '+s.unit+' (how much games like this usually vary).'+(s.total_from==='sportsbook'?' Total starts from the sportsbook over/under.':'')+' Player worth comes from the player rating and can be wrong. Entertainment only.','hint small'));}
 function amer(p){if(!(p>0&&p<1))return null;const v=p>=0.5?-100*p/(1-p):100*(1-p)/p;const r=Math.round(v);return (r>0?'+':'')+r;}
 // the price where a pick has value: her chance minus a 3-point cushion for fees and her own errors
