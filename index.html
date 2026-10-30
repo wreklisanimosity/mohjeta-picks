@@ -240,7 +240,8 @@ function gapText(g){const k=kal(g);if(k==null||!g.pick)return null;const gp=Math
   return gp>0?['She is '+plural(gp,'point')+' above Kalshi','up']:gp<0?['She is '+plural(-gp,'point')+' below Kalshi','']:['She agrees with Kalshi',''];}
 // is this a game she bets? (placed, will bet, or practice)
 function laneOf(g){if(g.bet)return g.bet.result==='OPEN'?{t:'BET PLACED',c:'p-placed'}:g.bet.result==='WON'?{t:'BET WON',c:'p-won'}:g.bet.result==='LOST'?{t:'BET LOST',c:'p-lost'}:{t:'BET '+g.bet.result,c:'p-prac'};
-  const l=String(g.lane||'');if(l.startsWith('bets')){if(l.includes('favorite')){const k=kal(g);return k!=null&&k<50?{t:'NO BET (UNDERDOG)',c:'p-prac'}:{t:'BETTING $5',c:'p-bet'};}return {t:'BETTING $5',c:'p-bet'};}
+  const l=String(g.lane||'');if(l.startsWith('bets')){if(g.state&&g.state!=='UPCOMING')return {t:'NO BET',c:'p-prac'};   // started without a bet: live prices are not her pregame call
+    if(l.includes('favorite')){const k=kal(g);if(k!=null&&k<50)return g.league==='NHL'?{t:'NO BET (UNDERDOG)',c:'p-prac'}:{t:'BETTING $5 ON THE FAVORITE',c:'p-bet'};}return {t:'BETTING $5',c:'p-bet'};}
   return {t:'PRACTICE',c:'p-prac'};}
 const isBetLane=g=>!!g.bet||String(g.lane||'').startsWith('bets');
 const sameTeam=(a,b)=>{a=String(a||'').toLowerCase();b=String(b||'').toLowerCase();if(!a||!b)return false;return a.includes(b)||b.includes(a)||a.split(' ').some(w=>w.length>3&&b.split(' ').includes(w));};
