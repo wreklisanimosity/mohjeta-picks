@@ -296,7 +296,7 @@ function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');c.
     if(g.pick.held)c.append(el('div','Too close to call: her earlier pick stays shown.','hint small'));
     if(g.bet)c.append(el('div','💵 Her bet: '+g.bet.team+' at '+Math.round(g.bet.price*100)+'¢'+(g.bet.result==='OPEN'?'':' · '+g.bet.result.toLowerCase()+' '+signed(g.bet.pnl)),'small'));
     if(flipped(g))c.append(el('div','⇄ Her read has changed since she bet: she now favors '+g.pick.team+', but her bet stays on '+g.bet.team+'.','small open'));
-    if(g.thesis&&!opts.short)c.append(el('div',firstLine(g.thesis),'why1'));}
+    if(g.thesis&&!opts.short)c.append(el('div',(g.own_team?'Her own read (her pick follows the market): ':'')+firstLine(g.thesis),'why1'));}
   else c.append(el('p','Her pick is coming soon.','hint'));
   c.append(el('div','Full breakdown ›','more'));return c;}
 
