@@ -356,7 +356,7 @@ function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId);const b
     if(!rows.length)teamsCard.append(el('p','No player numbers for this team yet.','hint small'));
     for(const r of rows){const key=team+'|'+r.name;const sits=key in st.sits?st.sits[key]:r.out;
       if(sits!==r.out)shift+=sign*(sits?-r.worth:r.worth);
-      const row=el('div',null,'simrow');const nm=el('div',null,'nm');nm.append(el('span',r.name),el('small',[r.role,r.status?('injury report: '+r.status):'',(r.out?'adds ':'worth ')+(r.worth>=0?'+':'')+r.worth.toFixed(1)+' '+s.unit].filter(Boolean).join(' · ')));
+      const row=el('div',null,'simrow');const nm=el('div',null,'nm');nm.append(el('span',r.name+(r.pos?' · '+r.pos:'')),el('small',[r.role,r.status?('injury report: '+r.status):'',(r.out?'adds ':'worth ')+(r.worth>=0?'+':'')+r.worth.toFixed(1)+' '+s.unit].filter(Boolean).join(' · ')));
       const b=el('button',sits?'Sits':'Plays','tog'+(sits?' sits':''));b.type='button';b.setAttribute('aria-pressed',String(!sits));b.onclick=()=>{st.sits[key]=!sits;drawSim(true);};row.append(nm,b);teamsCard.append(row);}}
   // lines
   const ins=el('div',null,'simin');const mk=(lab,val,ph,set)=>{const l=el('label',lab);const i=el('input');i.type='number';i.step='0.5';i.inputMode='decimal';i.value=val;i.placeholder=ph;i.onchange=()=>{set(i.value);drawSim(true);};l.append(i);ins.append(l);};
