@@ -222,7 +222,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <h3>4. She bets small and the same every time</h3>
     <p>About $5 a game in the sports she bets, so no single game can swing the record. Other sports are practice: she still picks them, but does not bet. Right now all bets are <b>paper bets</b>: real Kalshi prices, pretend money, while the record builds.</p>
     <h3>5. Everything is recorded and sealed</h3>
-    <p>The moment she places a bet it is fingerprinted and chained to the bet before it. If anyone changed or deleted an old bet, the check on the Record tab would fail.</p>
+    <p>Each recorded bet has a fingerprint linked to the preceding entry. The Record tab checks the saved chain and reports whether current entry fields match their seals. This is a consistency check, not proof that an entire history could never be replaced.</p>
     <h3>What to keep in mind</h3>
     <ul>
       <li>Favorites win more often, but they pay less: a 60¢ bet wins about $4 and loses $6.</li>
@@ -576,7 +576,9 @@ function renderRecord(d){const b=d.bets;if(!b)return;
     const res=el('td');res.style.textAlign='right';res.style.whiteSpace='nowrap';res.append(el('div',icon(r.result)+' '+(r.result==='OPEN'?'open':r.result.toLowerCase()),r.result==='WON'?'up':r.result==='LOST'?'down':'open'),el('div',r.pnl==null?(r.count?'+'+usd(r.count-r.paid)+' if it wins':''):signed(r.pnl),'small '+cls(r.pnl||0)));
     tr.append(a,res);tb.append(tr);const wr=el('tr');wr.hidden=true;const wd=el('td');wd.colSpan=2;wd.style.background='var(--card2)';
     wd.append(el('div','Why she bet: '+(r.why||'No reason recorded.'),'small'));if(typeof r.fair==='number')wd.append(el('div','She put it at '+Math.round(r.fair*100)+'% and paid '+Math.round(r.price*100)+'¢: an edge of '+plural(Math.round((r.fair-r.price)*100),'point')+'.','hint small'));
-    if(r.stamp)wd.append(el('div','Sealed '+new Date(r.sealed).toLocaleString()+' · '+r.stamp,'mono'));wr.append(wd);tb.append(wr);
+    if(r.stamp){wd.append(el('div','Sealed '+new Date(r.sealed).toLocaleString()+' · '+r.stamp,'mono'));
+      if(r.seal_status==='mismatch')wd.append(el('p','This entry differs from its saved seal.','down'));
+      else if(r.seal_status==='matched')wd.append(el('p','Entry fields match the saved seal.','hint small'));}wr.append(wd);tb.append(wr);
     const tog=()=>{wr.hidden=!wr.hidden;};tr.onclick=tog;tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tog();}};}
   if(!rows.length){const tr=el('tr');const td=el('td','No bets yet.');td.colSpan=2;tr.append(td);tb.append(tr);}
   $('betTable').replaceChildren(tb);
@@ -593,8 +595,10 @@ async function proof(){if(Date.now()-proofAt<600000)return;proofAt=Date.now();co
     let prev='0'.repeat(64),ok=true,at=-1;
     for(const [i,x] of S.rows.entries()){const body=x.at+'|'+x.ticker+'|'+x.side+'|'+Number(x.price).toFixed(4)+'|'+Number(x.fair||0).toFixed(4)+'|'+(x.title||'').slice(0,200);
       const h=await sha(prev+'|'+body);if(x.prev!==prev||h!==x.hash){ok=false;at=i;break;}prev=x.hash;}
-    box.replaceChildren(el('h3','Proof nothing was edited'),el('p',ok?('✓ All '+S.rows.length+' sealed bets check out: your phone just re-computed every fingerprint and they all match.'):('✗ The chain breaks at bet #'+(at+1)+'.'),ok?'up':'down'),
-      el('p','Every bet is fingerprinted the moment she places it and chained to the bet before it, so changing or removing an old bet would break every fingerprint after it. '+(S.how||''),'hint small'));}
+    box.replaceChildren(el('h3','Record verification'),el('p',ok?('✓ The saved seal chain is consistent ('+S.rows.length+' entries).'):('✗ The seal chain breaks at entry #'+(at+1)+'.'),ok?'up':'down'),
+      el('p','This checks saved fingerprints, not whether the entire history was ever replaced. Cancelled orders can leave seals without a current position.','hint small'));
+    const c=S.ledger_check;if(c)box.append(el('p','Publisher ledger check: '+c.matched+' match their seals; '+c.mismatched+' differ; '+c.missing+' are no longer in the ledger.',c.mismatched?'down':'hint small'));
+    else box.append(el('p','Ledger comparison is not available in this snapshot.','hint small'));}
   catch(e){}}
 
 // ---------------- More: combos, scorecard
