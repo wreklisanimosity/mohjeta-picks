@@ -243,6 +243,8 @@ function laneOf(g){if(g.bet)return g.bet.result==='OPEN'?{t:'BET PLACED',c:'p-pl
   const l=String(g.lane||'');if(l.startsWith('bets')){if(l.includes('favorite')){const k=kal(g);return k!=null&&k<50?{t:'NO BET (UNDERDOG)',c:'p-prac'}:{t:'BETTING $5',c:'p-bet'};}return {t:'BETTING $5',c:'p-bet'};}
   return {t:'PRACTICE',c:'p-prac'};}
 const isBetLane=g=>!!g.bet||String(g.lane||'').startsWith('bets');
+const sameTeam=(a,b)=>{a=String(a||'').toLowerCase();b=String(b||'').toLowerCase();if(!a||!b)return false;return a.includes(b)||b.includes(a)||a.split(' ').some(w=>w.length>3&&b.split(' ').includes(w));};
+const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
@@ -291,6 +293,8 @@ function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');c.
   if(g.pick){const pl=el('div',null,'pickline');pl.append(el('span','Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'));c.append(pl);
     const gt=gapText(g);const k=kal(g);const sub=el('div',null,'row small');if(k!=null)sub.append(el('span','Kalshi '+k+'¢','hint'));if(gt)sub.append(el('span','· '+gt[0],'gap '+gt[1]));c.append(sub);
     if(g.pick.held)c.append(el('div','Too close to call: her earlier pick stays shown.','hint small'));
+    if(g.bet)c.append(el('div','💵 Her bet: '+g.bet.team+' at '+Math.round(g.bet.price*100)+'¢'+(g.bet.result==='OPEN'?'':' · '+g.bet.result.toLowerCase()+' '+signed(g.bet.pnl)),'small'));
+    if(flipped(g))c.append(el('div','⇄ Her read has changed since she bet: she now favors '+g.pick.team+', but her bet stays on '+g.bet.team+'.','small open'));
     if(g.thesis&&!opts.short)c.append(el('div',firstLine(g.thesis),'why1'));}
   else c.append(el('p','Her pick is coming soon.','hint'));
   c.append(el('div','Full breakdown ›','more'));return c;}
@@ -331,7 +335,10 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
     b.append(c);}
   if(g.bet){const r=g.bet;const c=el('div',null,'card');c.append(el('h4','Her bet'));
     c.append(el('p',(r.count?r.count+' contracts on ':'')+r.team+' at '+Math.round(r.price*100)+'¢ · paid '+usd(r.paid)));
-    c.append(el('p',r.result==='OPEN'?'Open: pays '+usd((r.count||0)-r.paid)+' profit if it wins':icon(r.result)+' '+r.result+' '+signed(r.pnl),r.result==='WON'?'up':r.result==='LOST'?'down':'open'));b.append(c);}
+    c.append(el('p',r.result==='OPEN'?'Open: pays '+usd((r.count||0)-r.paid)+' profit if it wins':icon(r.result)+' '+r.result+' '+signed(r.pnl),r.result==='WON'?'up':r.result==='LOST'?'down':'open'));
+    c.append(el('p','Placed '+when(r.opened)+'. Bets are never switched during a game.','hint small'));
+    if(flipped(g))c.append(el('p','⇄ Her read has changed since she bet: she now favors '+g.pick.team+' '+pct(g.pick.chance)+', but this bet stays on '+r.team+'.','open'));
+    b.append(c);}
   else if(isBetLane(g)&&g.state!=='LIVE'){b.append(el('p','She places her bet about 20 minutes before the start.','hint small'));}
   const d=g.details||{};
   if(d.prices&&d.prices.length>2){const c=section('Kalshi price today',chart(d.prices,g.pick&&g.pick.chance));c.append(el('p','Pink = Kalshi’s price for '+(g.pick?g.pick.team:'her side')+' over the last day. Green dashes = her chance.','hint small'));b.append(c);}
