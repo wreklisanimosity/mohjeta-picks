@@ -140,6 +140,18 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 nav.tabs button[aria-selected=true] svg{animation:navglow .4s ease}
 @keyframes navglow{0%{transform:scale(.8)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.pickem{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pk{border:1px solid var(--line);background:transparent;color:var(--text);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:800;cursor:pointer;transition:transform .12s ease,background .25s ease,box-shadow .25s ease}
+.pk.on{background:linear-gradient(135deg,var(--purple),var(--pink));border-color:transparent;box-shadow:0 0 14px #ff4fd866}
+.pk:disabled{opacity:.6;cursor:default}.pk:active{transform:scale(.9)}
+.pk.burst{animation:burst .35s ease}@keyframes burst{0%{transform:scale(1)}40%{transform:scale(1.25);box-shadow:0 0 22px #ff4fd8}100%{transform:scale(1)}}
+.pkcard{margin-bottom:10px}.pkcard .row{gap:8px;flex-wrap:nowrap}.pks{font-weight:900;font-size:18px;white-space:nowrap}.pks.me{color:var(--green)}
+.meter{margin-top:8px}.mbar{position:relative;height:10px;border-radius:999px;background:var(--pink);overflow:hidden;box-shadow:inset 0 0 6px #0008}
+.mfill{height:100%;background:linear-gradient(90deg,var(--green),#7dffb6);border-radius:999px 0 0 999px;transition:width 1.2s cubic-bezier(.2,.9,.3,1.1);box-shadow:0 0 10px #39ff8877}
+.mtick{position:absolute;top:-2px;bottom:-2px;width:2px;background:#fff;opacity:.8;transform:translateX(-1px)}
+.flames{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px 14px;margin:0 0 12px;border-radius:12px;border:1px solid #ff9a3c66;background:linear-gradient(90deg,#ff6a0026,#ff4fd81a)}
+.flames .fl{display:inline-block;animation:flick 1.2s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes flick{0%,100%{transform:scale(1) rotate(-2deg);filter:brightness(1)}50%{transform:scale(1.12) rotate(2deg);filter:brightness(1.3)}}
 .notice{background:#1a1408cc;border:1px solid #ffe14d55;border-left:3px solid var(--yellow);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px;color:#fff1c2}
 .install{display:flex;gap:12px;align-items:center}.appicon{flex:none;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:#f1e9ff;background:linear-gradient(180deg,#4a1580,#5c1f70)}.appicon::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--pink);margin:12px 0 0 2px}
 .btn{display:inline-block;border:0;border-radius:12px;padding:10px 16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--purple),var(--pink));cursor:pointer;text-decoration:none}
@@ -499,6 +511,36 @@ function countUp(box){if(calm())return;for(const b of box.querySelectorAll('.til
   const end=parseFloat(m[0]),dec=(m[1]||'').length?m[1].length-1:0,t0=performance.now(),dur=700;
   const step=now=>{const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,3);b.textContent=txt.replace(m[0],(end*e).toFixed(dec));if(k<1)requestAnimationFrame(step);};requestAnimationFrame(step);}}
 function rollButton(btn,go){btn.textContent='🎲 Run again';btn.onclick=()=>{if(calm()){go();return;}btn.classList.add('rolling');btn.disabled=true;btn.textContent='🎲 Rolling…';setTimeout(go,450);};}
+// ---------------- Pick'em (saved on this phone only), live win meter, streak flames
+const PK='mohjeta.pickem';
+function pkLoad(){try{return JSON.parse(localStorage.getItem(PK)||'{}')||{};}catch(e){return {};}}
+function pkSave(x){try{localStorage.setItem(PK,JSON.stringify(x));}catch(e){}}
+function pkKey(g){return g.event||g.id||g.name;}
+function pickemRow(g){const all=pkLoad(),k=pkKey(g),mine=all[k];
+  if(mine&&g.pick&&g.state==='UPCOMING'&&mine.her!==g.pick.team){mine.her=g.pick.team;pkSave(all);}   // her pick at the start
+  const row=el('div',null,'pickem');row.append(el('span',g.state==='UPCOMING'?'Your pick:':'Your pick (locked):','hint small'));
+  for(const t of g.teams){const b=el('button',t.name.split(' ').pop(),'pk'+(mine&&mine.team===t.name?' on':''));b.type='button';
+    b.disabled=g.state!=='UPCOMING';b.setAttribute('aria-pressed',String(!!(mine&&mine.team===t.name)));
+    b.onclick=e=>{e.stopPropagation();const x=pkLoad();x[k]={team:t.name,her:g.pick?g.pick.team:null,name:g.name,league:g.league,start:g.start};pkSave(x);
+      b.classList.add('burst');setTimeout(()=>{renderPicks(D);renderGames(D);},350);};row.append(b);}
+  return row;}
+function pickemScore(){const all=pkLoad(),F=(D&&D.finals)||{};let me=[0,0],her=[0,0],open=0;const now=Date.now();
+  for(const [k,v] of Object.entries(all)){const w=F[k];
+    if(!w){if(now-new Date(v.start)>5*86400000)delete all[k];else open++;continue;}
+    const hit=t=>t&&sameTeam(t,w);me[hit(v.team)?0:1]++;if(v.her)her[hit(v.her)?0:1]++;}
+  pkSave(all);return {me,her,open};}
+function pickemCard(){const sc=pickemScore();const c=el('div',null,'banner pkcard');
+  const r=el('div',null,'row');r.append(el('b','🎯 Pick\'em'),el('span',null,'sp'),el('span','You '+sc.me[0]+'-'+sc.me[1],'pks me'),el('span','vs','hint small'),el('span','Her '+sc.her[0]+'-'+sc.her[1],'pks'));c.append(r);
+  const lead=sc.me[0]-sc.her[0];c.append(el('div',(sc.me[0]+sc.me[1]===0?'Tap a team on any game below to make your pick. Can you beat her?':lead>0?'You’re beating her by '+lead+'. 🔥':lead<0?'She leads by '+(-lead)+'. Pick again tonight.':'Dead even.')+(sc.open?' · '+sc.open+' pick'+(sc.open>1?'s':'')+' waiting on results':'')+' · saved on this phone only','hint small'));return c;}
+function winMeter(g){if(g.state!=='LIVE'||!g.pick||g.teams.length!==2)return null;
+  const [a,b]=g.teams,pa=sameTeam(g.pick.team,a.name)?g.pick.chance:1-g.pick.chance;const w=el('div',null,'meter');
+  const bar=el('div',null,'mbar'),fill=el('div',null,'mfill');fill.style.width='50%';bar.append(fill);
+  if(g.pregame){const pp=sameTeam(g.pregame.team,a.name)?g.pregame.chance:1-g.pregame.chance;const tick=el('i',null,'mtick');tick.style.left=(pp*100)+'%';tick.title='Before the game';bar.append(tick);}
+  const lab=el('div',null,'row small');lab.append(el('span',a.name.split(' ').pop()+' '+pct(pa)),el('span',null,'sp'),el('span','her live read','hint'),el('span',null,'sp'),el('span',pct(1-pa)+' '+b.name.split(' ').pop()));
+  w.append(bar,lab);requestAnimationFrame(()=>requestAnimationFrame(()=>{fill.style.width=(pa*100)+'%';}));return w;}
+function streak(rows){let n=0,kind=null;for(const r of rows||[]){if(r.result!=='WON'&&r.result!=='LOST')continue;if(!kind)kind=r.result;if(r.result!==kind)break;n++;}return {n,kind};}
+function streakBanner(rows){const s=streak(rows);if(s.n<3||s.kind!=='WON')return null;const b=el('div',null,'flames');
+  b.append(el('span','🔥'.repeat(Math.min(5,s.n-1)),'fl'),el('b',' '+s.n+' wins in a row'),el('span',' · her current streak','hint small'));return b;}
 let simId=null;const simState={};
 function simGames(){return (D&&D.games||[]).filter(g=>g.sim&&g.state==='UPCOMING');}
 function renderSim(){const gs=simGames();const sel=$('simPick');sel.replaceChildren();
@@ -578,6 +620,8 @@ function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');c.
   if(g.pick){const pl=el('div',null,'pickline');pl.append(el('span','Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'));c.append(pl);
     const gt=gapText(g);const k=kal(g);const sub=el('div',null,'row small');if(k!=null)sub.append(el('span','Kalshi '+k+'¢','hint'));if(gt)sub.append(el('span','· '+gt[0],'gap '+gt[1]));c.append(sub);
     const ol=oddsLine(g);if(ol)c.append(el('div',ol,'small odds'));
+    const wm=winMeter(g);if(wm)c.append(wm);
+    if(g.teams.length===2&&!opts.short&&(g.state==='UPCOMING'||pkLoad()[pkKey(g)]))c.append(pickemRow(g));
     if(g.pick.held)c.append(el('div','Too close to call: her earlier pick stays shown.','hint small'));
     if(g.bet)c.append(el('div','💵 Her bet: '+g.bet.team+' at '+Math.round(g.bet.price*100)+'¢'+(g.bet.result==='OPEN'?'':' · '+g.bet.result.toLowerCase()+' '+signed(g.bet.pnl)),'small'));
     if(flipped(g))c.append(el('div','⇄ Her read has changed since she bet: she now favors '+g.pick.team+', but her bet stays on '+g.bet.team+'.','small open'));
@@ -650,7 +694,7 @@ function openGame(id,push){if(!D)return;const g=D.games.find(x=>String(x.id||x.n
   sheetGame=g;openSheet(()=>gameView(g),'Game');if(push!==false)try{history.pushState(null,'','#game/'+encodeURIComponent(g.id||g.name));}catch(e){}}
 
 // ---------------- Picks (home)
-function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();
+function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();rec.append(pickemCard());{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
     const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));
@@ -690,7 +734,7 @@ function windowStats(rows,days){const t0=days?Date.now()-days*864e5:0;const r=(r
   const won=r.filter(x=>x.pnl>0).length,lost=r.filter(x=>x.pnl<0).length,net=r.reduce((a,x)=>a+x.pnl,0),spent=r.reduce((a,x)=>a+(x.paid||0),0);
   return {rows:r,won,lost,net,spent,roi:spent?net/spent:null};}
 function renderRecord(d){const b=d.bets;if(!b)return;
-  const dn=$('dropNote');dn.replaceChildren();const X=b.dropped;
+  const dn=$('dropNote');dn.replaceChildren();const X=b.dropped;{const fb=streakBanner(b.rows);if(fb)dn.append(fb);}
   if(X)dn.append(el('div','Soccer was dropped in '+X.when+' after a '+X.won+'-'+X.lost+' run ('+signed(X.net)+'). The numbers here cover only the sports she still bets; every soccer bet is still in the sealed record below.','notice'));
   const pc=$('periodChips');pc.replaceChildren();for(const [k,l] of [[7,'Last 7 days'],[30,'Last 30 days'],[0,'Since the start']]){const x=el('button',l);x.type='button';x.setAttribute('aria-pressed',String(k===period));x.onclick=()=>{period=k;renderRecord(d);};pc.append(x);}
   const w=period?windowStats(b.rows,period):null;const T=b.totals;const ps=$('periodStats');ps.replaceChildren();
