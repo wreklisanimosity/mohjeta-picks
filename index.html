@@ -351,7 +351,7 @@ function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId);const b
   const st=simState[simId]||(simState[simId]={sits:{},spread:'',total:s.total!=null?String(s.total):''});
   // players
   let shift=0;const teamsCard=el('div',null,'card');teamsCard.append(el('h4','Who plays?'));
-  teamsCard.append(el('p','Tap to sit a player or bring one back. Worth = how many '+s.unit+' his team’s margin moves with him, from the player rating.','hint small'));
+  teamsCard.append(el('p','Tap to sit a player or bring one back. Worth = how many '+s.unit+' his team’s margin moves with him, from the player rating. Players the rating can’t tell apart from their backup aren’t listed.','hint small'));
   for(const [team,sign] of [[s.home,1],[s.away,-1]]){const rows=(s.players||{})[team]||[];teamsCard.append(el('b',team+(team===s.home&&!s.neutral?' (home)':'')));
     if(!rows.length)teamsCard.append(el('p','No player numbers for this team yet.','hint small'));
     for(const r of rows){const key=team+'|'+r.name;const sits=key in st.sits?st.sits[key]:r.out;
