@@ -351,12 +351,12 @@ function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId);const b
   const st=simState[simId]||(simState[simId]={sits:{},spread:'',total:s.total!=null?String(s.total):''});
   // players
   let shift=0;const teamsCard=el('div',null,'card');teamsCard.append(el('h4','Who plays?'));
-  teamsCard.append(el('p','Tap to sit a player or bring one back. Worth = how many '+s.unit+' his team’s margin moves with him, from the player rating. Players the rating can’t tell apart from their backup aren’t listed.','hint small'));
+  teamsCard.append(el('p','Tap to sit a player or bring one back. Worth = how many '+s.unit+' his team’s margin moves with him, from the player rating. “About even” means the rating sees his backup as just as good, so sitting him barely changes the game.','hint small'));
   for(const [team,sign] of [[s.home,1],[s.away,-1]]){const rows=(s.players||{})[team]||[];teamsCard.append(el('b',team+(team===s.home&&!s.neutral?' (home)':'')));
     if(!rows.length)teamsCard.append(el('p','No player numbers for this team yet.','hint small'));
     for(const r of rows){const key=team+'|'+r.name;const sits=key in st.sits?st.sits[key]:r.out;
       if(sits!==r.out)shift+=sign*(sits?-r.worth:r.worth);
-      const row=el('div',null,'simrow');const nm=el('div',null,'nm');nm.append(el('span',r.name+(r.pos?' · '+r.pos:'')),el('small',[r.role,r.status?('injury report: '+r.status):'',(r.out?'adds ':'worth ')+(r.worth>=0?'+':'')+r.worth.toFixed(1)+' '+s.unit].filter(Boolean).join(' · ')));
+      const row=el('div',null,'simrow');const nm=el('div',null,'nm');nm.append(el('span',r.name+(r.pos?' · '+r.pos:'')),el('small',[r.role,r.status?('injury report: '+r.status):'',r.even?'about even with his backup':(r.out?'adds ':'worth ')+(r.worth>=0?'+':'')+r.worth.toFixed(1)+' '+s.unit].filter(Boolean).join(' · ')));
       const b=el('button',sits?'Sits':'Plays','tog'+(sits?' sits':''));b.type='button';b.setAttribute('aria-pressed',String(!sits));b.onclick=()=>{st.sits[key]=!sits;drawSim(true);};row.append(nm,b);teamsCard.append(row);}}
   // lines
   const ins=el('div',null,'simin');const mk=(lab,val,ph,set)=>{const l=el('label',lab);const i=el('input');i.type='number';i.step='0.5';i.inputMode='decimal';i.value=val;i.placeholder=ph;i.onchange=()=>{set(i.value);drawSim(true);};l.append(i);ins.append(l);};
