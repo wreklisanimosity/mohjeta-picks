@@ -292,6 +292,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 </div>
 <footer id="disclaimer">Entertainment only. Model estimates, not betting advice.</footer>
 <div id="ageGate" class="gate" role="dialog" aria-modal="true" aria-label="Age check" hidden><div class="gatebox"><h2>21+ only</h2><p>Mohjeta shows sports picks and betting odds. Her numbers are model estimates for information and entertainment, not betting advice.</p><p>By continuing you confirm you are at least 21 and will follow the law where you live.</p><button type="button" class="btn" id="ageYes">I am 21 or older</button><p class="hint small">Gambling problem? Call 1-800-GAMBLER.</p></div></div>
+<script src="nba-sim.js?v=nba-lineups-v1"></script>
+<script src="nba-sim-ui.js?v=nba-lineups-v1"></script>
 <script>
 (function(){'use strict';
 const $=id=>document.getElementById(id);
@@ -343,11 +345,11 @@ window.addEventListener('popstate',route);
 let simId=null;const simState={};
 function simGames(){return (D&&D.games||[]).filter(g=>g.sim&&g.state==='UPCOMING');}
 function renderSim(){const gs=simGames();const sel=$('simPick');sel.replaceChildren();
-  if(!gs.length){$('simBox').replaceChildren(el('p','No games ready to simulate right now. Games show up here when the player rating has numbers for them (basketball, football, hockey and baseball, up to 36 hours ahead).','hint'));sel.hidden=true;return;}
+  if(!gs.length){$('simBox').replaceChildren(el('p','No games ready to simulate right now. Games show up here when the player rating has numbers for them (basketball, football, hockey and baseball, up to 36 hours ahead).','hint'));sel.hidden=true;simulationScorecard($('simBox'));return;}
   sel.hidden=false;for(const g of gs){const o=el('option',sname(g.league)+' · '+g.name+' · '+when(g.start));o.value=g.id||g.name;sel.append(o);}
   if(!gs.some(g=>(g.id||g.name)===simId))simId=gs[0].id||gs[0].name;sel.value=simId;sel.onchange=()=>{simId=sel.value;drawSim();};drawSim();}
 function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
-function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId);const box=$('simBox');box.replaceChildren();if(!g)return;const s=g.sim;
+function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId);const box=$('simBox');box.replaceChildren();if(!g)return;const s=g.sim;if(s.nba_model){drawNbaSim(g,box,run);return;}
   const st=simState[simId]||(simState[simId]={sits:{},spread:'',total:s.total!=null?String(s.total):''});
   // players
   let shift=0;const teamsCard=el('div',null,'card');teamsCard.append(el('h4','Who plays?'));
