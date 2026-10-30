@@ -117,6 +117,13 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 .gate{position:fixed;inset:0;z-index:99;background:#07050bf2;display:flex;align-items:center;justify-content:center;padding:16px}.gate[hidden]{display:none}
 .gatebox{max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}.gatebox h2{margin-top:0}
 .odds{color:var(--muted)}
+.simrow{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}.simrow:last-child{border-bottom:0}
+.simrow .nm{flex:1;min-width:0}.simrow .nm small{display:block;color:var(--dim);font-size:12px}
+.tog{flex:none;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:800;cursor:pointer;background:transparent;color:var(--green)}
+.tog.sits{color:var(--red);border-color:#ff5c7866;background:#ff5c7814}
+.simin{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}.simin label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.simin input{width:110px;background:var(--card2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:8px 10px;font:inherit}
+.hist{width:100%;height:120px;display:block}
 .notice{background:#1a1408cc;border:1px solid #ffe14d55;border-left:3px solid var(--yellow);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px;color:#fff1c2}
 .install{display:flex;gap:12px;align-items:center}.appicon{flex:none;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:#f1e9ff;background:linear-gradient(180deg,#4a1580,#5c1f70)}.appicon::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--pink);margin:12px 0 0 2px}
 .btn{display:inline-block;border:0;border-radius:12px;padding:10px 16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--purple),var(--pink));cursor:pointer;text-decoration:none}
@@ -147,6 +154,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <button role="tab" data-tab="picks" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5 2 7.5L12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>Picks</button>
     <button role="tab" data-tab="games" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Games</button>
     <button role="tab" data-tab="record" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Record</button>
+    <button role="tab" data-tab="sim" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.3"/><circle cx="16" cy="8" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="8" cy="16" r="1.3"/><circle cx="16" cy="16" r="1.3"/></svg>Simulate</button>
     <button role="tab" data-tab="ratings" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0z"/><path d="M17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg>Ratings</button>
     <button role="tab" data-tab="more" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>More</button>
   </nav>
@@ -170,6 +178,10 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <h3>Every bet</h3><div class="chips" id="sportChips"></div><div class="tablewrap" id="betTable"></div>
     <p class="hint small">Tap any bet to see why she placed it. 🔒 = sealed: fingerprinted the moment she placed it.</p>
     <div id="calib"></div><div id="proof"></div>
+  </section>
+  <section class="panel" id="sim" role="tabpanel" aria-label="Simulate">
+    <h2>Simulate a game</h2><p class="hint small">Pick one of tonight's games, choose who plays, and run it 10,000 times on your phone. It uses the player rating: the same numbers behind her picks.</p>
+    <select id="simPick" class="mpick" aria-label="Choose a game"></select><div id="simBox"></div>
   </section>
   <section class="panel" id="ratings" role="tabpanel" aria-label="Ratings">
     <h2>Ratings</h2><p class="hint small">Team strength from real final scores (Elo: 1500 is average, +100 is about a 64% favorite) and each league's players. Tennis: player Elo overall and by surface.</p>
@@ -312,7 +324,7 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['picks','games','record','ratings','more'];const SUB={combos:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
+const TABS=['picks','games','record','sim','ratings','more'];const SUB={combos:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button')];
 function show(name,push){name=LEGACY[name]||name;const panel=name==='record'?'recordp':name;
@@ -327,6 +339,54 @@ function route(){const h=location.hash.slice(1);if(h.startsWith('game/')){openGa
 window.addEventListener('popstate',route);
 
 // ---------------- color-blind switch
+// ---------------- Simulate tab: runs on the visitor's phone from the player rating's numbers
+let simId=null;const simState={};
+function simGames(){return (D&&D.games||[]).filter(g=>g.sim&&g.state==='UPCOMING');}
+function renderSim(){const gs=simGames();const sel=$('simPick');sel.replaceChildren();
+  if(!gs.length){$('simBox').replaceChildren(el('p','No games ready to simulate right now. Games show up here when the player rating has numbers for them (basketball, football, hockey and baseball, up to 36 hours ahead).','hint'));sel.hidden=true;return;}
+  sel.hidden=false;for(const g of gs){const o=el('option',sname(g.league)+' · '+g.name+' · '+when(g.start));o.value=g.id||g.name;sel.append(o);}
+  if(!gs.some(g=>(g.id||g.name)===simId))simId=gs[0].id||gs[0].name;sel.value=simId;sel.onchange=()=>{simId=sel.value;drawSim();};drawSim();}
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId);const box=$('simBox');box.replaceChildren();if(!g)return;const s=g.sim;
+  const st=simState[simId]||(simState[simId]={sits:{},spread:'',total:s.total!=null?String(s.total):''});
+  // players
+  let shift=0;const teamsCard=el('div',null,'card');teamsCard.append(el('h4','Who plays?'));
+  teamsCard.append(el('p','Tap to sit a player or bring one back. Worth = how many '+s.unit+' his team’s margin moves with him, from the player rating.','hint small'));
+  for(const [team,sign] of [[s.home,1],[s.away,-1]]){const rows=(s.players||{})[team]||[];teamsCard.append(el('b',team+(team===s.home&&!s.neutral?' (home)':'')));
+    if(!rows.length)teamsCard.append(el('p','No player numbers for this team yet.','hint small'));
+    for(const r of rows){const key=team+'|'+r.name;const sits=key in st.sits?st.sits[key]:r.out;
+      if(sits!==r.out)shift+=sign*(sits?-r.worth:r.worth);
+      const row=el('div',null,'simrow');const nm=el('div',null,'nm');nm.append(el('span',r.name),el('small',[r.role,r.status?('injury report: '+r.status):'',(r.out?'adds ':'worth ')+(r.worth>=0?'+':'')+r.worth.toFixed(1)+' '+s.unit].filter(Boolean).join(' · ')));
+      const b=el('button',sits?'Sits':'Plays','tog'+(sits?' sits':''));b.type='button';b.setAttribute('aria-pressed',String(!sits));b.onclick=()=>{st.sits[key]=!sits;drawSim(true);};row.append(nm,b);teamsCard.append(row);}}
+  // lines
+  const ins=el('div',null,'simin');const mk=(lab,val,ph,set)=>{const l=el('label',lab);const i=el('input');i.type='number';i.step='0.5';i.inputMode='decimal';i.value=val;i.placeholder=ph;i.onchange=()=>{set(i.value);drawSim(true);};l.append(i);ins.append(l);};
+  mk(s.home+' spread','' + st.spread,'e.g. -3.5',v=>st.spread=v);if(s.total!=null)mk('Total (over/under)',st.total,String(s.total),v=>st.total=v);
+  // run
+  const N=10000,m0=s.margin+shift,sd=s.sd,T0=s.total;
+  let hw=0,cover=0,over=0,push=0;const ms=new Float64Array(N);const sp=parseFloat(st.spread);const tl=s.total!=null?parseFloat(st.total):NaN;const discrete=s.unit!=='pts';
+  for(let i=0;i<N;i++){let m=m0+sd*gauss();if(discrete){m=Math.round(m);if(m===0)m=Math.random()<0.5?1:-1;}ms[i]=m;if(m>0)hw++;
+    if(!isNaN(sp)){const x=m+sp;if(x>0)cover++;else if(x===0)push++;}
+    if(T0!=null&&!isNaN(tl)){let t=T0+s.total_sd*gauss();if(discrete)t=Math.max(0,Math.round(t));if(t>tl)over++;}}
+  const pH=hw/N;const res=el('div',null,'card');res.append(el('h4','10,000 games played'));
+  const tiles=el('div',null,'tiles');const tile=(l,v)=>{const t=el('div',null,'tile');t.append(l,el('b',v));tiles.append(t);};
+  tile(s.home+' win',pct(pH));tile(s.away+' win',pct(1-pH));
+  tile('Average margin',(m0>=0?s.home+' by ':s.away+' by ')+Math.abs(m0).toFixed(1));
+  if(T0!=null){const h=(T0+m0)/2,a=(T0-m0)/2;tile('Projected score',s.home.split(' ').pop()+' '+h.toFixed(s.unit==='pts'?0:1)+' – '+a.toFixed(s.unit==='pts'?0:1)+' '+s.away.split(' ').pop());}
+  if(!isNaN(sp))tile(s.home+' '+(sp>0?'+':'')+sp+' covers',pct(cover/N)+(push?' (push '+pct(push/N)+')':''));
+  if(T0!=null&&!isNaN(tl))tile('Over '+tl,pct(over/N));res.append(tiles);
+  if(shift)res.append(el('p','Your lineup changes moved the margin '+Math.abs(shift).toFixed(1)+' '+s.unit+' toward '+(shift>0?s.home:s.away)+'.','small'));
+  // histogram of margins
+  const lo=Math.floor(m0-2.5*sd),hi=Math.ceil(m0+2.5*sd),bins=24,w=(hi-lo)/bins,cnt=new Array(bins).fill(0);for(const m of ms){const k=Math.floor((m-lo)/w);if(k>=0&&k<bins)cnt[k]++;}
+  const mx=Math.max(...cnt)||1,NS='http://www.w3.org/2000/svg',svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox','0 0 240 120');svg.setAttribute('class','hist');svg.setAttribute('role','img');svg.setAttribute('aria-label','How often each margin happened');
+  cnt.forEach((c,i)=>{const r=document.createElementNS(NS,'rect');const mid=lo+(i+0.5)*w;r.setAttribute('x',String(i*10+0.5));r.setAttribute('width','9');const h=c/mx*100;r.setAttribute('y',String(104-h));r.setAttribute('height',String(h));r.setAttribute('fill',mid>0?'var(--green)':'var(--pink)');r.setAttribute('rx','1.5');svg.append(r);});
+  const zx=(0-lo)/w*10;if(zx>0&&zx<240){const l=document.createElementNS(NS,'line');l.setAttribute('x1',zx);l.setAttribute('x2',zx);l.setAttribute('y1','0');l.setAttribute('y2','106');l.setAttribute('stroke','var(--muted)');l.setAttribute('stroke-dasharray','3 3');svg.append(l);}
+  const lab=(x,t,anchor)=>{const e=document.createElementNS(NS,'text');e.setAttribute('x',x);e.setAttribute('y','118');e.setAttribute('fill','var(--dim)');e.setAttribute('font-size','9');e.setAttribute('text-anchor',anchor);e.textContent=t;svg.append(e);};
+  lab(2,s.away.split(' ').pop()+' by '+Math.max(0,-lo),'start');lab(238,s.home.split(' ').pop()+' by '+Math.max(0,hi),'end');
+  res.append(svg,el('p','Each bar is how often a final margin happened. Green = '+s.home+' won, pink = '+s.away+' won.','hint small'));
+  const again=el('button','Run again','btn');again.type='button';again.onclick=()=>drawSim(true);res.append(again);
+  const pk=g.pick?el('p','Her pick tonight: '+g.pick.team+' '+pct(g.pick.chance)+(g.kalshi!=null?' · Kalshi '+Math.round(g.kalshi*100)+'¢':'')+'. Her pick also weighs the markets, Elo and more, so it can differ from this player-only simulation.','hint small'):null;
+  box.append(res);box.append(ins);box.append(teamsCard);if(pk)box.append(pk);
+  box.append(el('p','A what-if tool, not a promise. Spread: '+sd+' '+s.unit+' (how much games like this usually vary).'+(s.total_from==='sportsbook'?' Total starts from the sportsbook over/under.':'')+' Player worth comes from the player rating and can be wrong. Entertainment only.','hint small'));}
 function amer(p){if(!(p>0&&p<1))return null;const v=p>=0.5?-100*p/(1-p):100*(1-p)/p;const r=Math.round(v);return (r>0?'+':'')+r;}
 // the price where a pick has value: her chance minus a 3-point cushion for fees and her own errors
 function valueAt(p){const q=p-0.03;return q>0.02&&q<0.98?{odds:amer(q),cents:Math.floor(q*100)}:null;}
@@ -414,6 +474,7 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
     if(flipped(g))c.append(el('p','⇄ Her read has changed since she bet: she now favors '+g.pick.team+' '+pct(g.pick.chance)+', but this bet stays on '+r.team+'.','open'));
     b.append(c);}
   else if(isBetLane(g)&&g.state!=='LIVE'){b.append(el('p','She places her bet about 20 minutes before the start.','hint small'));}
+  if(g.sim&&g.state==='UPCOMING'){const sb=el('button','Simulate this game ›','btn');sb.type='button';sb.onclick=()=>{simId=g.id||g.name;show('sim');renderSim();};b.append(sb);}
   const d=g.details||{};
   if(d.prices&&d.prices.length>2){const c=section('Kalshi price today',chart(d.prices,g.pick&&g.pick.chance));c.append(el('p','Pink = Kalshi’s price for '+(g.pick?g.pick.team:'her side')+' over the last day. Green dashes = her chance.','hint small'));b.append(c);}
   if(d.factors&&d.factors.length){const box=el('div');for(const f of d.factors){const r=el('div',null,'factor');r.append(el('span',f.size||'',('sz '+(f.size||''))));const t=el('div');t.append(el('div',f.fact),el('div','Helps '+(f.helps||'—'),'hint small'));r.append(t);box.append(r);}
@@ -550,7 +611,7 @@ function renderMore(d){$('comboList').replaceChildren(...(d.combos.length?d.comb
 // ---------------- load + render
 function render(d){D=d;const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
-  $('disclaimer').textContent=d.disclaimer;renderPicks(d);renderGames(d);renderRecord(d);renderMore(d);drawInstall();
+  $('disclaimer').textContent=d.disclaimer;renderPicks(d);renderGames(d);renderRecord(d);renderMore(d);renderSim();drawInstall();
   navBtns.find(b=>b.dataset.tab==='record').hidden=!d.bets;
   if(sheetGame){const g=d.games.find(x=>String(x.id||x.name)===String(sheetGame.id||sheetGame.name));if(g){sheetGame=g;const s=$('sheet');const y=s.scrollTop;$('sheetBody').replaceChildren(gameView(g));s.scrollTop=y;}}}
 let first=true;
