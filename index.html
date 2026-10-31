@@ -204,6 +204,10 @@ nav.tabs button[aria-selected=true] svg{animation:navglow .4s ease}
 .hero .hi{font-size:34px}.hero b{display:block;font-size:17px}.hero small{color:var(--muted)}.hero .go{margin-left:auto;font-size:26px;color:var(--pink)}.hero:active{transform:scale(.97)}
 @keyframes heroglow{0%,100%{box-shadow:0 0 14px #ff4fd833}50%{box-shadow:0 0 28px #ff4fd866}}
 .mp .tn{white-space:normal;overflow:visible}
+.acct{margin-left:8px;border:0;background:none;padding:0;cursor:pointer;display:inline-flex;align-items:center}
+.acct img,.acct .badge{width:32px;height:32px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--pink)}
+.acctin{font-size:13px;font-weight:800;color:var(--pink);border:1px solid #ff4fd877;border-radius:999px;padding:5px 10px}
+.acctbig{width:56px!important;height:56px!important;border-radius:50%;margin-right:12px;object-fit:cover}
 .notice{background:#1a1408cc;border:1px solid #ffe14d55;border-left:3px solid var(--yellow);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px;color:#fff1c2}
 .install{display:flex;gap:12px;align-items:center}.appicon{flex:none;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:#f1e9ff;background:linear-gradient(180deg,#4a1580,#5c1f70)}.appicon::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--pink);margin:12px 0 0 2px}
 .btn{display:inline-block;border:0;border-radius:12px;padding:10px 16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--purple),var(--pink));cursor:pointer;text-decoration:none}
@@ -228,7 +232,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 </head>
 <body>
 <header>
-  <div class="top"><div class="brand" id="home" role="link" tabindex="0">MOHJETA<b>.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><span class="updated" id="updated">Loading…</span></div>
+  <div class="top"><div class="brand" id="home" role="link" tabindex="0">MOHJETA<b>.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><span class="updated" id="updated">Loading…</span><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
 </header>
   <nav class="tabs" role="tablist" aria-label="Sections" id="nav">
     <button role="tab" data-tab="picks" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5 2 7.5L12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>Tonight</button>
@@ -693,14 +697,29 @@ let sb=null,lastLive=null,liveCh=null,chatRoom='lobby',chatCh=null,me=null,myPro
 function loadScript(src){return new Promise((ok,bad)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=bad;document.head.append(s);});}
 async function supa(){if(sb)return sb;const r=await fetch('live-config.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('not set up');const c=await r.json();
   if(!window.supabase)await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4');
-  sb=window.supabase.createClient(c.url,c.anon_key,{auth:{persistSession:true,detectSessionInUrl:true}});
+  sb=window.supabase.createClient(c.url,c.anon_key,{auth:{persistSession:true,detectSessionInUrl:true,flowType:'pkce'}});
   try{const st=await fetch(c.url+'/auth/v1/settings',{headers:{apikey:c.anon_key}}).then(r=>r.json());window._authProviders=st.external||{};}catch(e){window._authProviders={};}
   return sb;}
 async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
   liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();
-  sb.auth.onAuthStateChange((_e,s)=>{me=s&&s.user||null;myProfile=null;if($('chat').classList.contains('on'))openChat();});
-  if(location.hash==='#chat'||/access_token|code=/.test(location.href))show('chat');}
+  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;myProfile=null;updateAcct();if(ev==='SIGNED_IN')toast('Signed in ✅');if($('chat').classList.contains('on'))openChat();});
+  if(/[?&]code=/.test(location.search)){for(let i=0;i<20&&!(await sb.auth.getSession()).data.session;i++)await new Promise(r=>setTimeout(r,250));
+    try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}}
+  const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;updateAcct();
+  let after=null;try{after=sessionStorage.getItem('mohjeta.afterLogin');sessionStorage.removeItem('mohjeta.afterLogin');}catch(e){}
+  if(location.hash==='#chat'||(after==='chat'&&me))show('chat');}
+function avatarOf(u){const m=(u&&u.user_metadata)||{};return m.avatar_url||m.picture||null;}
+function displayOf(u){const m=(u&&u.user_metadata)||{};return (myProfile&&myProfile.display_name)||m.full_name||m.name||(u&&u.email)||'You';}
+function updateAcct(){const b=$('acct');if(!b||!sb)return;b.hidden=false;b.replaceChildren();
+  if(!me){b.append(el('span','Sign in','acctin'));b.onclick=()=>show('chat');return;}
+  const pic=avatarOf(me);if(pic){const im=document.createElement('img');im.src=pic;im.alt='';im.referrerPolicy='no-referrer';im.onerror=()=>{im.replaceWith(badge(displayOf(me)));};b.append(im);}else b.append(badge(displayOf(me)));
+  b.onclick=()=>{const ov=el('div',null,'gate');const box=el('div',null,'gatebox');ov.append(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};
+    const head=el('div',null,'row');const big=b.firstChild.cloneNode(true);big.classList.add('acctbig');head.append(big,el('div',null,''));head.lastChild.append(el('b',displayOf(me)),el('div',me.email||'','hint small'));
+    const chat=el('button','💬 Open chat','btn');chat.type='button';chat.onclick=()=>{ov.remove();show('chat');};
+    const out=el('button','Sign out','btn ghost');out.type='button';out.onclick=async()=>{await sb.auth.signOut();me=null;myProfile=null;ov.remove();updateAcct();toast('Signed out');};
+    const x=el('button','Close','mlink');x.type='button';x.onclick=()=>ov.remove();
+    box.append(head,el('p','You\u2019re signed in. Your chat name and messages show to other fans; your email stays private.','hint small'),chat,out,x);document.body.append(ov);};}
 function applyLive(L){lastLive=L;if(!D||!L)return;const byId=new Map(D.games.map(g=>[g.id||g.name,g]));
   for(const g of L.games||[]){const cur=byId.get(g.id||g.name);if(cur)Object.assign(cur,g);else D.games.push(g);}
   if(L.bets&&D.bets){D.bets.totals=L.bets.totals||D.bets.totals;const key=r=>r.opened+'|'+r.bet;const have=new Map(D.bets.rows.map((r,i)=>[key(r),i]));
@@ -738,13 +757,13 @@ function msgRow(m){const r=el('div',null,'msg'+(m.hidden?' hid':'')+(me&&m.user_
   r.append(acts);return r;}
 function composer(){const c=el('div',null,'card');
   if(!me){c.append(el('p','Sign in to chat. No password needed.','small'));
-    const prov=(window._authProviders||{});const redirectTo=location.origin+location.pathname+'#chat';
+    const prov=(window._authProviders||{});const redirectTo=location.origin+location.pathname;try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}
     for(const [id,label,ic] of [['google','Continue with Google','G'],['discord','Continue with Discord','D'],['apple','Continue with Apple','']]){
       if(!prov[id])continue;const b=el('button',null,'oauth '+id);b.type='button';b.append(el('span',ic,'oi'),el('span',label));
       b.onclick=async()=>{const {error}=await sb.auth.signInWithOAuth({provider:id,options:{redirectTo}});if(error)toast('Could not start sign-in: '+error.message);};c.append(b);}
     if(Object.values(prov).some(Boolean))c.append(el('p','or get a sign-in link by email:','hint small'));const i=el('input');i.type='email';i.placeholder='you@email.com';i.className='chatin';
-    const go=el('button','Send sign-in link','btn');go.type='button';go.onclick=async()=>{const email=i.value.trim();if(!/^\S+@\S+\.\S+$/.test(email)){toast('Enter a valid email');return;}
-      const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname+'#chat'}});toast(error?'Could not send: '+error.message:'Check your email for the sign-in link 📬');};
+    const go=el('button','Send sign-in link','btn');go.type='button';go.onclick=async()=>{const email=i.value.trim();if(!/^\S+@\S+\.\S+$/.test(email)){toast('Enter a valid email');return;}try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}
+      const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});toast(error?'Could not send: '+error.message:'Check your email for the sign-in link 📬');};
     c.append(i,go);return c;}
   if(!myProfile){c.append(el('p','Pick your chat name (3-20 letters, numbers, spaces, . _ -).','small'));const i=el('input');i.maxLength=20;i.placeholder='Chat name';i.className='chatin';
     const go=el('button','Save name','btn');go.type='button';go.onclick=async()=>{const {error}=await sb.from('profiles').insert({id:me.id,display_name:i.value.trim()});if(error){toast(/duplicate|unique/i.test(error.message)?'That name is taken':'Name not allowed');return;}myProfile=null;openChat();};
@@ -758,7 +777,7 @@ function composer(){const c=el('div',null,'card');
     if(error){toast(/slow down/i.test(error.message)?'Slow down a little':/row-level|policy/i.test(error.message)?'You can’t post right now':'Not sent: '+error.message);return;}t.value='';award('chat');};
   go.onclick=send;t.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}};
   const out=el('button','Sign out','mlink');out.type='button';out.onclick=async()=>{await sb.auth.signOut();me=null;myProfile=null;openChat();};
-  c.append(el('div','Chatting as '+myProfile.display_name+(myProfile.role!=='member'?' · '+myProfile.role:''),'hint small'),t,go,out);return c;}
+  updateAcct();c.append(el('div','Chatting as '+myProfile.display_name+(myProfile.role!=='member'?' · '+myProfile.role:''),'hint small'),t,go,out);return c;}
 // ---------------- simple by default; Expert mode shows every number
 (function(){let on=false;try{on=localStorage.getItem('mohjeta.expert')==='1';}catch(e){}
   const set=v=>{document.documentElement.classList.toggle('expert',v);const t=$('xpToggle');if(t)t.setAttribute('aria-checked',String(v));try{localStorage.setItem('mohjeta.expert',v?'1':'0');}catch(e){}};
