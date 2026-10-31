@@ -203,6 +203,7 @@ nav.tabs button[aria-selected=true] svg{animation:navglow .4s ease}
   background:linear-gradient(135deg,#b44dff33,#ff4fd826);box-shadow:0 0 22px #ff4fd833;animation:heroglow 3s ease-in-out infinite}
 .hero .hi{font-size:34px}.hero b{display:block;font-size:17px}.hero small{color:var(--muted)}.hero .go{margin-left:auto;font-size:26px;color:var(--pink)}.hero:active{transform:scale(.97)}
 @keyframes heroglow{0%,100%{box-shadow:0 0 14px #ff4fd833}50%{box-shadow:0 0 28px #ff4fd866}}
+.mp .tn{white-space:normal;overflow:visible}
 .notice{background:#1a1408cc;border:1px solid #ffe14d55;border-left:3px solid var(--yellow);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px;color:#fff1c2}
 .install{display:flex;gap:12px;align-items:center}.appicon{flex:none;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:#f1e9ff;background:linear-gradient(180deg,#4a1580,#5c1f70)}.appicon::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--pink);margin:12px 0 0 2px}
 .btn{display:inline-block;border:0;border-radius:12px;padding:10px 16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--purple),var(--pink));cursor:pointer;text-decoration:none}
@@ -806,6 +807,16 @@ function arena(home,away,pH){const a=el('div',null,'arena'+(calm()?' still':''))
     const bar=el('div',null,'hp');const fill=el('i');fill.style.setProperty('--hp',Math.max(6,Math.round(hp*100))+'%');bar.append(fill);
     f.append(el('span','👑','crown'),b,el('b',name.split(' ').pop()),bar,el('small',pct(hp)));return f;};
   a.append(side(away,'left',1-pH,!hw),el('div',null,'clash'),side(home,'right',pH,hw));a.querySelector('.clash').append(el('span','💥','boom'),el('span','VS','vs'));return a;}
+function myPicks(){const all=pkLoad(),F=(D&&D.finals)||{};const rows=Object.entries(all).sort((a,b)=>String(b[1].start).localeCompare(String(a[1].start)));
+  const c=el('div',null,'card mp');c.append(el('h4','🎯 My picks'));
+  if(!rows.length){c.append(el('p','No picks yet. Tap a team under “Your pick” on any game in Tonight.','hint small'));return c;}
+  for(const [k,v] of rows){const w=F[k];const st=new Date(v.start);const started=st<new Date();
+    const res=w?(sameTeam(v.team,w)?['✅','Won','up']:['❌','Lost','down']):started?['⏳','In progress','open']:['🔒','Locks '+when(v.start),'hint'];
+    const r=el('div',null,'trow');const herOk=w&&v.her?sameTeam(v.her,w):null;
+    const mid=el('div',null,'tn');mid.append(el('b',v.team.split(' ').pop()),el('span',' · '+(v.name||''),'hint small'),
+      el('div',(sname(v.league||'')?sname(v.league)+' · ':'')+'Her pick: '+(v.her?v.her.split(' ').pop():'—')+(herOk==null?'':herOk?' ✅':' ❌'),'hint small'));
+    r.append(el('span',res[0],'ti'),mid,el('span',null,'sp'),el('span',res[1],res[2]));c.append(r);}
+  return c;}
 let simId=null;const simState={};
 function simGames(){return (D&&D.games||[]).filter(g=>g.sim&&g.state==='UPCOMING');}
 function renderSim(){drawModeChips();if(simMode==='any'){$('simPick').hidden=true;if(!$('anyBox').childElementCount)renderAny();return;}$('anyBox').replaceChildren();
@@ -892,7 +903,7 @@ function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');c.
     const gt=gapText(g);const k=kal(g);const sub=el('div',null,'row small xp');if(k!=null)sub.append(el('span','Kalshi '+k+'¢','hint'));if(gt)sub.append(el('span','· '+gt[0],'gap '+gt[1]));c.append(sub);
     const ol=oddsLine(g);if(ol)c.append(el('div',ol,'small odds xp'));
     const wm=winMeter(g);if(wm)c.append(wm);
-    if(g.teams.length===2&&!opts.short&&(g.state==='UPCOMING'||pkLoad()[pkKey(g)])){const pr=pickemRow(g);const cd=countdown(g);if(cd)pr.append(cd);c.append(pr);}
+    if(g.teams.length===2&&(g.state==='UPCOMING'||pkLoad()[pkKey(g)])){const pr=pickemRow(g);const cd=countdown(g);if(cd)pr.append(cd);c.append(pr);}
     if(g.pick.held)c.append(el('div','Too close to call: her earlier pick stays shown.','hint small'));
     if(g.bet)c.append(el('div','💵 Her bet: '+g.bet.team+' at '+Math.round(g.bet.price*100)+'¢'+(g.bet.result==='OPEN'?'':' · '+g.bet.result.toLowerCase()+' '+signed(g.bet.pnl)),'small'));
     if(flipped(g))c.append(el('div','⇄ Her read has changed since she bet: she now favors '+g.pick.team+', but her bet stays on '+g.bet.team+'.','small open'));
@@ -966,7 +977,7 @@ function openGame(id,push){if(!D)return;const g=D.games.find(x=>String(x.id||x.n
   sheetGame=g;openSheet(()=>gameView(g),'Game');if(push!==false)try{history.pushState(null,'','#game/'+encodeURIComponent(g.id||g.name));}catch(e){}}
 
 // ---------------- Picks (home)
-function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(pickemCard());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
+function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(pickemCard(),myPicks());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
     const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));
