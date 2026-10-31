@@ -228,6 +228,14 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .empty{color:var(--muted);text-align:center;padding:24px 8px}
 @media(max-width:600px){h2{font-size:20px}.grid{grid-template-columns:1fr}.big{font-size:26px}.banner .rec{font-size:26px}.hide-s{display:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.cpic{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none;font-size:10px;align-self:center}
+.board .brow{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.board .bk{width:26px;text-align:center}
+.rest{margin:8px 0}.rest .anyn{display:flex;gap:6px;align-items:center;margin:4px 0}.rest summary{cursor:pointer;font-weight:600}.rest b{display:block;margin-top:6px}
+.cmp{width:min(520px,calc(100vw - 32px));box-sizing:border-box;max-height:88vh;overflow:auto}.cmp select{min-width:0;width:100%}.cmprow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:10px}.cmpcol{display:flex;flex-direction:column;gap:6px}
+.cmpline{margin:10px 0}.cmpline .cl{font-weight:600;margin-bottom:4px}.cv{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) 44px;gap:6px;align-items:center}
+.cv b{text-align:center}.cbar{height:12px;background:#ffffff10;border-radius:6px;overflow:hidden;display:flex}.cbar.l{justify-content:flex-end}
+.cbar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),#8b5cf6);border-radius:6px;transition:width .5s}.cbar.neg i{background:#ef4444aa}
 </style>
 </head>
 <body>
@@ -607,7 +615,7 @@ function pickemRow(g){const all=pkLoad(),k=pkKey(g),mine=all[k];
   const row=el('div',null,'pickem');row.append(el('span',g.state==='UPCOMING'?'Your pick:':'Your pick (locked):','hint small'));
   for(const t of g.teams){const b=el('button',t.name.split(' ').pop(),'pk'+(mine&&mine.team===t.name?' on':''));b.type='button';
     b.disabled=g.state!=='UPCOMING';b.setAttribute('aria-pressed',String(!!(mine&&mine.team===t.name)));
-    b.onclick=e=>{e.stopPropagation();const x=pkLoad();x[k]={team:t.name,her:g.pick?g.pick.team:null,name:g.name,league:g.league,start:g.start};pkSave(x);award('first_pick');if(Object.keys(x).length>=5)award('five_picks');
+    b.onclick=e=>{e.stopPropagation();const x=pkLoad();x[k]={team:t.name,her:g.pick?g.pick.team:null,name:g.name,league:g.league,start:g.start};pkSave(x);pkCloud(k,t.name);award('first_pick');if(Object.keys(x).length>=5)award('five_picks');
       b.classList.add('burst');setTimeout(()=>{renderPicks(D);renderGames(D);},350);};row.append(b);}
   return row;}
 function pickemScore(){const all=pkLoad(),F=(D&&D.finals)||{};let me=[0,0],her=[0,0],open=0;const now=Date.now();
@@ -654,7 +662,7 @@ function shareCard(c){const W=1080,H=1350,cv=document.createElement('canvas');cv
     try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Mohjeta',text:c.title});return;}}catch(e){if(e&&e.name==='AbortError')return;}
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mohjeta.png';document.body.append(a);a.click();a.remove();},'image/png');}
 function wrapText(x,t,cx,y,maxW,lh){const words=String(t).split(' ');let line='';for(const w of words){const test=line?line+' '+w:w;if(x.measureText(test).width>maxW&&line){x.fillText(line,cx,y);y+=lh;line=w;}else line=test;}x.fillText(line,cx,y);}
-const BADGES={first_pick:['🎯','First pick'],five_picks:['🖐️','5 picks made'],beat_her:['👑','Beating the AI'],sim:['🎲','First simulation'],sim25:['🧪','25 simulations'],trade:['⇄','Trade machine'],share:['📤','Shared a card'],guess:['🔮','First guess'],sharp:['🏹','Guessed within 3 pts'],chat:['💬','First chat message']};
+const BADGES={first_pick:['🎯','First pick'],five_picks:['🖐️','5 picks made'],beat_her:['👑','Beating the AI'],sim:['🎲','First simulation'],sim25:['🧪','25 simulations'],trade:['⇄','Trade machine'],share:['📤','Shared a card'],guess:['🔮','First guess'],sharp:['🏹','Guessed within 3 pts'],chat:['💬','First chat message'],compare:['⚖️','Compared players']};
 function badgeData(){try{return JSON.parse(localStorage.getItem('mohjeta.badges')||'{}')||{};}catch(e){return {};}}
 function award(kind){const b=badgeData();b._n=b._n||{};b._n[kind]=(b._n[kind]||0)+1;const earn=[];
   const give=k=>{if(!b[k]){b[k]=Date.now();earn.push(k);}};
@@ -734,9 +742,11 @@ async function openChat(){const box=$('chatBox');box.replaceChildren(el('p','Loa
   const sel=$('chatRoom');sel.replaceChildren();const rooms=[['lobby','🏟️ Lobby']].concat((D&&D.games||[]).filter(g=>g.event&&(g.state==='LIVE'||g.state==='UPCOMING')).map(g=>['game:'+g.event,(g.state==='LIVE'?'● ':'')+sname(g.league)+' · '+g.name]));
   if(!rooms.some(r=>r[0]===chatRoom))rooms.push([chatRoom,'Game chat']);for(const [v,l] of rooms){const o=el('option',l);o.value=v;sel.append(o);}sel.value=chatRoom;sel.onchange=()=>{chatRoom=sel.value;openChat();};
   const {data:ses}=await sb.auth.getSession();me=ses&&ses.session&&ses.session.user||null;
-  if(me&&!myProfile){const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();myProfile=data||null;}
+  if(me&&!myProfile){const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();myProfile=data||null;syncPic();}
   box.replaceChildren();const list=el('div',null,'chatlist');box.append(list);
-  const {data:msgs,error}=await sb.from('messages').select('id,user_id,name,body,hidden,created_at').eq('room',chatRoom).order('created_at',{ascending:false}).limit(80);
+  let {data:msgs,error}=await sb.from('messages').select('id,user_id,name,body,hidden,created_at,profiles(avatar_url)').eq('room',chatRoom).order('created_at',{ascending:false}).limit(80);
+  if(error)({data:msgs,error}=await sb.from('messages').select('id,user_id,name,body,hidden,created_at').eq('room',chatRoom).order('created_at',{ascending:false}).limit(80));
+  for(const m of msgs||[])if(m.profiles&&m.profiles.avatar_url)PICS[m.user_id]=m.profiles.avatar_url;
   if(error){list.append(el('p','Chat could not load right now.','hint'));}
   for(const m of (msgs||[]).reverse())list.append(msgRow(m));list.scrollTop=list.scrollHeight;
   if(chatCh)sb.removeChannel(chatCh);
@@ -746,7 +756,7 @@ async function openChat(){const box=$('chatBox');box.replaceChildren(el('p','Loa
     if(old)old.replaceWith(msgRow(m));else{list.append(msgRow(m));list.scrollTop=list.scrollHeight;}}).subscribe();
   box.append(composer());}
 function msgRow(m){const r=el('div',null,'msg'+(m.hidden?' hid':'')+(me&&m.user_id===me.id?' mine':''));r.dataset.id=m.id;
-  const head=el('div',null,'mh');head.append(el('b',m.name||'fan'),el('span',new Date(m.created_at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}),'hint small'));
+  const head=el('div',null,'mh');head.append(chatPic(m),el('b',m.name||'fan'),el('span',new Date(m.created_at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}),'hint small'));
   r.append(head,el('div',clean(m.body),'mb'));const acts=el('div',null,'ma');
   if(me&&m.user_id!==me.id){const rp=el('button','Report','mlink');rp.type='button';rp.onclick=async()=>{const {error}=await sb.from('reports').insert({message_id:m.id,reason:'reported in chat'});toast(error?'Already reported':'Reported. Thanks, a moderator will look.');};acts.append(rp);}
   if(myProfile&&myProfile.role!=='member'){
@@ -812,13 +822,14 @@ async function renderAny(){const box=$('anyBox');const T=await loadTeams();box.r
   const nl=el('label',null,'anyn');const nc=el('input');nc.type='checkbox';nc.checked=!!anyPick.neutral;nc.onchange=()=>{anyPick.neutral=nc.checked;};nl.append(nc,el('span',' Neutral court (no home edge)'));
   const swap=el('button','⇅ Swap','btn ghost');swap.type='button';swap.onclick=()=>{[anyPick.home,anyPick.away]=[anyPick.away,anyPick.home];renderAny();};
   const go=el('button','⚔️ Fight!','btn');go.type='button';go.onclick=()=>{if(anyPick.home===anyPick.away){toast('Pick two different teams');return;}buildCustom(T);drawSim(true);award('sim');};
-  wrap.append(nl,el('div',null,'row'));wrap.lastChild.append(go,swap);box.append(wrap);
+  wrap.append(nl);if(L.kind==='lineup'&&L.sched)wrap.append(restBox(L));
+  wrap.append(el('div',null,'row'));wrap.lastChild.append(go,swap);if(L.kind==='lineup')wrap.lastChild.append(compareBtn(L));box.append(wrap);
   if(customG&&customG.id===simId)drawSim();else $('simBox').replaceChildren(el('p','Pick two teams and hit Fight!','hint'));}
 function buildCustom(T){const lg=anyPick.lg,L=T.leagues[lg],home=anyPick.home,away=anyPick.away,neutral=!!anyPick.neutral,A=L.teams[home],B=L.teams[away];
-  const id='custom:'+lg+':'+away+'@'+home+(neutral?':n':'');let sim;
+  const id='custom:'+lg+':'+away+'@'+home+(neutral?':n':'')+':'+JSON.stringify(anyPick.rest||{});let sim;
   if(L.kind==='lineup'){const pace=(A.pace+B.pace)/2,edge=neutral?0:L.home_edge;
     sim={league:lg,unit:'pts',home,away,margin:0,sd:L.sd,total:null,neutral,players:{},nba_model:{version:'custom',built_at:Date.now()/1000,teams:{[home]:A.players.map(p=>({...p})),[away]:B.players.map(p=>({...p}))},
-      home,away,fill_in:L.fill_in,sd:L.sd,total_sd:L.total_sd,pace,home_offset:(L.mu+edge)*pace/100,away_offset:(L.mu-edge)*pace/100}};}
+      home,away,fill_in:L.fill_in,sd:L.sd,total_sd:L.total_sd,pace,home_offset:(L.mu+edge)*pace/100-restPts(L,'home',home,neutral)/2,away_offset:(L.mu-edge)*pace/100-restPts(L,'away',away,neutral)/2}};}
   else sim={league:lg,unit:L.unit,home,away,margin:A.strength-B.strength+(neutral?0:L.home_edge),sd:L.sd,total:L.total,total_sd:L.total_sd,neutral,players:{},custom:true,starters:{home:A.starter,away:B.starter}};
   customG={id,league:lg,name:away+' @ '+home,teams:[{name:home},{name:away}],state:'UPCOMING',sim};simId=id;}
 function arena(home,away,pH){const a=el('div',null,'arena'+(calm()?' still':''));const hw=pH>=0.5;
@@ -996,7 +1007,7 @@ function openGame(id,push){if(!D)return;const g=D.games.find(x=>String(x.id||x.n
   sheetGame=g;openSheet(()=>gameView(g),'Game');if(push!==false)try{history.pushState(null,'','#game/'+encodeURIComponent(g.id||g.name));}catch(e){}}
 
 // ---------------- Picks (home)
-function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(pickemCard(),myPicks());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
+function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(pickemCard(),boardCard(),myPicks());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
     const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));
@@ -1186,6 +1197,55 @@ async function loadRatings(){try{const r=await fetch('ratings.json?t='+Date.now(
   catch(e){$('rtBox').replaceChildren(el('p','Ratings will appear after her next update.','hint'));}}
 load();setInterval(load,30000);initLive();loadRatings();setInterval(loadRatings,600000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
+// ---------------- Pick'em leaderboard (Supabase; picks lock at the start time, graded by Mohjeta)
+async function pkCloud(event,team){try{if(!me||!sb)return;const {error}=await sb.from('pickem').upsert({event,team},{onConflict:'user_id,event'});
+  if(error&&/profiles|foreign/i.test(error.message))toast('Pick a chat name in Chat to join the leaderboard');}catch(e){}}
+let BOARD=null,boardAt=0;
+function boardCard(){const c=el('div',null,'card board');c.append(el('h4','🏆 Pick\'em leaderboard · last 30 days'));
+  const fill=()=>{const rows=BOARD||[];c.querySelectorAll('.brow,.bnote').forEach(x=>x.remove());
+    if(!rows.length){c.append(el('p',me?'No one is ranked yet: 5 finished picks gets you on the board.':'Sign in (Chat) and your picks count here. 5 finished picks gets you on the board.','hint small bnote'));return;}
+    rows.forEach((r,i)=>{const row=el('div',null,'brow');row.append(el('span',['🥇','🥈','🥉'][i]||String(i+1),'bk'),chatPic({user_id:null,name:r.name,profiles:{avatar_url:r.avatar}}),el('b',r.name),el('span',null,'sp'),
+      el('span',r.wins+'-'+r.losses,'up'),el('span',r.beat_her?' · beat her '+r.beat_her+'×':'','hint small'));c.append(row);});};
+  fill();if(Date.now()-boardAt>60000){boardAt=Date.now();(async()=>{try{await supa();const {data,error}=await sb.from('pickem_board').select('*').order('wins',{ascending:false}).order('losses').limit(20);
+    if(error){c.remove();return;}BOARD=data||[];fill();}catch(e){c.remove();}})();}
+  return c;}
+// ---------------- profile photos in chat (the picture Google / Discord already provides; nothing is uploaded)
+const PICS={};
+function chatPic(m){const url=(m.profiles&&m.profiles.avatar_url)||(m.user_id&&PICS[m.user_id])||null;
+  if(!url||!/^https:\/\/(lh\d\.googleusercontent\.com|cdn\.discordapp\.com)\//.test(url)){const b=badge(m.name||'fan');b.classList.add('cpic');return b;}
+  const im=document.createElement('img');im.src=url;im.alt='';im.className='cpic';im.referrerPolicy='no-referrer';im.loading='lazy';im.onerror=()=>{const b=badge(m.name||'fan');b.classList.add('cpic');im.replaceWith(b);};return im;}
+async function syncPic(){try{const pic=avatarOf(me);if(!me||!myProfile||!pic)return;PICS[me.id]=pic;if(myProfile.avatar_url===pic)return;
+  const {error}=await sb.from('profiles').update({avatar_url:pic}).eq('id',me.id);if(!error)myProfile.avatar_url=pic;}catch(e){}}
+// ---------------- rest and travel in the any-matchup simulator (NBA: the effects the rating learned from real schedules)
+function restPts(L,side,team,neutral){const r=(anyPick.rest||{})[side]||{},S=L.sched||{};let p=0;
+  if(r.b2b)p+=S.b2b||0;if(r.three)p+=S['3in4']||0;if(side==='away'&&!neutral){if(r.trip)p+=(S.travel||0)*2+(S.tz||0)*2;if(/Nuggets|Jazz/.test(anyPick.home||''))p+=S.alt||0;}
+  return p;}
+function restBox(L){const box=el('details',null,'rest');box.append(el('summary','😴 Rest and travel (optional)'));anyPick.rest=anyPick.rest||{home:{},away:{}};
+  const opt=(side,key,label)=>{const l=el('label',null,'anyn');const c=el('input');c.type='checkbox';c.checked=!!anyPick.rest[side][key];c.onchange=()=>{anyPick.rest[side][key]=c.checked;};l.append(c,el('span',' '+label));return l;};
+  const S=L.sched,f=v=>(v||0).toFixed(1);
+  box.append(el('b','Away team','small'),opt('away','b2b','Played last night (−'+f(S.b2b)+' pts)'),opt('away','three','3rd game in 4 nights (−'+f(S['3in4'])+')'),opt('away','trip','Cross-country trip, 2 time zones (−'+f(S.travel*2+S.tz*2)+')'),
+    el('b','Home team','small'),opt('home','b2b','Played last night (−'+f(S.b2b)+' pts)'),opt('home','three','3rd game in 4 nights (−'+f(S['3in4'])+')'),
+    el('p','Learned from real games: how much tired or traveling teams really lose by. Denver and Utah’s altitude is added for visitors automatically.','hint small'));
+  return box;}
+// ---------------- compare two players (NBA)
+function compareBtn(L){const b=el('button','⚖️ Compare players','btn ghost');b.type='button';b.onclick=()=>comparePlayers(L);return b;}
+function comparePlayers(L){const ov=el('div',null,'gate');const box=el('div',null,'gatebox cmp');ov.append(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  const teams=Object.keys(L.teams).sort();const pick=[{t:anyPick.away||teams[0]},{t:anyPick.home||teams[1]}];
+  const draw=()=>{box.replaceChildren(el('h2','⚖️ Compare players'));const row=el('div',null,'cmprow');const cols=[];
+    pick.forEach((p,i)=>{const ps=(L.teams[p.t]||{}).players||[];if(!ps.some(x=>x.name===p.n))p.n=(ps[0]||{}).name;
+      const col=el('div',null,'cmpcol');const st=el('select');st.className='mpick';teams.forEach(t=>{const o=el('option',t);o.value=t;st.append(o);});st.value=p.t;st.onchange=()=>{p.t=st.value;p.n=null;draw();};
+      const sp=el('select');sp.className='mpick';ps.forEach(x=>{const o=el('option',x.name+(x.role?' · '+x.role:''));o.value=x.name;sp.append(o);});sp.value=p.n;sp.onchange=()=>{p.n=sp.value;draw();};
+      col.append(st,sp);row.append(col);cols.push(ps.find(x=>x.name===p.n)||{});});
+    box.append(row);const [a,b]=cols;const worth=x=>(x.offense||0)+(x.defense||0);
+    const line=(label,va,vb,fmt,hint)=>{const r=el('div',null,'cmpline');const mx=Math.max(Math.abs(va),Math.abs(vb),0.5);
+      const bar=(v,cls)=>{const w=el('div',null,'cbar '+cls+(v<0?' neg':''));const f=el('i');f.style.width=Math.round(50*Math.abs(v)/mx)+'%';w.append(f);return w;};
+      r.append(el('div',label,'cl'),el('div',null,'cv'));r.lastChild.append(el('b',fmt(va),va>=vb?'up':''),bar(va,'l'),bar(vb,'r'),el('b',fmt(vb),vb>=va?'up':''));if(hint)r.append(el('div',hint,'hint small'));return r;};
+    const pts=v=>(v>0?'+':'')+v.toFixed(1);
+    box.append(line('Overall worth',worth(a),worth(b),pts,'Points per 100 possessions he adds to his team (attack + defense) vs an average player.'),
+      line('Attack',a.offense||0,b.offense||0,pts),line('Defense',a.defense||0,b.defense||0,pts),line('Minutes a game',a.minutes||0,b.minutes||0,v=>v.toFixed(0)),
+      line('Impact a game',worth(a)*(a.minutes||0)/48,worth(b)*(b.minutes||0)/48,pts,'Worth × the minutes he plays: what he means to a real game.'));
+    const x=el('button','Close','btn');x.type='button';x.onclick=()=>ov.remove();box.append(x);};
+  draw();document.body.append(ov);award('compare');}
 })();
 </script>
 </body>
