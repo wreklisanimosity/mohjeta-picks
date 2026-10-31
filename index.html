@@ -254,11 +254,17 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .cpop{position:fixed;right:14px;bottom:calc(var(--navh) + var(--safe) + 78px);z-index:65;max-width:min(320px,calc(100vw - 28px));display:flex;gap:8px;align-items:center;
   text-align:left;background:#1d1430f2;border:1px solid #ff4fd866;border-radius:14px;padding:8px 12px;color:var(--text,#fff);cursor:pointer;animation:rise .25s ease both;transition:opacity .4s,transform .4s}
 .cpop.out{opacity:0;transform:translateY(10px)}.cpop .cptext{display:flex;flex-direction:column;min-width:0}.cpop .cptext span{font-size:13px;opacity:.9;overflow:hidden;text-overflow:ellipsis}
+
+.online{border:1px solid #39ff8844;background:#39ff8812;color:var(--green);border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;white-space:nowrap}
+.online[hidden]{display:none}
+.whopop{position:fixed;z-index:80;width:min(280px,calc(100vw - 16px));background:#160f22f5;border:1px solid #39ff8855;border-radius:14px;padding:10px 12px;box-shadow:0 10px 30px #000a;display:flex;flex-direction:column;gap:6px;animation:rise .2s ease both}
+.wholist{display:flex;flex-direction:column;gap:4px;max-height:40vh;overflow:auto}.whorow{display:flex;align-items:center;gap:8px}
+.cdon{color:var(--green)}
 </style>
 </head>
 <body>
 <header>
-  <div class="top"><div class="brand" id="home" role="link" tabindex="0">MOHJETA<b>.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><span class="updated" id="updated">Loading…</span><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
+  <div class="top"><div class="brand" id="home" role="link" tabindex="0">MOHJETA<b>.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><span class="updated" id="updated">Loading…</span><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
 </header>
   <nav class="tabs" role="tablist" aria-label="Sections" id="nav">
     <button role="tab" data-tab="picks" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5 2 7.5L12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>Tonight</button>
@@ -414,7 +420,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
       <li><b>Chat accounts (optional):</b> if you sign in to the community chat, our chat provider (Supabase) stores your email address (only for signing in), your chat name, your messages, your Pick'em picks and, if you sign in with Google or Discord, a link to that account's profile picture. Your chat name, picture, messages and Pick'em record are public to other visitors; your email is not. Ask us to delete your chat account at any time.</li>
       <li><b>Saved on your phone only:</b> your settings (color-blind mode, the 21+ check, the install tip) are stored in your browser and never sent to us.</li>
       <li><b>Hosting:</b> the site is hosted on GitHub Pages. Like any web host, GitHub may log basic technical data such as IP addresses for security. See GitHub's privacy statement.</li>
-      <li><b>Visitor counts:</b> if we add a visitor counter, it will be a cookie-free, privacy-friendly one that counts visits without identifying you, and it will be named here.</li>
+      <li><b>Visitor counts and who's online:</b> your browser gets a random ID (stored in your browser, not a cookie; no name, no IP address). We record only that this random ID visited on a day, and show totals. "Who's online" shows how many people have the site open right now and the chat names of signed-in chatters; nothing about it is stored. Clear this site's data in your browser to reset the ID.</li>
       <li><b>Changes:</b> if this ever changes (for example, accounts for a paid version), this page will be updated first.</li>
       <li><b>Contact / delete your account:</b> email <a href="mailto:mohjozojo@gmail.com">mohjozojo@gmail.com</a> and we will delete your chat account, name, photo link, messages and picks.</li>
     </ul>
@@ -732,9 +738,9 @@ async function supa(){if(sb)return sb;const r=await fetch('live-config.json?t='+
   return sb;}
 async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
-  chatFab();
+  chatFab();startPresence();logVisit();
   liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();
-  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;myProfile=null;updateAcct();if(ev==='SIGNED_IN')toast('Signed in ✅');if(chatOpen())openChat();});
+  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;myProfile=null;updateAcct();if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN')toast('Signed in ✅');if(chatOpen())openChat();});
   if(/[?&]code=/.test(location.search)){for(let i=0;i<20&&!(await sb.auth.getSession()).data.session;i++)await new Promise(r=>setTimeout(r,250));
     try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}}
   const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;updateAcct();
@@ -765,7 +771,7 @@ async function openChat(){chatRoom='lobby';const box=$('chatBox');box.replaceChi
   const sel=$('chatRoom');sel.replaceChildren();const rooms=[['lobby','🏟️ Lobby']].concat((D&&D.games||[]).filter(g=>g.event&&(g.state==='LIVE'||g.state==='UPCOMING')).map(g=>['game:'+g.event,(g.state==='LIVE'?'● ':'')+sname(g.league)+' · '+g.name]));
   if(!rooms.some(r=>r[0]===chatRoom))rooms.push([chatRoom,'Game chat']);for(const [v,l] of rooms){const o=el('option',l);o.value=v;sel.append(o);}sel.value=chatRoom;sel.onchange=()=>{chatRoom=sel.value;openChat();};sel.hidden=true;   // one room for now
   const {data:ses}=await sb.auth.getSession();me=ses&&ses.session&&ses.session.user||null;
-  if(me&&!myProfile){const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();myProfile=data||null;syncPic();}
+  if(me&&!myProfile){const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();myProfile=data||null;syncPic();retrack();}
   box.replaceChildren();const list=el('div',null,'chatlist');box.append(list);
   let {data:msgs,error}=await sb.from('messages').select('id,user_id,name,body,hidden,created_at,profiles(avatar_url)').eq('room',chatRoom).order('created_at',{ascending:false}).limit(80);
   if(error)({data:msgs,error}=await sb.from('messages').select('id,user_id,name,body,hidden,created_at').eq('room',chatRoom).order('created_at',{ascending:false}).limit(80));
@@ -1235,6 +1241,30 @@ function gsi(){if(gsiP)return gsiP;gsiP=(async()=>{try{await supa();const id=(wi
       callback:async res=>{const {error}=await sb.auth.signInWithIdToken({provider:'google',token:res.credential,nonce:raw});
         if(error){toast('Google sign-in did not finish: '+error.message);gsiP=null;}}});
     return true;}catch(e){gsiP=null;return false;}})();return gsiP;}
+// ---------------- who's online (Supabase presence: nothing stored) + visitor counter (random browser ID, totals only)
+let presCh=null,online={n:0,names:[]},STATS=null;
+function visitorId(){try{let v=localStorage.getItem('mohjeta.vid');if(!/^[a-f0-9]{24}$/.test(v||'')){v=[...crypto.getRandomValues(new Uint8Array(12))].map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('mohjeta.vid',v);}return v;}catch(e){return null;}}
+async function logVisit(){try{const v=visitorId(),day=new Date().toDateString();if(!v)return;let last=null;try{last=localStorage.getItem('mohjeta.vday');}catch(e){}
+  if(last===day)return;const {error}=await sb.rpc('log_visit',{v});if(!error)try{localStorage.setItem('mohjeta.vday',day);}catch(e){}}catch(e){}}
+function presenceMe(){return {name:(me&&myProfile&&myProfile.display_name)||null,pic:(me&&avatarOf(me))||null};}
+function startPresence(){if(presCh||!sb)return;const key=(visitorId()||'x')+'-'+Math.random().toString(36).slice(2,6);
+  presCh=sb.channel('online',{config:{presence:{key}}});
+  presCh.on('presence',{event:'sync'},()=>{const st=presCh.presenceState();const people=Object.values(st).map(a=>a[0]||{});const seen=new Set(),names=[];
+    for(const p of people)if(p.name&&!seen.has(p.name)){seen.add(p.name);names.push(p);}
+    online={n:Object.keys(st).length,names};drawOnline();}).subscribe(async s=>{if(s==='SUBSCRIBED')await presCh.track(presenceMe());});}
+function retrack(){if(presCh)presCh.track(presenceMe()).catch(()=>{});}
+function drawOnline(){const b=$('online');if(!b)return;b.hidden=!online.n;b.textContent='🟢 '+online.n;b.title=online.n+' online now';b.onclick=whoPanel;
+  const h=document.querySelector('#chatDrawer .cdon');if(h)h.textContent=online.n?online.n+' online':'';}
+async function whoPanel(){document.querySelectorAll('.whopop').forEach(x=>x.remove());const c=el('div',null,'whopop');const r=$('online').getBoundingClientRect();
+  c.style.top=(r.bottom+8)+'px';c.style.right=Math.max(8,innerWidth-r.right)+'px';
+  c.append(el('b','🟢 Online now: '+online.n));const guests=online.n-online.names.length;
+  const list=el('div',null,'wholist');for(const p of online.names.slice(0,30)){const row=el('div',null,'whorow');row.append(chatPic({user_id:null,name:p.name,profiles:{avatar_url:p.pic}}),el('span',p.name));list.append(row);}
+  if(guests>0)list.append(el('div',(online.names.length?'+ ':'')+guests+' guest'+(guests>1?'s':''),'hint small'));c.append(list);
+  const st=el('div','Loading visitors…','hint small whost');c.append(st);
+  const x=el('button','Close','mlink');x.type='button';x.onclick=()=>c.remove();c.append(x);document.body.append(c);
+  setTimeout(()=>document.addEventListener('pointerdown',function f(e){if(!c.contains(e.target)&&e.target!==$('online')){c.remove();document.removeEventListener('pointerdown',f);}}),0);
+  try{if(!STATS||Date.now()-STATS.at>60000){const {data,error}=await sb.rpc('visit_stats');if(error)throw error;STATS={...data,at:Date.now()};}
+    st.textContent='👀 Visitors · today '+STATS.today+' · this week '+STATS.week+' · this month '+STATS.month+' · all time '+STATS.all_time;}catch(e){st.textContent='Visitor counts are being set up.';}}
 // ---------------- floating chat: a bubble on every tab; new messages pop up wherever you are; tap to open over the page
 let popCh=null,unread=0;
 function chatOpen(){const d=$('chatDrawer');return !!(d&&!d.hidden);}
@@ -1247,7 +1277,7 @@ function chatFab(){if($('chatFab'))return;
   const head=el('div',null,'cdhead');const mute=el('button',popsOn()?'🔔':'🔕','mlink');mute.type='button';mute.title='Pop-ups for new messages';
   mute.onclick=()=>{const on=!popsOn();try{localStorage.setItem('mohjeta.chatpop',on?'1':'0');}catch(e){}mute.textContent=on?'🔔':'🔕';toast(on?'Chat pop-ups on':'Chat pop-ups off');};
   const x=el('button','✕','mlink cdx');x.type='button';x.setAttribute('aria-label','Close chat');x.onclick=closeDrawer;
-  head.append(el('span','⋮⋮','grip'),el('b','💬 Chat'),el('span',null,'sp'),mute,x);
+  head.append(el('span','⋮⋮','grip'),el('b','💬 Chat'),el('span',online.n?online.n+' online':'','hint small cdon'),el('span',null,'sp'),mute,x);
   d.append(head,el('p','Be respectful · no selling picks, links or "locks" · 21+ · 1-800-GAMBLER','hint small cdrules'));
   const box=$('chatBox');if(box)d.append(box);document.body.append(d);
   draggable(d,head,'mohjeta.chatpos',null);
