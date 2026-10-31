@@ -237,6 +237,20 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .cmpline{margin:10px 0}.cmpline .cl{font-weight:600;margin-bottom:4px}.cv{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) 44px;gap:6px;align-items:center}
 .cv b{text-align:center}.cbar{height:12px;background:#ffffff10;border-radius:6px;overflow:hidden;display:flex}.cbar.l{justify-content:flex-end}
 .cbar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),#8b5cf6);border-radius:6px;transition:width .5s}.cbar.neg i{background:#ef4444aa}
+
+.chatfab{position:fixed;right:14px;bottom:calc(var(--navh) + var(--safe) + 14px);z-index:60;width:54px;height:54px;border-radius:50%;border:0;cursor:pointer;
+  background:linear-gradient(135deg,var(--purple),var(--pink));box-shadow:0 6px 24px #ff4fd855;font-size:24px;display:flex;align-items:center;justify-content:center}
+.chatfab .cbadge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:10px;background:var(--red);color:#fff;font-size:11px;line-height:20px;padding:0 5px}
+.chatfab .cbadge[hidden],.chatfab .cbadge:empty{display:none}
+body.chatting .chatfab{display:none}
+.cdrawer{position:fixed;left:0;right:0;bottom:calc(var(--navh) + var(--safe));z-index:70;max-height:min(72vh,640px);display:flex;flex-direction:column;
+  background:#120c1cf7;backdrop-filter:blur(10px);border-top:1px solid #ff4fd855;border-radius:18px 18px 0 0;padding:10px 14px 12px;box-shadow:0 -10px 40px #0009;animation:rise .25s ease both}
+.cdrawer[hidden]{display:none}.cdhead{display:flex;align-items:center;gap:10px}.cdhead .cdx{font-size:18px}.cdrules{margin:4px 0 6px}
+.cdrawer #chatBox{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}.cdrawer .chatlist{flex:1;overflow:auto;max-height:none}
+@media(min-width:760px){.cdrawer{left:auto;right:16px;width:400px;bottom:calc(var(--navh) + 16px);border-radius:18px;border:1px solid #ff4fd855}}
+.cpop{position:fixed;right:14px;bottom:calc(var(--navh) + var(--safe) + 78px);z-index:65;max-width:min(320px,calc(100vw - 28px));display:flex;gap:8px;align-items:center;
+  text-align:left;background:#1d1430f2;border:1px solid #ff4fd866;border-radius:14px;padding:8px 12px;color:var(--text,#fff);cursor:pointer;animation:rise .25s ease both;transition:opacity .4s,transform .4s}
+.cpop.out{opacity:0;transform:translateY(10px)}.cpop .cptext{display:flex;flex-direction:column;min-width:0}.cpop .cptext span{font-size:13px;opacity:.9;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -444,7 +458,9 @@ let D=null;
 const TABS=['picks','sim','record','play','more'];const SUB={games:'more',ratings:'more',chat:'more',guess:'play',combos:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button')];
-function show(name,push){name=LEGACY[name]||name;const panel=name==='record'?'recordp':name;
+function show(name,push){name=LEGACY[name]||name;
+  if(name==='chat'){if(!document.querySelector('main .panel.on'))show('picks',false);openDrawer();return;}   // chat = one floating overlay over any tab
+  const panel=name==='record'?'recordp':name;
   for(const s of document.querySelectorAll('main .panel'))s.classList.toggle('on',s.id===panel);
   const top=SUB[name]||name;for(const b of navBtns)b.setAttribute('aria-selected',String(b.dataset.tab===top));
   closeSheet(true);window.scrollTo(0,0);if(push!==false)try{history.pushState(null,'','#'+name);}catch(e){}
@@ -713,8 +729,9 @@ async function supa(){if(sb)return sb;const r=await fetch('live-config.json?t='+
   return sb;}
 async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
+  chatFab();
   liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();
-  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;myProfile=null;updateAcct();if(ev==='SIGNED_IN')toast('Signed in ✅');if($('chat').classList.contains('on'))openChat();});
+  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;myProfile=null;updateAcct();if(ev==='SIGNED_IN')toast('Signed in ✅');if(chatOpen())openChat();});
   if(/[?&]code=/.test(location.search)){for(let i=0;i<20&&!(await sb.auth.getSession()).data.session;i++)await new Promise(r=>setTimeout(r,250));
     try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}}
   const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;updateAcct();
@@ -740,10 +757,10 @@ function applyLive(L){lastLive=L;if(!D||!L)return;const byId=new Map(D.games.map
   const u=$('updated');u.classList.remove('stale');u.textContent='● Live '+hm(L.updated);u.classList.add('livedot');}
 const BAD=/\b(fuck|shit|bitch|cunt|nigg\w*|fag\w*|retard\w*)\b/gi;
 function clean(t){return String(t).replace(BAD,m=>m[0]+'*'.repeat(m.length-1));}
-async function openChat(){const box=$('chatBox');box.replaceChildren(el('p','Loading chat…','hint'));
+async function openChat(){chatRoom='lobby';const box=$('chatBox');box.replaceChildren(el('p','Loading chat…','hint'));
   try{await supa();}catch(e){box.replaceChildren(el('p','Chat is being set up. Check back soon.','hint'));return;}
   const sel=$('chatRoom');sel.replaceChildren();const rooms=[['lobby','🏟️ Lobby']].concat((D&&D.games||[]).filter(g=>g.event&&(g.state==='LIVE'||g.state==='UPCOMING')).map(g=>['game:'+g.event,(g.state==='LIVE'?'● ':'')+sname(g.league)+' · '+g.name]));
-  if(!rooms.some(r=>r[0]===chatRoom))rooms.push([chatRoom,'Game chat']);for(const [v,l] of rooms){const o=el('option',l);o.value=v;sel.append(o);}sel.value=chatRoom;sel.onchange=()=>{chatRoom=sel.value;openChat();};
+  if(!rooms.some(r=>r[0]===chatRoom))rooms.push([chatRoom,'Game chat']);for(const [v,l] of rooms){const o=el('option',l);o.value=v;sel.append(o);}sel.value=chatRoom;sel.onchange=()=>{chatRoom=sel.value;openChat();};sel.hidden=true;   // one room for now
   const {data:ses}=await sb.auth.getSession();me=ses&&ses.session&&ses.session.user||null;
   if(me&&!myProfile){const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();myProfile=data||null;syncPic();}
   box.replaceChildren();const list=el('div',null,'chatlist');box.append(list);
@@ -990,7 +1007,7 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
     if(flipped(g))c.append(el('p','⇄ Her read has changed since she bet: she now favors '+g.pick.team+' '+pct(g.pick.chance)+', but this bet stays on '+r.team+'.','open'));
     b.append(c);}
   else if(isBetLane(g)&&g.state!=='LIVE'){b.append(el('p','She places her bet about 20 minutes before the start.','hint small'));}
-  if(g.event){const cb=el('button','💬 Game chat ›','btn ghost');cb.type='button';cb.onclick=()=>{chatRoom='game:'+g.event;show('chat');};b.append(cb);}
+  if(g.event){const cb=el('button','💬 Chat about it ›','btn ghost');cb.type='button';cb.onclick=()=>{closeSheet(true);show('chat');};b.append(cb);}
   if(g.sim&&g.state==='UPCOMING'){const sb=el('button','Simulate this game ›','btn');sb.type='button';sb.onclick=()=>{simId=g.id||g.name;show('sim');renderSim();};b.append(sb);}
   const d=g.details||{};
   if(d.prices&&d.prices.length>2){const c=section('Kalshi price today',chart(d.prices,g.pick&&g.pick.chance));c.append(el('p','Pink = Kalshi’s price for '+(g.pick?g.pick.team:'her side')+' over the last day. Green dashes = her chance.','hint small'));b.append(c);}
@@ -1215,6 +1232,31 @@ function gsi(){if(gsiP)return gsiP;gsiP=(async()=>{try{await supa();const id=(wi
       callback:async res=>{const {error}=await sb.auth.signInWithIdToken({provider:'google',token:res.credential,nonce:raw});
         if(error){toast('Google sign-in did not finish: '+error.message);gsiP=null;}}});
     return true;}catch(e){gsiP=null;return false;}})();return gsiP;}
+// ---------------- floating chat: a bubble on every tab; new messages pop up wherever you are; tap to open over the page
+let popCh=null,unread=0;
+function chatOpen(){const d=$('chatDrawer');return !!(d&&!d.hidden);}
+function popsOn(){try{return localStorage.getItem('mohjeta.chatpop')!=='0';}catch(e){return true;}}
+function chatFab(){if($('chatFab'))return;
+  const fab=el('button',null,'chatfab');fab.id='chatFab';fab.type='button';fab.setAttribute('aria-label','Open community chat');fab.append(el('span','💬'),el('b','','cbadge'));
+  fab.onclick=()=>chatOpen()?closeDrawer():openDrawer();document.body.append(fab);
+  const d=el('div',null,'cdrawer');d.id='chatDrawer';d.hidden=true;d.setAttribute('role','dialog');d.setAttribute('aria-label','Community chat');
+  const head=el('div',null,'cdhead');const mute=el('button',popsOn()?'🔔':'🔕','mlink');mute.type='button';mute.title='Pop-ups for new messages';
+  mute.onclick=()=>{const on=!popsOn();try{localStorage.setItem('mohjeta.chatpop',on?'1':'0');}catch(e){}mute.textContent=on?'🔔':'🔕';toast(on?'Chat pop-ups on':'Chat pop-ups off');};
+  const x=el('button','✕','mlink cdx');x.type='button';x.setAttribute('aria-label','Close chat');x.onclick=closeDrawer;
+  head.append(el('b','💬 Community chat'),el('span',null,'sp'),mute,x);
+  d.append(head,el('p','Be respectful · no selling picks, links or "locks" · 21+ · 1-800-GAMBLER','hint small cdrules'));
+  const box=$('chatBox');if(box)d.append(box);document.body.append(d);
+  if(sb&&!popCh)popCh=sb.channel('pop').on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room=eq.lobby'},p=>{const m=p.new;
+    if(!m||m.hidden||(me&&m.user_id===me.id)||chatOpen())return;unread++;badgeCount();if(popsOn())chatPop(m);}).subscribe();}
+function badgeCount(){const b=document.querySelector('#chatFab .cbadge');if(b){b.textContent=unread?String(Math.min(unread,99)):'';b.hidden=!unread;}}
+function chatPop(m){document.querySelectorAll('.cpop').forEach(x=>x.remove());const c=el('button',null,'cpop');c.type='button';
+  const t=el('div',null,'cptext');t.append(el('b',m.name||'fan'),el('span',clean(String(m.body||'')).slice(0,90)));c.append(chatPic(m),t);
+  c.onclick=()=>{c.remove();openDrawer();};document.body.append(c);setTimeout(()=>c.classList.add('out'),4200);setTimeout(()=>c.remove(),4700);}
+function openDrawer(){chatFab();const d=$('chatDrawer');d.hidden=false;document.body.classList.add('chatting');unread=0;badgeCount();
+  document.querySelectorAll('.cpop').forEach(x=>x.remove());openChat();}
+function closeDrawer(){const d=$('chatDrawer');if(d)d.hidden=true;document.body.classList.remove('chatting');
+  if(location.hash==='#chat')try{history.replaceState(null,'',location.pathname+'#picks');}catch(e){}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&chatOpen())closeDrawer();});
 // ---------------- Pick'em leaderboard (Supabase; picks lock at the start time, graded by Mohjeta)
 async function pkCloud(event,team){try{if(!me||!sb)return;const {error}=await sb.from('pickem').upsert({event,team},{onConflict:'user_id,event'});
   if(error&&/profiles|foreign/i.test(error.message))toast('Pick a chat name in Chat to join the leaderboard');}catch(e){}}
