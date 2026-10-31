@@ -184,6 +184,25 @@ nav.tabs button[aria-selected=true] svg{animation:navglow .4s ease}
 .dots{display:flex;justify-content:center;gap:6px;margin:10px 0 14px}.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--pink)}
 .oauth{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:#111;font-weight:800;margin:6px 0;cursor:pointer}
 .oauth.discord{background:#5865F2;color:#fff;border-color:#5865F2}.oauth.apple{background:#000;color:#fff}.oauth .oi{font-weight:900}
+.anycard{display:grid;gap:8px}.anyl{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}.anyl select{width:100%}.anyn{font-size:14px;color:var(--muted)}
+.arena{position:relative;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;margin:10px 0 14px;padding:14px 6px;border-radius:14px;background:radial-gradient(circle at 50% 50%,#ff4fd822,transparent 60%),var(--card2);overflow:hidden}
+.fighter{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}.fighter b{font-size:14px}.fighter small{color:var(--muted);font-weight:800}
+.badge.big{width:64px;height:64px;font-size:22px;box-shadow:0 0 18px #0008}
+.fighter.left .badge{animation:lungeR 1.5s ease-in-out both}.fighter.right .badge{animation:lungeL 1.5s ease-in-out both}
+@keyframes lungeR{0%,100%{transform:none}15%,45%,75%{transform:translateX(28px) rotate(8deg) scale(1.08)}30%,60%,90%{transform:translateX(-4px)}}
+@keyframes lungeL{0%,100%{transform:none}15%,45%,75%{transform:translateX(-28px) rotate(-8deg) scale(1.08)}30%,60%,90%{transform:translateX(4px)}}
+.hp{width:84%;height:8px;border-radius:99px;background:#ffffff1a;overflow:hidden}.hp i{display:block;height:100%;width:var(--hp);background:linear-gradient(90deg,var(--pink),var(--green));animation:drain 1.6s ease-out both}
+@keyframes drain{from{width:100%}to{width:var(--hp)}}
+.clash{position:relative;width:46px;height:46px;display:grid;place-items:center}.clash .vs{font-weight:900;color:var(--muted);font-size:13px}
+.clash .boom{position:absolute;font-size:34px;opacity:0;animation:boom 1.5s ease-out both}
+@keyframes boom{0%,10%{opacity:0;transform:scale(.3)}15%{opacity:1;transform:scale(1.3)}25%{opacity:0}45%{opacity:1;transform:scale(1.1) rotate(20deg)}55%{opacity:0}75%{opacity:1;transform:scale(1.4) rotate(-15deg)}88%,100%{opacity:0}}
+.crown{font-size:22px;opacity:0;height:24px}.fighter.win .crown{animation:crown .6s 1.55s cubic-bezier(.2,.9,.3,1.4) both}.fighter.win .badge.big{box-shadow:0 0 24px var(--green)}
+@keyframes crown{from{opacity:0;transform:translateY(10px) scale(.4)}to{opacity:1;transform:none}}
+.arena.still *{animation:none!important}.arena.still .fighter.win .crown{opacity:1}
+.hero{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin:4px 0 14px;padding:16px;border-radius:16px;border:1px solid #ff4fd877;cursor:pointer;color:var(--text);
+  background:linear-gradient(135deg,#b44dff33,#ff4fd826);box-shadow:0 0 22px #ff4fd833;animation:heroglow 3s ease-in-out infinite}
+.hero .hi{font-size:34px}.hero b{display:block;font-size:17px}.hero small{color:var(--muted)}.hero .go{margin-left:auto;font-size:26px;color:var(--pink)}.hero:active{transform:scale(.97)}
+@keyframes heroglow{0%,100%{box-shadow:0 0 14px #ff4fd833}50%{box-shadow:0 0 28px #ff4fd866}}
 .notice{background:#1a1408cc;border:1px solid #ffe14d55;border-left:3px solid var(--yellow);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px;color:#fff1c2}
 .install{display:flex;gap:12px;align-items:center}.appicon{flex:none;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:#f1e9ff;background:linear-gradient(180deg,#4a1580,#5c1f70)}.appicon::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--pink);margin:12px 0 0 2px}
 .btn{display:inline-block;border:0;border-radius:12px;padding:10px 16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--purple),var(--pink));cursor:pointer;text-decoration:none}
@@ -212,12 +231,14 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 </header>
   <nav class="tabs" role="tablist" aria-label="Sections" id="nav">
     <button role="tab" data-tab="picks" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5 2 7.5L12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>Tonight</button>
+    <button role="tab" data-tab="sim" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg>Simulate</button>
     <button role="tab" data-tab="record" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Results</button>
     <button role="tab" data-tab="play" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.3"/><circle cx="16" cy="8" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="8" cy="16" r="1.3"/><circle cx="16" cy="16" r="1.3"/></svg>Play</button>
     <button role="tab" data-tab="more" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</button>
   </nav>
 <main>
   <section class="panel on" id="picks" role="tabpanel" aria-label="Picks">
+    <button type="button" class="hero" id="heroSim"><span class="hi">⚔️</span><span><b>Simulate any matchup</b><small>Pick two teams and watch them battle 10,000 times</small></span><span class="go">›</span></button>
     <div id="record"></div><div id="installBox"></div><div id="alertsBox"></div>
     <div id="liveBox"></div>
     <h3>Tonight she's betting</h3><p class="hint small xp">Games where she puts $5 of paper money on her pick at Kalshi's real price.</p><div class="grid" id="betting"></div>
@@ -252,8 +273,9 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <select id="chatRoom" class="mpick" aria-label="Choose a chat room"></select><div id="chatBox"></div></section>
   <section class="panel" id="guess" role="tabpanel" aria-label="Guess her number"><button class="back" data-go="play">‹ Play</button>
     <h2>🔮 Guess her number</h2><p class="hint small">Guess how likely she thinks a team is to win, before you see it. Closer guesses score more (100 for exact). Saved on this phone only, just for fun.</p><div id="guessBox"></div></section>
-  <section class="panel" id="sim" role="tabpanel" aria-label="Simulate"><button class="back" data-go="play">‹ Play</button>
-    <h2>Simulate a game</h2><p class="hint small">Pick one of tonight's games, choose who plays, and run it 10,000 times on your phone. It uses the player rating: the same numbers behind her picks.</p>
+  <section class="panel" id="sim" role="tabpanel" aria-label="Simulate">
+    <h2>⚔️ Simulator</h2><p class="hint small">Pick any two teams, choose who plays, and run it 10,000 times on your phone, using the same player ratings behind her picks.</p>
+    <div class="chips" id="simMode"></div><div id="anyBox"></div>
     <select id="simPick" class="mpick" aria-label="Choose a game"></select><div id="simBox"></div>
   </section>
   <section class="panel" id="ratings" role="tabpanel" aria-label="Ratings"><button class="back" data-go="more">‹ More</button>
@@ -403,7 +425,7 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['picks','record','play','more'];const SUB={sim:'play',games:'more',ratings:'more',chat:'more',guess:'play',combos:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
+const TABS=['picks','sim','record','play','more'];const SUB={games:'more',ratings:'more',chat:'more',guess:'play',combos:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button')];
 function show(name,push){name=LEGACY[name]||name;const panel=name==='record'?'recordp':name;
@@ -511,7 +533,7 @@ function drawNbaSim(g,box,rerun){
   for(const k of Object.keys(st.sits))if(!keys.has(k))delete st.sits[k];
   st.trades=st.trades||{};const base=model;model=tradedModel(base,st.trades);
   const result=NbaSim.simulate(model,st.sits,{seed:st.seed||20261030,spread:parseFloat(st.spread),total:parseFloat(st.total)});
-  const card=el('div',null,'card');card.append(el('h4','10,000 simulated NBA final scores'));
+  const card=el('div',null,'card');card.append(el('h4','10,000 simulated NBA final scores'));if(!result.error)card.append(arena(s.home,s.away,result.p_home));
   if(result.error)card.append(el('p',result.error,'hint'));
   else{
     const tiles=el('div',null,'tiles');const tile=(label,value)=>{const t=el('div',null,'tile');t.append(label,el('b',value));tiles.append(t);};
@@ -740,6 +762,7 @@ function composer(){const c=el('div',null,'card');
 (function(){let on=false;try{on=localStorage.getItem('mohjeta.expert')==='1';}catch(e){}
   const set=v=>{document.documentElement.classList.toggle('expert',v);const t=$('xpToggle');if(t)t.setAttribute('aria-checked',String(v));try{localStorage.setItem('mohjeta.expert',v?'1':'0');}catch(e){}};
   set(on);$('xpToggle').onclick=()=>{on=!on;set(on);toast(on?'Expert mode on: all the numbers':'Simple mode');};
+  $('heroSim').onclick=()=>{simMode='any';$('anyBox').replaceChildren();show('sim');renderSim();};
   $('hubGuess').onclick=()=>{show('guess');drawGuess();};
   $('hubPickem').onclick=()=>{show('picks');setTimeout(()=>{const x=document.querySelector('.pickem');if(x)x.scrollIntoView({behavior:'smooth',block:'center'});toast('Tap a team on any game to make your pick 🎯');},200);};})();
 // first-visit welcome: three short screens
@@ -754,20 +777,50 @@ function tour(){let seen=false;try{seen=localStorage.getItem('mohjeta.tour')==='
     const next=el('button',i<steps.length-1?'Next ›':'Let’s go','btn');next.type='button';next.onclick=()=>{if(i<steps.length-1){i++;draw();}else done();};row.append(skip,el('span',null,'sp'),next);box.append(row);};
   const done=()=>{try{localStorage.setItem('mohjeta.tour','1');}catch(e){}ov.remove();};draw();}
 (function(){const go=()=>{const g=$('ageGate');if(g&&!g.hidden){setTimeout(go,800);return;}tour();};setTimeout(go,1200);})();
+// ---------------- any-matchup simulator + battle arena (original art: team-colored badges, no logos or mascots)
+let simMode='tonight',TEAMS=null,customG=null;const anyPick={};
+async function loadTeams(){if(TEAMS)return TEAMS;try{const r=await fetch('sim-teams.json?t='+Date.now(),{cache:'no-store'});if(r.ok)TEAMS=await r.json();}catch(e){}return TEAMS;}
+function drawModeChips(){const m=$('simMode');m.replaceChildren();for(const [k,l] of [['tonight','🏟️ Tonight’s games'],['any','⚔️ Any matchup']]){const b=el('button',l);b.type='button';b.setAttribute('aria-pressed',String(simMode===k));b.onclick=()=>{simMode=k;$('anyBox').replaceChildren();renderSim();};m.append(b);}}
+async function renderAny(){const box=$('anyBox');const T=await loadTeams();box.replaceChildren();
+  if(!T||!T.leagues||!Object.keys(T.leagues).length){box.append(el('p','Any-matchup data is being built from the ratings. Check back in a few minutes.','hint'));$('simBox').replaceChildren();return;}
+  const lgs=Object.keys(T.leagues);if(!lgs.includes(anyPick.lg))anyPick.lg=lgs[0];const L=T.leagues[anyPick.lg];const names=Object.keys(L.teams).sort();
+  if(!names.includes(anyPick.home))anyPick.home=names[0];if(!names.includes(anyPick.away)||anyPick.away===anyPick.home)anyPick.away=names.find(n=>n!==anyPick.home);
+  const sel=(label,opts,val,on)=>{const l=el('label',label,'anyl');const s=el('select');s.className='mpick';for(const o of opts){const x=el('option',o[1]);x.value=o[0];s.append(x);}s.value=val;s.onchange=()=>on(s.value);l.append(s);return l;};
+  const wrap=el('div',null,'card anycard');
+  wrap.append(sel('League',lgs.map(x=>[x,sname(x)]),anyPick.lg,v=>{anyPick.lg=v;anyPick.home=anyPick.away=null;renderAny();}),
+    sel('Away team',names.map(n=>[n,n]),anyPick.away,v=>{anyPick.away=v;}),sel('Home team',names.map(n=>[n,n]),anyPick.home,v=>{anyPick.home=v;}));
+  const nl=el('label',null,'anyn');const nc=el('input');nc.type='checkbox';nc.checked=!!anyPick.neutral;nc.onchange=()=>{anyPick.neutral=nc.checked;};nl.append(nc,el('span',' Neutral court (no home edge)'));
+  const swap=el('button','⇅ Swap','btn ghost');swap.type='button';swap.onclick=()=>{[anyPick.home,anyPick.away]=[anyPick.away,anyPick.home];renderAny();};
+  const go=el('button','⚔️ Fight!','btn');go.type='button';go.onclick=()=>{if(anyPick.home===anyPick.away){toast('Pick two different teams');return;}buildCustom(T);drawSim(true);award('sim');};
+  wrap.append(nl,el('div',null,'row'));wrap.lastChild.append(go,swap);box.append(wrap);
+  if(customG&&customG.id===simId)drawSim();else $('simBox').replaceChildren(el('p','Pick two teams and hit Fight!','hint'));}
+function buildCustom(T){const lg=anyPick.lg,L=T.leagues[lg],home=anyPick.home,away=anyPick.away,neutral=!!anyPick.neutral,A=L.teams[home],B=L.teams[away];
+  const id='custom:'+lg+':'+away+'@'+home+(neutral?':n':'');let sim;
+  if(L.kind==='lineup'){const pace=(A.pace+B.pace)/2,edge=neutral?0:L.home_edge;
+    sim={league:lg,unit:'pts',home,away,margin:0,sd:L.sd,total:null,neutral,players:{},nba_model:{version:'custom',built_at:Date.now()/1000,teams:{[home]:A.players.map(p=>({...p})),[away]:B.players.map(p=>({...p}))},
+      home,away,fill_in:L.fill_in,sd:L.sd,total_sd:L.total_sd,pace,home_offset:(L.mu+edge)*pace/100,away_offset:(L.mu-edge)*pace/100}};}
+  else sim={league:lg,unit:L.unit,home,away,margin:A.strength-B.strength+(neutral?0:L.home_edge),sd:L.sd,total:L.total,total_sd:L.total_sd,neutral,players:{},custom:true,starters:{home:A.starter,away:B.starter}};
+  customG={id,league:lg,name:away+' @ '+home,teams:[{name:home},{name:away}],state:'UPCOMING',sim};simId=id;}
+function arena(home,away,pH){const a=el('div',null,'arena'+(calm()?' still':''));const hw=pH>=0.5;
+  const side=(name,cls,hp,win)=>{const f=el('div',null,'fighter '+cls+(win?' win':''));const b=badge(name);b.classList.add('big');
+    const bar=el('div',null,'hp');const fill=el('i');fill.style.setProperty('--hp',Math.max(6,Math.round(hp*100))+'%');bar.append(fill);
+    f.append(el('span','👑','crown'),b,el('b',name.split(' ').pop()),bar,el('small',pct(hp)));return f;};
+  a.append(side(away,'left',1-pH,!hw),el('div',null,'clash'),side(home,'right',pH,hw));a.querySelector('.clash').append(el('span','💥','boom'),el('span','VS','vs'));return a;}
 let simId=null;const simState={};
 function simGames(){return (D&&D.games||[]).filter(g=>g.sim&&g.state==='UPCOMING');}
-function renderSim(){const gs=simGames();const sel=$('simPick');sel.replaceChildren();
+function renderSim(){drawModeChips();if(simMode==='any'){$('simPick').hidden=true;if(!$('anyBox').childElementCount)renderAny();return;}$('anyBox').replaceChildren();
+  const gs=simGames();const sel=$('simPick');sel.replaceChildren();
   if(!gs.length){$('simBox').replaceChildren(el('p','No games ready to simulate right now. Games show up here when the player rating has numbers for them (basketball, football, hockey and baseball, up to 36 hours ahead).','hint'));sel.hidden=true;simulationScorecard($('simBox'));return;}
   sel.hidden=false;for(const g of gs){const o=el('option',sname(g.league)+' · '+g.name+' · '+when(g.start));o.value=g.id||g.name;sel.append(o);}
   if(!gs.some(g=>(g.id||g.name)===simId))simId=gs[0].id||gs[0].name;sel.value=simId;sel.onchange=()=>{simId=sel.value;drawSim();};drawSim();}
 function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
-function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId);const box=$('simBox');box.replaceChildren();if(!g)return;const s=g.sim;if(s.nba_model){drawNbaSim(g,box,run);return;}
+function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId)||(customG&&customG.id===simId?customG:null);const box=$('simBox');box.replaceChildren();if(!g)return;const s=g.sim;if(s.nba_model){drawNbaSim(g,box,run);return;}
   const st=simState[simId]||(simState[simId]={sits:{},spread:'',total:s.total!=null?String(s.total):''});
   // players
   let shift=0;const teamsCard=el('div',null,'card');teamsCard.append(el('h4','Who plays?'));
   teamsCard.append(el('p','Every simulated game already uses each team’s full lineup: every player expected to play, with his minutes. This list is the whole team, so you can change any of them. Tap to sit a player or bring one back. Worth = how many '+s.unit+' his team’s margin moves with him, from the player rating. “About even” means the rating sees his backup as just as good, so sitting him barely changes the game.','hint small'));
   for(const [team,sign] of [[s.home,1],[s.away,-1]]){const rows=(s.players||{})[team]||[];teamsCard.append(el('b',team+(team===s.home&&!s.neutral?' (home)':'')));
-    if(!rows.length)teamsCard.append(el('p','No player numbers for this team yet.','hint small'));
+    if(!rows.length)teamsCard.append(el('p',s.custom?'Starter: '+((s.starters||{})[team===s.home?'home':'away']||'usual')+'. Sit-or-play choices for each player are on tonight\u2019s games.':'No player numbers for this team yet.','hint small'));
     for(const r of rows){const key=team+'|'+r.name;const sits=key in st.sits?st.sits[key]:r.out;st.trades=st.trades||{};const traded=!!st.trades[key]&&!sits;
       if(sits!==r.out)shift+=sign*(sits?-r.worth:r.worth);
       if(traded)shift-=2*sign*r.worth;   // his team loses him and the other team gains him
@@ -786,7 +839,7 @@ function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId);const b
   for(let i=0;i<N;i++){let m=m0+sd*gauss();if(discrete){m=Math.round(m);if(m===0)m=Math.random()<0.5?1:-1;}ms[i]=m;if(m>0)hw++;
     if(!isNaN(sp)){const x=m+sp;if(x>0)cover++;else if(x===0)push++;}
     if(T0!=null&&!isNaN(tl)){let t=T0+s.total_sd*gauss();if(discrete)t=Math.max(0,Math.round(t));if(t>tl)over++;}}
-  const pH=hw/N;const res=el('div',null,'card');res.append(el('h4','10,000 games played'));
+  const pH=hw/N;const res=el('div',null,'card');res.append(el('h4','10,000 games played'),arena(s.home,s.away,pH));
   const tiles=el('div',null,'tiles');const tile=(l,v)=>{const t=el('div',null,'tile');t.append(l,el('b',v));tiles.append(t);};
   tile(s.home+' win',pct(pH));tile(s.away+' win',pct(1-pH));
   tile('Average margin',(m0>=0?s.home+' by ':s.away+' by ')+Math.abs(m0).toFixed(1));
