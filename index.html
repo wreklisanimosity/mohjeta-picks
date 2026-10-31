@@ -163,6 +163,9 @@ nav.tabs button[aria-selected=true] svg{animation:navglow .4s ease}
 .guessv{font-size:44px;font-weight:900;text-align:center;color:var(--green);text-shadow:0 0 16px #39ff8866}
 .guessr{width:100%;accent-color:var(--pink);margin:6px 0 12px}
 .reveal{margin-top:12px;animation:pop .45s ease both}
+.todaylist{margin:8px 0 14px}.trow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;animation:rise .3s ease both}
+.trow .tn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flash{animation:flashrec 1.4s ease 2}@keyframes flashrec{0%,100%{text-shadow:none}50%{text-shadow:0 0 18px var(--green);color:var(--green)}}
 .notice{background:#1a1408cc;border:1px solid #ffe14d55;border-left:3px solid var(--yellow);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px;color:#fff1c2}
 .install{display:flex;gap:12px;align-items:center}.appicon{flex:none;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:#f1e9ff;background:linear-gradient(180deg,#4a1580,#5c1f70)}.appicon::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--pink);margin:12px 0 0 2px}
 .btn{display:inline-block;border:0;border-radius:12px;padding:10px 16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--purple),var(--pink));cursor:pointer;text-decoration:none}
@@ -594,7 +597,7 @@ function award(kind){const b=badgeData();b._n=b._n||{};b._n[kind]=(b._n[kind]||0
   const give=k=>{if(!b[k]){b[k]=Date.now();earn.push(k);}};
   if(kind==='sim'){give('sim');if(b._n.sim>=25)give('sim25');}else if(BADGES[kind])give(kind);
   try{localStorage.setItem('mohjeta.badges',JSON.stringify(b));}catch(e){}for(const k of earn)toast(BADGES[k][0]+' Badge unlocked: '+BADGES[k][1]);if(earn.length)for(const sh of document.querySelectorAll('.shelf'))sh.replaceWith(badgeShelf());}
-function toast(t){const d=el('div',t,'toast');document.body.append(d);setTimeout(()=>d.classList.add('out'),2200);setTimeout(()=>d.remove(),2700);}
+function toast(t){const n=document.querySelectorAll('.toast').length;const d=el('div',t,'toast');if(n)d.style.bottom='calc(var(--navh) + '+(24+n*76)+'px)';document.body.append(d);setTimeout(()=>d.classList.add('out'),2200);setTimeout(()=>d.remove(),2700);}
 function badgeShelf(){const b=badgeData();const got=Object.keys(BADGES).filter(k=>b[k]);const d=el('div',null,'shelf');
   d.append(el('span','Badges '+got.length+'/'+Object.keys(BADGES).length,'hint small'));for(const k of Object.keys(BADGES)){const i=el('span',BADGES[k][0],'bd'+(b[k]?' on':''));i.title=BADGES[k][1]+(b[k]?'':' (locked)');d.append(i);}return d;}
 function countdown(g){if(g.state!=='UPCOMING'||!g.start)return null;const d=el('span',null,'cd');d.dataset.start=g.start;tick1(d);return d;}
@@ -620,6 +623,12 @@ function drawGuess(){const box=$('guessBox');box.replaceChildren();const G=guess
       el('p','Kalshi has '+a.name.split(' ').pop()+' around '+(g.kalshi!=null?Math.round((sameTeam(g.pick.team,a.name)?g.kalshi:1-g.kalshi)*100)+'¢':'—')+'.','hint small'));
     const nx=el('button','Next game ›','btn');nx.type='button';nx.onclick=drawGuess;out.append(nx);c.append(out);countUp(out);};
   c.append(v,r,go);box.append(c);}
+function todayRows(rows){const now=new Date(),start=new Date(now);start.setHours(6,0,0,0);if(now<start)start.setDate(start.getDate()-1);   // her betting day runs 6 AM to 6 AM
+  return (rows||[]).filter(r=>!r.carried&&Date.parse(r.opened)>=start.getTime());}
+function resultFlash(T){if(!T)return;let last=null;try{last=JSON.parse(localStorage.getItem('mohjeta.lastrec')||'null');}catch(e){}
+  if(last&&(T.wins>last.w||T.losses>last.l)){const dw=T.wins-last.w,dl=T.losses-last.l;const msg=[dw>0?'+'+dw+' W ✅':'',dl>0?'+'+dl+' L ❌':''].filter(Boolean).join('  ');if(msg){toast('New results: '+msg);
+    for(const e of document.querySelectorAll('.banner .rec,#periodStats .stat strong'))e.classList.add('flash');}}
+  try{localStorage.setItem('mohjeta.lastrec',JSON.stringify({w:T.wins,l:T.losses}));}catch(e){}}
 let simId=null;const simState={};
 function simGames(){return (D&&D.games||[]).filter(g=>g.sim&&g.state==='UPCOMING');}
 function renderSim(){const gs=simGames();const sel=$('simPick');sel.replaceChildren();
@@ -778,7 +787,7 @@ function openGame(id,push){if(!D)return;const g=D.games.find(x=>String(x.id||x.n
   sheetGame=g;openSheet(()=>gameView(g),'Game');if(push!==false)try{history.pushState(null,'','#game/'+encodeURIComponent(g.id||g.name));}catch(e){}}
 
 // ---------------- Picks (home)
-function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();rec.append(pickemCard());{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
+function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();setTimeout(()=>resultFlash(b&&b.totals),300);rec.append(pickemCard());{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
     const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));
@@ -820,10 +829,18 @@ function windowStats(rows,days){const t0=days?Date.now()-days*864e5:0;const r=(r
 function renderRecord(d){const b=d.bets;if(!b)return;
   const dn=$('dropNote');dn.replaceChildren();const X=b.dropped;{const fb=streakBanner(b.rows);if(fb)dn.append(fb);}
   if(X)dn.append(el('div','Soccer was dropped in '+X.when+' after a '+X.won+'-'+X.lost+' run ('+signed(X.net)+'). The numbers here cover only the sports she still bets; every soccer bet is still in the sealed record below.','notice'));
-  const pc=$('periodChips');pc.replaceChildren();for(const [k,l] of [[7,'Last 7 days'],[30,'Last 30 days'],[0,'Since the start']]){const x=el('button',l);x.type='button';x.setAttribute('aria-pressed',String(k===period));x.onclick=()=>{period=k;renderRecord(d);};pc.append(x);}
-  const w=period?windowStats(b.rows,period):null;const T=b.totals;const ps=$('periodStats');ps.replaceChildren();
+  const young=b.since&&Date.now()-Date.parse(b.since)<30*864e5;if(young&&period===30)period=0;
+  const pc=$('periodChips');pc.replaceChildren();for(const [k,l] of [['today','Today'],[7,'Last 7 days'],...(young?[]:[[30,'Last 30 days']]),[0,'Since the start']]){const x=el('button',l);x.type='button';x.setAttribute('aria-pressed',String(k===period));x.onclick=()=>{period=k;renderRecord(d);};pc.append(x);}
+  const T=b.totals;const ps=$('periodStats');ps.replaceChildren();document.querySelectorAll('.todaylist').forEach(x=>x.remove());
   const stat=(l,v,c)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,c||''));ps.append(s);};
-  if(w){stat('Record',w.won+'-'+w.lost);stat('Profit',signed(w.net),cls(w.net));stat('Win rate',w.won+w.lost?pct(w.won/(w.won+w.lost)):'—');stat('Return',w.roi==null?'—':(w.roi>0?'+':'')+Math.round(w.roi*100)+'%',cls(w.roi||0));}
+  if(period==='today'){const rs=todayRows(b.rows),won=rs.filter(r=>r.result==='WON').length,lost=rs.filter(r=>r.result==='LOST').length,open=rs.filter(r=>r.result==='OPEN').length,net=rs.reduce((a,r)=>a+(r.pnl||0),0);
+    stat('Bets today',String(rs.length));stat('Won-lost',won+'-'+lost);stat('Still open',String(open),'open');stat('Profit so far',signed(net),cls(net));
+    const list=el('div',null,'todaylist');if(!rs.length)list.append(el('p','No bets yet today. She places each bet about 20 minutes before the game starts.','hint'));
+    for(const r of rs){const row=el('div',null,'trow');row.append(el('span',icon(r.result),'ti'),el('span',(r.bet||r.title||'').slice(0,60),'tn'),el('span',null,'sp'),
+      el('span',r.result==='OPEN'?Math.round(r.price*100)+'¢ · open':signed(r.pnl),r.result==='WON'?'up':r.result==='LOST'?'down':'open'));list.append(row);}
+    ps.after(list);}
+  const w=period&&period!=='today'?windowStats(b.rows,period):null;
+  if(period==='today'){}else if(w){stat('Record',w.won+'-'+w.lost);stat('Profit',signed(w.net),cls(w.net));stat('Win rate',w.won+w.lost?pct(w.won/(w.won+w.lost)):'—');stat('Return',w.roi==null?'—':(w.roi>0?'+':'')+Math.round(w.roi*100)+'%',cls(w.roi||0));}
   else{stat('Record',T.wins+'-'+T.losses);stat('Profit',signed(T.net),cls(T.net));stat('Win rate',pct(T.win_rate));stat('Return',T.roi==null?'—':(T.roi>0?'+':'')+Math.round(T.roi*100)+'%',cls(T.roi||0));stat('Still riding',usd(T.at_risk),'open');}
   // profit by day
   const days={};for(const r of b.rows)if(r.pnl!=null&&!r.carried){const k=new Date(r.opened).toLocaleDateString('en-CA');days[k]=(days[k]||0)+r.pnl;}
