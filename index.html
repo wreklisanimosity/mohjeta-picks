@@ -229,6 +229,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 @media(max-width:600px){h2{font-size:20px}.grid{grid-template-columns:1fr}.big{font-size:26px}.banner .rec{font-size:26px}.hide-s{display:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
+.gone{display:flex;justify-content:center;margin:6px 0 10px;min-height:0}
 .cpic{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none;font-size:10px;align-self:center}
 .board .brow{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.board .bk{width:26px;text-align:center}
 .rest{margin:8px 0}.rest .anyn{display:flex;gap:6px;align-items:center;margin:4px 0}.rest summary{cursor:pointer;font-weight:600}.rest b{display:block;margin-top:6px}
@@ -705,7 +706,7 @@ function resultFlash(T){if(!T)return;let last=null;try{last=JSON.parse(localStor
 // ---------------- Supabase: live updates (seconds) + community chat
 let sb=null,lastLive=null,liveCh=null,chatRoom='lobby',chatCh=null,me=null,myProfile=null;
 function loadScript(src){return new Promise((ok,bad)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=bad;document.head.append(s);});}
-async function supa(){if(sb)return sb;const r=await fetch('live-config.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('not set up');const c=await r.json();
+async function supa(){if(sb)return sb;const r=await fetch('live-config.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('not set up');const c=await r.json();window._cfg=c;
   if(!window.supabase)await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4');
   sb=window.supabase.createClient(c.url,c.anon_key,{auth:{persistSession:true,detectSessionInUrl:true,flowType:'pkce'}});
   try{const st=await fetch(c.url+'/auth/v1/settings',{headers:{apikey:c.anon_key}}).then(r=>r.json());window._authProviders=st.external||{};}catch(e){window._authProviders={};}
@@ -770,13 +771,16 @@ function msgRow(m){const r=el('div',null,'msg'+(m.hidden?' hid':'')+(me&&m.user_
 function composer(){const c=el('div',null,'card');
   if(!me){c.append(el('p','Sign in to chat. No password needed.','small'));
     const prov=(window._authProviders||{});const redirectTo=location.origin+location.pathname;try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}
+    const one=el('div',null,'gone');c.append(one);
     for(const [id,label,ic] of [['google','Continue with Google','G'],['discord','Continue with Discord','D'],['apple','Continue with Apple','']]){
-      if(!prov[id])continue;const b=el('button',null,'oauth '+id);b.type='button';b.append(el('span',ic,'oi'),el('span',label));
+      if(!prov[id])continue;const b=el('button',null,'oauth '+id);if(id==='google')b.dataset.g='1';b.type='button';b.append(el('span',ic,'oi'),el('span',label));
       b.onclick=async()=>{const {error}=await sb.auth.signInWithOAuth({provider:id,options:{redirectTo}});if(error)toast('Could not start sign-in: '+error.message);};c.append(b);}
     if(Object.values(prov).some(Boolean))c.append(el('p','or get a sign-in link by email:','hint small'));const i=el('input');i.type='email';i.placeholder='you@email.com';i.className='chatin';
     const go=el('button','Send sign-in link','btn');go.type='button';go.onclick=async()=>{const email=i.value.trim();if(!/^\S+@\S+\.\S+$/.test(email)){toast('Enter a valid email');return;}try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}
       const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});toast(error?'Could not send: '+error.message:'Check your email for the sign-in link 📬');};
-    c.append(i,go);return c;}
+    c.append(i,go);gsi().then(ok=>{if(!ok||!one.isConnected)return;const old=c.querySelector('[data-g]');
+      try{google.accounts.id.renderButton(one,{theme:'filled_black',size:'large',shape:'pill',text:'continue_with',width:Math.min(320,c.clientWidth-24||280)});google.accounts.id.prompt();if(old)old.hidden=true;}catch(e){}});
+    return c;}
   if(!myProfile){c.append(el('p','Pick your chat name (3-20 letters, numbers, spaces, . _ -).','small'));const i=el('input');i.maxLength=20;i.placeholder='Chat name';i.className='chatin';
     const go=el('button','Save name','btn');go.type='button';go.onclick=async()=>{const {error}=await sb.from('profiles').insert({id:me.id,display_name:i.value.trim()});if(error){toast(/duplicate|unique/i.test(error.message)?'That name is taken':'Name not allowed');return;}myProfile=null;openChat();};
     c.append(i,go);return c;}
@@ -1199,6 +1203,18 @@ async function loadRatings(){try{const r=await fetch('ratings.json?t='+Date.now(
   catch(e){$('rtBox').replaceChildren(el('p','Ratings will appear after her next update.','hint'));}}
 load();setInterval(load,30000);initLive();loadRatings();setInterval(loadRatings,600000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
+// ---------------- Google one-tap sign-in (a small Google pop-up on the page: tap your account, done; no page change)
+const GOOGLE_CLIENT_ID='';     // public ID (not a secret); also read from live-config.json (google_client_id)
+let gsiP=null;
+async function sha256hex(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+function gsi(){if(gsiP)return gsiP;gsiP=(async()=>{try{await supa();const id=(window._cfg&&window._cfg.google_client_id)||GOOGLE_CLIENT_ID;
+    if(!id||!(window._authProviders||{}).google)return false;
+    if(!(window.google&&google.accounts&&google.accounts.id))await loadScript('https://accounts.google.com/gsi/client');
+    const raw=[...crypto.getRandomValues(new Uint8Array(16))].map(x=>x.toString(16).padStart(2,'0')).join('');const hashed=await sha256hex(raw);
+    google.accounts.id.initialize({client_id:id,nonce:hashed,use_fedcm_for_prompt:true,use_fedcm_for_button:true,cancel_on_tap_outside:true,itp_support:true,context:'signin',
+      callback:async res=>{const {error}=await sb.auth.signInWithIdToken({provider:'google',token:res.credential,nonce:raw});
+        if(error){toast('Google sign-in did not finish: '+error.message);gsiP=null;}}});
+    return true;}catch(e){gsiP=null;return false;}})();return gsiP;}
 // ---------------- Pick'em leaderboard (Supabase; picks lock at the start time, graded by Mohjeta)
 async function pkCloud(event,team){try{if(!me||!sb)return;const {error}=await sb.from('pickem').upsert({event,team},{onConflict:'user_id,event'});
   if(error&&/profiles|foreign/i.test(error.message))toast('Pick a chat name in Chat to join the leaderboard');}catch(e){}}
