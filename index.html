@@ -173,6 +173,17 @@ nav.tabs button[aria-selected=true] svg{animation:navglow .4s ease}
 .ma{display:flex;gap:10px}.mlink{background:none;border:0;color:var(--dim);font-size:12px;padding:2px 0;cursor:pointer;text-decoration:underline}
 .chatin{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:10px 12px;font:inherit;margin:6px 0 8px;resize:vertical}
 .livedot{color:var(--green)!important}
+.xp{display:none!important}html.expert .xp{display:revert!important}html.expert .row.xp{display:flex!important}
+.sure{margin-left:4px}html.expert .sure{display:none}
+.seemore{color:var(--pink);font-weight:700;font-size:14px;margin-top:6px}html.expert .seemore{display:none}
+.hub{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.hubbtn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;cursor:pointer;color:var(--text);transition:transform .12s ease,border-color .2s ease,box-shadow .2s ease;animation:rise .35s ease both}
+.hubbtn:active{transform:scale(.96)}.hubbtn:hover{border-color:#ff4fd877;box-shadow:0 0 18px #ff4fd833}
+.hubbtn .hi{font-size:30px}.hubbtn b{font-size:17px}.hubbtn small{color:var(--muted);font-size:13px}
+.tour .tic{font-size:56px;text-align:center}.tour h2{text-align:center}.tour p{text-align:center;color:var(--muted)}
+.dots{display:flex;justify-content:center;gap:6px;margin:10px 0 14px}.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--pink)}
+.oauth{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:#111;font-weight:800;margin:6px 0;cursor:pointer}
+.oauth.discord{background:#5865F2;color:#fff;border-color:#5865F2}.oauth.apple{background:#000;color:#fff}.oauth .oi{font-weight:900}
 .notice{background:#1a1408cc;border:1px solid #ffe14d55;border-left:3px solid var(--yellow);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px;color:#fff1c2}
 .install{display:flex;gap:12px;align-items:center}.appicon{flex:none;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:#f1e9ff;background:linear-gradient(180deg,#4a1580,#5c1f70)}.appicon::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--pink);margin:12px 0 0 2px}
 .btn{display:inline-block;border:0;border-radius:12px;padding:10px 16px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--purple),var(--pink));cursor:pointer;text-decoration:none}
@@ -200,22 +211,20 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
   <div class="top"><div class="brand" id="home" role="link" tabindex="0">MOHJETA<b>.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><span class="updated" id="updated">Loading…</span></div>
 </header>
   <nav class="tabs" role="tablist" aria-label="Sections" id="nav">
-    <button role="tab" data-tab="picks" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5 2 7.5L12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>Picks</button>
-    <button role="tab" data-tab="games" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Games</button>
-    <button role="tab" data-tab="record" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Record</button>
-    <button role="tab" data-tab="sim" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.3"/><circle cx="16" cy="8" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="8" cy="16" r="1.3"/><circle cx="16" cy="16" r="1.3"/></svg>Simulate</button>
-    <button role="tab" data-tab="ratings" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0z"/><path d="M17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg>Ratings</button>
-    <button role="tab" data-tab="more" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>More</button>
+    <button role="tab" data-tab="picks" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5 2 7.5L12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>Tonight</button>
+    <button role="tab" data-tab="record" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Results</button>
+    <button role="tab" data-tab="play" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.3"/><circle cx="16" cy="8" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="8" cy="16" r="1.3"/><circle cx="16" cy="16" r="1.3"/></svg>Play</button>
+    <button role="tab" data-tab="more" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</button>
   </nav>
 <main>
   <section class="panel on" id="picks" role="tabpanel" aria-label="Picks">
     <div id="record"></div><div id="installBox"></div><div id="alertsBox"></div>
     <div id="liveBox"></div>
-    <h3>Tonight she's betting</h3><p class="hint small">Games where she puts $5 of paper money on her pick at Kalshi's real price.</p><div class="grid" id="betting"></div>
-    <h3>Her strongest picks</h3><p class="hint small">Her most confident calls in every sport, including practice sports she does not bet.</p><div class="grid" id="best"></div>
+    <h3>Tonight she's betting</h3><p class="hint small xp">Games where she puts $5 of paper money on her pick at Kalshi's real price.</p><div class="grid" id="betting"></div>
+    <h3>Her most confident picks</h3><p class="hint small xp">Her most confident calls in every sport, including practice sports she does not bet.</p><div class="grid" id="best"></div>
     <h3>Latest results</h3><div class="strip" id="recent"></div>
   </section>
-  <section class="panel" id="games" role="tabpanel" aria-label="Games">
+  <section class="panel" id="games" role="tabpanel" aria-label="Games"><button class="back" data-go="more">‹ More</button>
     <h2>Games</h2><p class="hint small">Every game in the next 24 hours. Tap a game for the full breakdown. Picks keep updating until about 20 minutes before the start.</p>
     <div class="chips" id="gameChips"></div><div class="chips" id="laneChips"></div><div id="gameList"></div>
   </section>
@@ -228,17 +237,26 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <p class="hint small">Tap any bet to see why she placed it. 🔒 = sealed: fingerprinted the moment she placed it.</p>
     <div id="calib"></div><div id="proof"></div>
   </section>
+  <section class="panel" id="play" role="tabpanel" aria-label="Play">
+    <h2>Play</h2><p class="hint small">Fun things to do between games. Everything here is free.</p>
+    <div class="hub">
+      <button type="button" class="hubbtn" data-go="sim"><span class="hi">🎲</span><b>Simulate a game</b><small>Play tonight's games 10,000 times. Sit stars, make trades.</small></button>
+      <button type="button" class="hubbtn" id="hubGuess"><span class="hi">🔮</span><b>Guess her number</b><small>How sure is she? Guess before you see it.</small></button>
+      <button type="button" class="hubbtn" id="hubPickem"><span class="hi">🎯</span><b>Pick'em</b><small>Pick tonight's winners and try to beat her.</small></button>
+      <button type="button" class="hubbtn" data-go="chat"><span class="hi">💬</span><b>Community chat</b><small>Talk games with other fans, live.</small></button>
+    </div><div id="playBadges"></div>
+  </section>
   <section class="panel" id="chat" role="tabpanel" aria-label="Community chat"><button class="back" data-go="more">‹ More</button>
     <h2>💬 Community chat</h2>
     <p class="hint small">Rules: be respectful · no selling picks, links or referral codes · no "guaranteed" or "lock" talk · 21+ · gambling problem? 1-800-GAMBLER. Messages can be removed and accounts muted by moderators.</p>
     <select id="chatRoom" class="mpick" aria-label="Choose a chat room"></select><div id="chatBox"></div></section>
-  <section class="panel" id="guess" role="tabpanel" aria-label="Guess her number"><button class="back" data-go="picks">‹ Picks</button>
+  <section class="panel" id="guess" role="tabpanel" aria-label="Guess her number"><button class="back" data-go="play">‹ Play</button>
     <h2>🔮 Guess her number</h2><p class="hint small">Guess how likely she thinks a team is to win, before you see it. Closer guesses score more (100 for exact). Saved on this phone only, just for fun.</p><div id="guessBox"></div></section>
-  <section class="panel" id="sim" role="tabpanel" aria-label="Simulate">
+  <section class="panel" id="sim" role="tabpanel" aria-label="Simulate"><button class="back" data-go="play">‹ Play</button>
     <h2>Simulate a game</h2><p class="hint small">Pick one of tonight's games, choose who plays, and run it 10,000 times on your phone. It uses the player rating: the same numbers behind her picks.</p>
     <select id="simPick" class="mpick" aria-label="Choose a game"></select><div id="simBox"></div>
   </section>
-  <section class="panel" id="ratings" role="tabpanel" aria-label="Ratings">
+  <section class="panel" id="ratings" role="tabpanel" aria-label="Ratings"><button class="back" data-go="more">‹ More</button>
     <h2>Ratings</h2><p class="hint small">Team strength from real final scores (Elo: 1500 is average, +100 is about a 64% favorite) and each league's players. Tennis: player Elo overall and by surface.</p>
     <div class="chips" id="rtChips"></div><div class="chips" id="rtViews"></div><select id="rtPick" aria-label="Choose team or position" hidden></select><input id="rtFind" type="search" placeholder="Find a team or player…" aria-label="Find a team or player"><div id="rtBox"></div>
   </section>
@@ -247,6 +265,9 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <div class="menu">
       <button type="button" data-go="combos"><span>Combo ideas<small>Her best multi-game combos right now</small></span>›</button>
       <button type="button" data-go="score"><span>Scorecard<small>Every source she uses, graded against real results</small></span>›</button>
+      <button type="button" data-go="games"><span>📅 All games<small>Every game she's watching, by sport</small></span>›</button>
+      <button type="button" data-go="ratings"><span>🏆 Team & player ratings<small>Who's strongest right now</small></span>›</button>
+      <button type="button" id="xpToggle" role="switch" aria-checked="false"><span>Expert mode<small>Show every number: market prices, odds, gaps and value</small></span><i class="switch" aria-hidden="true"></i></button>
       <button type="button" data-go="chat"><span>💬 Community chat<small>Talk games with other fans, live</small></span>›</button>
       <button type="button" data-go="how"><span>How she picks<small>Plain-English explanation of her method</small></span>›</button>
       <button type="button" data-go="odds"><span>Using her picks anywhere<small>Fair odds and the price where a pick has value, for any sportsbook or market</small></span>›</button>
@@ -382,7 +403,7 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['picks','games','record','sim','ratings','more'];const SUB={chat:'more',guess:'picks',combos:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
+const TABS=['picks','record','play','more'];const SUB={sim:'play',games:'more',ratings:'more',chat:'more',guess:'play',combos:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button')];
 function show(name,push){name=LEGACY[name]||name;const panel=name==='record'?'recordp':name;
@@ -649,7 +670,9 @@ let sb=null,lastLive=null,liveCh=null,chatRoom='lobby',chatCh=null,me=null,myPro
 function loadScript(src){return new Promise((ok,bad)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=bad;document.head.append(s);});}
 async function supa(){if(sb)return sb;const r=await fetch('live-config.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('not set up');const c=await r.json();
   if(!window.supabase)await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4');
-  sb=window.supabase.createClient(c.url,c.anon_key,{auth:{persistSession:true,detectSessionInUrl:true}});return sb;}
+  sb=window.supabase.createClient(c.url,c.anon_key,{auth:{persistSession:true,detectSessionInUrl:true}});
+  try{const st=await fetch(c.url+'/auth/v1/settings',{headers:{apikey:c.anon_key}}).then(r=>r.json());window._authProviders=st.external||{};}catch(e){window._authProviders={};}
+  return sb;}
 async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
   liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();
@@ -691,7 +714,12 @@ function msgRow(m){const r=el('div',null,'msg'+(m.hidden?' hid':'')+(me&&m.user_
     if(m.user_id!==me.id)acts.append(h,mu,bn);else acts.append(h);}
   r.append(acts);return r;}
 function composer(){const c=el('div',null,'card');
-  if(!me){c.append(el('p','Sign in to chat. We email you a one-tap sign-in link: no password.','small'));const i=el('input');i.type='email';i.placeholder='you@email.com';i.className='chatin';
+  if(!me){c.append(el('p','Sign in to chat. No password needed.','small'));
+    const prov=(window._authProviders||{});const redirectTo=location.origin+location.pathname+'#chat';
+    for(const [id,label,ic] of [['google','Continue with Google','G'],['discord','Continue with Discord','D'],['apple','Continue with Apple','']]){
+      if(!prov[id])continue;const b=el('button',null,'oauth '+id);b.type='button';b.append(el('span',ic,'oi'),el('span',label));
+      b.onclick=async()=>{const {error}=await sb.auth.signInWithOAuth({provider:id,options:{redirectTo}});if(error)toast('Could not start sign-in: '+error.message);};c.append(b);}
+    if(Object.values(prov).some(Boolean))c.append(el('p','or get a sign-in link by email:','hint small'));const i=el('input');i.type='email';i.placeholder='you@email.com';i.className='chatin';
     const go=el('button','Send sign-in link','btn');go.type='button';go.onclick=async()=>{const email=i.value.trim();if(!/^\S+@\S+\.\S+$/.test(email)){toast('Enter a valid email');return;}
       const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname+'#chat'}});toast(error?'Could not send: '+error.message:'Check your email for the sign-in link 📬');};
     c.append(i,go);return c;}
@@ -708,6 +736,24 @@ function composer(){const c=el('div',null,'card');
   go.onclick=send;t.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}};
   const out=el('button','Sign out','mlink');out.type='button';out.onclick=async()=>{await sb.auth.signOut();me=null;myProfile=null;openChat();};
   c.append(el('div','Chatting as '+myProfile.display_name+(myProfile.role!=='member'?' · '+myProfile.role:''),'hint small'),t,go,out);return c;}
+// ---------------- simple by default; Expert mode shows every number
+(function(){let on=false;try{on=localStorage.getItem('mohjeta.expert')==='1';}catch(e){}
+  const set=v=>{document.documentElement.classList.toggle('expert',v);const t=$('xpToggle');if(t)t.setAttribute('aria-checked',String(v));try{localStorage.setItem('mohjeta.expert',v?'1':'0');}catch(e){}};
+  set(on);$('xpToggle').onclick=()=>{on=!on;set(on);toast(on?'Expert mode on: all the numbers':'Simple mode');};
+  $('hubGuess').onclick=()=>{show('guess');drawGuess();};
+  $('hubPickem').onclick=()=>{show('picks');setTimeout(()=>{const x=document.querySelector('.pickem');if(x)x.scrollIntoView({behavior:'smooth',block:'center'});toast('Tap a team on any game to make your pick 🎯');},200);};})();
+// first-visit welcome: three short screens
+function tour(){let seen=false;try{seen=localStorage.getItem('mohjeta.tour')==='1';}catch(e){}if(seen)return;
+  const steps=[['🎯','Her pick','Every game shows who Mohjeta thinks will win and how sure she is, like “Celtics · 72% sure”. Tap a game to see why.'],
+    ['📈','Her results','The Results tab shows every pick she made, wins and losses. Nothing is hidden or deleted.'],
+    ['🎮','Play along','Simulate games, guess her numbers, pick winners against her and chat with other fans in Play.']];
+  let i=0;const ov=el('div',null,'gate tour');const box=el('div',null,'gatebox');ov.append(box);document.body.append(ov);
+  const draw=()=>{box.replaceChildren();const [ic,t,b]=steps[i];box.append(el('div',ic,'tic'),el('h2',t),el('p',b));
+    const dots=el('div',null,'dots');steps.forEach((_,k)=>dots.append(el('i',null,k===i?'on':'')));box.append(dots);
+    const row=el('div',null,'row');const skip=el('button','Skip','mlink');skip.type='button';skip.onclick=done;
+    const next=el('button',i<steps.length-1?'Next ›':'Let’s go','btn');next.type='button';next.onclick=()=>{if(i<steps.length-1){i++;draw();}else done();};row.append(skip,el('span',null,'sp'),next);box.append(row);};
+  const done=()=>{try{localStorage.setItem('mohjeta.tour','1');}catch(e){}ov.remove();};draw();}
+(function(){const go=()=>{const g=$('ageGate');if(g&&!g.hidden){setTimeout(go,800);return;}tour();};setTimeout(go,1200);})();
 let simId=null;const simState={};
 function simGames(){return (D&&D.games||[]).filter(g=>g.sim&&g.state==='UPCOMING');}
 function renderSim(){const gs=simGames();const sel=$('simPick');sel.replaceChildren();
@@ -789,9 +835,9 @@ function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');c.
   if(g.state==='LIVE')top.append(el('span','● LIVE '+(g.detail||''),'pill p-live'));else top.append(el('span',when(g.start),'hint small'));
   top.append(el('span',null,'sp'));const ln=laneOf(g);top.append(el('span',ln.t,'pill '+ln.c));c.append(top);
   const tms=el('div',null,'teams');for(const t of g.teams){const r=el('div',null,'tm'+(g.pick&&g.pick.team===t.name?' mine':''));r.append(badge(t.name),el('span',t.name,'nm'),el('b',g.state==='LIVE'?String(t.score??0):(t.record||''),'hint'));tms.append(r);}c.append(tms);
-  if(g.pick){const pl=el('div',null,'pickline');pl.append(el('span','Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'));c.append(pl);
-    const gt=gapText(g);const k=kal(g);const sub=el('div',null,'row small');if(k!=null)sub.append(el('span','Kalshi '+k+'¢','hint'));if(gt)sub.append(el('span','· '+gt[0],'gap '+gt[1]));c.append(sub);
-    const ol=oddsLine(g);if(ol)c.append(el('div',ol,'small odds'));
+  if(g.pick){const pl=el('div',null,'pickline');pl.append(el('span','Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'),el('span','sure','hint small sure'));c.append(pl);
+    const gt=gapText(g);const k=kal(g);const sub=el('div',null,'row small xp');if(k!=null)sub.append(el('span','Kalshi '+k+'¢','hint'));if(gt)sub.append(el('span','· '+gt[0],'gap '+gt[1]));c.append(sub);
+    const ol=oddsLine(g);if(ol)c.append(el('div',ol,'small odds xp'));
     const wm=winMeter(g);if(wm)c.append(wm);
     if(g.teams.length===2&&!opts.short&&(g.state==='UPCOMING'||pkLoad()[pkKey(g)])){const pr=pickemRow(g);const cd=countdown(g);if(cd)pr.append(cd);c.append(pr);}
     if(g.pick.held)c.append(el('div','Too close to call: her earlier pick stays shown.','hint small'));
@@ -867,7 +913,7 @@ function openGame(id,push){if(!D)return;const g=D.games.find(x=>String(x.id||x.n
   sheetGame=g;openSheet(()=>gameView(g),'Game');if(push!==false)try{history.pushState(null,'','#game/'+encodeURIComponent(g.id||g.name));}catch(e){}}
 
 // ---------------- Picks (home)
-function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();setTimeout(()=>resultFlash(b&&b.totals),300);rec.append(pickemCard());{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
+function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(pickemCard());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
     const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));
