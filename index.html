@@ -238,16 +238,19 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .cv b{text-align:center}.cbar{height:12px;background:#ffffff10;border-radius:6px;overflow:hidden;display:flex}.cbar.l{justify-content:flex-end}
 .cbar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),#8b5cf6);border-radius:6px;transition:width .5s}.cbar.neg i{background:#ef4444aa}
 
-.chatfab{position:fixed;right:14px;bottom:calc(var(--navh) + var(--safe) + 14px);z-index:60;width:54px;height:54px;border-radius:50%;border:0;cursor:pointer;
+.chatfab{position:fixed;right:14px;bottom:calc(var(--navh) + var(--safe) + 14px);z-index:60;width:52px;height:52px;border-radius:50%;border:0;cursor:grab;touch-action:none;
   background:linear-gradient(135deg,var(--purple),var(--pink));box-shadow:0 6px 24px #ff4fd855;font-size:24px;display:flex;align-items:center;justify-content:center}
 .chatfab .cbadge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:10px;background:var(--red);color:#fff;font-size:11px;line-height:20px;padding:0 5px}
 .chatfab .cbadge[hidden],.chatfab .cbadge:empty{display:none}
-body.chatting .chatfab{display:none}
-.cdrawer{position:fixed;left:0;right:0;bottom:calc(var(--navh) + var(--safe));z-index:70;max-height:min(72vh,640px);display:flex;flex-direction:column;
-  background:#120c1cf7;backdrop-filter:blur(10px);border-top:1px solid #ff4fd855;border-radius:18px 18px 0 0;padding:10px 14px 12px;box-shadow:0 -10px 40px #0009;animation:rise .25s ease both}
-.cdrawer[hidden]{display:none}.cdhead{display:flex;align-items:center;gap:10px}.cdhead .cdx{font-size:18px}.cdrules{margin:4px 0 6px}
-.cdrawer #chatBox{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}.cdrawer .chatlist{flex:1;overflow:auto;max-height:none}
-@media(min-width:760px){.cdrawer{left:auto;right:16px;width:400px;bottom:calc(var(--navh) + 16px);border-radius:18px;border:1px solid #ff4fd855}}
+.cdrawer{position:fixed;z-index:70;width:min(280px,calc(100vw - 24px));height:min(38vh,300px);resize:both;overflow:hidden;min-width:220px;min-height:180px;display:flex;flex-direction:column;font-size:13px;
+  background:#120c1cf0;backdrop-filter:blur(8px);border:1px solid #ff4fd866;border-radius:16px;padding:6px 10px 8px;box-shadow:0 10px 34px #000a;animation:rise .2s ease both}
+.cdrawer[hidden]{display:none}.cdhead{display:flex;align-items:center;gap:8px;cursor:grab;touch-action:none;user-select:none;padding:2px 0 4px;border-bottom:1px solid #ffffff14}
+.cdhead .grip{opacity:.5;letter-spacing:-2px}.cdhead .cdx{font-size:16px}.cdrawer .cdrules{display:none}
+.cdrawer #chatBox{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}.cdrawer .chatlist{flex:1;overflow:auto;max-height:none;margin:4px 0;gap:4px}
+.cdrawer .msg{padding:5px 8px;border-radius:10px}.cdrawer .msg .ma{display:none}.cdrawer .msg:hover .ma{display:flex}
+.cdrawer .card{padding:6px 0 0;margin:0;background:none;border:0;box-shadow:none}.cdrawer .chatin{margin:2px 0 4px;padding:7px 9px;resize:none;font-size:13px}
+.cdrawer .btn{padding:7px 12px;font-size:13px}.cdrawer .card .hint{font-size:11px}
+.dragging,.dragging *{cursor:grabbing!important}
 .cpop{position:fixed;right:14px;bottom:calc(var(--navh) + var(--safe) + 78px);z-index:65;max-width:min(320px,calc(100vw - 28px));display:flex;gap:8px;align-items:center;
   text-align:left;background:#1d1430f2;border:1px solid #ff4fd866;border-radius:14px;padding:8px 12px;color:var(--text,#fff);cursor:pointer;animation:rise .25s ease both;transition:opacity .4s,transform .4s}
 .cpop.out{opacity:0;transform:translateY(10px)}.cpop .cptext{display:flex;flex-direction:column;min-width:0}.cpop .cptext span{font-size:13px;opacity:.9;overflow:hidden;text-overflow:ellipsis}
@@ -1238,25 +1241,44 @@ function chatOpen(){const d=$('chatDrawer');return !!(d&&!d.hidden);}
 function popsOn(){try{return localStorage.getItem('mohjeta.chatpop')!=='0';}catch(e){return true;}}
 function chatFab(){if($('chatFab'))return;
   const fab=el('button',null,'chatfab');fab.id='chatFab';fab.type='button';fab.setAttribute('aria-label','Open community chat');fab.append(el('span','💬'),el('b','','cbadge'));
-  fab.onclick=()=>chatOpen()?closeDrawer():openDrawer();document.body.append(fab);
+  fab.onclick=null;document.body.append(fab);place(fab,'mohjeta.fabpos');
+  draggable(fab,fab,'mohjeta.fabpos',()=>chatOpen()?closeDrawer():openDrawer());
   const d=el('div',null,'cdrawer');d.id='chatDrawer';d.hidden=true;d.setAttribute('role','dialog');d.setAttribute('aria-label','Community chat');
   const head=el('div',null,'cdhead');const mute=el('button',popsOn()?'🔔':'🔕','mlink');mute.type='button';mute.title='Pop-ups for new messages';
   mute.onclick=()=>{const on=!popsOn();try{localStorage.setItem('mohjeta.chatpop',on?'1':'0');}catch(e){}mute.textContent=on?'🔔':'🔕';toast(on?'Chat pop-ups on':'Chat pop-ups off');};
   const x=el('button','✕','mlink cdx');x.type='button';x.setAttribute('aria-label','Close chat');x.onclick=closeDrawer;
-  head.append(el('b','💬 Community chat'),el('span',null,'sp'),mute,x);
+  head.append(el('span','⋮⋮','grip'),el('b','💬 Chat'),el('span',null,'sp'),mute,x);
   d.append(head,el('p','Be respectful · no selling picks, links or "locks" · 21+ · 1-800-GAMBLER','hint small cdrules'));
   const box=$('chatBox');if(box)d.append(box);document.body.append(d);
+  draggable(d,head,'mohjeta.chatpos',null);
   if(sb&&!popCh)popCh=sb.channel('pop').on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room=eq.lobby'},p=>{const m=p.new;
     if(!m||m.hidden||(me&&m.user_id===me.id)||chatOpen())return;unread++;badgeCount();if(popsOn())chatPop(m);}).subscribe();}
 function badgeCount(){const b=document.querySelector('#chatFab .cbadge');if(b){b.textContent=unread?String(Math.min(unread,99)):'';b.hidden=!unread;}}
 function chatPop(m){document.querySelectorAll('.cpop').forEach(x=>x.remove());const c=el('button',null,'cpop');c.type='button';
   const t=el('div',null,'cptext');t.append(el('b',m.name||'fan'),el('span',clean(String(m.body||'')).slice(0,90)));c.append(chatPic(m),t);
-  c.onclick=()=>{c.remove();openDrawer();};document.body.append(c);setTimeout(()=>c.classList.add('out'),4200);setTimeout(()=>c.remove(),4700);}
-function openDrawer(){chatFab();const d=$('chatDrawer');d.hidden=false;document.body.classList.add('chatting');unread=0;badgeCount();
+  c.onclick=()=>{c.remove();openDrawer();};document.body.append(c);
+  const f=$('chatFab');if(f){const r=f.getBoundingClientRect();setPos(c,Math.min(r.right-c.offsetWidth,innerWidth-c.offsetWidth-8),r.top-c.offsetHeight-8);}setTimeout(()=>c.classList.add('out'),4200);setTimeout(()=>c.remove(),4700);}
+function openDrawer(){chatFab();const d=$('chatDrawer');d.hidden=false;document.body.classList.add('chatting');
+  if(!place(d,'mohjeta.chatpos')){const f=$('chatFab').getBoundingClientRect(),w=d.offsetWidth,h=d.offsetHeight;   // first time: just above the bubble
+    setPos(d,Math.min(f.right-w,innerWidth-w-8),f.top-h-10);}unread=0;badgeCount();
   document.querySelectorAll('.cpop').forEach(x=>x.remove());openChat();}
 function closeDrawer(){const d=$('chatDrawer');if(d)d.hidden=true;document.body.classList.remove('chatting');
   if(location.hash==='#chat')try{history.replaceState(null,'',location.pathname+'#picks');}catch(e){}}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&chatOpen())closeDrawer();});
+// drag anything (the bubble, the chat window by its top bar); remembered on this phone; a tap without moving = click
+function setPos(n,x,y){const w=n.offsetWidth||52,h=n.offsetHeight||52;x=Math.max(6,Math.min(innerWidth-w-6,x));y=Math.max(6,Math.min(innerHeight-h-6,y));
+  n.style.left=x+'px';n.style.top=y+'px';n.style.right='auto';n.style.bottom='auto';}
+function place(n,key){try{const p=JSON.parse(localStorage.getItem(key)||'null');if(p&&isFinite(p.x)&&isFinite(p.y)){setPos(n,p.x*innerWidth,p.y*innerHeight);return true;}}catch(e){}return false;}
+function draggable(n,handle,key,onTap){let sx=0,sy=0,ox=0,oy=0,moved=false,on=false;
+  handle.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(b&&b!==handle)return;   // the ✕ / 🔔 buttons stay clickable
+    on=true;moved=false;sx=e.clientX;sy=e.clientY;const r=n.getBoundingClientRect();ox=r.left;oy=r.top;handle.setPointerCapture(e.pointerId);});
+  handle.addEventListener('pointermove',e=>{if(!on)return;const dx=e.clientX-sx,dy=e.clientY-sy;if(!moved&&Math.hypot(dx,dy)<6)return;
+    moved=true;document.body.classList.add('dragging');setPos(n,ox+dx,oy+dy);});
+  handle.addEventListener('pointerup',e=>{if(!on)return;on=false;document.body.classList.remove('dragging');
+    if(moved){const r=n.getBoundingClientRect();try{localStorage.setItem(key,JSON.stringify({x:r.left/innerWidth,y:r.top/innerHeight}));}catch(e){}}
+    else if(onTap)onTap();});
+  handle.addEventListener('pointercancel',()=>{on=false;document.body.classList.remove('dragging');});}
+addEventListener('resize',()=>{for(const [id,k] of [['chatFab','mohjeta.fabpos'],['chatDrawer','mohjeta.chatpos']]){const n=$(id);if(n&&n.style.left)place(n,k);}});
 // ---------------- Pick'em leaderboard (Supabase; picks lock at the start time, graded by Mohjeta)
 async function pkCloud(event,team){try{if(!me||!sb)return;const {error}=await sb.from('pickem').upsert({event,team},{onConflict:'user_id,event'});
   if(error&&/profiles|foreign/i.test(error.message))toast('Pick a chat name in Chat to join the leaderboard');}catch(e){}}
