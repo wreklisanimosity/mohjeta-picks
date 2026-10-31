@@ -1204,7 +1204,7 @@ async function loadRatings(){try{const r=await fetch('ratings.json?t='+Date.now(
 load();setInterval(load,30000);initLive();loadRatings();setInterval(loadRatings,600000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
 // ---------------- Google one-tap sign-in (a small Google pop-up on the page: tap your account, done; no page change)
-const GOOGLE_CLIENT_ID='';     // public ID (not a secret); also read from live-config.json (google_client_id)
+const GOOGLE_CLIENT_ID='883955987231-l1v1fltv25f3hbavnrf3pe1ut8gb5u2u.apps.googleusercontent.com';     // public ID (not a secret); also read from live-config.json (google_client_id)
 let gsiP=null;
 async function sha256hex(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
 function gsi(){if(gsiP)return gsiP;gsiP=(async()=>{try{await supa();const id=(window._cfg&&window._cfg.google_client_id)||GOOGLE_CLIENT_ID;
