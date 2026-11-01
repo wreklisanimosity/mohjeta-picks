@@ -188,6 +188,12 @@ nav.tabs button[aria-selected=true] svg{animation:navglow .4s ease}
 .arena{position:relative;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;margin:10px 0 14px;padding:14px 6px;border-radius:14px;background:radial-gradient(circle at 50% 50%,#ff4fd822,transparent 60%),var(--card2);overflow:hidden}
 .fighter{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}.fighter b{font-size:14px}.fighter small{color:var(--muted);font-weight:800}
 .badge.big{width:64px;height:64px;font-size:22px;box-shadow:0 0 18px #0008}
+.nfl-team-row,.nfl-choice,.nfl-pick{display:flex;align-items:center;gap:7px}
+.nfl-team-row + .nfl-team-row{margin-top:4px}
+.nfl-team-row .team-portrait,.nfl-choice .team-portrait{width:48px;height:48px;flex:none}
+.nfl-team-row .team-name{min-width:0;white-space:normal}
+.nfl-choice select{flex:1;min-width:0}
+.pk.nfl-pick{display:inline-flex}
 .tm .team-portrait{width:48px;height:48px;flex-shrink:0}
 .hero .side .team-portrait{width:72px;height:72px}
 .fighter .team-portrait.big{width:clamp(76px,22vw,88px);height:clamp(76px,22vw,88px)}
@@ -546,7 +552,7 @@ function teamBadge(name){
   badgeEl.style.position='relative';badgeEl.style.overflow='hidden';
   im.alt='';im.style.cssText='position:absolute;max-width:none;max-height:none;width:'+(nfl?800:1280)/size*100+'%;height:'+(nfl?800:853)/size*100+'%;left:'+(-x/size*100)+'%;top:'+(-y/size*100)+'%;';
   im.onload=()=>badgeEl.replaceChildren(im);
-  im.src=nfl?nfl.src:southwestPortraits.has(name)?'nba-southwest-portraits.jpg':centralPortraits.has(name)?'nba-central-portraits.jpg':southeastPortraits.has(name)?'nba-southeast-portraits.jpg':northwestPortraits.has(name)?'nba-northwest-portraits.jpg':pacificPortraits.has(name)?'nba-pacific-portraits.jpg':'nba-atlantic-portraits.jpg';
+  im.src=nfl?nfl.src+'?portraits=1':southwestPortraits.has(name)?'nba-southwest-portraits.jpg':centralPortraits.has(name)?'nba-central-portraits.jpg':southeastPortraits.has(name)?'nba-southeast-portraits.jpg':northwestPortraits.has(name)?'nba-northwest-portraits.jpg':pacificPortraits.has(name)?'nba-pacific-portraits.jpg':'nba-atlantic-portraits.jpg';
   return badgeEl;
 }
 function badge(name){const n=String(name||'?');let h=0;for(const ch of n)h=(h*31+ch.charCodeAt(0))>>>0;
@@ -747,6 +753,7 @@ function pickemRow(g){const all=pkLoad(),k=pkKey(g),mine=all[k];
   if(mine&&g.pick&&g.state==='UPCOMING'&&mine.her!==g.pick.team){mine.her=g.pick.team;pkSave(all);}   // her pick at the start
   const row=el('div',null,'pickem');row.append(el('span',g.state==='UPCOMING'?'Your pick:':'Your pick (locked):','hint small'));
   for(const t of g.teams){const b=el('button',t.name.split(' ').pop(),'pk'+(mine&&mine.team===t.name?' on':''));b.type='button';
+    if(g.league==='NFL'){b.classList.add('nfl-pick');b.prepend(teamBadge(t.name));}
     b.disabled=g.state!=='UPCOMING';b.setAttribute('aria-pressed',String(!!(mine&&mine.team===t.name)));
     b.onclick=e=>{e.stopPropagation();const x=pkLoad();x[k]={team:t.name,her:g.pick?g.pick.team:null,name:g.name,league:g.league,start:g.start};pkSave(x);pkCloud(k,t.name);award('first_pick');if(Object.keys(x).length>=5)award('five_picks');
       b.classList.add('burst');setTimeout(()=>{renderPicks(D);renderGames(D);},350);};row.append(b);}
@@ -958,7 +965,9 @@ async function renderAny(){const box=$('anyBox');const T=await loadTeams();box.r
   if(!T||!T.leagues||!Object.keys(T.leagues).length){box.append(el('p','Any-matchup data is being built from the ratings. Check back in a few minutes.','hint'));$('simBox').replaceChildren();return;}
   const lgs=Object.keys(T.leagues);if(!lgs.includes(anyPick.lg))anyPick.lg=lgs[0];const L=T.leagues[anyPick.lg];const names=Object.keys(L.teams).sort();
   if(!names.includes(anyPick.home))anyPick.home=names[0];if(!names.includes(anyPick.away)||anyPick.away===anyPick.home)anyPick.away=names.find(n=>n!==anyPick.home);
-  const sel=(label,opts,val,on)=>{const l=el('label',label,'anyl');const s=el('select');s.className='mpick';for(const o of opts){const x=el('option',o[1]);x.value=o[0];s.append(x);}s.value=val;s.onchange=()=>on(s.value);l.append(s);return l;};
+  const sel=(label,opts,val,on)=>{const l=el('label',label,'anyl');const s=el('select');s.className='mpick';for(const o of opts){const x=el('option',o[1]);x.value=o[0];s.append(x);}s.value=val;s.onchange=()=>on(s.value);
+    if(anyPick.lg==='NFL'&&label!=='League'){const row=el('span',null,'nfl-choice'),icon=el('span');icon.append(teamBadge(val));row.append(icon,s);l.append(row);
+      s.onchange=()=>{on(s.value);icon.replaceChildren(teamBadge(s.value));};}else l.append(s);return l;};
   const wrap=el('div',null,'card anycard');
   wrap.append(sel('League',lgs.map(x=>[x,sname(x)]),anyPick.lg,v=>{anyPick.lg=v;anyPick.home=anyPick.away=null;renderAny();}),
     sel('Away team',names.map(n=>[n,n]),anyPick.away,v=>{anyPick.away=v;}),sel('Home team',names.map(n=>[n,n]),anyPick.home,v=>{anyPick.home=v;}));
@@ -1180,7 +1189,11 @@ function renderGames(d){const gs=d.games.slice().sort((a,b)=>(a.state==='LIVE'?0
     const it=el('div',null,'item');it.tabIndex=0;it.setAttribute('role','button');it.onclick=()=>openGame(g.id||g.name);it.onkeydown=e=>{if(e.key==='Enter')openGame(g.id||g.name);};
     it.append(el('div',g.state==='LIVE'?'LIVE':hm(g.start),'t'+(g.state==='LIVE'?' down':'')));
     const mid=el('div',null,'g');const ln=laneOf(g);const tt=el('div');tt.append(el('span',sname(g.league)+' · ','hint small'),el('span',ln.t,'pill '+ln.c));
-    tt.className='l2';mid.append(el('div',g.state==='LIVE'?g.teams.map(t=>t.name+' '+(t.score??0)).join(' – '):(g.name||g.teams.map(t=>t.name).join(' vs '))),tt);it.append(mid);
+    tt.className='l2';
+    if(g.league==='NFL'&&g.teams.length){for(const t of g.teams){const row=el('div',null,'nfl-team-row');
+      row.append(teamBadge(t.name),el('span',t.name+(g.state==='LIVE'?' '+(t.score??0):''),'team-name'));mid.append(row);}}
+    else mid.append(el('div',g.state==='LIVE'?g.teams.map(t=>t.name+' '+(t.score??0)).join(' – '):(g.name||g.teams.map(t=>t.name).join(' vs '))));
+    mid.append(tt);it.append(mid);
     const pc=el('div',null,'pc');if(g.pick){pc.append(el('div',g.pick.team.split(' ').slice(-1)[0],'small'),el('b',pct(g.pick.chance)));const k=kal(g);if(k!=null)pc.append(el('div','Kalshi '+k+'¢','hint small'));}else pc.append(el('span',g.locked?'🔒':'soon','hint small'));
     it.append(pc,el('span','›','chev'));box.append(it);}
   if(!shown.length)list.append(el('p','No games here in the next 24 hours.','empty'));}
