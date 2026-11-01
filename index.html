@@ -267,6 +267,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .fslot.empty{opacity:.45;border-style:dashed;cursor:default}.fslot .fx{position:absolute;top:4px;right:8px;opacity:.6}
 .flist{display:flex;flex-direction:column;gap:4px;max-height:52vh;overflow:auto;margin-top:8px}.frow{display:flex;align-items:center;gap:10px;background:none;border:1px solid var(--line);border-radius:10px;padding:7px 10px;color:var(--text);font:inherit;text-align:left;cursor:pointer}
 .frow.on{border-color:var(--pink);background:#ff4fd814}.frow .frole{width:22px;text-align:center;font-weight:800;color:var(--yellow)}.frow .fn{flex:1;min-width:0;display:flex;flex-direction:column}
+.pushcard{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.pushcard .anyn{display:flex;gap:8px;align-items:center}
 </style>
 </head>
 <body>
@@ -330,7 +331,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <div class="chips" id="rtChips"></div><div class="chips" id="rtViews"></div><select id="rtPick" aria-label="Choose team or position" hidden></select><input id="rtFind" type="search" placeholder="Find a team or player…" aria-label="Find a team or player"><div id="rtBox"></div>
   </section>
   <section class="panel" id="more" role="tabpanel" aria-label="More">
-    <h2>More</h2>
+    <h2>More</h2><div id="pushBox"></div>
     <div class="menu">
       <button type="button" data-go="combos"><span>Combo ideas<small>Her best multi-game combos right now</small></span>›</button>
       <button type="button" data-go="score"><span>Scorecard<small>Every source she uses, graded against real results</small></span>›</button>
@@ -430,7 +431,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
       <li><b>Chat accounts (optional):</b> if you sign in to the community chat, our chat provider (Supabase) stores your email address (only for signing in), your chat name, your messages, your Pick'em picks and, if you sign in with Google or Discord, a link to that account's profile picture. Your chat name, picture, messages and Pick'em record are public to other visitors; your email is not. Ask us to delete your chat account at any time.</li>
       <li><b>Saved on your phone only:</b> your settings (color-blind mode, the 21+ check, the install tip) are stored in your browser and never sent to us.</li>
       <li><b>Hosting:</b> the site is hosted on GitHub Pages. Like any web host, GitHub may log basic technical data such as IP addresses for security. See GitHub's privacy statement.</li>
-      <li><b>Visitor counts and who's online:</b> your browser gets a random ID (stored in your browser, not a cookie; no name, no IP address). We record only that this random ID visited on a day, and show totals. "Who's online" shows how many people have the site open right now and the chat names of signed-in chatters; nothing about it is stored. Clear this site's data in your browser to reset the ID.</li>
+      <li><b>Phone alerts (optional):</b> if you turn on alerts, your browser gives us a push address and keys so we can send you alerts (it contains no name or email; it is linked to your chat account if you are signed in). Turn alerts off any time from More, and the address is deleted.</li><li><b>Visitor counts and who's online:</b> your browser gets a random ID (stored in your browser, not a cookie; no name, no IP address). We record only that this random ID visited on a day, and show totals. "Who's online" shows how many people have the site open right now and the chat names of signed-in chatters; nothing about it is stored. Clear this site's data in your browser to reset the ID.</li>
       <li><b>Changes:</b> if this ever changes (for example, accounts for a paid version), this page will be updated first.</li>
       <li><b>Contact / delete your account:</b> email <a href="mailto:mohjozojo@gmail.com">mohjozojo@gmail.com</a> and we will delete your chat account, name, photo link, messages and picks.</li>
     </ul>
@@ -701,7 +702,7 @@ function shareCard(c){const W=1080,H=1350,cv=document.createElement('canvas');cv
     try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Mohjeta',text:c.title});return;}}catch(e){if(e&&e.name==='AbortError')return;}
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mohjeta.png';document.body.append(a);a.click();a.remove();},'image/png');}
 function wrapText(x,t,cx,y,maxW,lh){const words=String(t).split(' ');let line='';for(const w of words){const test=line?line+' '+w:w;if(x.measureText(test).width>maxW&&line){x.fillText(line,cx,y);y+=lh;line=w;}else line=test;}x.fillText(line,cx,y);}
-const BADGES={first_pick:['🎯','First pick'],five_picks:['🖐️','5 picks made'],beat_her:['👑','Beating the AI'],sim:['🎲','First simulation'],sim25:['🧪','25 simulations'],trade:['⇄','Trade machine'],share:['📤','Shared a card'],guess:['🔮','First guess'],sharp:['🏹','Guessed within 3 pts'],chat:['💬','First chat message'],compare:['⚖️','Compared players'],fantasy:['🏀','Drafted a fantasy team']};
+const BADGES={first_pick:['🎯','First pick'],five_picks:['🖐️','5 picks made'],beat_her:['👑','Beating the AI'],sim:['🎲','First simulation'],sim25:['🧪','25 simulations'],trade:['⇄','Trade machine'],share:['📤','Shared a card'],guess:['🔮','First guess'],sharp:['🏹','Guessed within 3 pts'],chat:['💬','First chat message'],compare:['⚖️','Compared players'],fantasy:['🏀','Drafted a fantasy team'],alerts:['🔔','Turned on alerts']};
 function badgeData(){try{return JSON.parse(localStorage.getItem('mohjeta.badges')||'{}')||{};}catch(e){return {};}}
 function award(kind){const b=badgeData();b._n=b._n||{};b._n[kind]=(b._n[kind]||0)+1;const earn=[];
   const give=k=>{if(!b[k]){b[k]=Date.now();earn.push(k);}};
@@ -749,7 +750,7 @@ async function supa(){if(sb)return sb;const r=await fetch('live-config.json?t='+
   return sb;}
 async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
-  chatFab();startPresence();logVisit();memberRefresh(true);setInterval(()=>memberRefresh(false),60000);
+  chatFab();startPresence();logVisit();drawPush($('pushBox'));memberRefresh(true);setInterval(()=>memberRefresh(false),60000);
   liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();
   sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN')toast('Signed in ✅');if(chatOpen())openChat();});
   if(/[?&]code=/.test(location.search)){for(let i=0;i<20&&!(await sb.auth.getSession()).data.session;i++)await new Promise(r=>setTimeout(r,250));
@@ -767,7 +768,7 @@ function updateAcct(){const b=$('acct');if(!b||!sb)return;b.hidden=false;b.repla
     const chat=el('button','💬 Open chat','btn');chat.type='button';chat.onclick=()=>{ov.remove();show('chat');};
     const out=el('button','Sign out','btn ghost');out.type='button';out.onclick=async()=>{await sb.auth.signOut();me=null;myProfile=null;ov.remove();updateAcct();toast('Signed out');};
     const x=el('button','Close','mlink');x.type='button';x.onclick=()=>ov.remove();
-    const plan=planBox();box.append(head,el('p','You\u2019re signed in. Your chat name and messages show to other fans; your email stays private.','hint small'));if(plan)box.append(plan);box.append(chat,out,x);document.body.append(ov);};}
+    const plan=planBox();const pb=el('div');drawPush(pb);box.append(head,el('p','You\u2019re signed in. Your chat name and messages show to other fans; your email stays private.','hint small'));if(plan)box.append(plan);box.append(pb,chat,out,x);document.body.append(ov);};}
 function applyLive(L){lastLive=L;if(!D||!L)return;const byId=new Map(D.games.map(g=>[g.id||g.name,g]));
   for(const g of L.games||[]){const cur=byId.get(g.id||g.name);if(cur)Object.assign(cur,g);else D.games.push(g);}
   if(L.bets&&D.bets){D.bets.totals=L.bets.totals||D.bets.totals;const key=r=>r.opened+'|'+r.bet;const have=new Map(D.bets.rows.map((r,i)=>[key(r),i]));
@@ -1297,6 +1298,31 @@ function planBox(){if(!pw().on)return null;const c=el('div',null,'card');c.style
   const a=ACCESS||{};const line=a.staff?'Team account: full access':a.sub_until&&Date.parse(a.sub_until)>Date.now()?'Member until '+new Date(a.sub_until).toLocaleDateString():
     a.access?'Free trial: '+daysLeft(a.trial_ends)+' days left':a.trial_used?'Free plan (trial used)':'Free plan';
   c.append(el('b','Your plan: '+line));if(!a.access)c.append(trialBtn());if(!a.staff&&!(a.sub_until&&Date.parse(a.sub_until)>Date.now()))c.append(subBtn(true));return c;}
+// ---------------- phone alerts (Web Push): her pick changed, game starting, Pick'em and fantasy results
+const PUSH_KINDS=[['picks','🔄 Her pick changes'],['start','⏰ My Pick’em games starting'],['results','✅ My Pick’em results'],['fantasy','🏀 My fantasy results']];
+function pushPrefs(){try{return JSON.parse(localStorage.getItem('mohjeta.pushprefs')||'null')||{picks:true,start:true,results:true,fantasy:true};}catch(e){return {picks:true,start:true,results:true,fantasy:true};}}
+function u8(b64){const p='='.repeat((4-b64.length%4)%4);const raw=atob((b64+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));}
+async function pushSub(){try{const reg=await navigator.serviceWorker.getRegistration();return reg?await reg.pushManager.getSubscription():null;}catch(e){return null;}}
+async function savePush(sub){const j=sub.toJSON();const {error}=await sb.rpc('set_push',{endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,prefs:pushPrefs()});return error;}
+async function drawPush(box){if(!box)return;box.replaceChildren();const c=el('div',null,'card pushcard');
+  const ios=/iPhone|iPad|iPod/.test(navigator.userAgent),standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  const vapid=window._cfg&&window._cfg.vapid_public;
+  c.append(el('b','🔔 Phone alerts'));
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)){c.append(el('p',ios&&!standalone?'On iPhone: tap Share → Add to Home Screen, open Mohjeta from that icon, then turn alerts on here.':'This browser can’t show alerts.','hint small'));box.append(c);return;}
+  if(!vapid||!sb){c.append(el('p','Alerts are being set up. Check back soon.','hint small'));box.append(c);return;}
+  const sub=await pushSub();const on=!!sub&&Notification.permission==='granted';
+  if(Notification.permission==='denied'){c.append(el('p','Alerts are blocked for this site in your phone settings. Allow notifications for mohjeta.com to turn them on.','hint small'));box.append(c);return;}
+  if(!on){c.append(el('p','Get a heads-up when her pick changes, your games start and results come in.','hint small'));
+    const b=el('button','🔔 Turn on alerts','btn');b.type='button';b.onclick=async()=>{b.disabled=true;
+      try{const perm=await Notification.requestPermission();if(perm!=='granted'){toast('Alerts not allowed');b.disabled=false;return;}
+        const reg=(await navigator.serviceWorker.getRegistration())||(await navigator.serviceWorker.register('sw.js'));await navigator.serviceWorker.ready;const s2=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(vapid)});
+        const err=await savePush(s2);toast(err?(/function|not find/i.test(err.message)?'Run supabase_push.sql in Supabase first':'Could not save: '+err.message):'Alerts on 🔔');award('alerts');}
+      catch(e){toast('Could not turn on alerts');}drawPush(box);};c.append(b);box.append(c);return;}
+  const prefs=pushPrefs();for(const [k,label] of PUSH_KINDS){const l=el('label',null,'anyn');const cb=el('input');cb.type='checkbox';cb.checked=prefs[k]!==false;
+    cb.onchange=async()=>{const p=pushPrefs();p[k]=cb.checked;try{localStorage.setItem('mohjeta.pushprefs',JSON.stringify(p));}catch(e){}await savePush(sub);toast('Saved');};l.append(cb,el('span',' '+label));c.append(l);}
+  if(!me)c.append(el('p','Sign in so the Pick’em and fantasy alerts know which games are yours.','hint small'));
+  const off=el('button','Turn off alerts','mlink');off.type='button';off.onclick=async()=>{const j=sub.toJSON();try{await sb.rpc('remove_push',{endpoint:j.endpoint});await sub.unsubscribe();}catch(e){}toast('Alerts off');drawPush(box);};
+  c.append(off);box.append(c);}
 // ---------------- who's online (Supabase presence: nothing stored) + visitor counter (random browser ID, totals only)
 let presCh=null,online={n:0,names:[]},STATS=null;
 function visitorId(){try{let v=localStorage.getItem('mohjeta.vid');if(!/^[a-f0-9]{24}$/.test(v||'')){v=[...crypto.getRandomValues(new Uint8Array(12))].map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('mohjeta.vid',v);}return v;}catch(e){return null;}}
