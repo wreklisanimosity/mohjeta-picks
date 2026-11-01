@@ -456,6 +456,21 @@ const when=s=>{if(!s)return '';const d=new Date(s);return isNaN(d)?'':d.toLocale
 const hm=s=>{const d=new Date(s);return isNaN(d)?'':d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});};
 const SN={NFL:'NFL',NCAAF:'College football',NBA:'NBA',WNBA:'WNBA',NCAAB:'College basketball',MLB:'MLB',NHL:'NHL',ATP:'Tennis (ATP)',WTA:'Tennis (WTA)',EPL:'Premier League',MLS:'MLS',UCL:'Champions League','LA LIGA':'La Liga','SERIE A':'Serie A',BUNDESLIGA:'Bundesliga','LIGUE 1':'Ligue 1',UEL:'Europa League',UECL:'Conference League','EFL CHAMP':'EFL Championship',UFC:'UFC',MMA:'MMA',BOXING:'Boxing'};
 const sname=k=>SN[k]||k||'Other';
+// Portrait coordinates in the owner's original 1280 × 853 Atlantic sheet.
+const atlanticPortraits=new Map([
+  ['Boston Celtics',[70,0,340]],['Brooklyn Nets',[490,0,350]],['New York Knicks',[917,0,345]],
+  ['Philadelphia 76ers',[24,433,335]],['Toronto Raptors',[489,434,338]]
+]);
+function teamBadge(name){
+  const badgeEl=badge(name),crop=atlanticPortraits.get(name);
+  if(!crop)return badgeEl;
+  const [x,y,size]=crop,im=new Image();
+  badgeEl.style.position='relative';badgeEl.style.overflow='hidden';
+  im.alt='';im.style.cssText='position:absolute;max-width:none;max-height:none;width:'+1280/size*100+'%;height:'+853/size*100+'%;left:'+(-x/size*100)+'%;top:'+(-y/size*100)+'%;';
+  im.onload=()=>badgeEl.replaceChildren(im);
+  im.src='nba-atlantic-portraits.jpg';
+  return badgeEl;
+}
 function badge(name){const n=String(name||'?');let h=0;for(const ch of n)h=(h*31+ch.charCodeAt(0))>>>0;
   const words=n.replace(/[^A-Za-z0-9 ]/g,'').split(' ').filter(Boolean);const ini=(words.length>1?words[0][0]+words[words.length-1][0]:n.slice(0,2)).toUpperCase();
   const b=el('span',ini,'badge');b.style.background='hsl('+(h%360)+' 60% 36%)';b.setAttribute('aria-hidden','true');return b;}
@@ -883,7 +898,7 @@ function buildCustom(T){const lg=anyPick.lg,L=T.leagues[lg],home=anyPick.home,aw
   else sim={league:lg,unit:L.unit,home,away,margin:A.strength-B.strength+(neutral?0:L.home_edge),sd:L.sd,total:L.total,total_sd:L.total_sd,neutral,players:{},custom:true,starters:{home:A.starter,away:B.starter}};
   customG={id,league:lg,name:away+' @ '+home,teams:[{name:home},{name:away}],state:'UPCOMING',sim};simId=id;}
 function arena(home,away,pH){const a=el('div',null,'arena'+(calm()?' still':''));const hw=pH>=0.5;
-  const side=(name,cls,hp,win)=>{const f=el('div',null,'fighter '+cls+(win?' win':''));const b=badge(name);b.classList.add('big');
+  const side=(name,cls,hp,win)=>{const f=el('div',null,'fighter '+cls+(win?' win':''));const b=teamBadge(name);b.classList.add('big');
     const bar=el('div',null,'hp');const fill=el('i');fill.style.setProperty('--hp',Math.max(6,Math.round(hp*100))+'%');bar.append(fill);
     f.append(el('span','👑','crown'),b,el('b',name.split(' ').pop()),bar,el('small',pct(hp)));return f;};
   a.append(side(away,'left',1-pH,!hw),el('div',null,'clash'),side(home,'right',pH,hw));a.querySelector('.clash').append(el('span','💥','boom'),el('span','VS','vs'));return a;}
@@ -978,7 +993,7 @@ function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');if
   const top=el('div',null,'row');top.append(el('span',sname(g.league).toUpperCase(),'league'));
   if(g.state==='LIVE')top.append(el('span','● LIVE '+(g.detail||''),'pill p-live'));else top.append(el('span',when(g.start),'hint small'));
   top.append(el('span',null,'sp'));const ln=laneOf(g);top.append(el('span',ln.t,'pill '+ln.c));c.append(top);
-  const tms=el('div',null,'teams');for(const t of g.teams){const r=el('div',null,'tm'+(g.pick&&g.pick.team===t.name?' mine':''));r.append(badge(t.name),el('span',t.name,'nm'),el('b',g.state==='LIVE'?String(t.score??0):(t.record||''),'hint'));tms.append(r);}c.append(tms);
+  const tms=el('div',null,'teams');for(const t of g.teams){const r=el('div',null,'tm'+(g.pick&&g.pick.team===t.name?' mine':''));r.append(teamBadge(t.name),el('span',t.name,'nm'),el('b',g.state==='LIVE'?String(t.score??0):(t.record||''),'hint'));tms.append(r);}c.append(tms);
   if(g.pick){const pl=el('div',null,'pickline');pl.append(el('span','Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'),el('span','sure','hint small sure'));c.append(pl);
     const gt=gapText(g);const k=kal(g);const sub=el('div',null,'row small xp');if(k!=null)sub.append(el('span','Kalshi '+k+'¢','hint'));if(gt)sub.append(el('span','· '+gt[0],'gap '+gt[1]));c.append(sub);
     const ol=oddsLine(g);if(ol)c.append(el('div',ol,'small odds xp'));
@@ -1015,7 +1030,7 @@ function section(title,node){const c=el('div',null,'card');c.append(el('h4',titl
 function gameView(g){const b=el('div');const ln=laneOf(g);
   const head=el('div',null,'row');head.append(el('span',sname(g.league).toUpperCase(),'league'),el('span',null,'sp'),el('span',ln.t,'pill '+ln.c));b.append(head);
   const hero=el('div',null,'hero');const vs=el('div',null,'vs');
-  g.teams.forEach((t,i)=>{const sd=el('div',null,'side');sd.append(badge(t.name),el('span',t.name),el('span',g.state==='LIVE'?String(t.score??0):(t.record||''),g.state==='LIVE'?'sc':'hint small'));vs.append(sd);if(i===0)vs.append(el('span',g.state==='LIVE'?'–':'vs','hint'));});
+  g.teams.forEach((t,i)=>{const sd=el('div',null,'side');sd.append(teamBadge(t.name),el('span',t.name),el('span',g.state==='LIVE'?String(t.score??0):(t.record||''),g.state==='LIVE'?'sc':'hint small'));vs.append(sd);if(i===0)vs.append(el('span',g.state==='LIVE'?'–':'vs','hint'));});
   hero.append(vs,el('div',g.state==='LIVE'?'● LIVE '+(g.detail||''):when(g.start),g.state==='LIVE'?'down':'hint'));if(g.tv&&g.tv.length)hero.append(el('div','TV: '+g.tv.join(' · '),'hint small'));b.append(hero);
   if(g.pick){const c=el('div',null,'card');const pl=el('div',null,'pickline');pl.append(el('span','Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'));c.append(pl);
     const tiles=el('div',null,'tiles');const tile=(l,v)=>{const t=el('div',null,'tile');t.append(l,el('b',v));tiles.append(t);};
