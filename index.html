@@ -262,6 +262,11 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .cdon{color:var(--green)}
 .banner.members{border-color:#ffe14d66;background:linear-gradient(135deg,#ffe14d14,#ff4fd812)}.banner.members .row{gap:8px;margin-top:8px;flex-wrap:wrap}
 .podtag{display:inline-block;font-size:11px;font-weight:800;color:#1a1200;background:var(--yellow);border-radius:999px;padding:2px 8px;margin-bottom:6px}
+.fteam .capbar{height:8px;background:#ffffff14;border-radius:4px;overflow:hidden;margin:6px 0 10px}.capbar i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--pink))}.capbar i.over{background:var(--red)}
+.fslots{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}.fslot{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:7px 9px;color:var(--text);position:relative;cursor:pointer;font:inherit}
+.fslot.empty{opacity:.45;border-style:dashed;cursor:default}.fslot .fx{position:absolute;top:4px;right:8px;opacity:.6}
+.flist{display:flex;flex-direction:column;gap:4px;max-height:52vh;overflow:auto;margin-top:8px}.frow{display:flex;align-items:center;gap:10px;background:none;border:1px solid var(--line);border-radius:10px;padding:7px 10px;color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.frow.on{border-color:var(--pink);background:#ff4fd814}.frow .frole{width:22px;text-align:center;font-weight:800;color:var(--yellow)}.frow .fn{flex:1;min-width:0;display:flex;flex-direction:column}
 </style>
 </head>
 <body>
@@ -301,6 +306,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <h2>Play</h2><p class="hint small">Fun things to do between games. Everything here is free.</p>
     <div class="hub">
       <button type="button" class="hubbtn" data-go="sim"><span class="hi">🎲</span><b>Simulate a game</b><small>Play tonight's games 10,000 times. Sit stars, make trades.</small></button>
+      <button type="button" class="hubbtn" data-go="fantasy"><span class="hi">🏀</span><b>Fantasy league</b><small>Draft 8 NBA players and battle other fans every night.</small></button>
       <button type="button" class="hubbtn" id="hubGuess"><span class="hi">🔮</span><b>Guess her number</b><small>How sure is she? Guess before you see it.</small></button>
       <button type="button" class="hubbtn" id="hubPickem"><span class="hi">🎯</span><b>Pick'em</b><small>Pick tonight's winners and try to beat her.</small></button>
       <button type="button" class="hubbtn" data-go="chat"><span class="hi">💬</span><b>Community chat</b><small>Talk games with other fans, live.</small></button>
@@ -310,6 +316,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <h2>💬 Community chat</h2>
     <p class="hint small">Rules: be respectful · no selling picks, links or referral codes · no "guaranteed" or "lock" talk · 21+ · gambling problem? 1-800-GAMBLER. Messages can be removed and accounts muted by moderators.</p>
     <select id="chatRoom" class="mpick" aria-label="Choose a chat room"></select><div id="chatBox"></div></section>
+  <section class="panel" id="fantasy" role="tabpanel" aria-label="Fantasy league"><button class="back" data-go="play">‹ Play</button>
+    <h2>🏀 Fantasy league</h2><p class="hint small">Draft 8 real NBA players under a $50,000 cap. Every night Mohjeta plays the whole league with the same player ratings behind her picks. Members only · free to play · no entry fees, no prizes.</p><div id="fantasyBox"></div></section>
   <section class="panel" id="guess" role="tabpanel" aria-label="Guess her number"><button class="back" data-go="play">‹ Play</button>
     <h2>🔮 Guess her number</h2><p class="hint small">Guess how likely she thinks a team is to win, before you see it. Closer guesses score more (100 for exact). Saved on this phone only, just for fun.</p><div id="guessBox"></div></section>
   <section class="panel" id="sim" role="tabpanel" aria-label="Simulate">
@@ -466,11 +474,12 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['picks','sim','record','play','more'];const SUB={games:'more',ratings:'more',chat:'more',guess:'play',combos:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
+const TABS=['picks','sim','record','play','more'];const SUB={games:'more',ratings:'more',chat:'more',guess:'play',fantasy:'play',combos:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button')];
 function show(name,push){name=LEGACY[name]||name;
-  if(name==='chat'){if(!document.querySelector('main .panel.on'))show('picks',false);openDrawer();return;}   // chat = one floating overlay over any tab
+  if(name==='chat'){if(!document.querySelector('main .panel.on'))show('picks',false);openDrawer();return;}
+  if(name==='fantasy')setTimeout(renderFantasy,0);   // chat = one floating overlay over any tab
   const panel=name==='record'?'recordp':name;
   for(const s of document.querySelectorAll('main .panel'))s.classList.toggle('on',s.id===panel);
   const top=SUB[name]||name;for(const b of navBtns)b.setAttribute('aria-selected',String(b.dataset.tab===top));
@@ -692,7 +701,7 @@ function shareCard(c){const W=1080,H=1350,cv=document.createElement('canvas');cv
     try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Mohjeta',text:c.title});return;}}catch(e){if(e&&e.name==='AbortError')return;}
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mohjeta.png';document.body.append(a);a.click();a.remove();},'image/png');}
 function wrapText(x,t,cx,y,maxW,lh){const words=String(t).split(' ');let line='';for(const w of words){const test=line?line+' '+w:w;if(x.measureText(test).width>maxW&&line){x.fillText(line,cx,y);y+=lh;line=w;}else line=test;}x.fillText(line,cx,y);}
-const BADGES={first_pick:['🎯','First pick'],five_picks:['🖐️','5 picks made'],beat_her:['👑','Beating the AI'],sim:['🎲','First simulation'],sim25:['🧪','25 simulations'],trade:['⇄','Trade machine'],share:['📤','Shared a card'],guess:['🔮','First guess'],sharp:['🏹','Guessed within 3 pts'],chat:['💬','First chat message'],compare:['⚖️','Compared players']};
+const BADGES={first_pick:['🎯','First pick'],five_picks:['🖐️','5 picks made'],beat_her:['👑','Beating the AI'],sim:['🎲','First simulation'],sim25:['🧪','25 simulations'],trade:['⇄','Trade machine'],share:['📤','Shared a card'],guess:['🔮','First guess'],sharp:['🏹','Guessed within 3 pts'],chat:['💬','First chat message'],compare:['⚖️','Compared players'],fantasy:['🏀','Drafted a fantasy team']};
 function badgeData(){try{return JSON.parse(localStorage.getItem('mohjeta.badges')||'{}')||{};}catch(e){return {};}}
 function award(kind){const b=badgeData();b._n=b._n||{};b._n[kind]=(b._n[kind]||0)+1;const earn=[];
   const give=k=>{if(!b[k]){b[k]=Date.now();earn.push(k);}};
@@ -1253,9 +1262,9 @@ function gsi(){if(gsiP)return gsiP;gsiP=(async()=>{try{await supa();const id=(wi
 // ---------------- members-only picks (only when the owner turns the paywall on): 7-day free trial, then subscription
 let MEMBERS=null,ACCESS=null,accessAt=0,SIMDATA=null;
 function pw(){return (D&&D.paywall)||{};}
-async function memberRefresh(force){try{if(!sb||!pw().on)return;if(!me){ACCESS=null;MEMBERS=null;return;}
+async function memberRefresh(force){try{if(!sb)return;if(!me){ACCESS=null;MEMBERS=null;return;}
   if(force||!ACCESS||Date.now()-accessAt>5*60000){const {data,error}=await sb.rpc('my_access');if(!error){ACCESS=data;accessAt=Date.now();}}
-  if(ACCESS&&ACCESS.access){const {data}=await sb.from('premium').select('data').eq('id',1).maybeSingle();if(data&&data.data){MEMBERS=data.data;
+  if(ACCESS&&ACCESS.access&&pw().on){const {data}=await sb.from('premium').select('data').eq('id',1).maybeSingle();if(data&&data.data){MEMBERS=data.data;
     const wasLocked=!!document.querySelector('#anyBox .banner.members');if(D){applyMembers(D);try{renderPicks(D);renderGames(D);renderRecord(D);if(wasLocked){$('anyBox').replaceChildren();renderSim();}}catch(e){}}}
     if(!SIMDATA||force){const r2=await sb.from('premium').select('data').eq('id',2).maybeSingle();if(r2.data&&r2.data.data){const first=!SIMDATA;SIMDATA=r2.data.data;TEAMS=null;if(first&&simMode==='any'){$('anyBox').replaceChildren();renderSim();}}}}}catch(e){}}
 function applyMembers(d){if(!MEMBERS||!d||!d.games)return;const by=new Map((MEMBERS.games||[]).map(g=>[String(g.id),g]));const sims=MEMBERS.sims||{};
@@ -1357,6 +1366,65 @@ function draggable(n,handle,key,onTap){let sx=0,sy=0,ox=0,oy=0,moved=false,on=fa
     else if(onTap)onTap();});
   handle.addEventListener('pointercancel',()=>{on=false;document.body.classList.remove('dragging');});}
 addEventListener('resize',()=>{for(const [id,k] of [['chatFab','mohjeta.fabpos'],['chatDrawer','mohjeta.chatpos']]){const n=$(id);if(n&&n.style.left)place(n,k);}});
+// ---------------- fantasy league (NBA, members): 8 players, $50,000 cap, nightly league played by Mohjeta
+const FCAP=50000,FN=8;let FT={name:'',players:[]},FLOADED=false,FQ='',FTEAM='ALL';
+async function fpool(){const T=await loadTeams();const L=T&&T.leagues&&T.leagues.NBA;if(!L)return null;const P={};
+  for(const [team,v] of Object.entries(L.teams||{}))for(const p of v.players||[])P[String(p.id)]={...p,team,salary:p.salary||3000};return {P,L};}
+function fimpact(p){return ((p.offense||0)+(p.defense||0))*(p.minutes||0)/48;}
+function fcheck(ids,P){if(ids.length!==FN)return 'Pick '+(FN-ids.length)+' more';const ps=ids.map(i=>P[i]);if(ps.some(x=>!x))return 'A player is no longer listed';
+  if(ps.reduce((a,p)=>a+p.salary,0)>FCAP)return 'Over the cap';const r=new Set(ps.map(p=>p.role));for(const k of ['G','F','C'])if(!r.has(k))return 'Needs a '+({G:'guard',F:'forward',C:'center'})[k];return null;}
+const money$=v=>'$'+v.toLocaleString();
+async function renderFantasy(){const box=$('fantasyBox');if(!box)return;
+  if(!(ACCESS&&ACCESS.access)){box.replaceChildren();const c=el('div',null,'banner members');c.append(el('b','🔒 The fantasy league is for members'),el('div','Start the free trial to draft your team. Free to play, no entry fees, no prizes.','hint small'));
+    const row=el('div',null,'row');row.append(trialBtn(),subBtn(true));c.append(row);box.append(c);return;}
+  if(!myProfile){try{const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();myProfile=data||null;}catch(e){}}
+  if(!myProfile){box.replaceChildren(el('p','Pick a chat name first (open 💬 Chat): your team shows under that name.','hint'));return;}
+  box.replaceChildren(el('p','Loading players…','hint'));const fp=await fpool();if(!fp){box.replaceChildren(el('p','Player data is loading. Try again in a minute.','hint'));return;}
+  const {P}=fp;
+  if(!FLOADED){FLOADED=true;try{const {data}=await sb.from('fantasy_teams').select('name,players').eq('user_id',me.id).maybeSingle();if(data)FT={name:data.name,players:(data.players||[]).map(String)};}catch(e){}}
+  FT.players=FT.players.filter(i=>P[i]);box.replaceChildren();
+  // my team
+  const mine=el('div',null,'card fteam');const spent=FT.players.reduce((a,i)=>a+P[i].salary,0);
+  const nm=el('input');nm.className='chatin';nm.maxLength=24;nm.placeholder='Team name';nm.value=FT.name;nm.oninput=()=>{FT.name=nm.value;};
+  const bar=el('div',null,'capbar');const f=el('i');f.style.width=Math.min(100,100*spent/FCAP)+'%';if(spent>FCAP)f.classList.add('over');bar.append(f);
+  mine.append(el('h4','My team'),nm,el('div',money$(spent)+' of '+money$(FCAP)+' · '+FT.players.length+'/'+FN+' players · left '+money$(FCAP-spent),'hint small'),bar);
+  const slots=el('div',null,'fslots');for(const i of FT.players){const p=P[i];const r=el('button',null,'fslot');r.type='button';r.title='Remove';
+    r.append(el('b',p.name),el('span',p.role+' · '+p.team.split(' ').pop()+' · '+money$(p.salary),'hint small'),el('span','✕','fx'));r.onclick=()=>{FT.players=FT.players.filter(x=>x!==i);renderFantasy();};slots.append(r);}
+  for(let k=FT.players.length;k<FN;k++)slots.append(el('div','Empty slot','fslot empty'));mine.append(slots);
+  const err=fcheck(FT.players,P);const save=el('button',err?err:'💾 Save team','btn');save.type='button';save.disabled=!!err;
+  save.onclick=async()=>{if(!/^[A-Za-z0-9 _.'-]{3,24}$/.test(FT.name.trim())){toast('Team name: 3-24 letters or numbers');return;}
+    const {error}=await sb.from('fantasy_teams').upsert({user_id:me.id,name:FT.name.trim(),players:FT.players},{onConflict:'user_id'});
+    toast(error?(/function|relation|does not exist/i.test(error.message)?'Run supabase_fantasy.sql in Supabase first':'Not saved: '+error.message):'Team saved ✅ It plays in tonight’s round');if(!error)award('fantasy');};
+  const st=el('div',null,'row');st.append(save);if(!err){const tb=el('button','⚔️ Test battle','btn ghost');tb.type='button';tb.onclick=()=>testBattle(P);st.append(tb);}mine.append(st);box.append(mine);
+  // player picker
+  const pick=el('div',null,'card');pick.append(el('h4','Players'));const q=el('input');q.className='chatin';q.placeholder='Search players';q.value=FQ;
+  const teams=[...new Set(Object.values(P).map(p=>p.team))].sort();const sel=el('select');sel.className='mpick';for(const t of ['ALL',...teams]){const o=el('option',t==='ALL'?'All teams':t);o.value=t;sel.append(o);}sel.value=FTEAM;
+  const list=el('div',null,'flist');const draw=()=>{list.replaceChildren();const qq=FQ.toLowerCase();
+    const ps=Object.values(P).filter(p=>(p.minutes||0)>=8&&(FTEAM==='ALL'||p.team===FTEAM)&&(!qq||p.name.toLowerCase().includes(qq))).sort((a,b)=>b.salary-a.salary||fimpact(b)-fimpact(a)).slice(0,80);
+    for(const p of ps){const on=FT.players.includes(String(p.id));const r=el('button',null,'frow'+(on?' on':''));r.type='button';
+      r.append(el('span',p.role,'frole'),el('span',null,'fn'),el('b',money$(p.salary)));r.children[1].append(el('b',p.name),el('span',' '+p.team.split(' ').pop()+' · '+(fimpact(p)>0?'+':'')+fimpact(p).toFixed(1)+' impact','hint small'));
+      r.onclick=()=>{const id=String(p.id);if(on)FT.players=FT.players.filter(x=>x!==id);else{if(FT.players.length>=FN){toast('Your team is full: remove someone first');return;}FT.players.push(id);}renderFantasy();};list.append(r);}};
+  q.oninput=()=>{FQ=q.value;draw();};sel.onchange=()=>{FTEAM=sel.value;draw();};pick.append(q,sel,list);draw();box.append(pick);
+  // league
+  const lg=el('div',null,'card');lg.append(el('h4','🏆 League · last 30 days'));box.append(lg);
+  try{const {data,error}=await sb.from('fantasy_standings').select('*').order('wins',{ascending:false}).limit(30);if(error)throw error;
+    if(!(data||[]).length)lg.append(el('p','No games yet: the first round plays tomorrow morning once teams are saved.','hint small'));
+    (data||[]).forEach((r,i)=>{const row=el('div',null,'brow');row.append(el('span',String(i+1),'bk'),chatPic({name:r.owner,profiles:{avatar_url:r.avatar}}),el('b',r.team),el('span',' '+r.owner,'hint small'),el('span',null,'sp'),el('span',r.wins+'-'+r.losses,'up'));lg.append(row);});
+    const {data:g}=await sb.from('fantasy_games').select('*').order('day',{ascending:false}).limit(12);
+    if((g||[]).length){lg.append(el('h4','Latest results'));for(const x of g){const hw=x.home_score>x.away_score;lg.append(el('div',(hw?'✅ ':'')+x.home_name+' '+x.home_score+' – '+x.away_score+' '+x.away_name+(hw?'':' ✅'),'hint small'));}}}
+  catch(e){lg.append(el('p','The league table is being set up.','hint small'));}}
+async function testBattle(P){let opp=null;try{const {data}=await sb.from('fantasy_teams').select('user_id,name,players').neq('user_id',me.id).limit(50);
+    const ok=(data||[]).filter(t=>!fcheck((t.players||[]).map(String),P));if(ok.length)opp=ok[Math.floor(Math.random()*ok.length)];}catch(e){}
+  const mins=ids=>{const ps=ids.map(i=>({...P[i]}));const tot=ps.reduce((a,p)=>a+Math.max(1,p.minutes||0),0);ps.forEach(p=>{p.minutes=Math.min(42,Math.max(1,p.minutes||0)*240/tot);p.sit=0;p.status='';});return ps;};
+  let oppIds=opp?(opp.players||[]).map(String):null;const oppName=opp?opp.name:'🤖 Mohjeta';
+  if(!oppIds){const all=Object.values(P).filter(p=>(p.minutes||0)>=8).sort((a,b)=>fimpact(b)/b.salary-fimpact(a)/a.salary);oppIds=[];
+    for(const p of all){if(oppIds.length>=FN)break;const t=[...oppIds,String(p.id)];if(t.reduce((a,i)=>a+P[i].salary,0)+(FN-t.length)*3000<=FCAP)oppIds=t;}}
+  const T=await loadTeams();const L=T.leagues.NBA;const home=FT.name.trim()||'My team',away=oppName===home?oppName+' (2)':oppName;
+  const id='fantasy:'+home+'@'+away+':'+Date.now();
+  const sim={league:'NBA',unit:'pts',home,away,margin:0,sd:L.sd,total:null,neutral:true,players:{},custom:true,fantasy:true,
+    nba_model:{version:'fantasy',built_at:Date.now()/1000,teams:{[home]:mins(FT.players),[away]:mins(oppIds)},home,away,fill_in:false,sd:L.sd,total_sd:L.total_sd,pace:100,home_offset:L.mu,away_offset:L.mu}};
+  customG={id,league:'NBA',name:away+' @ '+home,teams:[{name:home},{name:away}],state:'UPCOMING',sim};simId=id;simMode='any';$('anyBox').replaceChildren();show('sim');setTimeout(()=>drawSim(true),300);
+  toast('Test battle vs '+away+' (just for fun: not counted)');}
 // ---------------- Pick'em leaderboard (Supabase; picks lock at the start time, graded by Mohjeta)
 async function pkCloud(event,team){try{if(!me||!sb)return;const {error}=await sb.from('pickem').upsert({event,team},{onConflict:'user_id,event'});
   if(error&&/profiles|foreign/i.test(error.message))toast('Pick a chat name in Chat to join the leaderboard');}catch(e){}}
