@@ -1375,6 +1375,7 @@ function fcheck(ids,P){if(ids.length!==FN)return 'Pick '+(FN-ids.length)+' more'
   if(ps.reduce((a,p)=>a+p.salary,0)>FCAP)return 'Over the cap';const r=new Set(ps.map(p=>p.role));for(const k of ['G','F','C'])if(!r.has(k))return 'Needs a '+({G:'guard',F:'forward',C:'center'})[k];return null;}
 const money$=v=>'$'+v.toLocaleString();
 async function renderFantasy(){const box=$('fantasyBox');if(!box)return;
+  if(!me){box.replaceChildren();const c=el('div',null,'banner members');c.append(el('b','Sign in to draft your team'),el('div','Free: sign in with Google, pick a chat name, and draft 8 players.','hint small'));const b=el('button','Sign in','btn');b.type='button';b.onclick=()=>show('chat');c.append(b);box.append(c);return;}
   if(!(ACCESS&&ACCESS.access)){box.replaceChildren();const c=el('div',null,'banner members');c.append(el('b','🔒 The fantasy league is for members'),el('div','Start the free trial to draft your team. Free to play, no entry fees, no prizes.','hint small'));
     const row=el('div',null,'row');row.append(trialBtn(),subBtn(true));c.append(row);box.append(c);return;}
   if(!myProfile){try{const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();myProfile=data||null;}catch(e){}}
