@@ -819,7 +819,13 @@ function composer(){const c=el('div',null,'card');
     if(error){toast(/slow down/i.test(error.message)?'Slow down a little':/row-level|policy/i.test(error.message)?'You can’t post right now':'Not sent: '+error.message);return;}t.value='';award('chat');};
   go.onclick=send;t.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}};
   const out=el('button','Sign out','mlink');out.type='button';out.onclick=async()=>{await sb.auth.signOut();me=null;myProfile=null;openChat();};
-  updateAcct();c.append(el('div','Chatting as '+myProfile.display_name+(myProfile.role!=='member'?' · '+myProfile.role:''),'hint small'),t,go,out);return c;}
+  updateAcct();c.append(el('div','Chatting as '+myProfile.display_name+(myProfile.role!=='member'?' · '+myProfile.role:''),'hint small'),t,go,out);
+  if(myProfile.role==='admin'){const cl=el('button','🧹 Clear chat','mlink');cl.type='button';
+    cl.onclick=async()=>{if(window.confirm&&!confirm('Delete ALL messages in this chat for everyone? This cannot be undone.'))return;
+      const {data,error}=await sb.rpc('mod_clear',{target_room:chatRoom});
+      if(error){toast(/Admins only/.test(error.message)?'Admins only':/function|not find/i.test(error.message)?'Run supabase_admin.sql in Supabase first':'Not cleared: '+error.message);return;}
+      toast('Chat cleared ('+(data||0)+' messages)');openChat();};c.append(cl);}
+  return c;}
 // ---------------- simple by default; Expert mode shows every number
 (function(){let on=false;try{on=localStorage.getItem('mohjeta.expert')==='1';}catch(e){}
   const set=v=>{document.documentElement.classList.toggle('expert',v);const t=$('xpToggle');if(t)t.setAttribute('aria-checked',String(v));try{localStorage.setItem('mohjeta.expert',v?'1':'0');}catch(e){}};
@@ -1282,7 +1288,8 @@ function chatFab(){if($('chatFab'))return;
   const box=$('chatBox');if(box)d.append(box);document.body.append(d);
   draggable(d,head,'mohjeta.chatpos',null);
   if(sb&&!popCh)popCh=sb.channel('pop').on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room=eq.lobby'},p=>{const m=p.new;
-    if(!m||m.hidden||(me&&m.user_id===me.id)||chatOpen())return;unread++;badgeCount();if(popsOn())chatPop(m);}).subscribe();}
+    if(!m||m.hidden||(me&&m.user_id===me.id)||chatOpen())return;unread++;badgeCount();if(popsOn())chatPop(m);})
+    .on('postgres_changes',{event:'DELETE',schema:'public',table:'messages'},p=>{const id=p.old&&p.old.id;if(id!=null){const r=document.querySelector('.chatlist [data-id="'+id+'"]');if(r)r.remove();}}).subscribe();}
 function badgeCount(){const b=document.querySelector('#chatFab .cbadge');if(b){b.textContent=unread?String(Math.min(unread,99)):'';b.hidden=!unread;}}
 function chatPop(m){document.querySelectorAll('.cpop').forEach(x=>x.remove());const c=el('button',null,'cpop');c.type='button';
   const t=el('div',null,'cptext');t.append(el('b',m.name||'fan'),el('span',clean(String(m.body||'')).slice(0,90)));c.append(chatPic(m),t);
