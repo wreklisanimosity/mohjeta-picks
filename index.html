@@ -481,14 +481,68 @@ const southwestPortraits=new Map([
   ['Dallas Mavericks',[72,1,336]],['Houston Rockets',[461,0,336]],['Memphis Grizzlies',[895,1,336]],
   ['New Orleans Pelicans',[60,414,337]],['San Antonio Spurs',[490,415,337]]
 ]);
+const nflPortraits=new Map();
+for(const [division,teams] of Object.entries({
+  "afc-north": [
+    "Baltimore Ravens",
+    "Cincinnati Bengals",
+    "Cleveland Browns",
+    "Pittsburgh Steelers"
+  ],
+  "afc-east": [
+    "Buffalo Bills",
+    "Miami Dolphins",
+    "New England Patriots",
+    "New York Jets"
+  ],
+  "afc-south": [
+    "Houston Texans",
+    "Indianapolis Colts",
+    "Jacksonville Jaguars",
+    "Tennessee Titans"
+  ],
+  "afc-west": [
+    "Denver Broncos",
+    "Kansas City Chiefs",
+    "Las Vegas Raiders",
+    "Los Angeles Chargers"
+  ],
+  "nfc-north": [
+    "Chicago Bears",
+    "Detroit Lions",
+    "Green Bay Packers",
+    "Minnesota Vikings"
+  ],
+  "nfc-east": [
+    "Dallas Cowboys",
+    "New York Giants",
+    "Philadelphia Eagles",
+    "Washington Commanders"
+  ],
+  "nfc-south": [
+    "Atlanta Falcons",
+    "Carolina Panthers",
+    "New Orleans Saints",
+    "Tampa Bay Buccaneers"
+  ],
+  "nfc-west": [
+    "Arizona Cardinals",
+    "Los Angeles Rams",
+    "San Francisco 49ers",
+    "Seattle Seahawks"
+  ]
+})){
+  teams.forEach((team,i)=>nflPortraits.set(team,{src:"nfl-"+division+".jpg",crop:[45+(i%2)*400,4+Math.floor(i/2)*400,305]}));
+}
 function teamBadge(name){
-  const badgeEl=badge(name),crop=atlanticPortraits.get(name)||pacificPortraits.get(name)||northwestPortraits.get(name)||southeastPortraits.get(name)||centralPortraits.get(name)||southwestPortraits.get(name);
+  const nfl=nflPortraits.get(name);
+  const badgeEl=badge(name),crop=nfl?.crop||atlanticPortraits.get(name)||pacificPortraits.get(name)||northwestPortraits.get(name)||southeastPortraits.get(name)||centralPortraits.get(name)||southwestPortraits.get(name);
   if(!crop)return badgeEl;
   const [x,y,size]=crop,im=new Image();
   badgeEl.style.position='relative';badgeEl.style.overflow='hidden';
-  im.alt='';im.style.cssText='position:absolute;max-width:none;max-height:none;width:'+1280/size*100+'%;height:'+853/size*100+'%;left:'+(-x/size*100)+'%;top:'+(-y/size*100)+'%;';
+  im.alt='';im.style.cssText='position:absolute;max-width:none;max-height:none;width:'+(nfl?800:1280)/size*100+'%;height:'+(nfl?800:853)/size*100+'%;left:'+(-x/size*100)+'%;top:'+(-y/size*100)+'%;';
   im.onload=()=>badgeEl.replaceChildren(im);
-  im.src=southwestPortraits.has(name)?'nba-southwest-portraits.jpg':centralPortraits.has(name)?'nba-central-portraits.jpg':southeastPortraits.has(name)?'nba-southeast-portraits.jpg':northwestPortraits.has(name)?'nba-northwest-portraits.jpg':pacificPortraits.has(name)?'nba-pacific-portraits.jpg':'nba-atlantic-portraits.jpg';
+  im.src=nfl?nfl.src:southwestPortraits.has(name)?'nba-southwest-portraits.jpg':centralPortraits.has(name)?'nba-central-portraits.jpg':southeastPortraits.has(name)?'nba-southeast-portraits.jpg':northwestPortraits.has(name)?'nba-northwest-portraits.jpg':pacificPortraits.has(name)?'nba-pacific-portraits.jpg':'nba-atlantic-portraits.jpg';
   return badgeEl;
 }
 function badge(name){const n=String(name||'?');let h=0;for(const ch of n)h=(h*31+ch.charCodeAt(0))>>>0;
