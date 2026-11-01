@@ -461,14 +461,18 @@ const atlanticPortraits=new Map([
   ['Boston Celtics',[70,0,340]],['Brooklyn Nets',[490,0,350]],['New York Knicks',[917,0,345]],
   ['Philadelphia 76ers',[24,433,335]],['Toronto Raptors',[489,434,338]]
 ]);
+const pacificPortraits=new Map([
+  ['Golden State Warriors',[60,1,330]],['LA Clippers',[479,1,330]],['Los Angeles Clippers',[479,1,330]],
+  ['Los Angeles Lakers',[914,1,330]],['Phoenix Suns',[30,430,325]],['Sacramento Kings',[469,428,325]]
+]);
 function teamBadge(name){
-  const badgeEl=badge(name),crop=atlanticPortraits.get(name);
+  const badgeEl=badge(name),crop=atlanticPortraits.get(name)||pacificPortraits.get(name);
   if(!crop)return badgeEl;
   const [x,y,size]=crop,im=new Image();
   badgeEl.style.position='relative';badgeEl.style.overflow='hidden';
   im.alt='';im.style.cssText='position:absolute;max-width:none;max-height:none;width:'+1280/size*100+'%;height:'+853/size*100+'%;left:'+(-x/size*100)+'%;top:'+(-y/size*100)+'%;';
   im.onload=()=>badgeEl.replaceChildren(im);
-  im.src='nba-atlantic-portraits.jpg';
+  im.src=pacificPortraits.has(name)?'nba-pacific-portraits.jpg':'nba-atlantic-portraits.jpg';
   return badgeEl;
 }
 function badge(name){const n=String(name||'?');let h=0;for(const ch of n)h=(h*31+ch.charCodeAt(0))>>>0;
