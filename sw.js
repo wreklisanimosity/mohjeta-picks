@@ -1,6 +1,6 @@
 // Mohjeta Picks offline helper: the app shell is cached; picks data is always fetched fresh and
 // falls back to the last copy only when the phone is offline.
-const SHELL = 'mohjeta-shell-nba-lineups-v1';
+const SHELL = 'mohjeta-shell-team-portraits-v2';
 const FILES = ['./nba-sim.js?v=nba-lineups-v1', './nba-sim-ui.js?v=nba-lineups-v1', './', './index.html', './manifest.webmanifest', './icon-192.png?v=mohjeta-m-20261030', './icon-512.png?v=mohjeta-m-20261030', './apple-touch-icon.png?v=mohjeta-m-20261030'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
@@ -14,8 +14,8 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match(url.pathname)));
     return;
   }
-  e.respondWith(fetch(e.request).then(r => { const copy = r.clone(); caches.open(SHELL).then(c => c.put(e.request, copy)); return r; })
-    .catch(() => caches.match(e.request).then(r => r || caches.match('./index.html'))));
+  e.respondWith(fetch(e.request, e.request.mode === 'navigate' ? {cache:'no-cache'} : {}).then(r => { if(r.ok){const copy = r.clone(); caches.open(SHELL).then(c => c.put(e.request, copy));} return r; })
+    .catch(() => caches.match(e.request).then(r => r || (e.request.mode === 'navigate' ? caches.match('./index.html') : Response.error()))));
 });
 
 // phone alerts (Web Push): show the alert; tapping it opens (or focuses) the site at the right spot
