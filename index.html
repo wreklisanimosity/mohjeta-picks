@@ -849,7 +849,7 @@ function tour(){let seen=false;try{seen=localStorage.getItem('mohjeta.tour')==='
 (function(){const go=()=>{const g=$('ageGate');if(g&&!g.hidden){setTimeout(go,800);return;}tour();};setTimeout(go,1200);})();
 // ---------------- any-matchup simulator + battle arena (original art: team-colored badges, no logos or mascots)
 let simMode='tonight',TEAMS=null,customG=null;const anyPick={};
-async function loadTeams(){if(TEAMS)return TEAMS;try{const r=await fetch('sim-teams.json?t='+Date.now(),{cache:'no-store'});if(r.ok)TEAMS=await r.json();}catch(e){}return TEAMS;}
+async function loadTeams(){if(pw().on){if(!SIMDATA)return null;TEAMS=SIMDATA;return TEAMS;}if(TEAMS)return TEAMS;try{const r=await fetch('sim-teams.json?t='+Date.now(),{cache:'no-store'});if(r.ok)TEAMS=await r.json();}catch(e){}return TEAMS;}
 function drawModeChips(){const m=$('simMode');m.replaceChildren();for(const [k,l] of [['tonight','🏟️ Tonight’s games'],['any','⚔️ Any matchup']]){const b=el('button',l);b.type='button';b.setAttribute('aria-pressed',String(simMode===k));b.onclick=()=>{simMode=k;$('anyBox').replaceChildren();renderSim();};m.append(b);}}
 async function renderAny(){const box=$('anyBox');const T=await loadTeams();box.replaceChildren();
   if(!T||!T.leagues||!Object.keys(T.leagues).length){box.append(el('p','Any-matchup data is being built from the ratings. Check back in a few minutes.','hint'));$('simBox').replaceChildren();return;}
@@ -889,7 +889,7 @@ function myPicks(){const all=pkLoad(),F=(D&&D.finals)||{};const rows=Object.entr
   return c;}
 let simId=null;const simState={};
 function simGames(){return (D&&D.games||[]).filter(g=>g.sim&&g.state==='UPCOMING');}
-function renderSim(){drawModeChips();if(simMode==='any'){$('simPick').hidden=true;if(!$('anyBox').childElementCount)renderAny();return;}$('anyBox').replaceChildren();
+function renderSim(){if(simLocked()){drawSimLock();return;}drawModeChips();if(simMode==='any'){$('simPick').hidden=true;if(!$('anyBox').childElementCount)renderAny();return;}$('anyBox').replaceChildren();
   const gs=simGames();const sel=$('simPick');sel.replaceChildren();
   if(!gs.length){$('simBox').replaceChildren(el('p','No games ready to simulate right now. Games show up here when the player rating has numbers for them (basketball, football, hockey and baseball, up to 36 hours ahead).','hint'));sel.hidden=true;simulationScorecard($('simBox'));return;}
   sel.hidden=false;for(const g of gs){const o=el('option',sname(g.league)+' · '+g.name+' · '+when(g.start));o.value=g.id||g.name;sel.append(o);}
@@ -1251,18 +1251,25 @@ function gsi(){if(gsiP)return gsiP;gsiP=(async()=>{try{await supa();const id=(wi
         if(error){toast('Google sign-in did not finish: '+error.message);gsiP=null;}}});
     return true;}catch(e){gsiP=null;return false;}})();return gsiP;}
 // ---------------- members-only picks (only when the owner turns the paywall on): 7-day free trial, then subscription
-let MEMBERS=null,ACCESS=null,accessAt=0;
+let MEMBERS=null,ACCESS=null,accessAt=0,SIMDATA=null;
 function pw(){return (D&&D.paywall)||{};}
 async function memberRefresh(force){try{if(!sb||!pw().on)return;if(!me){ACCESS=null;MEMBERS=null;return;}
   if(force||!ACCESS||Date.now()-accessAt>5*60000){const {data,error}=await sb.rpc('my_access');if(!error){ACCESS=data;accessAt=Date.now();}}
   if(ACCESS&&ACCESS.access){const {data}=await sb.from('premium').select('data').eq('id',1).maybeSingle();if(data&&data.data){MEMBERS=data.data;
-    if(D){applyMembers(D);try{renderPicks(D);renderGames(D);renderRecord(D);}catch(e){}}}}}catch(e){}}
-function applyMembers(d){if(!MEMBERS||!d||!d.games)return;const by=new Map((MEMBERS.games||[]).map(g=>[String(g.id),g]));
-  for(const g of d.games){const m=by.get(String(g.id));if(m&&g.locked){Object.assign(g,m);g.locked=false;}}
+    const wasLocked=!!document.querySelector('#anyBox .banner.members');if(D){applyMembers(D);try{renderPicks(D);renderGames(D);renderRecord(D);if(wasLocked){$('anyBox').replaceChildren();renderSim();}}catch(e){}}}
+    if(!SIMDATA||force){const r2=await sb.from('premium').select('data').eq('id',2).maybeSingle();if(r2.data&&r2.data.data){const first=!SIMDATA;SIMDATA=r2.data.data;TEAMS=null;if(first&&simMode==='any'){$('anyBox').replaceChildren();renderSim();}}}}}catch(e){}}
+function applyMembers(d){if(!MEMBERS||!d||!d.games)return;const by=new Map((MEMBERS.games||[]).map(g=>[String(g.id),g]));const sims=MEMBERS.sims||{};
+  for(const g of d.games){const m=by.get(String(g.id));if(m&&g.locked){Object.assign(g,m);g.locked=false;}
+    if(g.sim_locked&&sims[String(g.id)]){g.sim=sims[String(g.id)];g.sim_locked=false;}}
   if(d.bets&&d.bets.rows&&(MEMBERS.open_bets||[]).length){const key=r=>r.opened+'|'+r.bet;const have=new Set(d.bets.rows.map(key));
     for(const r of MEMBERS.open_bets)if(!have.has(key(r)))d.bets.rows.unshift(r);}
   if((MEMBERS.combos||[]).length&&!(d.combos||[]).length)d.combos=MEMBERS.combos;}
 function daysLeft(t){return Math.max(0,Math.ceil((Date.parse(t)-Date.now())/864e5));}
+function simLocked(){return pw().on&&!(ACCESS&&ACCESS.access);}
+function drawSimLock(){['simMode','anyBox','simBox'].forEach(id=>{const n=$(id);if(n)n.replaceChildren();});const sp=$('simPick');if(sp)sp.hidden=true;
+  const c=el('div',null,'banner members');c.append(el('b','🔒 The simulator is for members'),
+    el('div','Play any matchup 10,000 times with every player, make trades, sit stars, and (coming soon) build fantasy teams and battle other fans.','hint small'));
+  const row=el('div',null,'row');row.append(trialBtn(),subBtn(true));c.append(row);$('anyBox').append(c);}
 function memberTeaser(d){if(!pw().on)return null;const locked=(d.games||[]).filter(g=>g.locked&&g.state!=='FINAL').length;
   const box=el('div',null,'banner members');
   if(ACCESS&&ACCESS.access){if(ACCESS.sub_until||ACCESS.staff)return null;
