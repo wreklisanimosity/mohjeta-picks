@@ -260,6 +260,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .whopop{position:fixed;z-index:80;width:min(280px,calc(100vw - 16px));background:#160f22f5;border:1px solid #39ff8855;border-radius:14px;padding:10px 12px;box-shadow:0 10px 30px #000a;display:flex;flex-direction:column;gap:6px;animation:rise .2s ease both}
 .wholist{display:flex;flex-direction:column;gap:4px;max-height:40vh;overflow:auto}.whorow{display:flex;align-items:center;gap:8px}
 .cdon{color:var(--green)}
+.banner.members{border-color:#ffe14d66;background:linear-gradient(135deg,#ffe14d14,#ff4fd812)}.banner.members .row{gap:8px;margin-top:8px;flex-wrap:wrap}
+.podtag{display:inline-block;font-size:11px;font-weight:800;color:#1a1200;background:var(--yellow);border-radius:999px;padding:2px 8px;margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -738,12 +740,12 @@ async function supa(){if(sb)return sb;const r=await fetch('live-config.json?t='+
   return sb;}
 async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
-  chatFab();startPresence();logVisit();
+  chatFab();startPresence();logVisit();memberRefresh(true);setInterval(()=>memberRefresh(false),60000);
   liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();
-  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;myProfile=null;updateAcct();if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN')toast('Signed in ✅');if(chatOpen())openChat();});
+  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN')toast('Signed in ✅');if(chatOpen())openChat();});
   if(/[?&]code=/.test(location.search)){for(let i=0;i<20&&!(await sb.auth.getSession()).data.session;i++)await new Promise(r=>setTimeout(r,250));
     try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}}
-  const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;updateAcct();
+  const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;updateAcct();memberRefresh(true);
   let after=null;try{after=sessionStorage.getItem('mohjeta.afterLogin');sessionStorage.removeItem('mohjeta.afterLogin');}catch(e){}
   if(location.hash==='#chat'||(after==='chat'&&me))show('chat');}
 function avatarOf(u){const m=(u&&u.user_metadata)||{};return m.avatar_url||m.picture||null;}
@@ -756,12 +758,12 @@ function updateAcct(){const b=$('acct');if(!b||!sb)return;b.hidden=false;b.repla
     const chat=el('button','💬 Open chat','btn');chat.type='button';chat.onclick=()=>{ov.remove();show('chat');};
     const out=el('button','Sign out','btn ghost');out.type='button';out.onclick=async()=>{await sb.auth.signOut();me=null;myProfile=null;ov.remove();updateAcct();toast('Signed out');};
     const x=el('button','Close','mlink');x.type='button';x.onclick=()=>ov.remove();
-    box.append(head,el('p','You\u2019re signed in. Your chat name and messages show to other fans; your email stays private.','hint small'),chat,out,x);document.body.append(ov);};}
+    const plan=planBox();box.append(head,el('p','You\u2019re signed in. Your chat name and messages show to other fans; your email stays private.','hint small'));if(plan)box.append(plan);box.append(chat,out,x);document.body.append(ov);};}
 function applyLive(L){lastLive=L;if(!D||!L)return;const byId=new Map(D.games.map(g=>[g.id||g.name,g]));
   for(const g of L.games||[]){const cur=byId.get(g.id||g.name);if(cur)Object.assign(cur,g);else D.games.push(g);}
   if(L.bets&&D.bets){D.bets.totals=L.bets.totals||D.bets.totals;const key=r=>r.opened+'|'+r.bet;const have=new Map(D.bets.rows.map((r,i)=>[key(r),i]));
     const fresh=[];for(const r of L.bets.rows||[]){const i=have.get(key(r));if(i!=null)D.bets.rows[i]=r;else fresh.push(r);}D.bets.rows=fresh.concat(D.bets.rows);}
-  if(L.finals)D.finals=Object.assign(D.finals||{},L.finals);
+  if(L.finals)D.finals=Object.assign(D.finals||{},L.finals);applyMembers(D);
   try{renderPicks(D);renderGames(D);renderRecord(D);}catch(e){}
   const u=$('updated');u.classList.remove('stale');u.textContent='● Live '+hm(L.updated);u.classList.add('livedot');}
 const BAD=/\b(fuck|shit|bitch|cunt|nigg\w*|fag\w*|retard\w*)\b/gi;
@@ -961,7 +963,7 @@ $('installMenu').onclick=installHelp;
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 // ---------------- cards
-function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');c.tabIndex=0;c.setAttribute('role','button');
+function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');if(pw().on&&String(g.id)===String(pw().pod))c.append(el('div','⭐ Free Pick of the Day','podtag'));c.tabIndex=0;c.setAttribute('role','button');
   c.onclick=()=>openGame(g.id||g.name);c.onkeydown=e=>{if(e.key==='Enter')openGame(g.id||g.name);};
   const top=el('div',null,'row');top.append(el('span',sname(g.league).toUpperCase(),'league'));
   if(g.state==='LIVE')top.append(el('span','● LIVE '+(g.detail||''),'pill p-live'));else top.append(el('span',when(g.start),'hint small'));
@@ -1055,6 +1057,7 @@ function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();set
   if(live.length){lb.append(el('h3','Live now'));const gr=el('div',null,'grid');for(const g of live)gr.append(pickCard(g,{short:true}));lb.append(gr);}
   const bet=d.games.filter(g=>g.state!=='LIVE'&&isBetLane(g)&&g.pick).sort((x,y)=>String(x.start).localeCompare(String(y.start)));
   $('betting').replaceChildren(...(bet.length?bet.map(g=>pickCard(g)):[el('p','No bet games left in the next 24 hours.','empty')]));
+  {const lk=memberTeaser(d);if(lk)$('betting').prepend(lk);}
   const best=d.games.filter(g=>g.pick&&typeof g.pick.chance==='number'&&g.state!=='LIVE').sort((x,y)=>y.pick.chance-x.pick.chance).slice(0,6);
   $('best').replaceChildren(...(best.length?best.map(g=>pickCard(g,{short:true})):[el('p','Picks are coming soon.','empty')]));
   const rc=$('recent');rc.replaceChildren();
@@ -1075,7 +1078,7 @@ function renderGames(d){const gs=d.games.slice().sort((a,b)=>(a.state==='LIVE'?0
     it.append(el('div',g.state==='LIVE'?'LIVE':hm(g.start),'t'+(g.state==='LIVE'?' down':'')));
     const mid=el('div',null,'g');const ln=laneOf(g);const tt=el('div');tt.append(el('span',sname(g.league)+' · ','hint small'),el('span',ln.t,'pill '+ln.c));
     tt.className='l2';mid.append(el('div',g.state==='LIVE'?g.teams.map(t=>t.name+' '+(t.score??0)).join(' – '):(g.name||g.teams.map(t=>t.name).join(' vs '))),tt);it.append(mid);
-    const pc=el('div',null,'pc');if(g.pick){pc.append(el('div',g.pick.team.split(' ').slice(-1)[0],'small'),el('b',pct(g.pick.chance)));const k=kal(g);if(k!=null)pc.append(el('div','Kalshi '+k+'¢','hint small'));}else pc.append(el('span','soon','hint small'));
+    const pc=el('div',null,'pc');if(g.pick){pc.append(el('div',g.pick.team.split(' ').slice(-1)[0],'small'),el('b',pct(g.pick.chance)));const k=kal(g);if(k!=null)pc.append(el('div','Kalshi '+k+'¢','hint small'));}else pc.append(el('span',g.locked?'🔒':'soon','hint small'));
     it.append(pc,el('span','›','chev'));box.append(it);}
   if(!shown.length)list.append(el('p','No games here in the next 24 hours.','empty'));}
 
@@ -1170,7 +1173,7 @@ function renderMore(d){$('comboList').replaceChildren(...(d.combos.length?d.comb
   table('All picks',sc.overall);for(const [lg,tbl] of Object.entries(sc.by_league))table(sname(lg),tbl);}
 
 // ---------------- load + render
-function render(d){D=d;const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
+function render(d){D=d;applyMembers(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
   $('disclaimer').textContent=d.disclaimer;renderPicks(d);renderGames(d);renderRecord(d);renderMore(d);renderSim();drawInstall();
   if(lastLive&&Date.parse(lastLive.updated)>Date.parse(d.updated))applyLive(lastLive);
@@ -1247,6 +1250,37 @@ function gsi(){if(gsiP)return gsiP;gsiP=(async()=>{try{await supa();const id=(wi
       callback:async res=>{const {error}=await sb.auth.signInWithIdToken({provider:'google',token:res.credential,nonce:raw});
         if(error){toast('Google sign-in did not finish: '+error.message);gsiP=null;}}});
     return true;}catch(e){gsiP=null;return false;}})();return gsiP;}
+// ---------------- members-only picks (only when the owner turns the paywall on): 7-day free trial, then subscription
+let MEMBERS=null,ACCESS=null,accessAt=0;
+function pw(){return (D&&D.paywall)||{};}
+async function memberRefresh(force){try{if(!sb||!pw().on)return;if(!me){ACCESS=null;MEMBERS=null;return;}
+  if(force||!ACCESS||Date.now()-accessAt>5*60000){const {data,error}=await sb.rpc('my_access');if(!error){ACCESS=data;accessAt=Date.now();}}
+  if(ACCESS&&ACCESS.access){const {data}=await sb.from('premium').select('data').eq('id',1).maybeSingle();if(data&&data.data){MEMBERS=data.data;
+    if(D){applyMembers(D);try{renderPicks(D);renderGames(D);renderRecord(D);}catch(e){}}}}}catch(e){}}
+function applyMembers(d){if(!MEMBERS||!d||!d.games)return;const by=new Map((MEMBERS.games||[]).map(g=>[String(g.id),g]));
+  for(const g of d.games){const m=by.get(String(g.id));if(m&&g.locked){Object.assign(g,m);g.locked=false;}}
+  if(d.bets&&d.bets.rows&&(MEMBERS.open_bets||[]).length){const key=r=>r.opened+'|'+r.bet;const have=new Set(d.bets.rows.map(key));
+    for(const r of MEMBERS.open_bets)if(!have.has(key(r)))d.bets.rows.unshift(r);}
+  if((MEMBERS.combos||[]).length&&!(d.combos||[]).length)d.combos=MEMBERS.combos;}
+function daysLeft(t){return Math.max(0,Math.ceil((Date.parse(t)-Date.now())/864e5));}
+function memberTeaser(d){if(!pw().on)return null;const locked=(d.games||[]).filter(g=>g.locked&&g.state!=='FINAL').length;
+  const box=el('div',null,'banner members');
+  if(ACCESS&&ACCESS.access){if(ACCESS.sub_until||ACCESS.staff)return null;
+    box.append(el('b','⭐ Free trial: '+daysLeft(ACCESS.trial_ends)+' day'+(daysLeft(ACCESS.trial_ends)===1?'':'s')+' left'),el('div','You see every pick, her reasoning and her open bets.','hint small'),subBtn());return box;}
+  if(!locked)return null;
+  box.append(el('b','🔒 '+locked+' more pick'+(locked>1?'s':'')+' today are for members'),
+    el('div','Today’s free Pick of the Day is below. Her full record stays public, always.','hint small'));
+  const row=el('div',null,'row');row.append(trialBtn(),subBtn(true));box.append(row);return box;}
+function trialBtn(){const used=ACCESS&&ACCESS.trial_used;const b=el('button',used?'Trial used':'⭐ Start '+(pw().trial_days||7)+'-day free trial','btn');b.type='button';b.disabled=!!used;
+  b.onclick=async()=>{if(!me){try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}toast('Sign in first (free), then start your trial');show('chat');return;}
+    const {data,error}=await sb.rpc('start_trial');if(error){toast('Could not start: '+error.message);return;}ACCESS=data;accessAt=Date.now();
+    toast(data&&data.access?'Free trial started: '+daysLeft(data.trial_ends)+' days 🎉':'Your free trial was already used');memberRefresh(true);if(D)renderPicks(D);};return b;}
+function subBtn(ghost){const b=el('button','Subscribe','btn'+(ghost?' ghost':''));b.type='button';
+  b.onclick=()=>{const u=pw().subscribe_url;if(u&&/^https:\/\//.test(u))window.open(u,'_blank','noopener');else toast('Subscriptions open soon. Enjoy the free trial!');};return b;}
+function planBox(){if(!pw().on)return null;const c=el('div',null,'card');c.style.margin='8px 0';
+  const a=ACCESS||{};const line=a.staff?'Team account: full access':a.sub_until&&Date.parse(a.sub_until)>Date.now()?'Member until '+new Date(a.sub_until).toLocaleDateString():
+    a.access?'Free trial: '+daysLeft(a.trial_ends)+' days left':a.trial_used?'Free plan (trial used)':'Free plan';
+  c.append(el('b','Your plan: '+line));if(!a.access)c.append(trialBtn());if(!a.staff&&!(a.sub_until&&Date.parse(a.sub_until)>Date.now()))c.append(subBtn(true));return c;}
 // ---------------- who's online (Supabase presence: nothing stored) + visitor counter (random browser ID, totals only)
 let presCh=null,online={n:0,names:[]},STATS=null;
 function visitorId(){try{let v=localStorage.getItem('mohjeta.vid');if(!/^[a-f0-9]{24}$/.test(v||'')){v=[...crypto.getRandomValues(new Uint8Array(12))].map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('mohjeta.vid',v);}return v;}catch(e){return null;}}
