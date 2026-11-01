@@ -473,14 +473,18 @@ const southeastPortraits=new Map([
   ['Atlanta Hawks',[67,0,330]],['Charlotte Hornets',[482,0,332]],['Miami Heat',[912,0,333]],
   ['Orlando Magic',[54,428,326]],['Washington Wizards',[474,428,326]]
 ]);
+const centralPortraits=new Map([
+  ['Chicago Bulls',[73,0,332]],['Cleveland Cavaliers',[475,1,333]],['Detroit Pistons',[927,1,332]],
+  ['Indiana Pacers',[60,410,350]],['Milwaukee Bucks',[483,405,352]]
+]);
 function teamBadge(name){
-  const badgeEl=badge(name),crop=atlanticPortraits.get(name)||pacificPortraits.get(name)||northwestPortraits.get(name)||southeastPortraits.get(name);
+  const badgeEl=badge(name),crop=atlanticPortraits.get(name)||pacificPortraits.get(name)||northwestPortraits.get(name)||southeastPortraits.get(name)||centralPortraits.get(name);
   if(!crop)return badgeEl;
   const [x,y,size]=crop,im=new Image();
   badgeEl.style.position='relative';badgeEl.style.overflow='hidden';
   im.alt='';im.style.cssText='position:absolute;max-width:none;max-height:none;width:'+1280/size*100+'%;height:'+853/size*100+'%;left:'+(-x/size*100)+'%;top:'+(-y/size*100)+'%;';
   im.onload=()=>badgeEl.replaceChildren(im);
-  im.src=southeastPortraits.has(name)?'nba-southeast-portraits.jpg':northwestPortraits.has(name)?'nba-northwest-portraits.jpg':pacificPortraits.has(name)?'nba-pacific-portraits.jpg':'nba-atlantic-portraits.jpg';
+  im.src=centralPortraits.has(name)?'nba-central-portraits.jpg':southeastPortraits.has(name)?'nba-southeast-portraits.jpg':northwestPortraits.has(name)?'nba-northwest-portraits.jpg':pacificPortraits.has(name)?'nba-pacific-portraits.jpg':'nba-atlantic-portraits.jpg';
   return badgeEl;
 }
 function badge(name){const n=String(name||'?');let h=0;for(const ch of n)h=(h*31+ch.charCodeAt(0))>>>0;
