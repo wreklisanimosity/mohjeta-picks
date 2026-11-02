@@ -1,0 +1,21 @@
+{
+  "_how_to_edit": "Newest update first. Give each update a new id: the banner shows the top one to everyone who has not closed it yet. 'go' (optional) is the tab its button opens: picks, props, sim, record, play, more. Keep each text short.",
+  "updates": [
+    {"id": "2026-11-02-props", "date": "2026-11-02", "title": "New: Props tab and prop builder",
+     "text": "Her NBA points props now have their own tab with a separate report card. Use the prop builder to stack props and see her chance that every leg hits next to Kalshi's prices.", "go": "props"},
+    {"id": "2026-11-02-practice", "date": "2026-11-02", "title": "Practice picks now have their own results",
+     "text": "Sports she is still learning (college basketball, hockey, tennis) are marked 🧪 Practice. Their record is in Results. These are learning picks with less information behind them, so use them with caution.", "go": "record"},
+    {"id": "2026-11-02-pictures", "date": "2026-11-02", "title": "Team pictures for every pro and college team",
+     "text": "NBA, NFL and over 900 college teams now have their own original character pictures, and the site loads faster."},
+    {"id": "2026-11-01-alerts", "date": "2026-11-01", "title": "Phone alerts",
+     "text": "Get an alert when her pick changes, before your Pick'em games start, and when results are in. Turn them on in More. On iPhone, add the site to your Home Screen first.", "go": "more"}
+  ],
+  "guides": [
+    {"title": "Reading her picks", "text": "Each game shows her pick and how sure she is (her %). Kalshi's price is what the market says, in cents (60¢ means about 60%). The gap is how far she is from the market: a big gap means she disagrees."},
+    {"title": "Bets vs practice", "text": "'Betting $5' games are sports she bets (paper money for now). '🧪 Practice' games are sports she is still learning: she picks them, they are graded, but she does not bet them yet."},
+    {"title": "Using the prop builder", "text": "Open Props, pick a game or search a player, and tap YES (that many points or more) or NO (fewer) on any line. Add up to 8 legs. It shows her chance all of them hit, what Kalshi's prices say, and what your stake would pay."},
+    {"title": "Pick'em and fantasy", "text": "Tap a team under 'Your pick' on any game to play Pick'em and climb the leaderboard. The fantasy league (in Play) lets you build a team of real players under a salary cap. Both are free: no entry fees and no prizes."},
+    {"title": "Alerts and home screen", "text": "In More, tap 🔔 to turn on phone alerts. To install the site like an app: on iPhone tap Share, then Add to Home Screen; on Android tap the menu, then Install app."},
+    {"title": "Play responsibly", "text": "Her numbers are model estimates for entertainment, not betting advice. 21+ only. Never bet more than you can afford to lose."}
+  ]
+}
