@@ -1289,7 +1289,9 @@ function render(d){D=d;applyMembers(d);const up=new Date(d.updated);const u=$('u
   navBtns.find(b=>b.dataset.tab==='record').hidden=!d.bets;
   if(sheetGame){const g=d.games.find(x=>String(x.id||x.name)===String(sheetGame.id||sheetGame.name));if(g){sheetGame=g;const s=$('sheet');const y=s.scrollTop;$('sheetBody').replaceChildren(gameView(g));s.scrollTop=y;}}}
 let first=true;
-async function load(){try{const r=await fetch('data.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error();render(await r.json());if(first){first=false;route();}}
+let dataTag=null;
+async function load(){try{const r=await fetch('data.json',{cache:'no-cache'});if(!r.ok)throw Error();   // revalidates: an unchanged file costs a tiny 304, not the whole download
+  const tag=r.headers.get('etag')||r.headers.get('last-modified');if(tag&&tag===dataTag&&!first){return;}dataTag=tag;render(await r.json());if(first){first=false;route();}}
   catch(e){if(!D)$('updated').textContent='Waiting for her first update…';}}
 
 // ---------------- ratings (separate file, refreshed every 10 minutes)
