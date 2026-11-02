@@ -200,6 +200,12 @@ nav.tabs button[aria-selected=true] svg{animation:navglow .4s ease}
 .tm .team-portrait{width:48px;height:48px;flex-shrink:0}
 .hero .side .team-portrait{width:72px;height:72px}
 .fighter .team-portrait.big{width:clamp(76px,22vw,88px);height:clamp(76px,22vw,88px)}
+.tplate{display:inline-block;max-width:100%;padding:3px 10px;border:2px solid #c9a24a;border-radius:5px;
+  background:linear-gradient(180deg,var(--tc,#333),color-mix(in srgb,var(--tc,#333) 62%,#000));color:#fff;
+  font-style:italic;font-weight:800;font-size:12px;line-height:1.2;letter-spacing:.04em;text-transform:uppercase;
+  text-shadow:0 1px 1px #000a;box-shadow:0 1px 4px #0006;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero .side .tplate{white-space:normal;text-align:center;font-size:12px}
+.fighter .tplate{font-size:11px;margin-top:2px}
 img.badge.team-portrait,.fighter.win img.badge.big.team-portrait{
   object-fit:contain;background:transparent;border:0;border-radius:0;box-shadow:none}
 .fighter.left .badge{animation:lungeR 1.5s ease-in-out both}.fighter.right .badge{animation:lungeL 1.5s ease-in-out both}
@@ -482,6 +488,19 @@ function teamBadge(name){
   image.src=src;
   return image;
 }
+const TEAM_COLORS={Celtics:'#007A33',Nets:'#2b2b2b',Knicks:'#006BB6','76ers':'#006BB6',Raptors:'#CE1141',Bulls:'#CE1141',
+  Cavaliers:'#860038',Pistons:'#C8102E',Pacers:'#002D62',Bucks:'#00471B',Nuggets:'#0E2240',Timberwolves:'#0C2340',Thunder:'#007AC1',
+  'Trail Blazers':'#E03A3E',Jazz:'#002B5C',Hawks:'#E03A3E',Hornets:'#1D1160',Heat:'#98002E',Magic:'#0077C0',Wizards:'#002B5C',
+  Mavericks:'#00538C',Rockets:'#CE1141',Grizzlies:'#5D76A9',Pelicans:'#0C2340',Spurs:'#3a3f44',Warriors:'#1D428A',Clippers:'#C8102E',
+  Lakers:'#552583',Suns:'#1D1160',Kings:'#5A2D81',Ravens:'#241773',Bengals:'#FB4F14',Browns:'#311D00',Steelers:'#2b2b2b',Bills:'#00338D',
+  Dolphins:'#008E97',Patriots:'#002244',Jets:'#125740',Texans:'#03202F',Colts:'#002C5F',Jaguars:'#006778',Titans:'#0C2340',
+  Broncos:'#FB4F14',Chiefs:'#E31837',Raiders:'#2b2b2b',Chargers:'#0080C6',Cowboys:'#003594',Giants:'#0B2265',Eagles:'#004C54',
+  Commanders:'#5A1414',Bears:'#0B162A',Lions:'#0076B6',Packers:'#203731',Vikings:'#4F2683',Falcons:'#A71930',Panthers:'#0085CA',
+  Saints:'#8a7546',Buccaneers:'#D50A0A',Cardinals:'#97233F',Rams:'#003594','49ers':'#AA0000',Seahawks:'#002244'};
+function teamNick(name){const n=String(name||'');return /Trail Blazers$/.test(n)?'Trail Blazers':n.split(' ').pop();}
+function teamPlate(name,full){const team=name==='Los Angeles Clippers'?'LA Clippers':name;
+  if(!teamPortraits.has(team))return el(full?'span':'b',full?name:teamNick(name));
+  const p=el('span',full?name:teamNick(name),'tplate');p.style.setProperty('--tc',TEAM_COLORS[teamNick(name)]||'#333');return p;}
 function ratingTeamName(name){
   if(!nflPortraitTeams.has(name))return name;
   const row=el('span',null,'nfl-rating-name');
@@ -919,7 +938,7 @@ function buildCustom(T){const lg=anyPick.lg,L=T.leagues[lg],home=anyPick.home,aw
 function arena(home,away,pH){const a=el('div',null,'arena'+(calm()?' still':''));const hw=pH>=0.5;
   const side=(name,cls,hp,win)=>{const f=el('div',null,'fighter '+cls+(win?' win':''));const b=teamBadge(name);b.classList.add('big');
     const bar=el('div',null,'hp');const fill=el('i');fill.style.setProperty('--hp',Math.max(6,Math.round(hp*100))+'%');bar.append(fill);
-    f.append(el('span','👑','crown'),b,el('b',name.split(' ').pop()),bar,el('small',pct(hp)));return f;};
+    f.append(el('span','👑','crown'),b,teamPlate(name),bar,el('small',pct(hp)));return f;};
   a.append(side(away,'left',1-pH,!hw),el('div',null,'clash'),side(home,'right',pH,hw));a.querySelector('.clash').append(el('span','💥','boom'),el('span','VS','vs'));return a;}
 function myPicks(){const all=pkLoad(),F=(D&&D.finals)||{};const rows=Object.entries(all).sort((a,b)=>String(b[1].start).localeCompare(String(a[1].start)));
   const c=el('div',null,'card mp');c.append(el('h4','🎯 My picks'));
@@ -1049,7 +1068,7 @@ function section(title,node){const c=el('div',null,'card');c.append(el('h4',titl
 function gameView(g){const b=el('div');const ln=laneOf(g);
   const head=el('div',null,'row');head.append(el('span',sname(g.league).toUpperCase(),'league'),el('span',null,'sp'),el('span',ln.t,'pill '+ln.c));b.append(head);
   const hero=el('div',null,'hero');const vs=el('div',null,'vs');
-  g.teams.forEach((t,i)=>{const sd=el('div',null,'side');sd.append(teamBadge(t.name),el('span',t.name),el('span',g.state==='LIVE'?String(t.score??0):(t.record||''),g.state==='LIVE'?'sc':'hint small'));vs.append(sd);if(i===0)vs.append(el('span',g.state==='LIVE'?'–':'vs','hint'));});
+  g.teams.forEach((t,i)=>{const sd=el('div',null,'side');sd.append(teamBadge(t.name),teamPlate(t.name,true),el('span',g.state==='LIVE'?String(t.score??0):(t.record||''),g.state==='LIVE'?'sc':'hint small'));vs.append(sd);if(i===0)vs.append(el('span',g.state==='LIVE'?'–':'vs','hint'));});
   hero.append(vs,el('div',g.state==='LIVE'?'● LIVE '+(g.detail||''):when(g.start),g.state==='LIVE'?'down':'hint'));if(g.tv&&g.tv.length)hero.append(el('div','TV: '+g.tv.join(' · '),'hint small'));b.append(hero);
   if(g.pick){const c=el('div',null,'card');const pl=el('div',null,'pickline');pl.append(el('span','Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'));c.append(pl);
     const tiles=el('div',null,'tiles');const tile=(l,v)=>{const t=el('div',null,'tile');t.append(l,el('b',v));tiles.append(t);};
