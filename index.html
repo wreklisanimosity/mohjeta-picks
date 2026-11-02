@@ -1345,7 +1345,7 @@ function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').va
 $('rtFind').oninput=drawRatings;$('rtPick').onchange=drawRatings;
 async function loadRatings(){try{const r=await fetch('ratings.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error();rt=await r.json();drawRatings();}
   catch(e){$('rtBox').replaceChildren(el('p','Ratings will appear after her next update.','hint'));}}
-load();setInterval(load,30000);initLive();loadRatings();setInterval(loadRatings,600000);
+load();setInterval(load,20000);initLive();loadRatings();setInterval(loadRatings,600000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
 // ---------------- Google one-tap sign-in (a small Google pop-up on the page: tap your account, done; no page change)
 const GOOGLE_CLIENT_ID='883955987231-l1v1fltv25f3hbavnrf3pe1ut8gb5u2u.apps.googleusercontent.com';     // public ID (not a secret); also read from live-config.json (google_client_id)
@@ -1487,12 +1487,12 @@ function drawNews(){const box=$('newsBox');if(!box||!NEWS)return;box.replaceChil
   const gd=NEWS.guides||[];if(gd.length){box.append(el('h3','How to use the site'));for(const g of gd){const c=el('div',null,'card');c.append(el('h4',g.title),el('p',g.text,'small'));box.append(c);}}
   const u=up[0];if(u){try{localStorage.setItem('mohjeta.newsSeen',u.id);}catch(e){}drawNewsBar();}}
 function loadNews(){fetch('news.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(n=>{if(!n)return;NEWS=n;drawNewsBar();if(document.querySelector('#news.on'))drawNews();}).catch(()=>{});}
-loadNews();setInterval(loadNews,300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadNews();});
+loadNews();setInterval(loadNews,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadNews();});
 // new version of the page: offer a one-tap refresh (checked every 5 minutes and when the app comes back to the front)
 let pageTag=null;
 async function checkPage(){try{const r=await fetch('index.html?v='+Date.now(),{method:'HEAD',cache:'no-store'});const t=r.headers.get('etag')||r.headers.get('last-modified');
   if(!t)return;if(pageTag===null){pageTag=t;return;}if(t!==pageTag&&!$('newPage')){const b=el('button','✨ The site was updated · tap to refresh','newpage');b.id='newPage';b.type='button';b.onclick=()=>location.reload();document.body.append(b);}}catch(e){}}
-checkPage();setInterval(checkPage,300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkPage();});
+checkPage();setInterval(checkPage,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkPage();});
 // pull down to refresh, for the installed app (browsers already have their own)
 (function(){const app=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;if(!app)return;
   const ind=el('div','↓ Pull to refresh','ptr');document.body.append(ind);let y0=null,dist=0;
