@@ -496,7 +496,9 @@ const sname=k=>SN[k]||k||'Other';
 // team pictures: portraits/<file>.webp, listed in portraits.json (Mohjeta keeps it current, so new pictures need no page edit)
 function pkey(n){return String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\.webp$/,'').replace(/[^a-z0-9]/g,'');}
 let PORTRAIT_FILES=new Map(["alabama-crimson-tide", "arizona-cardinals", "atlanta-falcons", "atlanta-hawks", "auburn-tigers", "baltimore-ravens", "boston-celtics", "brooklyn-nets", "buffalo-bills", "carolina-panthers", "charlotte-hornets", "chicago-bears", "chicago-bulls", "cincinnati-bengals", "cleveland-browns", "cleveland-cavaliers", "dallas-cowboys", "dallas-mavericks", "denver-broncos", "denver-nuggets", "detroit-lions", "detroit-pistons", "golden-state-warriors", "green-bay-packers", "houston-rockets", "houston-texans", "indiana-pacers", "indianapolis-colts", "jacksonville-jaguars", "kansas-city-chiefs", "la-clippers", "las-vegas-raiders", "los-angeles-chargers", "los-angeles-lakers", "los-angeles-rams", "memphis-grizzlies", "miami-dolphins", "miami-heat", "milwaukee-bucks", "minnesota-timberwolves", "minnesota-vikings", "new-england-patriots", "new-orleans-pelicans", "new-orleans-saints", "new-york-giants", "new-york-jets", "new-york-knicks", "ohio-state-buckeyes", "oklahoma-city-thunder", "oregon-ducks", "orlando-magic", "philadelphia-76ers", "philadelphia-eagles", "phoenix-suns", "pittsburgh-steelers", "portland-trail-blazers", "sacramento-kings", "san-antonio-spurs", "san-francisco-49ers", "seattle-seahawks", "tampa-bay-buccaneers", "tennessee-titans", "toronto-raptors", "utah-jazz", "washington-commanders", "washington-wizards"].map(f=>[pkey(f),f+'.webp']));
-const teamPortraits={has:t=>PORTRAIT_FILES.has(pkey(t)),file:t=>PORTRAIT_FILES.get(pkey(t))};
+// held back until redrawn: school logos/letters on the art, lookalikes of real mascot characters, Native American depictions
+const PORTRAIT_HOLD=new Set(["alcorn-state-braves.webp", "arizona-state-sun-devils.webp", "arizona-wildcats.webp", "bradley-braves.webp", "byu-cougars.webp", "catawba-indians.webp", "central-michigan-chippewas.webp", "cornell-big-red.webp", "dean-bulldogs.webp", "drake-bulldogs.webp", "eastern-michigan-eagles.webp", "florida-state-seminoles.webp", "georgetown-hoyas.webp", "georgia-bulldogs.webp", "grambling-tigers.webp", "iowa-hawkeyes.webp", "kansas-jayhawks.webp", "liberty-flames.webp", "maine-black-bears.webp", "marshall-thundering-herd.webp", "maryland-terrapins.webp", "mcneese-cowboys.webp", "memphis-tigers.webp", "mercer-bears.webp", "miami-hurricanes.webp", "miami-oh-redhawks.webp", "michigan-state-spartans.webp", "michigan-wolverines.webp", "middle-tennessee-blue-raiders.webp", "minnesota-golden-gophers.webp", "mississippi-college-choctaws.webp", "nebraska-cornhuskers.webp", "north-carolina-tar-heels.webp", "north-central-college-cardinals.webp", "notre-dame-fighting-irish.webp", "ohio-state-buckeyes.webp", "oklahoma-state-cowboys.webp", "oregon-ducks.webp", "penn-state-fayette-nittany-lions.webp", "purdue-boilermakers.webp", "saint-francis-red-flash.webp", "san-diego-state-aztecs.webp", "syracuse-orange.webp", "texas-tech-red-raiders.webp", "unlv-rebels.webp", "virginia-tech-hokies.webp", "wake-forest-demon-deacons.webp", "webber-international-warriors.webp", "western-kentucky-hilltoppers.webp", "wichita-state-shockers.webp", "wisconsin-badgers.webp"]);
+const teamPortraits={has:t=>PORTRAIT_FILES.has(pkey(t))&&!PORTRAIT_HOLD.has(PORTRAIT_FILES.get(pkey(t))),file:t=>PORTRAIT_FILES.get(pkey(t))};
 fetch('portraits.json?t='+Math.floor(Date.now()/3e5)).then(r=>r.ok?r.json():null).then(a=>{if(!Array.isArray(a)||!a.length)return;
   const before=PORTRAIT_FILES.size;PORTRAIT_FILES=new Map(a.map(f=>[pkey(f),f]));if(D&&PORTRAIT_FILES.size!==before)try{render(D);}catch(e){}}).catch(()=>{});
 
@@ -1345,7 +1347,7 @@ function gsi(){if(gsiP)return gsiP;gsiP=(async()=>{try{await supa();const id=(wi
     return true;}catch(e){gsiP=null;return false;}})();return gsiP;}
 // ---------------- members-only picks (only when the owner turns the paywall on): 7-day free trial, then subscription
 // ---------------- Props tab: her NBA points props, their own report card, and a prop builder
-let propLegs=[],propGame=null,propFind='',propShow='ALL',propStake=10;
+let propLegs=[],propGame=null,propFind='',propShow='ALL',propStake=10,propAll=false;
 const STATNAME={pts:'points',reb:'rebounds',ast:'assists',fg3:'threes'};
 function propName(o){return o.player+' · '+o.line+'+ '+(STATNAME[o.stat]||o.stat);}
 function propSide(o){return o.side==='YES'?'YES · '+o.line+' or more':'NO · '+(o.line-1)+' or fewer';}
@@ -1375,13 +1377,16 @@ function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(
   if(P.locked){const c=el('div',null,'banner members');c.append(el('b','🔒 '+(P.open_hidden||'Her')+' prop pick'+(P.open_hidden===1?'':'s')+' tonight for members'),el('div','Members see every prop pick and can use the prop builder. Her record above is always public.','hint small'));
     const row=el('div',null,'row');row.append(trialBtn(),subBtn(true));c.append(row);box.append(c);}
   else if(!(P.open||[]).length)box.append(el('p','No prop picks yet. She prices tonight’s NBA props every 30 minutes and picks only when Kalshi’s price is at least 8 points off her number.','hint'));
-  else{const gr=el('div',null,'grid');for(const o of P.open){const c=el('div',null,'card prop');
+  else{const all=P.open.slice().sort((x,y)=>(y.her-y.price)-(x.her-x.price));const list=propAll?all:all.slice(0,15);
+    box.append(el('p',all.length>15&&!propAll?'Her '+list.length+' strongest of '+all.length+' prop picks tonight (biggest gap between her chance and Kalshi’s price).':all.length+' prop pick'+(all.length===1?'':'s')+' tonight, strongest first.','hint small'));
+    const gr=el('div',null,'grid');for(const o of list){const c=el('div',null,'card prop');
       c.append(el('div',o.game,'hint small'),el('div',propName(o),'pname'));
       const r=el('div',null,'row');r.append(el('span',propSide(o),'pk'),el('span',null,'sp'),el('b',pct(o.her),'up'));c.append(r);
       c.append(el('div','Her chance '+pct(o.her)+' · Kalshi '+Math.round(o.price*100)+'¢ (about '+pct(o.price)+')','hint small'));
       const add=el('button','+ Add to prop builder','btn ghost small');add.type='button';add.onclick=()=>addLeg({player:o.player,stat:o.stat,line:o.line,side:o.side,her:o.her,price:o.price,game:o.game});
       c.append(add);gr.append(c);}
-    box.append(gr);}
+    box.append(gr);
+    if(all.length>15){const mb=el('button',propAll?'Show only her strongest 15':'Show all '+all.length+' prop picks','btn ghost small');mb.type='button';mb.onclick=()=>{propAll=!propAll;renderProps(D);};box.append(mb);}}
   // prop builder
   const pb=el('div',null,'card');pb.id='propBuilder';box.append(el('h3','🧱 Prop builder'),pb);drawBuilder();
   // every finished prop
@@ -1436,13 +1441,13 @@ function drawBuilder(){const pb=$('propBuilder');if(!pb)return;const P=propData(
 // ---------------- Results: practice picks ($0) — sports she picks every game but does not bet
 let pracSport='ALL';
 function renderPractice(d){const box=$('practiceBox');if(!box)return;box.replaceChildren();const P=d.practice;if(!P||!P.record||!P.record.n)return;
-  const R=P.record;box.append(el('h3','🧪 Practice picks ($0)'),el('div','These are learning picks: sports she picks every game but does not bet yet, because she has less information on them. They are tracked here so she can prove herself before they go live. Rely on them with caution.','notice'),el('p','Graded the same way as her bets. Profit shows what $5 on each pick would have made at Kalshi’s price when she picked.','hint small'));
+  const R=P.record;box.append(el('h3','🧪 Practice picks ($0)'),el('div','These are learning picks: sports she picks every game but does not bet yet, because she has less information on them. They are tracked here so she can prove herself before they go live. Rely on them with caution.','notice'),el('p','Graded the same way as her bets, from Kalshi’s official results. “Kalshi said” is how often Kalshi’s prices said her picks would win.','hint small'));
   const st=el('div',null,'stats');const stat=(l,v,c)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,c||''));st.append(s);};
-  stat('Record',R.won+'-'+(R.n-R.won));stat('Win rate',pct(R.won/R.n));stat('If $5 each',signed(R.pl),cls(R.pl));
+  stat('Record',R.won+'-'+(R.n-R.won));stat('Win rate',pct(R.won/R.n));
   stat('Kalshi said',R.price_said==null?'—':pct(R.price_said));box.append(st);
   const L=Object.entries(P.by_league||{}).sort((a,b)=>b[1].n-a[1].n);
-  if(L.length){const tw=el('div',null,'tablewrap');const tb=el('table');const h=el('tr');for(const x of ['Sport','Record','Win rate','$5 each'])h.append(el('th',x));tb.append(h);
-    for(const [lg,g] of L){const tr=el('tr');tr.append(el('td',sname(lg)),el('td',g.won+'-'+(g.n-g.won)),el('td',pct(g.won/g.n)),el('td',signed(g.pl),cls(g.pl)));tb.append(tr);}
+  if(L.length){const tw=el('div',null,'tablewrap');const tb=el('table');const h=el('tr');for(const x of ['Sport','Record','Win rate','Kalshi said'])h.append(el('th',x));tb.append(h);
+    for(const [lg,g] of L){const tr=el('tr');tr.append(el('td',sname(lg)),el('td',g.won+'-'+(g.n-g.won)),el('td',pct(g.won/g.n)),el('td',g.price_said==null?'—':pct(g.price_said)));tb.append(tr);}
     tw.append(tb);box.append(tw);}
   const chips=el('div',null,'chips');for(const k of ['ALL',...L.map(x=>x[0])]){const x=el('button',k==='ALL'?'All sports':sname(k));x.type='button';x.setAttribute('aria-pressed',String(k===pracSport));
     x.onclick=()=>{pracSport=k;renderPractice(d);};chips.append(x);}
@@ -1450,7 +1455,7 @@ function renderPractice(d){const box=$('practiceBox');if(!box)return;box.replace
   const rows=(P.rows||[]).filter(r=>pracSport==='ALL'||r.league===pracSport);
   for(const r of rows.slice(0,120)){const tr=el('tr');const a=el('td');
     a.append(el('div',r.team),el('div',new Date(r.at*1000).toLocaleDateString([],{month:'short',day:'numeric'})+' · '+sname(r.league)+' · her '+pct(r.her)+(r.price!=null?' · '+Math.round(r.price*100)+'¢':''),'hint small'));
-    const res=el('td');res.style.textAlign='right';res.style.whiteSpace='nowrap';res.append(el('div',icon(r.result)+' '+r.result.toLowerCase(),r.result==='WON'?'up':'down'),el('div',r.pnl==null?'no price':signed(r.pnl),'small '+cls(r.pnl||0)));
+    const res=el('td');res.style.textAlign='right';res.style.whiteSpace='nowrap';res.append(el('div',icon(r.result)+' '+r.result.toLowerCase(),r.result==='WON'?'up':'down'));
     tr.append(a,res);tb.append(tr);}
   tw.append(tb);box.append(tw,el('p',P.note||'','hint small'));}
 let MEMBERS=null,ACCESS=null,accessAt=0,SIMDATA=null;
