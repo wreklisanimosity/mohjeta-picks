@@ -96,6 +96,11 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 .bars{display:flex;align-items:center;gap:3px;height:120px;padding:6px 4px;border-bottom:1px solid var(--line);position:relative}
 .bars .b{flex:1;display:flex;flex-direction:column;justify-content:center;height:100%;min-width:6px}
 .bars .b i{display:block;border-radius:3px}
+.newsbar{display:flex;align-items:center;gap:8px;margin:8px 0 12px;padding:9px 10px 9px 14px;border-radius:12px;border:1px solid #b44dff66;background:linear-gradient(135deg,#2a1146cc,#160d22cc);font-size:14px}
+.newsbar .nb{flex:1;min-width:0;background:none;border:0;color:var(--text);text-align:left;font:inherit;cursor:pointer;padding:0}
+.newsbar .nb b{color:#fff}.newsbar .nb span{color:var(--pink);white-space:nowrap}
+.newsbar .x{background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1}
+.newsitem{border-left:3px solid var(--pink);padding:2px 0 2px 12px;margin:0 0 14px}.newsitem h4{margin:2px 0 4px}
 .bars .zero{position:absolute;left:0;right:0;top:50%;border-top:1px dashed var(--line)}
 .prop .pname{font-weight:800;font-size:16px;margin:2px 0 6px}.prop .pk{font-weight:800}.prop .btn{margin:8px 0 0}
 .btn.small{padding:7px 12px;font-size:13px}
@@ -314,6 +319,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <button role="tab" data-tab="more" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</button>
   </nav>
 <main>
+  <div id="newsBar"></div>
   <section class="panel on" id="picks" role="tabpanel" aria-label="Picks">
     <button type="button" class="hero" id="heroSim"><span class="hi">⚔️</span><span><b>Simulate any matchup</b><small>Pick two teams and watch them battle 10,000 times</small></span><span class="go">›</span></button>
     <div id="record"></div><div id="installBox"></div><div id="alertsBox"></div>
@@ -367,9 +373,13 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <h2>Ratings</h2><p class="hint small">Team strength from real final scores (Elo: 1500 is average, +100 is about a 64% favorite) and each league's players. Tennis: player Elo overall and by surface.</p>
     <div class="chips" id="rtChips"></div><div class="chips" id="rtViews"></div><select id="rtPick" aria-label="Choose team or position" hidden></select><input id="rtFind" type="search" placeholder="Find a team or player…" aria-label="Find a team or player"><div id="rtBox"></div>
   </section>
+  <section class="panel" id="news" role="tabpanel" aria-label="What's new"><button class="back" data-go="more">‹ More</button>
+    <h2>What's new & how to use the site</h2><div id="newsBox"><p class="hint">Loading…</p></div>
+  </section>
   <section class="panel" id="more" role="tabpanel" aria-label="More">
     <h2>More</h2><div id="pushBox"></div>
     <div class="menu">
+      <button type="button" data-go="news"><span>🆕 What's new & how-to<small>Latest updates and how to use every part of the site</small></span>›</button>
       <button type="button" data-go="combos"><span>Combo ideas<small>Her best multi-game combos right now</small></span>›</button>
       <button type="button" data-go="score"><span>Scorecard<small>Every source she uses, graded against real results</small></span>›</button>
       <button type="button" data-go="games"><span>📅 All games<small>Every game she's watching, by sport</small></span>›</button>
@@ -551,12 +561,13 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['picks','props','sim','record','play','more'];const SUB={games:'more',ratings:'more',chat:'more',guess:'play',fantasy:'play',combos:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
+const TABS=['picks','props','sim','record','play','more'];const SUB={games:'more',ratings:'more',chat:'more',guess:'play',fantasy:'play',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button')];
 function show(name,push){name=LEGACY[name]||name;
   if(name==='chat'){if(!document.querySelector('main .panel.on'))show('picks',false);openDrawer();return;}
-  if(name==='fantasy')setTimeout(renderFantasy,0);   // chat = one floating overlay over any tab
+  if(name==='fantasy')setTimeout(renderFantasy,0);
+  if(name==='news')setTimeout(drawNews,0);   // chat = one floating overlay over any tab
   const panel=name==='record'?'recordp':name;
   for(const s of document.querySelectorAll('main .panel'))s.classList.toggle('on',s.id===panel);
   const top=SUB[name]||name;for(const b of navBtns)b.setAttribute('aria-selected',String(b.dataset.tab===top));
@@ -1458,6 +1469,21 @@ function renderPractice(d){const box=$('practiceBox');if(!box)return;box.replace
     const res=el('td');res.style.textAlign='right';res.style.whiteSpace='nowrap';res.append(el('div',icon(r.result)+' '+r.result.toLowerCase(),r.result==='WON'?'up':'down'));
     tr.append(a,res);tb.append(tr);}
   tw.append(tb);box.append(tw,el('p',P.note||'','hint small'));}
+// ---------------- What's new banner + page (from news.json in the site folder: edit it to post an update)
+let NEWS=null;
+function newsSeen(){try{return localStorage.getItem('mohjeta.newsSeen')||'';}catch(e){return '';}}
+function drawNewsBar(){const bar=$('newsBar');if(!bar)return;bar.replaceChildren();const u=NEWS&&(NEWS.updates||[])[0];if(!u||newsSeen()===u.id)return;
+  const box=el('div',null,'newsbar');box.setAttribute('role','status');const go=el('button',null,'nb');go.type='button';
+  go.append(el('b','🆕 '+u.title),document.createTextNode(' '),el('span','See what’s new ›'));go.onclick=()=>show('news');
+  const x=el('button','✕','x');x.type='button';x.setAttribute('aria-label','Hide this update');
+  x.onclick=()=>{try{localStorage.setItem('mohjeta.newsSeen',u.id);}catch(e){}bar.replaceChildren();};box.append(go,x);bar.append(box);}
+function drawNews(){const box=$('newsBox');if(!box||!NEWS)return;box.replaceChildren();
+  const up=NEWS.updates||[];if(up.length){box.append(el('h3','Latest updates'));
+    for(const u of up){const it=el('div',null,'newsitem');it.append(el('div',new Date(u.date+'T12:00:00').toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}),'hint small'),el('h4',u.title),el('p',u.text,'small'));
+      if(u.go){const b=el('button','Take me there ›','btn ghost small');b.type='button';b.onclick=()=>show(u.go);it.append(b);}box.append(it);}}
+  const gd=NEWS.guides||[];if(gd.length){box.append(el('h3','How to use the site'));for(const g of gd){const c=el('div',null,'card');c.append(el('h4',g.title),el('p',g.text,'small'));box.append(c);}}
+  const u=up[0];if(u){try{localStorage.setItem('mohjeta.newsSeen',u.id);}catch(e){}drawNewsBar();}}
+fetch('news.json?t='+Math.floor(Date.now()/3e5)).then(r=>r.ok?r.json():null).then(n=>{if(!n)return;NEWS=n;drawNewsBar();if(document.querySelector('#news.on'))drawNews();}).catch(()=>{});
 let MEMBERS=null,ACCESS=null,accessAt=0,SIMDATA=null;
 function pw(){return (D&&D.paywall)||{};}
 async function memberRefresh(force){try{if(!sb)return;if(!me){ACCESS=null;MEMBERS=null;return;}
