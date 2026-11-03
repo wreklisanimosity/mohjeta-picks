@@ -539,7 +539,7 @@ const TEAM_COLORS={Celtics:'#007A33',Nets:'#2b2b2b',Knicks:'#006BB6','76ers':'#0
   Saints:'#8a7546','Crimson Tide':'#9E1B32',Tigers:'#0C2340',Buckeyes:'#BB0000',Ducks:'#154733',Buccaneers:'#D50A0A',Cardinals:'#97233F',Rams:'#003594','49ers':'#AA0000',Seahawks:'#002244'};
 function teamNick(name){const n=String(name||'');const m=n.match(/(Trail Blazers|Crimson Tide)$/);return m?m[1]:n.split(' ').pop();}
 function teamPlate(name,full){const team=name==='Los Angeles Clippers'?'LA Clippers':name;
-  if(!teamPortraits.has(team))return el(full?'span':'b',full?name:teamNick(name));
+  if(!teamPortraits.has(team))return el(full?'span':'b',full||String(name).length<=16?name:teamNick(name));
   const p=el('span',full?name:teamNick(name),'tplate');p.style.setProperty('--tc',TEAM_COLORS[teamNick(name)]||'#333');return p;}
 function ratingTeamName(name){
   if(!nflPortraitTeams.has(name))return name;
@@ -582,6 +582,7 @@ navBtns.forEach(b=>b.onclick=()=>show(b.dataset.tab));
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
 $('home').onclick=()=>show('picks');$('home').onkeydown=e=>{if(e.key==='Enter')show('picks');};
 function route(){const h=location.hash.slice(1);if(h.startsWith('game/')){openGame(decodeURIComponent(h.slice(5)),false);return;}
+  if(h.startsWith('join/')){simMode='fantasy';show('sim',false);$('anyBox').replaceChildren();renderSim();setTimeout(()=>joinLeague(h.slice(5)),1500);return;}
   show(h&&(TABS.includes(LEGACY[h]||h)||SUB[h])?h:'picks',false);}
 window.addEventListener('popstate',route);
 
@@ -845,7 +846,7 @@ async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
   chatFab();startPresence();logVisit();drawPush($('pushBox'));memberRefresh(true);setInterval(()=>memberRefresh(false),60000);
   liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();
-  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN')toast('Signed in ✅');if(chatOpen())openChat();});
+  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN'){toast('Signed in ✅');let jc=null;try{jc=sessionStorage.getItem('mohjeta.join');sessionStorage.removeItem('mohjeta.join');}catch(e){}if(jc)setTimeout(()=>joinLeague(jc),800);}if(chatOpen())openChat();});
   if(/[?&]code=/.test(location.search)){for(let i=0;i<20&&!(await sb.auth.getSession()).data.session;i++)await new Promise(r=>setTimeout(r,250));
     try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}}
   const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;updateAcct();memberRefresh(true);
@@ -953,7 +954,7 @@ function tour(){let seen=false;try{seen=localStorage.getItem('mohjeta.tour')==='
 // ---------------- any-matchup simulator + battle arena (original art: team-colored badges, no logos or mascots)
 let simMode='tonight',TEAMS=null,customG=null;const anyPick={};
 async function loadTeams(){if(pw().on){if(!SIMDATA)return null;TEAMS=SIMDATA;return TEAMS;}if(TEAMS)return TEAMS;try{const r=await fetch('sim-teams.json?t='+Date.now(),{cache:'no-store'});if(r.ok)TEAMS=await r.json();}catch(e){}return TEAMS;}
-function drawModeChips(){const m=$('simMode');m.replaceChildren();for(const [k,l] of [['tonight','🏟️ Tonight’s games'],['any','⚔️ Any matchup']]){const b=el('button',l);b.type='button';b.setAttribute('aria-pressed',String(simMode===k));b.onclick=()=>{simMode=k;$('anyBox').replaceChildren();renderSim();};m.append(b);}}
+function drawModeChips(){const m=$('simMode');m.replaceChildren();for(const [k,l] of [['tonight','🏟️ Tonight’s games'],['any','⚔️ Any matchup'],['fantasy','🏀 Fantasy team']]){const b=el('button',l);b.type='button';b.setAttribute('aria-pressed',String(simMode===k));b.onclick=()=>{simMode=k;$('anyBox').replaceChildren();renderSim();};m.append(b);}}
 async function renderAny(){const box=$('anyBox');const T=await loadTeams();box.replaceChildren();
   if(!T||!T.leagues||!Object.keys(T.leagues).length){box.append(el('p','Any-matchup data is being built from the ratings. Check back in a few minutes.','hint'));$('simBox').replaceChildren();return;}
   const lgs=Object.keys(T.leagues);if(!lgs.includes(anyPick.lg))anyPick.lg=lgs[0];const L=T.leagues[anyPick.lg];const names=Object.keys(L.teams).sort();
@@ -994,7 +995,7 @@ function myPicks(){const all=pkLoad(),F=(D&&D.finals)||{};const rows=Object.entr
   return c;}
 let simId=null;const simState={};
 function simGames(){return (D&&D.games||[]).filter(g=>g.sim&&g.state==='UPCOMING');}
-function renderSim(){if(simLocked()){drawSimLock();return;}drawModeChips();if(simMode==='any'){$('simPick').hidden=true;if(!$('anyBox').childElementCount)renderAny();return;}$('anyBox').replaceChildren();
+function renderSim(){if(simLocked()){drawSimLock();return;}drawModeChips();if(simMode==='fantasy'){$('simPick').hidden=true;if(!$('anyBox').childElementCount)renderFantasyEasy();return;}if(simMode==='any'){$('simPick').hidden=true;if(!$('anyBox').childElementCount)renderAny();return;}$('anyBox').replaceChildren();
   const gs=simGames();const sel=$('simPick');sel.replaceChildren();
   if(!gs.length){$('simBox').replaceChildren(el('p','No games ready to simulate right now. Games show up here when the player rating has numbers for them (basketball, football, hockey and baseball, up to 36 hours ahead).','hint'));sel.hidden=true;simulationScorecard($('simBox'));return;}
   sel.hidden=false;for(const g of gs){const o=el('option',sname(g.league)+' · '+g.name+' · '+when(g.start));o.value=g.id||g.name;sel.append(o);}
@@ -1286,7 +1287,7 @@ function renderMore(d){$('comboList').replaceChildren(...(d.combos.length?d.comb
 // ---------------- load + render
 function render(d){D=d;applyMembers(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
-  $('disclaimer').textContent=d.disclaimer;renderPicks(d);renderGames(d);renderRecord(d);renderProps(d);renderPractice(d);renderMore(d);renderSim();drawInstall();
+  $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderMore(d),()=>renderSim(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
   if(lastLive&&Date.parse(lastLive.updated)>Date.parse(d.updated))applyLive(lastLive);
   navBtns.find(b=>b.dataset.tab==='record').hidden=!d.bets;
   if(sheetGame){const g=d.games.find(x=>String(x.id||x.name)===String(sheetGame.id||sheetGame.name));if(g){sheetGame=g;const s=$('sheet');const y=s.scrollTop;$('sheetBody').replaceChildren(gameView(g));s.scrollTop=y;}}}
@@ -1695,7 +1696,8 @@ async function renderFantasy(){const box=$('fantasyBox');if(!box)return;
     (data||[]).forEach((r,i)=>{const row=el('div',null,'brow');row.append(el('span',String(i+1),'bk'),chatPic({name:r.owner,profiles:{avatar_url:r.avatar}}),el('b',r.team),el('span',' '+r.owner,'hint small'),el('span',null,'sp'),el('span',r.wins+'-'+r.losses,'up'));lg.append(row);});
     const {data:g}=await sb.from('fantasy_games').select('*').order('day',{ascending:false}).limit(12);
     if((g||[]).length){lg.append(el('h4','Latest results'));for(const x of g){const hw=x.home_score>x.away_score;lg.append(el('div',(hw?'✅ ':'')+x.home_name+' '+x.home_score+' – '+x.away_score+' '+x.away_name+(hw?'':' ✅'),'hint small'));}}}
-  catch(e){lg.append(el('p','The league table is being set up.','hint small'));}}
+  catch(e){lg.append(el('p','The league table is being set up.','hint small'));}
+  box.append(await leaguesCard());}
 async function testBattle(P){let opp=null;try{const {data}=await sb.from('fantasy_teams').select('user_id,name,players').neq('user_id',me.id).limit(50);
     const ok=(data||[]).filter(t=>!fcheck((t.players||[]).map(String),P));if(ok.length)opp=ok[Math.floor(Math.random()*ok.length)];}catch(e){}
   const mins=ids=>{const ps=ids.map(i=>({...P[i]}));const tot=ps.reduce((a,p)=>a+Math.max(1,p.minutes||0),0);ps.forEach(p=>{p.minutes=Math.min(42,Math.max(1,p.minutes||0)*240/tot);p.sit=0;p.status='';});return ps;};
@@ -1708,6 +1710,110 @@ async function testBattle(P){let opp=null;try{const {data}=await sb.from('fantas
     nba_model:{version:'fantasy',built_at:Date.now()/1000,teams:{[home]:mins(FT.players),[away]:mins(oppIds)},home,away,fill_in:false,sd:L.sd,total_sd:L.total_sd,pace:100,home_offset:L.mu,away_offset:L.mu}};
   customG={id,league:'NBA',name:away+' @ '+home,teams:[{name:home},{name:away}],state:'UPCOMING',sim};simId=id;simMode='any';$('anyBox').replaceChildren();show('sim');setTimeout(()=>drawSim(true),300);
   toast('Test battle vs '+away+' (just for fun: not counted)');}
+// ---------------- Simulate › 🏀 Fantasy team: a guided 3-step builder (works without signing in; saving joins the leagues)
+let FBQ='',FBPICK=false;
+function fbLoad(){try{const t=JSON.parse(localStorage.getItem('mohjeta.fteam')||'null');if(t&&Array.isArray(t.players)&&!FT.players.length)FT={name:t.name||'',players:t.players.map(String)};}catch(e){}}
+function fbStore(){try{localStorage.setItem('mohjeta.fteam',JSON.stringify(FT));}catch(e){}}
+function fstrength(ids,P){const ps=ids.map(i=>P[i]).filter(Boolean);const tot=ps.reduce((a,p)=>a+Math.max(1,p.minutes||0),0)||1;
+  return ps.reduce((a,p)=>a+((p.offense||0)+(p.defense||0))*Math.min(42,Math.max(1,p.minutes||0)*240/tot)/48,0);}
+function autoDraft(P,shuffle){let regs=Object.values(P).filter(p=>(p.minutes||0)>=8);if(!regs.length)return [];
+  if(shuffle)regs=regs.filter(()=>Math.random()>0.3);   // surprise: a strong team built from a random 70% of the players, so it comes out different each time
+  const floor=Math.min(...regs.map(fimpact))-0.5;const noise=()=>1;
+  const val=new Map(regs.map(p=>[String(p.id),(fimpact(p)-floor)/p.salary*noise()]));let team=[];
+  const fits=ids=>{const need=['G','F','C'].filter(r=>!ids.some(i=>P[i].role===r)).length;const slots=FN-ids.length;return ids.reduce((a,i)=>a+P[i].salary,0)+slots*3000<=FCAP&&need<=slots;};
+  for(const p of regs.slice().sort((a,b)=>val.get(String(b.id))-val.get(String(a.id)))){if(team.length<FN&&fits([...team,String(p.id)]))team.push(String(p.id));}
+  if(fcheck(team,P))return team;const score=ids=>ids.reduce((a,i)=>a+fimpact(P[i])*(shuffle?1:1),0);
+  for(let round=0,better=true;better&&round<40;round++){better=false;
+    for(let k=0;k<team.length&&!better;k++)for(const p of regs){const id=String(p.id);if(team.includes(id))continue;const t=team.slice();t[k]=id;
+      if(!fcheck(t,P)&&score(t)>score(team)+1e-9){team=t;better=true;break;}}}
+  return team;}
+function fgrade(ids,P,L){const mine=fstrength(ids,P);const real=Object.values(L.teams||{}).map(t=>{const top=(t.players||[]).slice().sort((a,b)=>(b.minutes||0)-(a.minutes||0)).slice(0,FN);
+    const Q={};top.forEach(p=>Q[String(p.id)]=p);return fstrength(Object.keys(Q),Q);});
+  const beat=real.filter(x=>mine>x).length;const avg=real.reduce((a,x)=>a+x,0)/(real.length||1);
+  const z=(mine-avg)/(L.sd||12);const win=0.5*(1+Math.tanh(z*0.7978845608*(1+0.044715*z*z)));return {beat,of:real.length,mine,win};}
+async function fantasyBattle(P,oppName,oppPlayers){const T=await loadTeams();const L=T.leagues.NBA;
+  const mins=ps=>{ps=ps.map(p=>({...p}));const tot=ps.reduce((a,p)=>a+Math.max(1,p.minutes||0),0);ps.forEach(p=>{p.minutes=Math.min(42,Math.max(1,p.minutes||0)*240/tot);p.sit=0;p.status='';});return ps;};
+  const home=FT.name.trim()||'My Team',away=oppName===home?oppName+' (2)':oppName;const id='fantasy:'+home+'@'+away+':'+Date.now();
+  const sim={league:'NBA',unit:'pts',home,away,margin:0,sd:L.sd,total:null,neutral:true,players:{},custom:true,fantasy:true,
+    nba_model:{version:'fantasy',built_at:Date.now()/1000,teams:{[home]:mins(FT.players.map(i=>P[i])),[away]:mins(oppPlayers)},home,away,fill_in:false,sd:L.sd,total_sd:L.total_sd,pace:100,home_offset:L.mu,away_offset:L.mu}};
+  customG={id,league:'NBA',name:away+' @ '+home,teams:[{name:home},{name:away}],state:'UPCOMING',sim};simId=id;award('sim');drawSim(true);
+  setTimeout(()=>{const b=$('simBox');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});},200);}
+async function renderFantasyEasy(){const box=$('anyBox');box.replaceChildren(el('p','Loading players…','hint'));$('simBox').replaceChildren();
+  const fp=await fpool();if(!fp){box.replaceChildren(el('p','Player data is loading. Try again in a minute.','hint'));return;}const {P,L}=fp;fbLoad();FT.players=FT.players.filter(i=>P[i]);box.replaceChildren();
+  // step 1
+  const s1=el('div',null,'card fteam');s1.append(el('h4','1 · Build your team'),el('p','Pick 8 NBA players. Better players cost more, and you have $50,000 to spend. You need at least one guard (G), forward (F) and center (C).','hint small'));
+  const auto=el('button','✨ Build it for me','btn');auto.type='button';auto.onclick=()=>{FT.players=autoDraft(P,false);fbStore();renderFantasyEasy();toast('Best team under the cap ✨');};
+  const mix=el('button','🎲 Surprise me','btn ghost');mix.type='button';mix.onclick=()=>{FT.players=autoDraft(P,true);fbStore();renderFantasyEasy();};
+  const own=el('button',FBPICK?'Hide player list':'✏️ Pick my own','btn ghost');own.type='button';own.onclick=()=>{FBPICK=!FBPICK;renderFantasyEasy();};
+  const r1=el('div',null,'row');r1.append(auto,mix,own);s1.append(r1);
+  const spent=FT.players.reduce((a,i)=>a+P[i].salary,0);const bar=el('div',null,'capbar');const f=el('i');f.style.width=Math.min(100,100*spent/FCAP)+'%';if(spent>FCAP)f.classList.add('over');bar.append(f);
+  s1.append(el('div',money$(spent)+' spent of $50,000 · '+FT.players.length+' of 8 players','hint small'),bar);
+  const slots=el('div',null,'fslots');for(const i of FT.players){const p=P[i];const r=el('button',null,'fslot');r.type='button';r.title='Remove';
+    r.append(el('b',p.name),el('span',({G:'Guard',F:'Forward',C:'Center'})[p.role]||p.role,'hint small'),el('span',p.team.split(' ').pop()+' · '+money$(p.salary),'hint small'),el('span','✕','fx'));
+    r.onclick=()=>{FT.players=FT.players.filter(x=>x!==i);fbStore();renderFantasyEasy();};slots.append(r);}
+  for(let k=FT.players.length;k<FN;k++)slots.append(el('div','Empty spot','fslot empty'));s1.append(slots);
+  if(FBPICK){const q=el('input');q.className='chatin';q.placeholder='Search a player or team';q.value=FBQ;const list=el('div',null,'flist');
+    const draw=()=>{list.replaceChildren();const qq=FBQ.toLowerCase();const left=FCAP-FT.players.reduce((a,i)=>a+P[i].salary,0);
+      Object.values(P).filter(p=>(p.minutes||0)>=8&&(!qq||p.name.toLowerCase().includes(qq)||p.team.toLowerCase().includes(qq))).sort((a,b)=>b.salary-a.salary).slice(0,80).forEach(p=>{
+        const id=String(p.id),on=FT.players.includes(id);const r=el('button',null,'frow'+(on?' on':''));r.type='button';
+        r.append(el('span',p.role,'frole'),el('span',null,'fn'),el('b',money$(p.salary),!on&&p.salary>left?'down':''));r.children[1].append(el('b',p.name),el('span',' '+p.team.split(' ').pop(),'hint small'));
+        r.onclick=()=>{if(on)FT.players=FT.players.filter(x=>x!==id);else{if(FT.players.length>=FN){toast('Your team is full: tap a player above to remove him');return;}FT.players.push(id);}fbStore();renderFantasyEasy();};list.append(r);});};
+    q.oninput=()=>{FBQ=q.value;draw();};s1.append(q,list);draw();}
+  box.append(s1);const err=fcheck(FT.players,P);
+  // step 2
+  const s2=el('div',null,'card');s2.append(el('h4','2 · How good is it?'));
+  if(err)s2.append(el('p',err==='Over the cap'?'You’re over $50,000: swap a pricey player for a cheaper one.':err+' to see how your team stacks up.','hint small'));
+  else{const g=fgrade(FT.players,P,L);const q=g.win;const grade=q>=0.85?'A+':q>=0.75?'A':q>=0.65?'B':q>=0.55?'C':'D';
+    s2.append(el('div',null,'tiles'));const t=(l,v)=>{const x=el('div',null,'tile');x.append(l,el('b',v));s2.lastChild.append(x);};
+    t('Team grade',grade);t('Beats an average NBA team',Math.round(q*100)+'% of the time');t('Better than',g.beat+' of '+g.of+' NBA teams');
+    s2.append(el('p','Your 8 players against every real NBA team’s top 8, using the same player ratings behind her picks. “Build it for me” makes the strongest team $50,000 can buy.','hint small'));}
+  box.append(s2);
+  // step 3
+  const s3=el('div',null,'card');s3.append(el('h4','3 · Battle it out'));
+  if(err)s3.append(el('p','Finish your team first.','hint small'));
+  else{s3.append(el('p','Play one game in the simulator, just for fun (it doesn’t count).','hint small'));const names=Object.keys(L.teams).sort();
+    const sel=el('select');sel.className='mpick';for(const n of names){const o=el('option',n);o.value=n;sel.append(o);}
+    const vsTeam=el('button','⚔️ Battle this NBA team','btn');vsTeam.type='button';vsTeam.onclick=()=>fantasyBattle(P,sel.value,(L.teams[sel.value].players||[]).slice().sort((a,b)=>(b.minutes||0)-(a.minutes||0)).slice(0,FN));
+    const vsBot=el('button','🤖 Battle her team','btn ghost');vsBot.type='button';vsBot.onclick=()=>fantasyBattle(P,'🤖 Mohjeta',autoDraft(P,false).map(i=>P[i]));
+    const r3=el('div',null,'row');r3.append(vsTeam,vsBot);s3.append(sel,r3);}
+  box.append(s3);
+  // step 4: join
+  const s4=el('div',null,'card');s4.append(el('h4','4 · Play for real (free)'),el('p','Save your team to play every night against other fans. No entry fees and no prizes: just bragging rights.','hint small'));
+  const nm=el('input');nm.className='chatin';nm.maxLength=24;nm.placeholder='Team name';nm.value=FT.name;nm.oninput=()=>{FT.name=nm.value;fbStore();};s4.append(nm);
+  const save=el('button',err?'Finish your team first':'💾 Save team & join tonight','btn');save.type='button';save.disabled=!!err;
+  save.onclick=async()=>{if(!me){toast('Sign in first (Chat › Sign in)');show('chat');return;}
+    if(!/^[A-Za-z0-9 _.'-]{3,24}$/.test(FT.name.trim())){toast('Team name: 3-24 letters or numbers');return;}
+    if(!myProfile){try{const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();myProfile=data||null;}catch(e){}}
+    if(!myProfile){toast('Pick a chat name first (open 💬 Chat)');return;}
+    const {error}=await sb.from('fantasy_teams').upsert({user_id:me.id,name:FT.name.trim(),players:FT.players},{onConflict:'user_id'});
+    toast(error?'Not saved: '+error.message:'Team saved ✅ It plays in tonight’s round');if(!error){FLOADED=true;award('fantasy');}};
+  s4.append(save);if(!me)s4.append(el('p','You can build and battle without an account. Sign in to save your team.','hint small'));box.append(s4);
+  box.append(await leaguesCard());}
+// ---------------- private leagues with friends (supabase_leagues.sql)
+async function leaguesCard(){const c=el('div',null,'card');c.append(el('h4','👥 Leagues with friends'),el('p','Make a league, share its code, and your friends’ teams play each other every night. Free, no prizes.','hint small'));
+  if(!me){c.append(el('p','Sign in to make or join a league.','hint small'));return c;}
+  let mine=[];try{await supa();const {data,error}=await sb.rpc('my_leagues');if(error)throw error;mine=data||[];}catch(e){c.append(el('p','Private leagues are being set up.','hint small'));return c;}
+  const row=el('div',null,'row');const ln=el('input');ln.className='chatin';ln.maxLength=30;ln.placeholder='New league name';
+  const mk=el('button','➕ Make league','btn');mk.type='button';mk.onclick=async()=>{const n=ln.value.trim();if(!/^[A-Za-z0-9 _.'!&-]{3,30}$/.test(n)){toast('League name: 3-30 letters or numbers');return;}
+    const {data,error}=await sb.rpc('create_league',{league_name:n});if(error){toast(error.message);return;}toast('League made: code '+data.code);refreshLeagues();};
+  const jc=el('input');jc.className='chatin';jc.maxLength=6;jc.placeholder='Code from a friend';jc.style.textTransform='uppercase';
+  const jn=el('button','Join','btn ghost');jn.type='button';jn.onclick=()=>joinLeague(jc.value);
+  c.append(ln,mk,el('div',null,'row'));c.lastChild.append(jc,jn);
+  for(const l of mine){const b=el('div',null,'card');b.append(el('h4',l.name),el('div','Code: '+l.code+' · '+l.members+' team'+(l.members===1?'':'s'),'hint small'));
+    const share=el('button','📤 Invite friends','btn ghost small');share.type='button';share.onclick=async()=>{const url=location.origin+location.pathname+'#join/'+l.code;
+      const text='Join my Mohjeta fantasy league "'+l.name+'": '+url+' (code '+l.code+')';try{if(navigator.share)await navigator.share({text});else{await navigator.clipboard.writeText(text);toast('Invite link copied');}}catch(e){}};
+    const leave=el('button',l.owner?'Delete league':'Leave','btn ghost small');leave.type='button';leave.onclick=async()=>{if(!confirmBox(l.owner?'Delete "'+l.name+'" for everyone?':'Leave "'+l.name+'"?'))return;
+      const q=l.owner?sb.from('fantasy_leagues').delete().eq('id',l.id):sb.from('fantasy_members').delete().eq('league_id',l.id).eq('user_id',me.id);const {error}=await q;toast(error?error.message:'Done');refreshLeagues();};
+    const r=el('div',null,'row');r.append(share,leave);b.append(r);
+    try{const {data}=await sb.rpc('league_standings',{lid:l.id});if((data||[]).length){(data||[]).forEach((s,i)=>{const x=el('div',null,'brow');x.append(el('span',String(i+1),'bk'),el('b',s.team),el('span',' '+s.owner,'hint small'),el('span',null,'sp'),el('span',s.wins+'-'+s.losses,'up'));b.append(x);});}
+      else b.append(el('p',l.members<2?'Invite at least one friend: games start the night after 2 teams are in.':'First games play tomorrow morning.','hint small'));}catch(e){}
+    c.append(b);}
+  return c;}
+function confirmBox(t){try{return window.confirm(t);}catch(e){return true;}}
+async function joinLeague(code){code=String(code||'').trim().toUpperCase();if(!/^[A-Z0-9]{6}$/.test(code)){toast('Codes are 6 letters or numbers');return;}
+  if(!me){try{sessionStorage.setItem('mohjeta.join',code);}catch(e){}toast('Sign in, then you’ll join automatically');show('chat');return;}
+  const {data,error}=await sb.rpc('join_league',{league_code:code});toast(error?error.message:'Joined '+data.name+' 🎉');refreshLeagues();}
+function refreshLeagues(){if(simMode==='fantasy'&&document.querySelector('#sim.on'))renderFantasyEasy();else if(document.querySelector('#fantasy.on'))renderFantasy();}
 // ---------------- Pick'em leaderboard (Supabase; picks lock at the start time, graded by Mohjeta)
 async function pkCloud(event,team){try{if(!me||!sb)return;const {error}=await sb.from('pickem').upsert({event,team},{onConflict:'user_id,event'});
   if(error&&/profiles|foreign/i.test(error.message))toast('Pick a chat name in Chat to join the leaderboard');}catch(e){}}
