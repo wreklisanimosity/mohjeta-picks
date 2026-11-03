@@ -98,6 +98,9 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 .bars .b i{display:block;border-radius:3px}
 .ptr{position:fixed;left:50%;top:0;transform:translate(-50%,-60px);z-index:60;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;pointer-events:none;box-shadow:0 4px 14px #0008}
 .ptr.on{opacity:1}
+#recordp.prac>:not(h2):not(#recSwitch):not(#practiceBox){display:none}#recordp:not(.prac) #practiceBox{display:none}
+#recordp.prac #practiceBox>h3:first-child{display:none}
+.chips.seg{margin-top:2px}
 .newsbar{display:flex;align-items:center;gap:8px;margin:8px 0 12px;padding:9px 10px 9px 14px;border-radius:12px;border:1px solid #b44dff66;background:linear-gradient(135deg,#2a1146cc,#160d22cc);font-size:14px}
 .newsbar .nb{flex:1;min-width:0;background:none;border:0;color:var(--text);text-align:left;font:inherit;cursor:pointer;padding:0}
 .newsbar .nb b{color:#fff}.newsbar .nb span{color:var(--pink);white-space:nowrap}
@@ -335,7 +338,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <div class="chips" id="gameChips"></div><div class="chips" id="laneChips"></div><div id="gameList"></div>
   </section>
   <section class="panel" id="recordp" role="tabpanel" aria-label="Track record">
-    <h2>Track record</h2><div id="dropNote"></div>
+    <h2>Track record</h2><div class="chips seg" id="recSwitch" role="tablist" aria-label="Show"><button type="button" data-rv="bets" aria-pressed="true">💵 Her bets</button><button type="button" data-rv="prac" aria-pressed="false">🧪 Practice</button></div><div id="dropNote"></div>
     <div class="chips" id="periodChips"></div><div class="stats" id="periodStats"></div>
     <div class="card"><div class="row"><b>Profit by day</b><span class="sp"></span><span class="hint small" id="barsNote"></span></div><div class="bars" id="dayBars"></div></div>
     <div id="dayCard"></div><div id="bySport"></div><div id="bestWorst"></div>
@@ -1508,6 +1511,11 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)maybeReload
     const d=Math.min(dist,120);ind.style.transform='translate(-50%,'+(d-40)+'px)';ind.classList.add('on');ind.textContent=d>=80?'↻ Release to refresh':'↓ Pull to refresh';},{passive:true});
   addEventListener('touchend',()=>{if(y0==null)return;const go=dist>=80&&window.scrollY<=0;y0=null;
     if(go){ind.textContent='Refreshing…';setTimeout(()=>location.reload(),120);}else{ind.classList.remove('on');ind.style.transform='';}});})();
+// Results: her bets or her practice picks, one tap apart (remembered on this phone)
+(function(){const sec=$('recordp'),sw=$('recSwitch');if(!sec||!sw)return;
+  const set=v=>{sec.classList.toggle('prac',v==='prac');sw.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.rv===v)));try{localStorage.setItem('mohjeta.recView',v);}catch(e){}};
+  sw.querySelectorAll('button').forEach(b=>b.onclick=()=>{set(b.dataset.rv);window.scrollTo(0,0);});
+  let v='bets';try{v=localStorage.getItem('mohjeta.recView')||'bets';}catch(e){}set(v);})();
 let MEMBERS=null,ACCESS=null,accessAt=0,SIMDATA=null;
 function pw(){return (D&&D.paywall)||{};}
 async function memberRefresh(force){try{if(!sb)return;if(!me){ACCESS=null;MEMBERS=null;return;}
