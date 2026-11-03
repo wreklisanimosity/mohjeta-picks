@@ -101,6 +101,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 #recordp.prac>:not(h2):not(#recSwitch):not(#practiceBox){display:none}#recordp:not(.prac) #practiceBox{display:none}
 #recordp.prac #practiceBox>h3:first-child{display:none}
 .chips.seg{margin-top:2px}
+.grade{display:inline-block;min-width:30px;text-align:center;border-radius:6px;padding:1px 6px;font-weight:800}.gAp,.gA{background:#39ff8833;color:var(--green)}.gB{background:#56b4e933;color:var(--blue)}.gC{background:#ffe14d22;color:var(--yellow)}.gD,.gF{background:#ff5c7833;color:var(--red)}
 .newsbar{display:flex;align-items:center;gap:8px;margin:8px 0 12px;padding:9px 10px 9px 14px;border-radius:12px;border:1px solid #b44dff66;background:linear-gradient(135deg,#2a1146cc,#160d22cc);font-size:14px}
 .newsbar .nb{flex:1;min-width:0;background:none;border:0;color:var(--text);text-align:left;font:inherit;cursor:pointer;padding:0}
 .newsbar .nb b{color:#fff}.newsbar .nb span{color:var(--pink);white-space:nowrap}
@@ -1307,12 +1308,32 @@ const mh=el('select'),ma=el('select');[mh,ma].forEach(s=>{s.className='mpick';s.
 const spct=x=>x==null?'—':(x>0?'+':'')+Math.round(x*100)+'%';const pcell=a=>el('span',a?spct(a.pct):'—',a&&a.pct>0.05?'up':a&&a.pct<-0.05?'down':'');
 const rcell=v=>el('span',v==null?'—':String(v),v==null?'':v>=80?'r-hi':v>=50?'r-mid':'r-lo');
 function tableOf(cols,rows){const w=el('div',null,'tablewrap');const t=el('table');const h=el('tr');for(const c of cols)h.append(el('th',c));t.append(h);for(const r of rows){const tr=el('tr');for(const c of r){if(c instanceof Node){const td=el('td');td.append(c);tr.append(td);}else tr.append(el('td',c==null?'—':String(c)));}t.append(tr);}w.append(t);return w;}
+// ---------------- NFL: every player rated at his position, every team graded position by position (nfl-ratings.json)
+let NFLR=null,nflAt=0;const POSORDER=['QB','RB','WR','TE','OT','IOL','EDGE','IDL','LB','CB','S','K'];
+const STATLBL={epa_dropback:'EPA/dropback',epa_carry:'EPA/carry',epa_target:'EPA/target',targets:'Targets',yds_per_target_allowed:'Yds/target allowed',targets_allowed:'Targets allowed',pressures:'Pressures',sacks:'Sacks',ints:'INTs',missed_tackle_pct:'Missed tackle %',games:'Games'};
+function gradeCell(g){const s=el('b',g||'—');s.className='grade g'+String(g||'').replace('+','p');return s;}
+async function drawNflPos(box,pick,hit){if(!NFLR||Date.now()-nflAt>600000){box.replaceChildren(el('p','Loading NFL position ratings…','hint'));
+    try{const r=await fetch('nfl-ratings.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error();NFLR=await r.json();nflAt=Date.now();}catch(e){box.replaceChildren(el('p','NFL position ratings will appear after her next update.','hint'));return;}}
+  const R=NFLR,G=R.groups||{};const parts=[];pick.hidden=false;
+  if(rtView==='grades'){const teams=Object.keys(R.teams).sort();const cur=teams.includes(pick.value)?pick.value:teams[0];
+    pick.replaceChildren(...teams.map(t=>{const o=el('option',t);o.value=t;return o;}));pick.value=cur;pick.onchange=()=>drawRatings();
+    const T=R.teams[cur];const head=el('div',null,'tiles');for(const [l,v] of [['Offense',T._offense_grade],['Defense',T._defense_grade]]){const x=el('div',null,'tile');x.append(l,gradeCell(v));head.append(x);}
+    parts.push(el('h3',cur+' · position grades'),head,
+      tableOf(['Position','Grade','Rank','Value'],POSORDER.filter(k=>T[k]).map(k=>[G[k]+(k==='K'&&T.K.name?' ('+T.K.name+')':''),gradeCell(T[k].grade),T[k].rank+' of 32',sg(T[k].value)])),
+      el('p','Value = how many expected points a game that unit adds over an average NFL unit (for the kicker: points over an average kicker on the same kicks). Built from the players expected to play, so injuries change it. Through week '+R.through_week+'.','hint small'));}
+  else{const cur=POSORDER.includes(pick.value)&&pick.value!=='K'?pick.value:'QB';pick.replaceChildren(...POSORDER.filter(k=>k!=='K').map(k=>{const o=el('option',G[k]);o.value=k;return o;}));pick.value=cur;pick.onchange=()=>drawRatings();
+    const ps=((R.players||{})[cur]||[]).filter(p=>hit(p.name)||hit(p.team));const keys=[...new Set(ps.flatMap(p=>Object.keys(p.stats||{})))].filter(k=>k!=='games').slice(0,3);
+    parts.push(el('h3','Best '+(G[cur]||cur).toLowerCase()),tableOf(['#','Player','Team','Rating',...keys.map(k=>STATLBL[k]||k)],ps.slice(0,30).map(p=>[String(p.rank),p.name,p.team||'',sg(p.rating),...keys.map(k=>p.stats&&p.stats[k]!=null?String(p.stats[k]):'—')])),
+      el('p','Rating = points a game he adds over an average '+(G[cur]||cur).toLowerCase().replace(/s$/,'')+' with a full load of snaps: what he did himself plus how his team did with him on the field. Offensive linemen are rated only by the second part (no stats are kept for blocking).','hint small'));}
+  parts.push(el('p',R.note||'','hint small'));box.replaceChildren(...parts);}
 function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').value.trim().toLowerCase();const hit=s=>!q||String(s||'').toLowerCase().includes(q);
   const avail=Object.keys(NAMES).filter(k=>rt.leagues[k]);if(!avail.includes(rtLeague))rtLeague=avail[0];
   $('rtChips').replaceChildren(...avail.map(k=>{const b=el('button',NAMES[k]);b.setAttribute('aria-pressed',String(k===rtLeague));b.onclick=()=>{rtLeague=k;drawRatings();};return b;}));
   const L=rt.leagues[rtLeague];if(!L){box.replaceChildren(el('p','No ratings yet.','hint'));return;}
   const pick=$('rtPick');pick.hidden=true;
-  $('rtViews').replaceChildren(...(L.tennis?[]:Object.entries(RVIEWS).map(([k,l])=>{const b=el('button',l);b.setAttribute('aria-pressed',String(k===rtView));b.onclick=()=>{rtView=k;pick.value='';drawRatings();};return b;})));
+  const RV=rtLeague==='NFL'?{grades:'🏈 Position grades',pstars:'⭐ Best at each position',...RVIEWS}:RVIEWS;if(!RV[rtView])rtView='teams';
+  if(rtLeague==='NFL'&&(rtView==='grades'||rtView==='pstars')){$('rtViews').replaceChildren(...Object.entries(RV).map(([k,l])=>{const b=el('button',l);b.setAttribute('aria-pressed',String(k===rtView));b.onclick=()=>{rtView=k;pick.value='';drawRatings();};return b;}));drawNflPos(box,pick,hit);return;}
+  $('rtViews').replaceChildren(...(L.tennis?[]:Object.entries(RV).map(([k,l])=>{const b=el('button',l);b.setAttribute('aria-pressed',String(k===rtView));b.onclick=()=>{rtView=k;pick.value='';drawRatings();};return b;})));
   if(!L.tennis&&rtView==='matchup'){const M=L.matchups||{};
     if(!M.ready){box.replaceChildren(el('p',M.note||'Matchup model not ready yet.','hint'));return;}
     const names=M.teams.map(t=>t.team).sort();[mh,ma].forEach((s,i)=>{const cur=s.value&&names.includes(s.value)?s.value:names[i];s.replaceChildren(...names.map(n=>{const o=el('option',n);o.value=n;return o;}));s.value=cur;});
