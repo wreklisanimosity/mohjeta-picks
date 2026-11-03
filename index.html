@@ -1310,29 +1310,34 @@ const rcell=v=>el('span',v==null?'—':String(v),v==null?'':v>=80?'r-hi':v>=50?'
 function tableOf(cols,rows){const w=el('div',null,'tablewrap');const t=el('table');const h=el('tr');for(const c of cols)h.append(el('th',c));t.append(h);for(const r of rows){const tr=el('tr');for(const c of r){if(c instanceof Node){const td=el('td');td.append(c);tr.append(td);}else tr.append(el('td',c==null?'—':String(c)));}t.append(tr);}w.append(t);return w;}
 // ---------------- NFL: every player rated at his position, every team graded position by position (nfl-ratings.json)
 let NFLR=null,nflAt=0;const POSORDER=['QB','RB','WR','TE','OT','IOL','EDGE','IDL','LB','CB','S','K'];
-const STATLBL={epa_dropback:'EPA/dropback',epa_carry:'EPA/carry',epa_target:'EPA/target',targets:'Targets',yds_per_target_allowed:'Yds/target allowed',targets_allowed:'Targets allowed',pressures:'Pressures',sacks:'Sacks',ints:'INTs',missed_tackle_pct:'Missed tackle %',games:'Games'};
+const POSFILE={NFL:'nfl-ratings.json',NHL:'nhl-ratings.json'},POSICON={NFL:'🏈',NHL:'🏒'},POSR={},posAt={};
+const STATLBL={epa_dropback:'EPA/dropback',epa_carry:'EPA/carry',epa_target:'EPA/target',targets:'Targets',yds_per_target_allowed:'Yds/target allowed',targets_allowed:'Targets allowed',pressures:'Pressures',sacks:'Sacks',ints:'INTs',missed_tackle_pct:'Missed tackle %',games:'Games',
+  goals:'Goals',ixg:'Expected goals',shots:'Shots',toi_game:'Min/game',xg_pct:'On-ice xG %',saved_per_xg:'Saved per xG',starts:'Starts'};
 function gradeCell(g){const s=el('b',g||'—');s.className='grade g'+String(g||'').replace('+','p');return s;}
-async function drawNflPos(box,pick,hit){if(!NFLR||Date.now()-nflAt>600000){box.replaceChildren(el('p','Loading NFL position ratings…','hint'));
-    try{const r=await fetch('nfl-ratings.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error();NFLR=await r.json();nflAt=Date.now();}catch(e){box.replaceChildren(el('p','NFL position ratings will appear after her next update.','hint'));return;}}
-  const R=NFLR,G=R.groups||{};const parts=[];pick.hidden=false;
+async function drawNflPos(box,pick,hit,lg){lg=lg||'NFL';const NM=lg==='NFL'?'NFL':'NHL';
+  if(!POSR[lg]||Date.now()-(posAt[lg]||0)>600000){box.replaceChildren(el('p','Loading '+NM+' position ratings…','hint'));
+    try{const r=await fetch(POSFILE[lg]+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error();POSR[lg]=await r.json();posAt[lg]=Date.now();}catch(e){box.replaceChildren(el('p',NM+' position ratings will appear after her next update.','hint'));return;}}
+  const R=POSR[lg],G=R.groups||{},ORD=R.order||POSORDER,N=R.n_teams||32;const parts=[];pick.hidden=false;
+  const halves=R.halves||[['Offense','_offense_grade'],['Defense','_defense_grade']];
   if(rtView==='grades'){const teams=Object.keys(R.teams).sort();const cur=teams.includes(pick.value)?pick.value:teams[0];
     pick.replaceChildren(...teams.map(t=>{const o=el('option',t);o.value=t;return o;}));pick.value=cur;pick.onchange=()=>drawRatings();
-    const T=R.teams[cur];const head=el('div',null,'tiles');for(const [l,v] of [['Offense',T._offense_grade],['Defense',T._defense_grade]]){const x=el('div',null,'tile');x.append(l,gradeCell(v));head.append(x);}
+    const T=R.teams[cur];const head=el('div',null,'tiles');for(const [l,k] of halves){const v=T[k]&&typeof T[k]==='object'?T[k].grade:T[k];const x=el('div',null,'tile');x.append(l,gradeCell(v));head.append(x);}
+    const named=k=>(k==='K'||k==='G')&&T[k]&&T[k].name?' ('+T[k].name+')':'';
     parts.push(el('h3',cur+' · position grades'),head,
-      tableOf(['Position','Grade','Rank','Value'],POSORDER.filter(k=>T[k]).map(k=>[G[k]+(k==='K'&&T.K.name?' ('+T.K.name+')':''),gradeCell(T[k].grade),T[k].rank+' of 32',sg(T[k].value)])),
-      el('p','Value = how many expected points a game that unit adds over an average NFL unit (for the kicker: points over an average kicker on the same kicks). Built from the players expected to play, so injuries change it. Through week '+R.through_week+'.','hint small'));}
-  else{const cur=POSORDER.includes(pick.value)&&pick.value!=='K'?pick.value:'QB';pick.replaceChildren(...POSORDER.filter(k=>k!=='K').map(k=>{const o=el('option',G[k]);o.value=k;return o;}));pick.value=cur;pick.onchange=()=>drawRatings();
-    const ps=((R.players||{})[cur]||[]).filter(p=>hit(p.name)||hit(p.team));const keys=[...new Set(ps.flatMap(p=>Object.keys(p.stats||{})))].filter(k=>k!=='games').slice(0,3);
+      tableOf(['Position','Grade','Rank','Value'],ORD.filter(k=>T[k]).map(k=>[G[k]+named(k),gradeCell(T[k].grade),T[k].rank+' of '+N,sg(T[k].value)])),
+      el('p',R.team_hint||('Value = how many expected points a game that unit adds over an average NFL unit (for the kicker: points over an average kicker on the same kicks). Built from the players expected to play, so injuries change it. Through week '+R.through_week+'.'),'hint small'));}
+  else{const list=ORD.filter(k=>k!=='K');const cur=list.includes(pick.value)?pick.value:list[0];pick.replaceChildren(...list.map(k=>{const o=el('option',G[k]);o.value=k;return o;}));pick.value=cur;pick.onchange=()=>drawRatings();
+    const ps=((R.players||{})[cur]||[]).filter(p=>hit(p.name)||hit(p.team));const keys=[...new Set(ps.flatMap(p=>Object.keys(p.stats||{})))].filter(k=>k!=='games').slice(0,lg==='NFL'?3:4);
     parts.push(el('h3','Best '+(G[cur]||cur).toLowerCase()),tableOf(['#','Player','Team','Rating',...keys.map(k=>STATLBL[k]||k)],ps.slice(0,30).map(p=>[String(p.rank),p.name,p.team||'',sg(p.rating),...keys.map(k=>p.stats&&p.stats[k]!=null?String(p.stats[k]):'—')])),
-      el('p','Rating = points a game he adds over an average '+(G[cur]||cur).toLowerCase().replace(/s$/,'')+' with a full load of snaps: what he did himself plus how his team did with him on the field. Offensive linemen are rated only by the second part (no stats are kept for blocking).','hint small'));}
+      el('p',R.player_hint||('Rating = points a game he adds over an average '+(G[cur]||cur).toLowerCase().replace(/s$/,'')+' with a full load of snaps: what he did himself plus how his team did with him on the field. Offensive linemen are rated only by the second part (no stats are kept for blocking).'),'hint small'));}
   parts.push(el('p',R.note||'','hint small'));box.replaceChildren(...parts);}
 function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').value.trim().toLowerCase();const hit=s=>!q||String(s||'').toLowerCase().includes(q);
   const avail=Object.keys(NAMES).filter(k=>rt.leagues[k]);if(!avail.includes(rtLeague))rtLeague=avail[0];
   $('rtChips').replaceChildren(...avail.map(k=>{const b=el('button',NAMES[k]);b.setAttribute('aria-pressed',String(k===rtLeague));b.onclick=()=>{rtLeague=k;drawRatings();};return b;}));
   const L=rt.leagues[rtLeague];if(!L){box.replaceChildren(el('p','No ratings yet.','hint'));return;}
   const pick=$('rtPick');pick.hidden=true;
-  const RV=rtLeague==='NFL'?{grades:'🏈 Position grades',pstars:'⭐ Best at each position',...RVIEWS}:RVIEWS;if(!RV[rtView])rtView='teams';
-  if(rtLeague==='NFL'&&(rtView==='grades'||rtView==='pstars')){$('rtViews').replaceChildren(...Object.entries(RV).map(([k,l])=>{const b=el('button',l);b.setAttribute('aria-pressed',String(k===rtView));b.onclick=()=>{rtView=k;pick.value='';drawRatings();};return b;}));drawNflPos(box,pick,hit);return;}
+  const RV=POSFILE[rtLeague]?{grades:POSICON[rtLeague]+' Position grades',pstars:'⭐ Best at each position',...RVIEWS}:RVIEWS;if(!RV[rtView])rtView='teams';
+  if(POSFILE[rtLeague]&&(rtView==='grades'||rtView==='pstars')){$('rtViews').replaceChildren(...Object.entries(RV).map(([k,l])=>{const b=el('button',l);b.setAttribute('aria-pressed',String(k===rtView));b.onclick=()=>{rtView=k;pick.value='';drawRatings();};return b;}));drawNflPos(box,pick,hit,rtLeague);return;}
   $('rtViews').replaceChildren(...(L.tennis?[]:Object.entries(RV).map(([k,l])=>{const b=el('button',l);b.setAttribute('aria-pressed',String(k===rtView));b.onclick=()=>{rtView=k;pick.value='';drawRatings();};return b;})));
   if(!L.tennis&&rtView==='matchup'){const M=L.matchups||{};
     if(!M.ready){box.replaceChildren(el('p',M.note||'Matchup model not ready yet.','hint'));return;}
@@ -1365,7 +1370,7 @@ function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').va
   const parts=rtView==='leaders'?[]:[el('h3','Team ratings')];
   if(rtView==='leaders'){}else if(!L.ready)parts.push(el('p',L.note||'Ratings are still being built.','hint'));
   else {const MT=Object.fromEntries((((L.matchups||{}).teams)||[]).map(x=>[x.team,x]));parts.push(tableOf(['#','Team','Rating','vs avg team','30 days','Record','Off','Def'],L.teams.filter(t=>hit(t.team)).map(t=>{const mt=MT[t.team]||{};const tr=el('span',t.trend_30d==null?'—':(t.trend_30d>0?'+':'')+t.trend_30d,t.trend_30d>0?'up':t.trend_30d<0?'down':'');return [t.rank,ratingTeamName(t.team),t.rating,pct(t.vs_average),tr,t.record,sg(mt.offense),sg(mt.defense)];})));}
-  const cats=(L.players.categories||[]).map(c=>{const rs=c.leaders.filter(l=>hit(l.name)||hit(l.team));if(!rs.length)return null;const dv=el('div');dv.append(el('h4',c.category),tableOf(['Player','Team','Pos','Value'],rs.map(l=>[l.name,l.team,l.position,l.value])));return dv;}).filter(Boolean);
+  const cats=((L.players||{}).categories||[]).map(c=>{const rs=c.leaders.filter(l=>hit(l.name)||hit(l.team));if(!rs.length)return null;const dv=el('div');dv.append(el('h4',c.category),tableOf(['Player','Team','Pos','Value'],rs.map(l=>[l.name,l.team,l.position,l.value])));return dv;}).filter(Boolean);
   if(cats.length&&rtView==='leaders'){const g=el('div',null,'cats');g.append(...cats);parts.push(el('h3','Player leaders'+(L.players.season?' · '+L.players.season:'')),g);}
   box.replaceChildren(...parts);}
 $('rtFind').oninput=drawRatings;$('rtPick').onchange=drawRatings;
