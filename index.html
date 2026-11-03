@@ -2,9 +2,12 @@
 <html lang="en">
 <script>
 if (location.hash.startsWith('#play-purchase=')) {
-  const playToken = decodeURIComponent(location.hash.slice(15));
-  if (playToken && playToken.length <= 4096) sessionStorage.setItem('mohjeta.play.pending', playToken);
+  const fragment = location.hash;
   history.replaceState(null,'',location.pathname + location.search);
+  try {
+    const playToken = decodeURIComponent(fragment.slice('#play-purchase='.length));
+    if (playToken && playToken.length <= 4096) sessionStorage.setItem('mohjeta.play.pending', playToken);
+  } catch { /* Play can return an owned purchase again when checkout is reopened. */ }
 }
 </script>
 <head>
