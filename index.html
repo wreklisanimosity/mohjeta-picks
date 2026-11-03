@@ -1,5 +1,12 @@
 <!doctype html>
 <html lang="en">
+<script>
+if (location.hash.startsWith('#play-purchase=')) {
+  const playToken = decodeURIComponent(location.hash.slice(15));
+  if (playToken && playToken.length <= 4096) sessionStorage.setItem('mohjeta.play.pending', playToken);
+  history.replaceState(null,'',location.pathname + location.search);
+}
+</script>
 <head>
 <meta charset="utf-8">
 <script>try{if(localStorage.getItem('mohjeta.cb')==='1')document.documentElement.classList.add('cb')}catch(e){}</script>
@@ -838,7 +845,7 @@ async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
   chatFab();startPresence();logVisit();drawPush($('pushBox'));memberRefresh(true);setInterval(()=>memberRefresh(false),60000);
   liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();
-  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN'){toast('Signed in ✅');let jc=null;try{jc=sessionStorage.getItem('mohjeta.join');sessionStorage.removeItem('mohjeta.join');}catch(e){}if(jc)setTimeout(()=>joinLeague(jc),800);}if(chatOpen())openChat();});
+  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;if(me)setTimeout(finishPlayPurchase,0);myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN'){toast('Signed in ✅');let jc=null;try{jc=sessionStorage.getItem('mohjeta.join');sessionStorage.removeItem('mohjeta.join');}catch(e){}if(jc)setTimeout(()=>joinLeague(jc),800);}if(chatOpen())openChat();});
   if(/[?&]code=/.test(location.search)){for(let i=0;i<20&&!(await sb.auth.getSession()).data.session;i++)await new Promise(r=>setTimeout(r,250));
     try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}}
   const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;updateAcct();memberRefresh(true);
@@ -1570,13 +1577,45 @@ function memberTeaser(d){if(!pw().on)return null;const locked=(d.games||[]).filt
   box.append(el('b','🔒 '+locked+' more pick'+(locked>1?'s':'')+' today are for members'),
     el('div','Today’s free Pick of the Day is below. Her full record stays public, always.','hint small'));
   const row=el('div',null,'row');row.append(trialBtn(),subBtn(true));box.append(row);return box;}
-function trialBtn(){const used=ACCESS&&ACCESS.trial_used;const b=el('button',used?'Trial used':'⭐ Start '+(pw().trial_days||7)+'-day free trial','btn');b.type='button';b.disabled=!!used;
+function isPlayApp(){return new URLSearchParams(location.search).get('app')==='1'||document.referrer.startsWith('android-app://com.mohjeta.picks');}
+let playVerifying=false;
+async function finishPlayPurchase(){
+  const purchaseToken=sessionStorage.getItem('mohjeta.play.pending');
+  if(!purchaseToken||!me||!sb||playVerifying)return;
+  playVerifying=true;
+  try{
+    const {data,error}=await sb.functions.invoke('play-billing',{body:{purchaseToken}});
+    if(error)throw error;
+    sessionStorage.removeItem('mohjeta.play.pending');
+    await memberRefresh(true);
+    toast(data?.until?'Google Play membership verified.':'Your Google Play subscription is inactive.');
+  }catch{toast('Purchase verification is pending. Reopen your account to retry.');}
+  finally{playVerifying=false;}
+}
+function playButton(){
+  const b=el('button','View Google Play subscription','btn');b.type='button';
+  b.onclick=async()=>{
+    if(!me){show('chat');toast('Sign in to Mohjeta to subscribe.');return;}
+    if(sessionStorage.getItem('mohjeta.play.pending')){await finishPlayPurchase();return;}
+    const userId=me.id;b.disabled=true;
+    try{
+      const {data,error}=await sb.functions.invoke('play-billing',{body:{action:'prepare'}});
+      if(error||!data?.ready)throw Error();
+      const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(userId));
+      const account=Array.from(new Uint8Array(digest),v=>v.toString(16).padStart(2,'0')).join('');
+      b.textContent='Continue to Google Play';
+      b.onclick=()=>{if(me?.id===userId)location.href='intent://checkout?account='+account+'#Intent;scheme=mohjetaplay;package=com.mohjeta.picks;end';};
+    }catch{toast('Google Play checkout is temporarily unavailable.');}
+    finally{b.disabled=false;}
+  };return b;
+}
+function trialBtn(){if(isPlayApp())return playButton();const used=ACCESS&&ACCESS.trial_used;const b=el('button',used?'Trial used':'⭐ Start '+(pw().trial_days||7)+'-day free trial','btn');b.type='button';b.disabled=!!used;
   b.onclick=async()=>{if(!me){try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}toast('Sign in first (free), then start your trial');show('chat');return;}
     const {data,error}=await sb.rpc('start_trial');if(error){toast('Could not start: '+error.message);return;}ACCESS=data;accessAt=Date.now();
     toast(data&&data.access?'Free trial started: '+daysLeft(data.trial_ends)+' days 🎉':'Your free trial was already used');memberRefresh(true);if(D)renderPicks(D);};return b;}
-function subBtn(ghost){const b=el('button','Subscribe','btn'+(ghost?' ghost':''));b.type='button';
+function subBtn(ghost){if(isPlayApp())return playButton();const b=el('button','Subscribe','btn'+(ghost?' ghost':''));b.type='button';
   b.onclick=()=>{const u=pw().subscribe_url;if(u&&/^https:\/\//.test(u))window.open(u,'_blank','noopener');else toast('Subscriptions open soon. Enjoy the free trial!');};return b;}
-function planBox(){if(!pw().on)return null;const c=el('div',null,'card');c.style.margin='8px 0';
+function planBox(){if(isPlayApp()){const c=el('div',null,'card');c.append(playButton());void finishPlayPurchase();return c;}if(!pw().on)return null;const c=el('div',null,'card');c.style.margin='8px 0';
   const a=ACCESS||{};const line=a.staff?'Team account: full access':a.sub_until&&Date.parse(a.sub_until)>Date.now()?'Member until '+new Date(a.sub_until).toLocaleDateString():
     a.access?'Free trial: '+daysLeft(a.trial_ends)+' days left':a.trial_used?'Free plan (trial used)':'Free plan';
   c.append(el('b','Your plan: '+line));if(!a.access)c.append(trialBtn());if(!a.staff&&!(a.sub_until&&Date.parse(a.sub_until)>Date.now()))c.append(subBtn(true));return c;}
