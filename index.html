@@ -1430,7 +1430,7 @@ function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(
   // tonight's picks
   box.append(el('h3',"Tonight's prop picks"));
   if(P.locked){const c=el('div',null,'banner members');c.append(el('b','🔒 '+(P.open_hidden||'Her')+' prop pick'+(P.open_hidden===1?'':'s')+' tonight for members'),el('div','Members see every prop pick and can use the prop builder. Her record above is always public.','hint small'));
-    const row=el('div',null,'row');row.append(trialBtn(),subBtn(true));c.append(row);box.append(c);}
+    const row=el('div',null,'row');row.append(...membershipButtons());c.append(row);box.append(c);}
   else if(!(P.open||[]).length)box.append(el('p','No prop picks yet. She prices tonight’s NBA props every 30 minutes and picks only when Kalshi’s price is at least 8 points off her number.','hint'));
   else{const all=P.open.slice().sort((x,y)=>(y.her-y.price)-(x.her-x.price));const list=propAll?all:all.slice(0,15);
     box.append(el('p',all.length>15&&!propAll?'Her '+list.length+' strongest of '+all.length+' prop picks tonight (biggest gap between her chance and Kalshi’s price).':all.length+' prop pick'+(all.length===1?'':'s')+' tonight, strongest first.','hint small'));
@@ -1571,7 +1571,7 @@ function simLocked(){return pw().on&&!(ACCESS&&ACCESS.access);}
 function drawSimLock(){['simMode','anyBox','simBox'].forEach(id=>{const n=$(id);if(n)n.replaceChildren();});const sp=$('simPick');if(sp)sp.hidden=true;
   const c=el('div',null,'banner members');c.append(el('b','🔒 The simulator is for members'),
     el('div','Play any matchup 10,000 times with every player, make trades, sit stars, and (coming soon) build fantasy teams and battle other fans.','hint small'));
-  const row=el('div',null,'row');row.append(trialBtn(),subBtn(true));c.append(row);$('anyBox').append(c);}
+  const row=el('div',null,'row');row.append(...membershipButtons());c.append(row);$('anyBox').append(c);}
 function memberTeaser(d){if(!pw().on)return null;const locked=(d.games||[]).filter(g=>g.locked&&g.state!=='FINAL').length;
   const box=el('div',null,'banner members');
   if(ACCESS&&ACCESS.access){if(ACCESS.sub_until||ACCESS.staff)return null;
@@ -1579,7 +1579,8 @@ function memberTeaser(d){if(!pw().on)return null;const locked=(d.games||[]).filt
   if(!locked)return null;
   box.append(el('b','🔒 '+locked+' more pick'+(locked>1?'s':'')+' today are for members'),
     el('div','Today’s free Pick of the Day is below. Her full record stays public, always.','hint small'));
-  const row=el('div',null,'row');row.append(trialBtn(),subBtn(true));box.append(row);return box;}
+  const row=el('div',null,'row');row.append(...membershipButtons());box.append(row);return box;}
+function membershipButtons(){return isPlayApp()?[playButton()]:[trialBtn(),subBtn(true)];}
 function isPlayApp(){return new URLSearchParams(location.search).get('app')==='1'||document.referrer.startsWith('android-app://com.mohjeta.picks');}
 let playVerifying=false;
 async function finishPlayPurchase(){
@@ -1588,8 +1589,8 @@ async function finishPlayPurchase(){
   playVerifying=true;
   try{
     const {data,error}=await sb.functions.invoke('play-billing',{body:{purchaseToken}});
-    if(error)throw error;
-    sessionStorage.removeItem('mohjeta.play.pending');
+    if(error||!data||!Object.hasOwn(data,'until'))throw Error();
+    if(sessionStorage.getItem('mohjeta.play.pending')===purchaseToken)sessionStorage.removeItem('mohjeta.play.pending');
     await memberRefresh(true);
     toast(data?.until?'Google Play membership verified.':'Your Google Play subscription is inactive.');
   }catch{toast('Purchase verification is pending. Reopen your account to retry.');}
@@ -1728,7 +1729,7 @@ const money$=v=>'$'+v.toLocaleString();
 async function renderFantasy(){const box=$('fantasyBox');if(!box)return;
   if(!me){box.replaceChildren();const c=el('div',null,'banner members');c.append(el('b','Sign in to draft your team'),el('div','Free: sign in with Google, pick a chat name, and draft 8 players.','hint small'));const b=el('button','Sign in','btn');b.type='button';b.onclick=()=>show('chat');c.append(b);box.append(c);return;}
   if(!(ACCESS&&ACCESS.access)){box.replaceChildren();const c=el('div',null,'banner members');c.append(el('b','🔒 The fantasy league is for members'),el('div','Start the free trial to draft your team. Free to play, no entry fees, no prizes.','hint small'));
-    const row=el('div',null,'row');row.append(trialBtn(),subBtn(true));c.append(row);box.append(c);return;}
+    const row=el('div',null,'row');row.append(...membershipButtons());c.append(row);box.append(c);return;}
   if(!myProfile){try{const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();myProfile=data||null;}catch(e){}}
   if(!myProfile){box.replaceChildren(el('p','Pick a chat name first (open 💬 Chat): your team shows under that name.','hint'));return;}
   box.replaceChildren(el('p','Loading players…','hint'));const fp=await fpool();if(!fp){box.replaceChildren(el('p','Player data is loading. Try again in a minute.','hint'));return;}
