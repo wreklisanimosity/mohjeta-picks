@@ -1554,8 +1554,8 @@ function planBox(){if(!pw().on)return null;const c=el('div',null,'card');c.style
     a.access?'Free trial: '+daysLeft(a.trial_ends)+' days left':a.trial_used?'Free plan (trial used)':'Free plan';
   c.append(el('b','Your plan: '+line));if(!a.access)c.append(trialBtn());if(!a.staff&&!(a.sub_until&&Date.parse(a.sub_until)>Date.now()))c.append(subBtn(true));return c;}
 // ---------------- phone alerts (Web Push): her pick changed, game starting, Pick'em and fantasy results
-const PUSH_KINDS=[['picks','🔄 Her pick changes'],['start','⏰ My Pick’em games starting'],['results','✅ My Pick’em results'],['fantasy','🏀 My fantasy results']];
-function pushPrefs(){try{return JSON.parse(localStorage.getItem('mohjeta.pushprefs')||'null')||{picks:true,start:true,results:true,fantasy:true};}catch(e){return {picks:true,start:true,results:true,fantasy:true};}}
+const PUSH_KINDS=[['bets','💵 Her wins and losses'],['picks','🔄 Her pick changes'],['start','⏰ My Pick’em games starting'],['results','✅ My Pick’em results'],['fantasy','🏀 My fantasy results']];
+function pushPrefs(){try{return JSON.parse(localStorage.getItem('mohjeta.pushprefs')||'null')||{bets:true,picks:true,start:true,results:true,fantasy:true};}catch(e){return {bets:true,picks:true,start:true,results:true,fantasy:true};}}
 function u8(b64){const p='='.repeat((4-b64.length%4)%4);const raw=atob((b64+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));}
 async function pushSub(){try{const reg=await navigator.serviceWorker.getRegistration();return reg?await reg.pushManager.getSubscription():null;}catch(e){return null;}}
 async function savePush(sub){const j=sub.toJSON();const {error}=await sb.rpc('set_push',{endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,prefs:pushPrefs()});return error;}
@@ -1567,7 +1567,7 @@ async function drawPush(box){if(!box)return;box.replaceChildren();const c=el('di
   if(!vapid||!sb){c.append(el('p','Alerts are being set up. Check back soon.','hint small'));box.append(c);return;}
   const sub=await pushSub();const on=!!sub&&Notification.permission==='granted';
   if(Notification.permission==='denied'){c.append(el('p','Alerts are blocked for this site in your phone settings. Allow notifications for mohjeta.com to turn them on.','hint small'));box.append(c);return;}
-  if(!on){c.append(el('p','Get a heads-up when her pick changes, your games start and results come in.','hint small'));
+  if(!on){c.append(el('p','Get a heads-up when her bets win or lose, her pick changes, your games start and results come in.','hint small'));
     const b=el('button','🔔 Turn on alerts','btn');b.type='button';b.onclick=async()=>{b.disabled=true;
       try{const perm=await Notification.requestPermission();if(perm!=='granted'){toast('Alerts not allowed');b.disabled=false;return;}
         const reg=(await navigator.serviceWorker.getRegistration())||(await navigator.serviceWorker.register('sw.js'));await navigator.serviceWorker.ready;const s2=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(vapid)});
