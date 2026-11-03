@@ -98,7 +98,6 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 .bars .b i{display:block;border-radius:3px}
 .ptr{position:fixed;left:50%;top:0;transform:translate(-50%,-60px);z-index:60;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;color:var(--text);opacity:0;transition:opacity .15s;pointer-events:none;box-shadow:0 4px 14px #0008}
 .ptr.on{opacity:1}
-.newpage{position:fixed;left:50%;bottom:calc(var(--navh,64px) + 14px);transform:translateX(-50%);z-index:55;border:1px solid #ff4fd8aa;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-weight:800;font-size:14px;border-radius:999px;padding:10px 16px;box-shadow:0 6px 18px #0009;cursor:pointer;white-space:nowrap}
 .newsbar{display:flex;align-items:center;gap:8px;margin:8px 0 12px;padding:9px 10px 9px 14px;border-radius:12px;border:1px solid #b44dff66;background:linear-gradient(135deg,#2a1146cc,#160d22cc);font-size:14px}
 .newsbar .nb{flex:1;min-width:0;background:none;border:0;color:var(--text);text-align:left;font:inherit;cursor:pointer;padding:0}
 .newsbar .nb b{color:#fff}.newsbar .nb span{color:var(--pink);white-space:nowrap}
@@ -1490,11 +1489,16 @@ function drawNews(){const box=$('newsBox');if(!box||!NEWS)return;box.replaceChil
   const u=up[0];if(u){try{localStorage.setItem('mohjeta.newsSeen',u.id);}catch(e){}drawNewsBar();}}
 function loadNews(){fetch('news.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(n=>{if(!n)return;NEWS=n;drawNewsBar();if(document.querySelector('#news.on'))drawNews();}).catch(()=>{});}
 loadNews();setInterval(loadNews,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadNews();});
-// new version of the page: offer a one-tap refresh (checked every 5 minutes and when the app comes back to the front)
-let pageTag=null;
+// new version of the page: it reloads itself at a quiet moment (never while someone is typing, chatting or building props)
+let pageTag=null,newPage=false,lastTouch=Date.now();
+['touchstart','keydown','scroll','pointerdown'].forEach(ev=>addEventListener(ev,()=>{lastTouch=Date.now();},{passive:true}));
+function quiet(){const a=document.activeElement;return Date.now()-lastTouch>45000&&!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))&&
+  !(typeof chatOpen==='function'&&chatOpen())&&!(typeof propLegs!=='undefined'&&propLegs.length)&&!document.querySelector('#sheet.on,.sheet.open');}
+function maybeReload(){if(newPage&&(document.hidden||quiet()))location.reload();}
 async function checkPage(){try{const r=await fetch('index.html?v='+Date.now(),{method:'HEAD',cache:'no-store'});const t=r.headers.get('etag')||r.headers.get('last-modified');
-  if(!t)return;if(pageTag===null){pageTag=t;return;}if(t!==pageTag&&!$('newPage')){const b=el('button','✨ The site was updated · tap to refresh','newpage');b.id='newPage';b.type='button';b.onclick=()=>location.reload();document.body.append(b);}}catch(e){}}
-checkPage();setInterval(checkPage,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkPage();});
+  if(!t)return;if(pageTag===null){pageTag=t;return;}if(t!==pageTag)newPage=true;maybeReload();}catch(e){}}
+checkPage();setInterval(checkPage,60000);setInterval(maybeReload,15000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)maybeReload();else checkPage();});
 // pull down to refresh, for the installed app (browsers already have their own)
 (function(){const app=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;if(!app)return;
   const ind=el('div','↓ Pull to refresh','ptr');document.body.append(ind);let y0=null,dist=0;
