@@ -902,7 +902,16 @@ function composer(){const c=el('div',null,'card');
     if(Object.values(prov).some(Boolean))c.append(el('p','or get a sign-in link by email:','hint small'));const i=el('input');i.type='email';i.placeholder='you@email.com';i.className='chatin';
     const go=el('button','Send sign-in link','btn');go.type='button';go.onclick=async()=>{const email=i.value.trim();if(!/^\S+@\S+\.\S+$/.test(email)){toast('Enter a valid email');return;}try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}
       const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});toast(error?'Could not send: '+error.message:'Check your email for the sign-in link 📬');};
-    c.append(i,go);gsi().then(ok=>{if(!ok||!one.isConnected)return;const old=c.querySelector('[data-g]');
+    i.autocomplete='username';
+    const options=el('details'),label=el('summary','Sign in with a password');
+    const form=el('form'),password=el('input'),login=el('button','Sign in','btn');
+    password.type='password';password.autocomplete='current-password';password.placeholder='Password';password.className='chatin';password.required=true;
+    login.type='submit';form.append(password,login);options.append(label,form);
+    form.onsubmit=async e=>{e.preventDefault();if(!i.value.trim()||!i.checkValidity()){i.focus();toast('Enter your email above');return;}
+      login.disabled=true;try{const {error}=await sb.auth.signInWithPassword({email:i.value.trim(),password:password.value});
+        if(error)toast('Sign-in failed. Check your email and password.');else password.value='';
+      }catch(e){toast('Could not connect. Try again.');}finally{login.disabled=false;}};
+    c.append(i,go,options);gsi().then(ok=>{if(!ok||!one.isConnected)return;const old=c.querySelector('[data-g]');
       try{google.accounts.id.renderButton(one,{theme:'filled_black',size:'large',shape:'pill',text:'continue_with',width:Math.min(320,c.clientWidth-24||280)});google.accounts.id.prompt();if(old)old.hidden=true;}catch(e){}});
     return c;}
   if(!myProfile){c.append(el('p','Pick your chat name (3-20 letters, numbers, spaces, . _ -).','small'));const i=el('input');i.maxLength=20;i.placeholder='Chat name';i.className='chatin';
