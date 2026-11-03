@@ -2,6 +2,13 @@
   "_how_to_edit": "Newest update first. Give each update a new id: the banner shows the top one to everyone who has not closed it yet. 'go' (optional) is the tab its button opens: picks, props, sim, record, play, more. Keep each text short.",
   "updates": [
     {
+      "id": "2026-11-03-nhl",
+      "date": "2026-11-03",
+      "title": "New: NHL position grades",
+      "text": "Every NHL team is now graded at center, wing, defense and goalie, built from every shot of every game (where it came from and how dangerous it was). See the best player at each position too: More › Ratings › NHL.",
+      "go": "ratings"
+    },
+    {
       "id": "2026-11-02-ncaab",
       "date": "2026-11-02",
       "title": "College basketball is back",
