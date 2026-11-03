@@ -1720,7 +1720,11 @@ async function renderFantasy(){const box=$('fantasyBox');if(!box)return;
   try{const {data,error}=await sb.from('fantasy_standings').select('*').order('wins',{ascending:false}).limit(30);if(error)throw error;
     if(!(data||[]).length)lg.append(el('p','No games yet: the first round plays tomorrow morning once teams are saved.','hint small'));
     (data||[]).forEach((r,i)=>{const row=el('div',null,'brow');row.append(el('span',String(i+1),'bk'),chatPic({name:r.owner,profiles:{avatar_url:r.avatar}}),el('b',r.team),el('span',' '+r.owner,'hint small'),el('span',null,'sp'),el('span',r.wins+'-'+r.losses,'up'));lg.append(row);});
-    const {data:g}=await sb.from('fantasy_games').select('*').order('day',{ascending:false}).limit(12);
+    const gamesQuery=()=>sb.from('fantasy_games').select('*');
+    let results=await gamesQuery().is('league_id',null).order('day',{ascending:false}).limit(12);
+    if(results.error?.code==='42703')results=await gamesQuery().order('day',{ascending:false}).limit(12);
+    if(results.error)throw results.error;
+    const g=results.data;
     if((g||[]).length){lg.append(el('h4','Latest results'));for(const x of g){const hw=x.home_score>x.away_score;lg.append(el('div',(hw?'✅ ':'')+x.home_name+' '+x.home_score+' – '+x.away_score+' '+x.away_name+(hw?'':' ✅'),'hint small'));}}}
   catch(e){lg.append(el('p','The league table is being set up.','hint small'));}
   box.append(await leaguesCard());}
