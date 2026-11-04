@@ -328,6 +328,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 <link rel="stylesheet" href="mohjeta-icons.css?v=1">
 <link rel="stylesheet" href="community.css?v=1">
 <script src="mohjeta-icons.js?v=1"></script>
+<script src="live-data.js?v=1"></script>
 </head>
 <body>
 <header>
@@ -1303,7 +1304,7 @@ function renderRecord(d){const b=d.bets;if(!b)return;
   void proof();}
 let proofAt=0;
 async function proof(){if(Date.now()-proofAt<600000)return;proofAt=Date.now();const box=$('proof');
-  try{const r=await fetch('stamps.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const S=await r.json();
+  try{const r=await fetchPublicSnapshot('stamps.json');if(!r.ok)return;const S=await r.json();
     const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(x=>x.toString(16).padStart(2,'0')).join('');
     let prev='0'.repeat(64),ok=true,at=-1;
     for(const [i,x] of S.rows.entries()){const body=x.at+'|'+x.ticker+'|'+x.side+'|'+Number(x.price).toFixed(4)+'|'+Number(x.fair||0).toFixed(4)+'|'+(x.title||'').slice(0,200);
@@ -1334,7 +1335,7 @@ function render(d){D=d;applyMembers(d);const up=new Date(d.updated);const u=$('u
   if(sheetGame){const g=d.games.find(x=>String(x.id||x.name)===String(sheetGame.id||sheetGame.name));if(g){sheetGame=g;const s=$('sheet');const y=s.scrollTop;$('sheetBody').replaceChildren(gameView(g));s.scrollTop=y;}}}
 let first=true;
 let dataTag=null;
-async function load(){try{const r=await fetch('data.json',{cache:'no-cache'});if(!r.ok)throw Error();   // revalidates: an unchanged file costs a tiny 304, not the whole download
+async function load(){try{const r=await fetchPublicSnapshot('data.json');if(!r.ok)throw Error();   // revalidates: an unchanged file costs a tiny 304, not the whole download
   const tag=r.headers.get('etag')||r.headers.get('last-modified');if(tag&&tag===dataTag&&!first){return;}dataTag=tag;render(await r.json());if(first){first=false;route();}}
   catch(e){if(!D)$('updated').textContent='Waiting for her first update…';}}
 
@@ -1414,7 +1415,7 @@ function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').va
   if(cats.length&&rtView==='leaders'){const g=el('div',null,'cats');g.append(...cats);parts.push(el('h3','Player leaders'+(L.players.season?' · '+L.players.season:'')),g);}
   box.replaceChildren(...parts);}
 $('rtFind').oninput=drawRatings;$('rtPick').onchange=drawRatings;
-async function loadRatings(){try{const r=await fetch('ratings.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error();rt=await r.json();drawRatings();}
+async function loadRatings(){try{const r=await fetchPublicSnapshot('ratings.json');if(!r.ok)throw Error();rt=await r.json();drawRatings();}
   catch(e){$('rtBox').replaceChildren(el('p','Ratings will appear after her next update.','hint'));}}
 load();setInterval(load,20000);initLive();loadRatings();setInterval(loadRatings,600000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
