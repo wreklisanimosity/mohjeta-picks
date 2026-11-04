@@ -43,6 +43,7 @@ button{font:inherit;color:inherit}
 header{position:sticky;top:0;z-index:20;background:#0b0712f2;backdrop-filter:blur(10px);border-bottom:1px solid #b44dff44;padding-top:env(safe-area-inset-top,0px)}
 .top{max-width:1100px;margin:auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
 .brand{font-size:21px;font-weight:800;letter-spacing:.12em;text-shadow:0 0 14px #b44dff88;cursor:pointer}
+.subscribe-entry{font-size:12px;padding:8px 12px;white-space:nowrap}.top{flex-wrap:wrap}.top .updated{min-width:0}
 .brand b{color:var(--pink);text-shadow:0 0 10px var(--pink)}
 .updated{margin-left:auto;color:var(--green);font-size:13px;text-align:right}
 .updated.stale{color:var(--yellow)}
@@ -330,7 +331,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 </head>
 <body>
 <header>
-  <div class="top"><div class="brand" id="home" role="link" tabindex="0">MOHJETA<b>.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><span class="updated" id="updated">Loading…</span><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
+  <div class="top"><div class="brand" id="home" role="link" tabindex="0">MOHJETA<b>.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><button type="button" class="btn subscribe-entry" id="subscribeEntry">Subscribe</button><span class="updated" id="updated">Loading…</span><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
 </header>
   <nav class="tabs" role="tablist" aria-label="Sections" id="nav">
     <button role="tab" data-tab="picks" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5 2 7.5L12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>Tonight</button>
@@ -1609,6 +1610,16 @@ function memberTeaser(d){if(!pw().on)return null;const locked=(d.games||[]).filt
   box.append(iel('b','🔒 '+locked+' more pick'+(locked>1?'s':'')+' today are for members'),
     el('div','Today’s free Pick of the Day is below. Her full record stays public, always.','hint small'));
   const row=el('div',null,'row');row.append(...membershipButtons());box.append(row);return box;}
+function openMembership(){
+ const dialog=el('dialog',null,'gatebox player-menu');
+ dialog.append(el('h2','Mohjeta Premium'),el('p','Unlock member features, full picks and matchup simulations.','hint'));
+ const plan=planBox();
+ if(plan)dialog.append(plan);
+ else {dialog.append(el('p','Membership checkout is not available on this page yet.','hint'));if(pw().subscribe_url)dialog.append(subBtn());}
+ const close=el('button','Close','btn ghost');close.type='button';close.onclick=()=>dialog.close();dialog.append(close);
+ dialog.addEventListener('close',()=>dialog.remove());document.body.append(dialog);dialog.showModal();
+}
+$('subscribeEntry').onclick=openMembership;
 function membershipButtons(){return isPlayApp()?[playButton()]:[trialBtn(),subBtn(true)];}
 function isPlayApp(){if(!/Android/i.test(navigator.userAgent))return false;const detected=new URLSearchParams(location.search).get('app')==='1'||document.referrer.startsWith('android-app://com.mohjeta.picks');try{if(detected)sessionStorage.setItem('mohjeta.play.app','1');return detected||sessionStorage.getItem('mohjeta.play.app')==='1';}catch{return detected;}}
 let playVerifying=false;
