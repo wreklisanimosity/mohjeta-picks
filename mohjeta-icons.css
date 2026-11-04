@@ -1,0 +1,4 @@
+.mj-icon{display:inline-block;width:1.3em;height:1.3em;vertical-align:-.27em;flex:none;overflow:visible;fill:#a86bff;stroke:none;filter:drop-shadow(0 1px 3px #8e31d52b)}
+.mj-icon .pink{fill:#f062d5}.mj-icon .light{fill:#f8eaff}.mj-icon .ink{fill:none;stroke:#faecff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs .mj-icon{width:25px;height:25px;fill:#a997bd;stroke:none}.tabs .mj-icon .pink{fill:#c3a6ce}.tabs [aria-selected=true] .mj-icon{fill:#ac73ff}.tabs [aria-selected=true] .mj-icon .pink{fill:#f062d5}
+.hi .mj-icon{width:36px;height:36px}.bd .mj-icon{width:26px;height:26px}.bd:not(.on) .mj-icon{filter:grayscale(1);opacity:.5}
