@@ -321,9 +321,12 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .flist{display:flex;flex-direction:column;gap:4px;max-height:52vh;overflow:auto;margin-top:8px}.frow{display:flex;align-items:center;gap:10px;background:none;border:1px solid var(--line);border-radius:10px;padding:7px 10px;color:var(--text);font:inherit;text-align:left;cursor:pointer}
 .frow.on{border-color:var(--pink);background:#ff4fd814}.frow .frole{width:22px;text-align:center;font-weight:800;color:var(--yellow)}.frow .fn{flex:1;min-width:0;display:flex;flex-direction:column}
 .pushcard{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.pushcard .anyn{display:flex;gap:8px;align-items:center}
+
+.chatperson{display:inline-flex;align-items:center;gap:8px;background:none;color:inherit;border:0;padding:4px;cursor:pointer;border-radius:8px}.chatperson:focus-visible{outline:2px solid var(--pink)}#chatBox .chatlist{height:50dvh;min-height:240px;max-height:650px}#chat .chatin{max-width:100%}.challenge-row{padding:12px 0;border-bottom:1px solid var(--line)}nav.tabs button{min-width:0} @media(max-width:480px){nav.tabs button{font-size:10px;padding-left:1px;padding-right:1px}}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=1">
 <script src="mohjeta-icons.js?v=1"></script>
+<script src="community-chat.js?v=1"></script>
 </head>
 <body>
 <header>
@@ -335,6 +338,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <button role="tab" data-tab="sim" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg>Simulate</button>
     <button role="tab" data-tab="record" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Results</button>
     <button role="tab" data-tab="play" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.3"/><circle cx="16" cy="8" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="8" cy="16" r="1.3"/><circle cx="16" cy="16" r="1.3"/></svg>Play</button>
+    <button role="tab" data-tab="chat" aria-selected="false"><svg viewBox="0 0 32 32"></svg>Chat</button>
     <button role="tab" data-tab="more" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</button>
   </nav>
 <main>
@@ -371,10 +375,10 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
       <button type="button" class="hubbtn" data-go="chat"><span class="hi">💬</span><b>Community chat</b><small>Talk games with other fans, live.</small></button>
     </div><div id="playBadges"></div>
   </section>
-  <section class="panel" id="chat" role="tabpanel" aria-label="Community chat"><button class="back" data-go="more">‹ More</button>
+  <section class="panel" id="chat" role="tabpanel" aria-label="Community chat">
     <h2>💬 Community chat</h2>
     <p class="hint small">Rules: be respectful · no selling picks, links or referral codes · no "guaranteed" or "lock" talk · 21+ · gambling problem? 1-800-GAMBLER. Messages can be removed and accounts muted by moderators.</p>
-    <select id="chatRoom" class="mpick" aria-label="Choose a chat room"></select><div id="chatBox"></div></section>
+    <p class="hint">Tap a player’s name or picture to reply or invite them to a fantasy battle.</p><div id="challengeInbox"></div><select id="chatRoom" class="mpick" aria-label="Choose a chat room"></select><div id="chatBox"></div></section>
   <section class="panel" id="fantasy" role="tabpanel" aria-label="Fantasy league"><button class="back" data-go="play">‹ Play</button>
     <h2>🏀 Fantasy league</h2><p class="hint small">Draft 8 real NBA players under a $50,000 cap. Every night Mohjeta plays the whole league with the same player ratings behind her picks. Members only · free to play · no entry fees, no prizes.</p><div id="fantasyBox"></div></section>
   <section class="panel" id="guess" role="tabpanel" aria-label="Guess her number"><button class="back" data-go="play">‹ Play</button>
@@ -508,7 +512,7 @@ const el=(t,txt,cls)=>{const n=document.createElement(t);if(txt!=null)n.textCont
 const iel=(t,txt,cls)=>{const n=el(t,txt,cls);return window.MohjetaIcons?MohjetaIcons.decorate(n):n;};
 if(window.MohjetaIcons){
  document.querySelectorAll('.hi,h2,#recSwitch button,#more button span').forEach(n=>MohjetaIcons.decorate(n));
- const names={picks:'picks',props:'props',sim:'simulate',record:'results',play:'play',more:'more'};
+ const names={picks:'picks',props:'props',sim:'simulate',record:'results',play:'play',chat:'chat',more:'more'};
  document.querySelectorAll('#nav [data-tab]').forEach(b=>{const old=b.querySelector('svg');if(old)old.replaceWith(MohjetaIcons.icon(names[b.dataset.tab]));});
 }
 
@@ -579,11 +583,10 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['picks','props','sim','record','play','more'];const SUB={games:'more',ratings:'more',chat:'more',guess:'play',fantasy:'play',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
+const TABS=['picks','props','sim','record','play','chat','more'];const SUB={games:'more',ratings:'more',guess:'play',fantasy:'play',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button')];
 function show(name,push){name=LEGACY[name]||name;
-  if(name==='chat'){if(!document.querySelector('main .panel.on'))show('picks',false);openDrawer();return;}
   if(name==='fantasy')setTimeout(renderFantasy,0);
   if(name==='news')setTimeout(drawNews,0);   // chat = one floating overlay over any tab
   const panel=name==='record'?'recordp':name;
@@ -918,9 +921,9 @@ async function openChat(){chatRoom='lobby';const box=$('chatBox');box.replaceChi
     const m=p.new;if(!m)return;const old=list.querySelector('[data-id="'+m.id+'"]');
     if(m.hidden&&!(myProfile&&myProfile.role!=='member')){if(old)old.remove();return;}
     if(old)old.replaceWith(msgRow(m));else{list.append(msgRow(m));list.scrollTop=list.scrollHeight;}}).subscribe();
-  box.append(composer());}
+  box.append(composer());unread=0;badgeCount();drawChallenges();}
 function msgRow(m){const r=el('div',null,'msg'+(m.hidden?' hid':'')+(me&&m.user_id===me.id?' mine':''));r.dataset.id=m.id;
-  const head=el('div',null,'mh');head.append(chatPic(m),el('b',m.name||'fan'),el('span',new Date(m.created_at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}),'hint small'));
+  const head=el('div',null,'mh');const person=el('button',null,'chatperson');person.type='button';person.append(chatPic(m),el('b',m.name||'fan'));person.setAttribute('aria-haspopup','dialog');person.onclick=()=>chatPersonMenu(m,person);head.append(person,el('span',new Date(m.created_at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}),'hint small'));
   r.append(head,el('div',clean(m.body),'mb'));const acts=el('div',null,'ma');
   if(me&&m.user_id!==me.id){const rp=el('button','Report','mlink');rp.type='button';rp.onclick=async()=>{const {error}=await sb.from('reports').insert({message_id:m.id,reason:'reported in chat'});toast(error?'Already reported':'Reported. Thanks, a moderator will look.');};acts.append(rp);}
   if(myProfile&&myProfile.role!=='member'){
@@ -1705,35 +1708,19 @@ async function whoPanel(){document.querySelectorAll('.whopop').forEach(x=>x.remo
     st.textContent='👀 Visitors · today '+STATS.today+' · this week '+STATS.week+' · this month '+STATS.month+' · all time '+STATS.all_time;}catch(e){st.textContent='Visitor counts are being set up.';}}
 // ---------------- floating chat: a bubble on every tab; new messages pop up wherever you are; tap to open over the page
 let popCh=null,unread=0;
-function chatOpen(){const d=$('chatDrawer');return !!(d&&!d.hidden);}
+function chatOpen(){return !!document.querySelector('#chat.panel.on');}
 function popsOn(){try{return localStorage.getItem('mohjeta.chatpop')!=='0';}catch(e){return true;}}
-function chatFab(){if($('chatFab'))return;
-  const fab=el('button',null,'chatfab');fab.id='chatFab';fab.type='button';fab.setAttribute('aria-label','Open community chat');fab.append(iel('span','💬'),el('b','','cbadge'));
-  fab.onclick=null;document.body.append(fab);place(fab,'mohjeta.fabpos');
-  draggable(fab,fab,'mohjeta.fabpos',()=>chatOpen()?closeDrawer():openDrawer());
-  const d=el('div',null,'cdrawer');d.id='chatDrawer';d.hidden=true;d.setAttribute('role','dialog');d.setAttribute('aria-label','Community chat');
-  const head=el('div',null,'cdhead');const mute=el('button',popsOn()?'🔔':'🔕','mlink');mute.type='button';mute.title='Pop-ups for new messages';
-  mute.onclick=()=>{const on=!popsOn();try{localStorage.setItem('mohjeta.chatpop',on?'1':'0');}catch(e){}mute.textContent=on?'🔔':'🔕';toast(on?'Chat pop-ups on':'Chat pop-ups off');};
-  const x=el('button','✕','mlink cdx');x.type='button';x.setAttribute('aria-label','Close chat');x.onclick=closeDrawer;
-  head.append(el('span','⋮⋮','grip'),iel('b','💬 Chat'),el('span',online.n?online.n+' online':'','hint small cdon'),el('span',null,'sp'),mute,x);
-  d.append(head,el('p','Be respectful · no selling picks, links or "locks" · 21+ · 1-800-GAMBLER','hint small cdrules'));
-  const box=$('chatBox');if(box)d.append(box);document.body.append(d);
-  draggable(d,head,'mohjeta.chatpos',null);
+function chatFab(){
   if(sb&&!popCh)popCh=sb.channel('pop').on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room=eq.lobby'},p=>{const m=p.new;
     if(!m||m.hidden||(me&&m.user_id===me.id)||chatOpen())return;unread++;badgeCount();if(popsOn())chatPop(m);})
     .on('postgres_changes',{event:'DELETE',schema:'public',table:'messages'},p=>{const id=p.old&&p.old.id;if(id!=null){const r=document.querySelector('.chatlist [data-id="'+id+'"]');if(r)r.remove();}}).subscribe();}
-function badgeCount(){const b=document.querySelector('#chatFab .cbadge');if(b){b.textContent=unread?String(Math.min(unread,99)):'';b.hidden=!unread;}}
+function badgeCount(){const b=document.querySelector('#nav [data-tab=chat]');if(b)b.setAttribute('aria-label',unread?'Community chat, '+unread+' unread messages':'Community chat');}
 function chatPop(m){document.querySelectorAll('.cpop').forEach(x=>x.remove());const c=el('button',null,'cpop');c.type='button';
   const t=el('div',null,'cptext');t.append(el('b',m.name||'fan'),el('span',clean(String(m.body||'')).slice(0,90)));c.append(chatPic(m),t);
   c.onclick=()=>{c.remove();openDrawer();};document.body.append(c);
-  const f=$('chatFab');if(f){const r=f.getBoundingClientRect();setPos(c,Math.min(r.right-c.offsetWidth,innerWidth-c.offsetWidth-8),r.top-c.offsetHeight-8);}setTimeout(()=>c.classList.add('out'),4200);setTimeout(()=>c.remove(),4700);}
-function openDrawer(){chatFab();const d=$('chatDrawer');d.hidden=false;document.body.classList.add('chatting');
-  if(!place(d,'mohjeta.chatpos')){const f=$('chatFab').getBoundingClientRect(),w=d.offsetWidth,h=d.offsetHeight;   // first time: just above the bubble
-    setPos(d,Math.min(f.right-w,innerWidth-w-8),f.top-h-10);}unread=0;badgeCount();
-  document.querySelectorAll('.cpop').forEach(x=>x.remove());openChat();}
-function closeDrawer(){const d=$('chatDrawer');if(d)d.hidden=true;document.body.classList.remove('chatting');
-  if(location.hash==='#chat')try{history.replaceState(null,'',location.pathname+'#picks');}catch(e){}}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&chatOpen())closeDrawer();});
+  const f=document.querySelector('#nav [data-tab=chat]');if(f){const r=f.getBoundingClientRect();setPos(c,Math.min(r.right-c.offsetWidth,innerWidth-c.offsetWidth-8),r.top-c.offsetHeight-8);}setTimeout(()=>c.classList.add('out'),4200);setTimeout(()=>c.remove(),4700);}
+function openDrawer(){show('chat');}
+function closeDrawer(){if(chatOpen())show('picks');}
 // drag anything (the bubble, the chat window by its top bar); remembered on this phone; a tap without moving = click
 function setPos(n,x,y){const w=n.offsetWidth||52,h=n.offsetHeight||52;x=Math.max(6,Math.min(innerWidth-w-6,x));y=Math.max(6,Math.min(innerHeight-h-6,y));
   n.style.left=x+'px';n.style.top=y+'px';n.style.right='auto';n.style.bottom='auto';}
