@@ -325,6 +325,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .chatperson{display:inline-flex;align-items:center;gap:8px;background:none;color:inherit;border:0;padding:4px;cursor:pointer;border-radius:8px}.chatperson:focus-visible{outline:2px solid var(--pink)}#chatBox .chatlist{height:50dvh;min-height:240px;max-height:650px}#chat .chatin{max-width:100%}.challenge-row{padding:12px 0;border-bottom:1px solid var(--line)}nav.tabs button{min-width:0} @media(max-width:480px){nav.tabs button{font-size:10px;padding-left:1px;padding-right:1px}}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=1">
+<link rel="stylesheet" href="community.css?v=1">
 <script src="mohjeta-icons.js?v=1"></script>
 </head>
 <body>
@@ -375,9 +376,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     </div><div id="playBadges"></div>
   </section>
   <section class="panel" id="chat" role="tabpanel" aria-label="Community chat">
-    <h2>💬 Community chat</h2>
-    <p class="hint small">Rules: be respectful · no selling picks, links or referral codes · no "guaranteed" or "lock" talk · 21+ · gambling problem? 1-800-GAMBLER. Messages can be removed and accounts muted by moderators.</p>
-    <p class="hint">Tap a player’s name or picture to reply or invite them to a fantasy battle.</p><div id="challengeInbox"></div><select id="chatRoom" class="mpick" aria-label="Choose a chat room"></select><div id="chatBox"></div></section>
+    <header class="community-hero"><div class="community-copy"><span class="community-eyebrow">THE MOHJETA COMMUNITY</span><h2>The Fan Lounge<span>.</span></h2><p>Talk the game. Find your rivals.<br>Let your lineup do the talking.</p><div class="community-pills"><span>Community chat</span><span>Fantasy battles</span></div></div><div class="community-emblem" aria-hidden="true"><img src="icon-192.png" alt=""><span>MEET. TALK. COMPETE.</span></div></header>
+    <div class="community-layout"><aside class="community-side"><div class="battle-card"><span class="community-eyebrow">YOUR NEXT MATCHUP</span><h3>A friendly rivalry<br>starts here.</h3><div class="battle-art" aria-hidden="true"><span>M</span><b>VS</b><span>YOU</span></div><p>Tap a player’s name in chat to send a private fantasy invitation.</p><button type="button" class="btn" data-go="fantasy">Build your lineup <span aria-hidden="true">↗</span></button><small>Nightly matchups · No entry fees or prizes</small></div><div id="challengeInbox"></div><details class="community-rules"><summary>Keep the lounge welcoming</summary><p>Be respectful. No selling picks, links, referral codes, or guaranteed-win claims. Moderators can remove messages and mute accounts. 21+ · Gambling problem? 1-800-GAMBLER.</p></details></aside><div class="community-conversation"><div class="lounge-heading"><div><span class="community-eyebrow">THE CONVERSATION</span><h3>Courtside & beyond</h3></div><span class="lounge-label">ALL SPORTS</span></div><select id="chatRoom" class="mpick" aria-label="Choose a chat room"></select><div id="chatBox"></div></div></div></section>
   <section class="panel" id="fantasy" role="tabpanel" aria-label="Fantasy league"><button class="back" data-go="play">‹ Play</button>
     <h2>🏀 Fantasy league</h2><p class="hint small">Draft 8 real NBA players under a $50,000 cap. Every night Mohjeta plays the whole league with the same player ratings behind her picks. Members only · free to play · no entry fees, no prizes.</p><div id="fantasyBox"></div></section>
   <section class="panel" id="guess" role="tabpanel" aria-label="Guess her number"><button class="back" data-go="play">‹ Play</button>
@@ -931,7 +931,7 @@ function msgRow(m){const r=el('div',null,'msg'+(m.hidden?' hid':'')+(me&&m.user_
     const bn=el('button','Ban','mlink');bn.type='button';bn.onclick=async()=>{if(!window.confirm||confirm('Ban '+m.name+'?')){const {error}=await sb.rpc('mod_user',{target:m.user_id,ban:true,mute_minutes:0});toast(error?error.message:'Banned');}};
     if(m.user_id!==me.id)acts.append(h,mu,bn);else acts.append(h);}
   r.append(acts);return r;}
-function composer(){const c=el('div',null,'card');
+function composer(){const c=el('div',null,'card lounge-composer');
   if(!me){c.append(el('p','Sign in to chat. No password needed.','small'));
     const prov=(window._authProviders||{});const redirectTo=location.origin+location.pathname;try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}
     const one=el('div',null,'gone');c.append(one);
@@ -1954,9 +1954,9 @@ function comparePlayers(L){const ov=el('div',null,'gate');const box=el('div',nul
     const x=el('button','Close','btn');x.type='button';x.onclick=()=>ov.remove();box.append(x);};
   draw();document.body.append(ov);award('compare');}
 function chatPersonMenu(m,opener){
- const dialog=document.createElement('dialog');dialog.className='gatebox';dialog.setAttribute('aria-label','Options for '+(m.name||'player'));
+ const dialog=document.createElement('dialog');dialog.className='gatebox player-menu';dialog.setAttribute('aria-label','Options for '+(m.name||'player'));
  const close=()=>dialog.close();dialog.addEventListener('close',()=>{dialog.remove();opener?.focus();});
- dialog.append(el('h3',m.name||'Player'));
+ const cover=el('div',null,'player-cover');cover.append(chatPic(m),el('span','MOHJETA COMMUNITY','community-eyebrow'));dialog.append(cover,el('h3',m.name||'Player'),el('p','Make your next connection.','hint small'));
  const action=(label,fn)=>{const b=el('button',label,'btn ghost');b.type='button';b.onclick=fn;dialog.append(b);return b;};
  action('Reply in chat',()=>{close();const input=document.querySelector('#chatBox textarea');if(input){input.value='@'+(m.name||'fan')+' ';input.focus();}});
  if(!me)action('Sign in to challenge',()=>{close();document.querySelector('#chatBox input')?.focus();});
@@ -1978,8 +1978,8 @@ async function drawChallenges(){
  if(!me){box.replaceChildren();return;}challengesBusy=true;
  try{
   const {data,error}=await sb.from('fantasy_challenges').select('id,sender,recipient,status,created_at').order('created_at',{ascending:false}).limit(30);if(error)throw error;
-  box.replaceChildren();const rows=(data||[]).filter(c=>Date.now()-Date.parse(c.created_at)<7*86400000);if(!rows.length)return;
-  const card=el('details',null,'card');card.open=rows.some(c=>c.recipient===me.id&&c.status==='pending');card.append(el('summary','Fantasy invitations'));
+  box.replaceChildren();const rows=(data||[]).filter(c=>Date.now()-Date.parse(c.created_at)<7*86400000);if(!rows.length){box.append(el('div','No invitations yet. Your next rivalry could start with a hello.','challenge-empty'));return;}
+  const card=el('details',null,'card battle-inbox');card.open=rows.some(c=>c.recipient===me.id&&c.status==='pending');card.append(el('summary','Fantasy invitations'));
   const ids=[...new Set(rows.flatMap(c=>[c.sender,c.recipient]))];const {data:people}=await sb.from('profiles').select('id,display_name').in('id',ids);const names=new Map((people||[]).map(p=>[p.id,p.display_name]));
   for(const c of rows){const incoming=c.recipient===me.id;const row=el('div',null,'challenge-row');row.append(el('b',(incoming?'From ':'To ')+(names.get(incoming?c.sender:c.recipient)||'Player')),el('p',c.status==='accepted'?'Accepted — find your battle in Fantasy → Leagues with friends.':c.status,'hint small'));
    if(c.status==='pending')for(const [label,response] of incoming?[['Accept','accepted'],['Decline','declined']]:[['Cancel','cancelled']]){const b=el('button',label,'btn ghost small');b.type='button';b.onclick=async()=>{row.querySelectorAll('button').forEach(x=>x.disabled=true);try{const {error}=await sb.rpc('respond_fantasy_challenge',{challenge:c.id,response});if(error)throw error;toast(response==='accepted'?'Battle accepted. Your saved teams will play in the nightly league.':'Invitation '+response);drawChallenges();}catch(e){toast(e.message||'Could not update invitation');row.querySelectorAll('button').forEach(x=>x.disabled=false);}};row.append(b);}
