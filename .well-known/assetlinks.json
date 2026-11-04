@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.mohjeta.picks",
+      "sha256_cert_fingerprints": [
+        "2A:B6:B2:65:DE:A1:98:69:0E:CD:C6:B3:AD:53:41:6D:2A:B8:73:B7:6D:A8:A9:91:2C:5C:72:21:58:52:04:41"
+      ]
+    }
+  }
+]
