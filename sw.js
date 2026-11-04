@@ -1,7 +1,7 @@
 // Mohjeta Picks offline helper: the app shell is cached; picks data is always fetched fresh and
 // falls back to the last copy only when the phone is offline.
-const SHELL = 'mohjeta-shell-team-portraits-v2';
-const FILES = ['./nba-sim.js?v=nba-lineups-v1', './nba-sim-ui.js?v=nba-lineups-v1', './', './index.html', './manifest.webmanifest', './icon-192.png?v=mohjeta-m-20261030', './icon-512.png?v=mohjeta-m-20261030', './apple-touch-icon.png?v=mohjeta-m-20261030'];
+const SHELL = 'mohjeta-shell-facet-alerts-v1';
+const FILES = ['./mohjeta-icons.js?v=1', './mohjeta-icons.css?v=1', './notification-badge.png', './nba-sim.js?v=nba-lineups-v1', './nba-sim-ui.js?v=nba-lineups-v1', './', './index.html', './manifest.webmanifest', './icon-192.png?v=mohjeta-m-20261030', './icon-512.png?v=mohjeta-m-20261030', './apple-touch-icon.png?v=mohjeta-m-20261030'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== SHELL && k !== 'mohjeta-data').map(k => caches.delete(k)))).then(() => self.clients.claim()));
@@ -22,8 +22,8 @@ self.addEventListener('fetch', e => {
 self.addEventListener('push', e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (x) { d = { body: e.data ? e.data.text() : '' }; }
-  e.waitUntil(self.registration.showNotification(d.title || 'Mohjeta', {
-    body: d.body || '', icon: 'icon-192.png', badge: 'icon-192.png', tag: d.tag || undefined, data: { url: d.url || './' } }));
+  e.waitUntil(self.registration.showNotification((d.title || 'Mohjeta').replace(/^[\s🔄📈📉⏰✅❌🏀➖\uFE0F]+/u, '') || 'Mohjeta', {
+    body: d.body || '', icon: 'icon-192.png', badge: 'notification-badge.png', tag: d.tag || undefined, data: { url: d.url || './' } }));
 });
 self.addEventListener('notificationclick', e => {
   e.notification.close();
