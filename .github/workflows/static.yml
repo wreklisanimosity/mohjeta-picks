@@ -26,11 +26,17 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.first_deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
+      # Let frequent snapshot commits accumulate; publish the newest main below.
+      - name: Batch incoming snapshots
+        run: sleep 120
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
@@ -39,5 +45,16 @@ jobs:
           # Upload entire repository
           path: '.'
       - name: Deploy to GitHub Pages
+        id: first_deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+
+      # A previous Pages deployment can remain active after its Actions run ends.
+      # Retry once after a cooling-off period, then surface a real failure.
+      - name: Wait before retrying deployment
+        if: steps.first_deployment.outcome == 'failure'
+        run: sleep 60
+      - name: Retry GitHub Pages deployment
+        if: steps.first_deployment.outcome == 'failure'
         id: deployment
         uses: actions/deploy-pages@v5
