@@ -1619,7 +1619,12 @@ function openMembership(){
  const close=el('button','Close','btn ghost');close.type='button';close.onclick=()=>dialog.close();dialog.append(close);
  dialog.addEventListener('close',()=>dialog.remove());document.body.append(dialog);dialog.showModal();
 }
-$('subscribeEntry').onclick=openMembership;
+const subscribeEntry=$('subscribeEntry');
+if(isPlayApp()){
+ const checkout=playButton();checkout.id='subscribeEntry';checkout.classList.add('subscribe-entry');checkout.textContent='Subscribe';subscribeEntry.replaceWith(checkout);
+}else{
+ subscribeEntry.onclick=()=>{location.href='https://play.google.com/store/apps/details?id=com.mohjeta.picks';};
+}
 function membershipButtons(){return isPlayApp()?[playButton()]:[trialBtn(),subBtn(true)];}
 function isPlayApp(){if(!/Android/i.test(navigator.userAgent))return false;const detected=new URLSearchParams(location.search).get('app')==='1'||document.referrer.startsWith('android-app://com.mohjeta.picks');try{if(detected)sessionStorage.setItem('mohjeta.play.app','1');return detected||sessionStorage.getItem('mohjeta.play.app')==='1';}catch{return detected;}}
 let playVerifying=false;
