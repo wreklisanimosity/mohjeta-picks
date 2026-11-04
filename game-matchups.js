@@ -10,7 +10,9 @@
     return rows.concat(remaining.map(b=>[null,b]));
   }
   function node(tag,text,cls){const e=document.createElement(tag);if(text!=null)e.textContent=text;if(cls)e.className=cls;return e;}
-  function render(g){
+  let ratings=null, pending=null, ratingsAt=0;
+  const key=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  function render(g, enriched=false){
     const box=node('section',null,'starter-matchups');
     box.append(node('div','THE MATCHUP LAB','matchup-eyebrow'),node('h3','Starter matchups'));
     const lineup=g.lineups, sides=lineup?.teams||g.teams.map(t=>({team:t.name,status:'unavailable',players:[]}));
@@ -28,6 +30,11 @@
           card.append(node('span',p.name.split(/\s+/).map(n=>n[0]).slice(0,2).join(''),'matchup-avatar'),node('h4',p.name),node('span',p.pos||'Position unavailable','matchup-pos'));
           if(p.status)card.append(node('small',p.status,'matchup-injury'));
           if(Number.isFinite(p.minutes))card.append(node('small',p.minutes.toFixed(0)+' expected min'));
+          const season=(ratings?.leagues?.[g.league]?.roster?.players||[]).find(x=>key(x.name)===key(p.name)&&x.team_name&&key(team).endsWith(key(x.team_name)));
+          if(season){
+            if(Number.isFinite(season.rating))card.append(node('small','Position rating '+season.rating+'/99'));
+            if(season.stats)card.append(node('small','Season: '+season.stats));
+          }
           const model=(g.sim?.players?.[team]||[]).find(x=>x.name===p.name);
           if(model&&Number.isFinite(model.worth))card.append(node('small',model.worth.toFixed(1)+' '+(g.sim.unit||'pts')+' modeled impact'));
           return card;};
@@ -42,6 +49,11 @@
     box.append(node('p','Modeled impact, when available, estimates the team-margin change versus a replacement. It is not a player scoring prediction.','matchup-note'));
     if(lineup?.checked_at)box.append(node('small','Lineups checked '+new Date(lineup.checked_at).toLocaleString(),'matchup-note'));
     if(lineup?.url&&lineup.url.startsWith('https://www.espn.com/')){const a=node('a','Source: ESPN game box score','matchup-source');a.href=lineup.url;a.target='_blank';a.rel='noopener noreferrer';box.append(a);}
+    if((ratings?.leagues?.[g.league]?.roster?.players||[]).length)box.append(node('p','Position rating ranks players against others at that position this season (99 is highest). Ratings updated '+new Date(ratings.updated).toLocaleString()+'.','matchup-note'));
+    if(!enriched&&typeof root.fetchPublicSnapshot==='function'){
+      if(!pending&&Date.now()-ratingsAt>600000)pending=root.fetchPublicSnapshot('ratings.json').then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{ratings=d;ratingsAt=Date.now();}).catch(()=>{}).finally(()=>{pending=null;});
+      if(pending)pending.then(()=>{if(box.isConnected)box.replaceWith(render(g,true));});
+    }
     return box;
   }
   root.GameMatchups={pair,render};
