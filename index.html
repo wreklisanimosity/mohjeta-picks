@@ -329,6 +329,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 <link rel="stylesheet" href="community.css?v=1">
 <script src="mohjeta-icons.js?v=1"></script>
 <script src="live-data.js?v=1"></script>
+<link rel="stylesheet" href="game-matchups.css?v=1">
+<script src="game-matchups.js?v=1"></script>
 </head>
 <body>
 <header>
@@ -1156,6 +1158,7 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
   const hero=el('div',null,'hero');const vs=el('div',null,'vs');
   g.teams.forEach((t,i)=>{const sd=el('div',null,'side');sd.append(teamBadge(t.name),teamPlate(t.name,true),el('span',g.state==='LIVE'?String(t.score??0):(t.record||''),g.state==='LIVE'?'sc':'hint small'));vs.append(sd);if(i===0)vs.append(el('span',g.state==='LIVE'?'–':'vs','hint'));});
   hero.append(vs,el('div',g.state==='LIVE'?'● LIVE '+(g.detail||''):when(g.start),g.state==='LIVE'?'down':'hint'));if(g.tv&&g.tv.length)hero.append(el('div','TV: '+g.tv.join(' · '),'hint small'));b.append(hero);
+  if(window.GameMatchups)b.append(GameMatchups.render(g));
   if(g.pick&&ln.t==='PRACTICE')b.append(el('div',PRACTICE_NOTE,'notice'));
   if(g.pick){const c=el('div',null,'card');const pl=el('div',null,'pickline');pl.append(el('span','Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'));c.append(pl);
     const tiles=el('div',null,'tiles');const tile=(l,v)=>{const t=el('div',null,'tile');t.append(l,el('b',v));tiles.append(t);};
