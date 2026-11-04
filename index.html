@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <script>
-try { if (new URLSearchParams(location.search).get('app') === '1' || document.referrer.startsWith('android-app://com.mohjeta.picks')) sessionStorage.setItem('mohjeta.play.app', '1'); } catch (_) {}
+try { if (/Android/i.test(navigator.userAgent) && (new URLSearchParams(location.search).get('app') === '1' || document.referrer.startsWith('android-app://com.mohjeta.picks'))) sessionStorage.setItem('mohjeta.play.app', '1'); } catch (_) {}
 if (location.hash.startsWith('#play-purchase=')) {
   const fragment = location.hash;
   history.replaceState(null,'',location.pathname + location.search);
@@ -1599,7 +1599,7 @@ function memberTeaser(d){if(!pw().on)return null;const locked=(d.games||[]).filt
     el('div','Today’s free Pick of the Day is below. Her full record stays public, always.','hint small'));
   const row=el('div',null,'row');row.append(...membershipButtons());box.append(row);return box;}
 function membershipButtons(){return isPlayApp()?[playButton()]:[trialBtn(),subBtn(true)];}
-function isPlayApp(){const detected=new URLSearchParams(location.search).get('app')==='1'||document.referrer.startsWith('android-app://com.mohjeta.picks');try{if(detected)sessionStorage.setItem('mohjeta.play.app','1');return detected||sessionStorage.getItem('mohjeta.play.app')==='1';}catch{return detected;}}
+function isPlayApp(){if(!/Android/i.test(navigator.userAgent))return false;const detected=new URLSearchParams(location.search).get('app')==='1'||document.referrer.startsWith('android-app://com.mohjeta.picks');try{if(detected)sessionStorage.setItem('mohjeta.play.app','1');return detected||sessionStorage.getItem('mohjeta.play.app')==='1';}catch{return detected;}}
 let playVerifying=false;
 async function finishPlayPurchase(){
   const purchaseToken=sessionStorage.getItem('mohjeta.play.pending');
