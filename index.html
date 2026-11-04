@@ -1198,7 +1198,7 @@ function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();set
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
     const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));
     const go=el('button','See the full track record ›','more');go.style.cssText='background:none;border:0;padding:0;cursor:pointer';go.onclick=()=>show('record');box.append(go);rec.append(box);}
-  const ab=$('alertsBox');ab.replaceChildren();if(d.alerts_url){const a=el('a','🔔 Get her picks as they happen','btn');a.href=d.alerts_url;a.target='_blank';a.rel='noopener';ab.append(a);ab.style.margin='0 0 14px';}
+  const ab=$('alertsBox');ab.replaceChildren();if(d.alerts_url){const a=iel('a','🔔 Get her picks as they happen','btn');a.href=d.alerts_url;a.target='_blank';a.rel='noopener';ab.append(a);ab.style.margin='0 0 14px';}
   const live=d.games.filter(g=>g.state==='LIVE'&&g.pick&&isBetLane(g));const lb=$('liveBox');lb.replaceChildren();
   if(live.length){lb.append(el('h3','Live now'));const gr=el('div',null,'grid');for(const g of live)gr.append(pickCard(g,{short:true}));lb.append(gr);}
   const bet=d.games.filter(g=>g.state!=='LIVE'&&isBetLane(g)&&g.pick).sort((x,y)=>String(x.start).localeCompare(String(y.start)));
@@ -1675,7 +1675,7 @@ async function drawPush(box){if(!box)return;box.replaceChildren();const c=el('di
         const err=await savePush(s2);toast(err?(/function|not find/i.test(err.message)?'Run supabase_push.sql in Supabase first':'Could not save: '+err.message):'Alerts on 🔔');award('alerts');}
       catch(e){toast('Could not turn on alerts');}drawPush(box);};c.append(b);box.append(c);return;}
   const prefs=pushPrefs();for(const [k,label] of PUSH_KINDS){const l=el('label',null,'anyn');const cb=el('input');cb.type='checkbox';cb.checked=prefs[k]!==false;
-    cb.onchange=async()=>{const p=pushPrefs();p[k]=cb.checked;try{localStorage.setItem('mohjeta.pushprefs',JSON.stringify(p));}catch(e){}await savePush(sub);toast('Saved');};l.append(cb,el('span',' '+label));c.append(l);}
+    cb.onchange=async()=>{const p=pushPrefs();p[k]=cb.checked;try{localStorage.setItem('mohjeta.pushprefs',JSON.stringify(p));}catch(e){}await savePush(sub);toast('Saved');};l.append(cb,iel('span',' '+label));c.append(l);}
   if(!me)c.append(el('p','Sign in so the Pick’em and fantasy alerts know which games are yours.','hint small'));
   const off=el('button','Turn off alerts','mlink');off.type='button';off.onclick=async()=>{const j=sub.toJSON();try{await sb.rpc('remove_push',{endpoint:j.endpoint});await sub.unsubscribe();}catch(e){}toast('Alerts off');drawPush(box);};
   c.append(off);box.append(c);}
