@@ -324,6 +324,45 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .pushcard{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.pushcard .anyn{display:flex;gap:8px;align-items:center}
 
 .chatperson{display:inline-flex;align-items:center;gap:8px;background:none;color:inherit;border:0;padding:4px;cursor:pointer;border-radius:8px}.chatperson:focus-visible{outline:2px solid var(--pink)}#chatBox .chatlist{height:50dvh;min-height:240px;max-height:650px}#chat .chatin{max-width:100%}.challenge-row{padding:12px 0;border-bottom:1px solid var(--line)}nav.tabs button{min-width:0} @media(max-width:480px){nav.tabs button{font-size:10px;padding-left:1px;padding-right:1px}}
+
+/* compact layout (Nov 2026): tap-to-open tiles and small cards, less scrolling */
+.mgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 6px}
+@media(min-width:760px){.mgrid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}}
+.mini{display:flex;flex-direction:column;gap:5px;padding:10px;border-radius:14px;border-color:#5b3a7a;min-width:0}
+.mini .mtop{display:flex;align-items:center;gap:6px;font-size:11px;min-width:0}.mini .mtop .league{font-size:10px}
+.mini .mtop .when{margin-left:auto;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini .mtop .lv{margin-left:auto;color:var(--red);font-weight:800;white-space:nowrap}
+.mini .mt{display:flex;align-items:center;gap:6px;font-size:13px;min-width:0}.mini .mt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini .mt b{margin-left:auto;font-size:13px}.mini .mt.mine span{font-weight:800;color:var(--text)}
+.mini .badge{width:22px!important;height:22px!important;font-size:9px;box-shadow:none;animation:none;flex:none}
+.mbet{border:1px solid var(--pink);border-radius:10px;padding:6px 8px;background:linear-gradient(135deg,#3a1450,#1b0f2b)}
+.mbet .lbl,.mpick .lbl{display:block;font-size:10px;font-weight:800;letter-spacing:.08em}
+.mbet .lbl{color:var(--pink)}.mpick .lbl{color:var(--dim)}
+.mbet b{display:block;font-size:16px;line-height:1.15}.mbet small{color:var(--muted);font-size:11px}
+.mbet.won{border-color:var(--green)}.mbet.lost{border-color:var(--red);background:#1b0f1b}
+.mpick{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.mpick b{font-size:15px}.mpick .mpct{margin-left:auto;font-size:20px;font-weight:800;color:var(--green)}
+.mread{font-size:11px;color:var(--muted)}
+.chev{margin-top:auto;font-size:12px;font-weight:800;color:var(--pink)}
+.stiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 6px}
+@media(min-width:760px){.stiles{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}}
+.stile{position:relative;display:flex;flex-direction:column;gap:2px;text-align:left;font:inherit;color:var(--text);cursor:pointer;
+  background:linear-gradient(#21152f,#160e22);border:1px solid #6d4686;border-radius:14px;padding:12px 30px 12px 12px;min-height:84px}
+.stile:hover,.stile:focus-visible{border-color:var(--pink)}.stile:active{transform:scale(.98)}
+.stile::after{content:'›';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--pink);font-size:24px;font-weight:700}
+.stile .si{font-size:22px;line-height:1}.stile b{font-size:15px}.stile small{color:var(--muted);font-size:12px}.stile .pl{font-weight:800}
+.stile.hot{border-color:var(--red)}.stile.on{border-color:var(--pink);box-shadow:0 0 0 1px var(--pink) inset}
+.crumb{display:flex;align-items:center;gap:8px;margin:0 0 10px;flex-wrap:wrap}.crumb h4{margin:0;font-size:16px}
+.crumb button{min-height:36px;padding:0 14px;border:1px solid #79568c;border-radius:999px;background:#241732;color:#f5ebff;font:inherit;font-size:13px;cursor:pointer}
+.betbig{border:2px solid var(--pink);border-radius:14px;padding:10px 12px;margin:8px 0;background:linear-gradient(135deg,#3a1450,#1b0f2b)}
+.betbig .lbl{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--pink)}.betbig b{display:block;font-size:22px;line-height:1.2}
+.betbig.won{border-color:var(--green)}.betbig.lost{border-color:var(--red)}
+.pickline.minor .big{font-size:20px}.pickline.minor b{font-size:15px}
+.mprop{display:flex;flex-direction:column;gap:4px;padding:10px;border-radius:14px;min-width:0}
+.mprop .pn{font-weight:800;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mprop .pl2{font-size:12px;color:var(--muted)}
+.mprop .row{gap:6px;flex-wrap:nowrap}.mprop .pk{font-size:12px;white-space:nowrap;padding:4px 8px}.mprop .mpct{margin-left:auto;font-size:20px;font-weight:800;color:var(--green)}
+.mprop .add{min-height:32px;font-size:12px;padding:0 10px}
+.actiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+.card.tap,.hubbtn{border-color:#5b3a7a}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=1">
 <link rel="stylesheet" href="community.css?v=1">
@@ -364,12 +403,12 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 <main>
   <div id="newsBar"></div>
   <section class="panel on" id="picks" role="tabpanel" aria-label="Picks">
-    <button type="button" class="hero" id="heroSim"><span class="hi">⚔️</span><span><b>Simulate any matchup</b><small>Pick two teams and watch them battle 10,000 times</small></span><span class="go">›</span></button>
     <div id="record"></div><div id="installBox"></div><div id="alertsBox"></div>
     <div id="liveBox"></div>
-    <h3>Tonight she's betting</h3><p class="hint small xp">Games where she puts $5 of paper money on her pick at Kalshi's real price.</p><div class="grid" id="betting"></div>
-    <h3>Her most confident picks</h3><p class="hint small xp">Her most confident calls in every sport. 🧪 Practice picks are sports she is still learning and does not bet yet: less information behind them, so use them with caution. Their results are in Results.</p><div class="grid" id="best"></div>
+    <h3>Tonight she's betting</h3><p class="hint small xp">Tap a sport to see her bets. Each bet is $5 of paper money at Kalshi's real price.</p><div id="betting"></div>
+    <h3>Her most confident picks</h3><p class="hint small xp">Tap any pick for the full breakdown. 🧪 = practice sport (still learning, use with caution).</p><div class="mgrid" id="best"></div>
     <h3>Latest results</h3><div class="strip" id="recent"></div>
+    <button type="button" class="hero" id="heroSim"><span class="hi">⚔️</span><span><b>Simulate any matchup</b><small>Pick two teams and watch them battle 10,000 times</small></span><span class="go">›</span></button>
   </section>
   <section class="panel" id="games" role="tabpanel" aria-label="Games"><button class="back" data-go="more">‹ More</button>
     <h2>Games</h2><p class="hint small">Every game in the next 24 hours. Tap a game for the full breakdown. Picks keep updating until about 20 minutes before the start.</p>
@@ -1128,6 +1167,25 @@ function drawInstall(){const box=$('installBox');box.replaceChildren();let hidde
 $('installMenu').onclick=installHelp;
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 
+// ---------------- compact cards (tap for the full breakdown)
+const SPORT_ICON={NFL:'🏈',NCAAF:'🏈',NBA:'🏀',NCAAB:'🏀',WNBA:'🏀',NHL:'🏒',MLB:'⚾',ATP:'🎾',WTA:'🎾',BOXING:'🥊',UFC:'🥊'};
+const sportIcon=lg=>SPORT_ICON[lg]||'⚽';
+const shortTeam=n=>{n=String(n||'');return n.length<=14?n:teamNick(n);};
+function betStatus(r){return r.result==='OPEN'?'Open · pays '+usd(Math.max(0,(r.count||0)-r.paid))+' if it wins':icon(r.result)+' '+r.result.toLowerCase()+' '+signed(r.pnl);}
+function betBlock(g,big){const r=g.bet;const k=r.result==='WON'?' won':r.result==='LOST'?' lost':'';
+  const b=el('div',null,(big?'betbig':'mbet')+k);b.append(el('span','💵 HER BET','lbl'),el('b',big?r.team:shortTeam(r.team)),
+    el(big?'div':'small',(big?(r.count?r.count+' contracts at ':'At ')+Math.round(r.price*100)+'¢ · ':Math.round(r.price*100)+'¢ · ')+betStatus(r),big?'small':''));return b;}
+function miniCard(g){const c=el('article',null,'card tap mini');c.tabIndex=0;c.setAttribute('role','button');c.setAttribute('aria-label',(g.name||'Game')+': open the full breakdown');
+  c.onclick=()=>openGame(g.id||g.name);c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openGame(g.id||g.name);}};
+  const top=el('div',null,'mtop');top.append(el('span',sportIcon(g.league)+' '+sname(g.league).toUpperCase(),'league'));
+  top.append(g.state==='LIVE'?el('span','● LIVE','lv'):el('span',when(g.start),'when'));c.append(top);
+  for(const t of g.teams||[]){const r=el('div',null,'mt'+(g.pick&&g.pick.team===t.name?' mine':''));r.append(teamBadge(t.name),el('span',shortTeam(t.name)));
+    if(g.state==='LIVE')r.append(el('b',String(t.score??0)));c.append(r);}
+  if(g.bet){c.append(betBlock(g,false));if(g.pick&&(g.state==='LIVE'||flipped(g)))c.append(el('div',(flipped(g)?'⇄ ':'')+'Her read now: '+shortTeam(g.pick.team)+' '+pct(g.pick.chance),'mread'));}
+  else if(g.pick){const p=el('div',null,'mpick');p.append(el('span',laneOf(g).t==='PRACTICE'?'🧪 HER PICK':'HER PICK','lbl'),el('b',shortTeam(g.pick.team)),el('span',pct(g.pick.chance),'mpct'));c.append(p);}
+  else c.append(el('div','Pick coming soon','hint small'));
+  c.append(el('div','Details ›','chev'));return c;}
+
 // ---------------- cards
 function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');if(pw().on&&String(g.id)===String(pw().pod))c.append(el('div','⭐ Free Pick of the Day','podtag'));c.tabIndex=0;c.setAttribute('role','button');
   c.onclick=()=>openGame(g.id||g.name);c.onkeydown=e=>{if(e.key==='Enter')openGame(g.id||g.name);};
@@ -1135,14 +1193,14 @@ function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');if
   if(g.state==='LIVE')top.append(el('span','● LIVE '+(g.detail||''),'pill p-live'));else top.append(el('span',when(g.start),'hint small'));
   top.append(el('span',null,'sp'));const ln=laneOf(g);top.append(el('span',ln.t,'pill '+ln.c));c.append(top);
   const tms=el('div',null,'teams');for(const t of g.teams){const r=el('div',null,'tm'+(g.pick&&g.pick.team===t.name?' mine':''));r.append(teamBadge(t.name),el('span',t.name,'nm'),el('b',g.state==='LIVE'?String(t.score??0):(t.record||''),'hint'));tms.append(r);}c.append(tms);
-  if(g.pick){const pl=el('div',null,'pickline');pl.append(el('span','Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'),el('span','sure','hint small sure'));c.append(pl);
+  if(g.bet)c.append(betBlock(g,true));
+  if(g.pick){const pl=el('div',null,'pickline'+(g.bet?' minor':''));pl.append(el('span',g.bet?'Her read now':'Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'),el('span','sure','hint small sure'));c.append(pl);
     const gt=gapText(g);const k=kal(g);const sub=el('div',null,'row small xp');if(k!=null)sub.append(el('span','Kalshi '+k+'¢','hint'));if(gt)sub.append(el('span','· '+gt[0],'gap '+gt[1]));c.append(sub);
     const ol=oddsLine(g);if(ol)c.append(el('div',ol,'small odds xp'));
     const wm=winMeter(g);if(wm)c.append(wm);
     if(g.teams.length===2&&(g.state==='UPCOMING'||pkLoad()[pkKey(g)])){const pr=pickemRow(g);const cd=countdown(g);if(cd)pr.append(cd);c.append(pr);}
     if(g.pick.held)c.append(el('div','Too close to call: her earlier pick stays shown.','hint small'));
     if(ln.t==='PRACTICE')c.append(el('div','🧪 Practice pick: still learning this sport. Use with caution.','hint small prac-note'));
-    if(g.bet)c.append(el('div','💵 Her bet: '+g.bet.team+' at '+Math.round(g.bet.price*100)+'¢'+(g.bet.result==='OPEN'?'':' · '+g.bet.result.toLowerCase()+' '+signed(g.bet.pnl)),'small'));
     if(flipped(g))c.append(el('div','⇄ Her read has changed since she bet: she now favors '+g.pick.team+', but her bet stays on '+g.bet.team+'.','small open'));
     if(g.thesis&&!opts.short)c.append(el('div',(g.own_team?'Her own read (her pick follows the market): ':'')+firstLine(g.thesis),'why1'));}
   else c.append(el('p','Her pick is coming soon.','hint'));
@@ -1174,9 +1232,14 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
   const hero=el('div',null,'hero');const vs=el('div',null,'vs');
   g.teams.forEach((t,i)=>{const sd=el('div',null,'side');sd.append(teamBadge(t.name),teamPlate(t.name,true),el('span',g.state==='LIVE'?String(t.score??0):(t.record||''),g.state==='LIVE'?'sc':'hint small'));vs.append(sd);if(i===0)vs.append(el('span',g.state==='LIVE'?'–':'vs','hint'));});
   hero.append(vs,el('div',g.state==='LIVE'?'● LIVE '+(g.detail||''):when(g.start),g.state==='LIVE'?'down':'hint'));if(g.tv&&g.tv.length)hero.append(el('div','TV: '+g.tv.join(' · '),'hint small'));b.append(hero);
-  if(window.GameMatchups){GameMatchups.theme={badge:teamBadge,color:n=>TEAM_COLORS[teamNick(n)]};b.append(GameMatchups.render(g));}
   if(g.pick&&ln.t==='PRACTICE')b.append(el('div',PRACTICE_NOTE,'notice'));
-  if(g.pick){const c=el('div',null,'card');const pl=el('div',null,'pickline');pl.append(el('span','Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'));c.append(pl);
+  if(g.bet){const r=g.bet;const c=el('div',null,'card');c.append(betBlock(g,true));
+    c.append(el('p','Placed '+when(r.opened)+'. Bets are never switched during a game.','hint small'));
+    if(flipped(g))c.append(el('p','⇄ Her read has changed since she bet: she now favors '+g.pick.team+' '+pct(g.pick.chance)+', but this bet stays on '+r.team+'.','open'));
+    b.append(c);}
+  else if(isBetLane(g)&&g.state!=='LIVE'){b.append(el('p','She places her bet about 20 minutes before the start.','hint small'));}
+  if(g.pick){const c=el('div',null,'card');const pl=el('div',null,'pickline'+(g.bet?' minor':''));pl.append(el('span',g.bet?'Her read now':'Her pick','hint'),el('b',g.pick.team),el('span',null,'sp'),el('span',pct(g.pick.chance),'big'));c.append(pl);
+    if(g.teams&&g.teams.length===2&&(g.state==='UPCOMING'||pkLoad()[pkKey(g)])){const pr=pickemRow(g);const cd=countdown(g);if(cd)pr.append(cd);c.append(pr);}
     const tiles=el('div',null,'tiles');const tile=(l,v)=>{const t=el('div',null,'tile');t.append(l,el('b',v));tiles.append(t);};
     const k=kal(g);if(k!=null)tile('Kalshi price',k+'¢');const gt=gapText(g);if(gt)tile('Gap',gt[0].replace('She is ','').replace('She agrees with Kalshi','none'));
     if(g.pregame)tile('Pregame call',g.pregame.team+' '+pct(g.pregame.chance));
@@ -1186,13 +1249,7 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
     if(g.trend&&g.pregame){const msg={up:'▲ More confident than before the game',down:'▼ Less confident than before the game',steady:'● Holding steady since the start',flipped:'⇄ Changed her pick during the game'}[g.trend];if(msg)c.append(el('p',msg,g.trend==='up'?'up':g.trend==='flipped'?'down':'hint'));}
     if(g.own_team)c.append(el('p','Her own read favored '+g.own_team+'; her final number leans on Kalshi’s price, so the two can differ.','hint small'));
     b.append(c);}
-  if(g.bet){const r=g.bet;const c=el('div',null,'card');c.append(el('h4','Her bet'));
-    c.append(el('p',(r.count?r.count+' contracts on ':'')+r.team+' at '+Math.round(r.price*100)+'¢ · paid '+usd(r.paid)));
-    c.append(el('p',r.result==='OPEN'?'Open: pays '+usd((r.count||0)-r.paid)+' profit if it wins':icon(r.result)+' '+r.result+' '+signed(r.pnl),r.result==='WON'?'up':r.result==='LOST'?'down':'open'));
-    c.append(el('p','Placed '+when(r.opened)+'. Bets are never switched during a game.','hint small'));
-    if(flipped(g))c.append(el('p','⇄ Her read has changed since she bet: she now favors '+g.pick.team+' '+pct(g.pick.chance)+', but this bet stays on '+r.team+'.','open'));
-    b.append(c);}
-  else if(isBetLane(g)&&g.state!=='LIVE'){b.append(el('p','She places her bet about 20 minutes before the start.','hint small'));}
+  if(window.GameMatchups){GameMatchups.theme={badge:teamBadge,color:n=>TEAM_COLORS[teamNick(n)]};b.append(GameMatchups.render(g));}   // after her bet and pick, so those come first
   if(g.event){const cb=iel('button','💬 Chat about it ›','btn ghost');cb.type='button';cb.onclick=()=>{closeSheet(true);show('chat');};b.append(cb);}
   if(g.sim&&g.state==='UPCOMING'){const sb=el('button','Simulate this game ›','btn');sb.type='button';sb.onclick=()=>{simId=g.id||g.name;show('sim');renderSim();};b.append(sb);}
   const d=g.details||{};
@@ -1216,6 +1273,23 @@ function openGame(id,push){if(!D)return;const g=D.games.find(x=>String(x.id||x.n
   sheetGame=g;openSheet(()=>gameView(g),'Game');if(push!==false)try{history.pushState(null,'','#game/'+encodeURIComponent(g.id||g.name));}catch(e){}}
 
 // ---------------- Picks (home)
+let tonSport=null;
+function drawBetting(d){const box=$('betting');box.replaceChildren();
+  const bet=d.games.filter(g=>g.state!=='LIVE'&&isBetLane(g)&&g.pick).sort((x,y)=>String(x.start).localeCompare(String(y.start)));
+  {const lk=memberTeaser(d);if(lk)box.append(lk);}
+  if(!bet.length){box.append(el('p','No bet games left in the next 24 hours.','empty'));return;}
+  const by={};for(const g of bet)(by[g.league]=by[g.league]||[]).push(g);const sports=Object.keys(by).sort((a,b)=>by[b].length-by[a].length||String(by[a][0].start).localeCompare(String(by[b][0].start)));
+  if(tonSport&&!by[tonSport])tonSport=null;
+  if(sports.length===1)tonSport=sports[0];
+  if(!tonSport){const t=el('div',null,'stiles');
+    for(const lg of sports){const gs=by[lg];const placed=gs.filter(g=>g.bet).length;const b=el('button',null,'stile');b.type='button';
+      b.setAttribute('aria-label',sname(lg)+': '+gs.length+' bet games. Open');
+      b.append(el('span',sportIcon(lg),'si'),el('b',sname(lg)),el('small',gs.length+' game'+(gs.length===1?'':'s')+(placed?' · '+placed+' bet'+(placed===1?'':'s')+' placed':'')),el('small','Next: '+when(gs[0].start)));
+      b.onclick=()=>{tonSport=lg;drawBetting(D);};t.append(b);}
+    box.append(t);return;}
+  const cr=el('div',null,'crumb');if(sports.length>1){const back=el('button','‹ All sports');back.type='button';back.onclick=()=>{tonSport=null;drawBetting(D);};cr.append(back);}
+  cr.append(el('h4',sportIcon(tonSport)+' '+sname(tonSport)+' · '+by[tonSport].length));box.append(cr);
+  const gr=el('div',null,'mgrid');for(const g of by[tonSport])gr.append(miniCard(g));box.append(gr);}
 function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(pickemCard(),boardCard(),myPicks());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
@@ -1223,12 +1297,10 @@ function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();set
     const go=el('button','See the full track record ›','more');go.style.cssText='background:none;border:0;padding:0;cursor:pointer';go.onclick=()=>show('record');box.append(go);rec.append(box);}
   const ab=$('alertsBox');ab.replaceChildren();if(d.alerts_url){const a=iel('a','🔔 Get her picks as they happen','btn');a.href=d.alerts_url;a.target='_blank';a.rel='noopener';ab.append(a);ab.style.margin='0 0 14px';}
   const live=d.games.filter(g=>g.state==='LIVE'&&g.pick&&isBetLane(g));const lb=$('liveBox');lb.replaceChildren();
-  if(live.length){lb.append(el('h3','Live now'));const gr=el('div',null,'grid');for(const g of live)gr.append(pickCard(g,{short:true}));lb.append(gr);}
-  const bet=d.games.filter(g=>g.state!=='LIVE'&&isBetLane(g)&&g.pick).sort((x,y)=>String(x.start).localeCompare(String(y.start)));
-  $('betting').replaceChildren(...(bet.length?bet.map(g=>pickCard(g)):[el('p','No bet games left in the next 24 hours.','empty')]));
-  {const lk=memberTeaser(d);if(lk)$('betting').prepend(lk);}
+  if(live.length){lb.append(el('h3','● Live now'));const gr=el('div',null,'mgrid');for(const g of live)gr.append(miniCard(g));lb.append(gr);}
+  drawBetting(d);
   const best=d.games.filter(g=>g.pick&&typeof g.pick.chance==='number'&&g.state!=='LIVE').sort((x,y)=>y.pick.chance-x.pick.chance).slice(0,6);
-  $('best').replaceChildren(...(best.length?best.map(g=>pickCard(g,{short:true})):[el('p','Picks are coming soon.','empty')]));
+  $('best').replaceChildren(...(best.length?best.map(g=>miniCard(g)):[el('p','Picks are coming soon.','empty')]));
   const rc=$('recent');rc.replaceChildren();
   if(b&&b.rows){const done=b.rows.filter(r=>r.pnl!=null&&!r.carried).sort((x,y)=>String(y.opened).localeCompare(String(x.opened))).slice(0,15);
     for(const r of done)rc.append(el('span',icon(r.result)+' '+(r.bet||r.title).replace(/ to win$/,'').replace(/ wins$/,'')+' '+signed(r.pnl),cls(r.pnl)));
@@ -1251,7 +1323,8 @@ function renderGames(d){const gs=d.games.slice().sort((a,b)=>(a.state==='LIVE'?0
       row.append(teamBadge(t.name),el('span',t.name+(g.state==='LIVE'?' '+(t.score??0):''),'team-name'));mid.append(row);}}
     else mid.append(el('div',g.state==='LIVE'?g.teams.map(t=>t.name+' '+(t.score??0)).join(' – '):(g.name||g.teams.map(t=>t.name).join(' vs '))));
     mid.append(tt);it.append(mid);
-    const pc=el('div',null,'pc');if(g.pick){pc.append(el('div',g.pick.team.split(' ').slice(-1)[0],'small'),el('b',pct(g.pick.chance)));const k=kal(g);if(k!=null)pc.append(el('div','Kalshi '+k+'¢','hint small'));}else pc.append(el('span',g.locked?'🔒':'soon','hint small'));
+    const pc=el('div',null,'pc');if(g.bet){pc.append(el('div','💵 Her bet','small'),el('b',teamNick(g.bet.team)),el('div',Math.round(g.bet.price*100)+'¢'+(g.bet.result==='OPEN'?'':' · '+g.bet.result.toLowerCase()),'hint small'));}
+    else if(g.pick){pc.append(el('div',g.pick.team.split(' ').slice(-1)[0],'small'),el('b',pct(g.pick.chance)));const k=kal(g);if(k!=null)pc.append(el('div','Kalshi '+k+'¢','hint small'));}else pc.append(el('span',g.locked?'🔒':'soon','hint small'));
     it.append(pc,el('span','›','chev'));box.append(it);}
   if(!shown.length)list.append(el('p','No games here in the next 24 hours.','empty'));}
 
@@ -1459,7 +1532,35 @@ function propSide(o){return o.side==='YES'?'YES · '+o.line+' or more':'NO · '+
 function propData(d){const P=d&&d.props;if(!P)return null;
   if(P.locked&&MEMBERS&&MEMBERS.props)return Object.assign({},P,{open:MEMBERS.props.open||[],board:MEMBERS.props.board||[],locked:false});return P;}
 function addLeg(leg){propLegs=propLegs.filter(x=>x.player!==leg.player);propLegs.push(leg);if(propLegs.length>8)propLegs.shift();drawBuilder();
-  const b=$('propBuilder');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});}
+  const n=$('pbCount');if(n)n.textContent=propLegs.length+' leg'+(propLegs.length===1?'':'s');toast('Added to prop builder ('+propLegs.length+')');}
+let propCat=null;
+const statLabel=st=>{const n=STATNAME[st]||st;return n[0].toUpperCase()+n.slice(1);};
+const STATICON={pts:'🏀',ast:'🤝',fg3:'🎯',reb:'🧲'};
+function miniProp(o){const c=el('div',null,'card mprop');c.append(el('div',o.player,'pn'),el('div',o.line+'+ '+(STATNAME[o.stat]||o.stat)+' · '+o.game,'pl2'));
+  const r=el('div',null,'row');r.append(el('span',o.side==='YES'?'YES · '+o.line+'+':'NO · under '+o.line,'pk'),el('span',pct(o.her),'mpct'));c.append(r);
+  c.append(el('div','Kalshi '+Math.round(o.price*100)+'¢','hint small'));
+  const add=el('button','+ Add to builder','btn ghost small add');add.type='button';add.onclick=e=>{e.stopPropagation();addLeg({player:o.player,stat:o.stat,line:o.line,side:o.side,her:o.her,price:o.price,game:o.game});};
+  c.append(add);return c;}
+function openBuilder(){openSheet(()=>{const w=el('div');w.append(el('h2','🧱 Prop builder'));const pb=el('div',null,'card');pb.id='propBuilder';w.append(pb);return w;});drawBuilder();}
+function openPropHistory(stat){const P=propData(D);if(!P)return;
+  openSheet(()=>{const w=el('div');w.append(el('h2',stat?statLabel(stat)+' · every finished pick':'Every finished prop pick'));const box=el('div');w.append(box);
+    const draw=()=>{box.replaceChildren();const chips=el('div',null,'chips');
+      for(const [k,l] of [['ALL','All'],['WON','Won'],['LOST','Lost']]){const x=el('button',l);x.type='button';x.setAttribute('aria-pressed',String(k===propShow));x.onclick=()=>{propShow=k;draw();};chips.append(x);}
+      box.append(chips);const rows=(P.rows||[]).filter(r=>(!stat||r.stat===stat)&&(propShow==='ALL'||r.result===propShow));
+      const days={};for(const r of (P.rows||[]).filter(r=>!stat||r.stat===stat)){const k=new Date(r.at*1000).toLocaleDateString('en-CA');days[k]=(days[k]||0)+r.pnl;}
+      const keys=Object.keys(days).sort().slice(-30);
+      if(keys.length>1){const mx=Math.max(1,...keys.map(k=>Math.abs(days[k])));const bars=el('div',null,'bars');bars.append(el('div',null,'zero'));
+        for(const k of keys){const v=days[k];const col=el('div',null,'b');const top=el('div');top.style.cssText='height:50%;display:flex;align-items:flex-end';const bot=el('div');bot.style.cssText='height:50%';
+          const i=el('i');i.style.height=Math.max(2,Math.abs(v)/mx*100)+'%';i.style.width='100%';i.style.background=v>=0?'var(--green)':'var(--red)';(v>=0?top:bot).append(i);col.append(top,bot);col.title=k+': '+signed(v);bars.append(col);}
+        box.append(el('div','Profit by day','hint small'),bars);}
+      const tw=el('div',null,'tablewrap');const tb=el('table');const hr=el('tr');for(const x of ['Prop','Result'])hr.append(el('th',x));tb.append(hr);
+      for(const r of rows.slice(0,150)){const tr=el('tr');const a=el('td');a.append(el('div',propName(r)+' · '+r.side),
+          el('div',new Date(r.at*1000).toLocaleDateString([],{month:'short',day:'numeric'})+' · '+r.game+' · her '+pct(r.her)+' · '+Math.round(r.price*100)+'¢','hint small'));
+        const res=el('td');res.style.textAlign='right';res.style.whiteSpace='nowrap';res.append(el('div',icon(r.result)+' '+r.result.toLowerCase(),r.result==='WON'?'up':'down'),el('div',signed(r.pnl),'small '+cls(r.pnl)));
+        tr.append(a,res);tb.append(tr);}
+      if(!rows.length){const tr=el('tr');const td=el('td','No finished prop picks here yet.');td.colSpan=2;tr.append(td);tb.append(tr);}
+      tw.append(tb);box.append(tw,el('p',P.rule||'','hint small'));};
+    draw();return w;});}
 function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(d);box.replaceChildren();
   if(!P){box.append(el('p','Her props will show here within a few minutes of the next update.','hint'));return;}
   const R=P.record||{},n=(R.won||0)+(R.lost||0);
@@ -1468,49 +1569,39 @@ function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(
   const st=el('div',null,'stats');const stat=(l,v,c)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,c||''));st.append(s);};
   stat('Record',(R.won||0)+'-'+(R.lost||0));stat('Profit',signed(R.pl||0),cls(R.pl||0));stat('Win rate',R.hit==null?'—':pct(R.hit));
   stat('Return',R.roi==null?'—':(R.roi>0?'+':'')+Math.round(R.roi*100)+'%',cls(R.roi||0));card.append(st);
-  if(n)card.append(el('p','Kalshi’s prices said these picks would win '+pct(R.price_said)+' of the time. They won '+pct(R.hit)+'. $5 per pick on paper since '+R.since+', graded from Kalshi’s official results.','hint small'));
-  if(n&&n<300)card.append(el('p','Still early: '+n+' finished picks. A few hundred are needed before a record like this means much.','hint small'));
-  const rows=P.rows||[];const days={};for(const r of rows){const k=new Date(r.at*1000).toLocaleDateString('en-CA');days[k]=(days[k]||0)+r.pnl;}
-  const keys=Object.keys(days).sort().slice(-30);
-  if(keys.length>1){const mx=Math.max(1,...keys.map(k=>Math.abs(days[k])));const bars=el('div',null,'bars');bars.append(el('div',null,'zero'));
-    for(const k of keys){const v=days[k];const col=el('div',null,'b');const top=el('div');top.style.cssText='height:50%;display:flex;align-items:flex-end';const bot=el('div');bot.style.cssText='height:50%';
-      const i=el('i');i.style.height=Math.max(2,Math.abs(v)/mx*100)+'%';i.style.width='100%';i.style.background=v>=0?'var(--green)':'var(--red)';(v>=0?top:bot).append(i);col.append(top,bot);col.title=k+': '+signed(v);bars.append(col);}
-    card.append(el('div','Profit by day','hint small'),bars);}
-  const BS=P.by_stat||[];
-  if(BS.length>1){const c2=el('div',null,'card');c2.append(iel('h4','📊 By prop type · most profitable first'));
-    c2.append(tableOf(['Prop type','Record','Profit','Return'],BS.map(b=>[STATNAME[b.stat]?STATNAME[b.stat][0].toUpperCase()+STATNAME[b.stat].slice(1):b.stat,b.won+'-'+b.lost,
-      el('span',signed(b.pl),cls(b.pl)),b.roi==null?'—':(b.roi>0?'+':'')+Math.round(b.roi*100)+'%'])));
-    c2.append(el('p','Tonight’s picks below are listed in this order: her most profitable prop type first.','hint small'));box.append(card,c2);}
-  else box.append(card);
-  // tonight's picks
-  box.append(el('h3',"Tonight's prop picks"));
+  if(n)card.append(el('p','Kalshi’s prices said '+pct(R.price_said)+'; they won '+pct(R.hit)+'. $5 per pick on paper since '+R.since+'.'+(n<300?' Still early: '+n+' finished picks.':''),'hint small'));
+  box.append(card);
+  const BS=(P.by_stat||[]).slice();const open=(P.open||[]).slice();
+  const rank=st=>{const i=BS.findIndex(b=>b.stat===st);return i<0?99:i;};
+  for(const o of open)if(!BS.some(b=>b.stat===o.stat))BS.push({stat:o.stat,won:0,lost:0,pl:0,roi:null});
+  if(propCat&&!BS.some(b=>b.stat===propCat))propCat=null;
   if(P.locked){const c=el('div',null,'banner members');c.append(iel('b','🔒 '+(P.open_hidden||'Her')+' prop pick'+(P.open_hidden===1?'':'s')+' tonight for members'),el('div','Members see every prop pick and can use the prop builder. Her record above is always public.','hint small'));
     const row=el('div',null,'row');row.append(...membershipButtons());c.append(row);box.append(c);}
-  else if(!(P.open||[]).length)box.append(el('p','No prop picks yet. She prices tonight’s NBA props (points, assists, threes, rebounds) every 30 minutes and picks only when Kalshi’s price is at least 8 points off her number.','hint'));
-  else{const rank=st=>{const i=BS.findIndex(b=>b.stat===st);return i<0?99:i;};
-    const all=P.open.slice().sort((x,y)=>rank(x.stat)-rank(y.stat)||(y.her-y.price)-(x.her-x.price));const list=propAll?all:all.slice(0,15);
-    box.append(el('p',all.length>15&&!propAll?'Her top '+list.length+' of '+all.length+' prop picks tonight: most profitable prop type first, then the biggest gap between her chance and Kalshi’s price.':all.length+' prop pick'+(all.length===1?'':'s')+' tonight: most profitable prop type first.','hint small'));
-    const gr=el('div',null,'grid');for(const o of list){const c=el('div',null,'card prop');
-      c.append(el('div',o.game,'hint small'),el('div',propName(o),'pname'));
-      const r=el('div',null,'row');r.append(el('span',propSide(o),'pk'),el('span',null,'sp'),el('b',pct(o.her),'up'));c.append(r);
-      c.append(el('div','Her chance '+pct(o.her)+' · Kalshi '+Math.round(o.price*100)+'¢ (about '+pct(o.price)+')','hint small'));
-      const add=el('button','+ Add to prop builder','btn ghost small');add.type='button';add.onclick=()=>addLeg({player:o.player,stat:o.stat,line:o.line,side:o.side,her:o.her,price:o.price,game:o.game});
-      c.append(add);gr.append(c);}
-    box.append(gr);
-    if(all.length>15){const mb=el('button',propAll?'Show only her top 15':'Show all '+all.length+' prop picks','btn ghost small');mb.type='button';mb.onclick=()=>{propAll=!propAll;renderProps(D);};box.append(mb);}}
-  // prop builder
-  const pb=el('div',null,'card');pb.id='propBuilder';box.append(el('h3','🧱 Prop builder'),pb);drawBuilder();
-  // every finished prop
-  box.append(el('h3','Every prop pick'));const chips=el('div',null,'chips');
-  for(const [k,l] of [['ALL','All'],['WON','Won'],['LOST','Lost']]){const x=el('button',l);x.type='button';x.setAttribute('aria-pressed',String(k===propShow));x.onclick=()=>{propShow=k;renderProps(D);};chips.append(x);}
-  box.append(chips);const tw=el('div',null,'tablewrap');const tb=el('table');const hr=el('tr');for(const x of ['Prop','Result'])hr.append(el('th',x));tb.append(hr);
-  const list=rows.filter(r=>propShow==='ALL'||r.result===propShow);
-  for(const r of list.slice(0,150)){const tr=el('tr');const a=el('td');a.append(el('div',propName(r)+' · '+r.side),
-      el('div',new Date(r.at*1000).toLocaleDateString([],{month:'short',day:'numeric'})+' · '+r.game+' · her '+pct(r.her)+' · '+Math.round(r.price*100)+'¢','hint small'));
-    const res=el('td');res.style.textAlign='right';res.style.whiteSpace='nowrap';res.append(el('div',icon(r.result)+' '+r.result.toLowerCase(),r.result==='WON'?'up':'down'),el('div',signed(r.pnl),'small '+cls(r.pnl)));
-    tr.append(a,res);tb.append(tr);}
-  if(!list.length){const tr=el('tr');const td=el('td','No finished prop picks yet.');td.colSpan=2;tr.append(td);tb.append(tr);}
-  tw.append(tb);box.append(tw,el('p',P.rule||'','hint small'));}
+  if(!propCat){
+    box.append(el('h3','Prop types · most profitable first'),el('p','Tap a type to see tonight’s picks in it.','hint small xp'));
+    const t=el('div',null,'stiles');
+    for(const b of BS){const k=open.filter(o=>o.stat===b.stat).length;const x=el('button',null,'stile');x.type='button';
+      x.setAttribute('aria-label',statLabel(b.stat)+' props: '+b.won+'-'+b.lost+', '+signed(b.pl)+', '+k+' tonight. Open');
+      const sm=el('small',b.won+'-'+b.lost+' · ');sm.append(el('span',signed(b.pl),'pl '+cls(b.pl)));
+      x.append(el('span',STATICON[b.stat]||'📊','si'),el('b',statLabel(b.stat)),sm,el('small',k+' pick'+(k===1?'':'s')+' tonight'));
+      x.onclick=()=>{propCat=b.stat;renderProps(D);};t.append(x);}
+    box.append(t);
+    if(!P.locked&&open.length){const top=open.sort((x,y)=>rank(x.stat)-rank(y.stat)||(y.her-y.price)-(x.her-x.price)).slice(0,4);
+      box.append(el('h3','Her top picks tonight'));const gr=el('div',null,'mgrid');for(const o of top)gr.append(miniProp(o));box.append(gr);}
+    else if(!P.locked)box.append(el('p','No prop picks yet. She prices tonight’s NBA props every 30 minutes and picks only when Kalshi’s price is at least 8 points off her number.','hint'));}
+  else{const b=BS.find(x=>x.stat===propCat);const cr=el('div',null,'crumb');const back=el('button','‹ All prop types');back.type='button';back.onclick=()=>{propCat=null;renderProps(D);};
+    cr.append(back,el('h4',(STATICON[propCat]||'')+' '+statLabel(propCat)+' · '+b.won+'-'+b.lost+' · '+signed(b.pl)));box.append(cr);
+    const mine=open.filter(o=>o.stat===propCat).sort((x,y)=>(y.her-y.price)-(x.her-x.price));
+    if(P.locked)box.append(el('p','🔒 Tonight’s picks are for members.','hint'));
+    else if(mine.length){const gr=el('div',null,'mgrid');for(const o of mine.slice(0,propAll?120:12))gr.append(miniProp(o));box.append(gr);
+      if(mine.length>12){const mb=el('button',propAll?'Show fewer':'Show all '+mine.length,'btn ghost small');mb.type='button';mb.onclick=()=>{propAll=!propAll;renderProps(D);};box.append(mb);}}
+    else box.append(el('p','No '+(STATNAME[propCat]||'')+' picks tonight yet.','hint'));
+    const h=el('button','📋 Every finished '+(STATNAME[propCat]||'')+' pick ›','btn ghost');h.type='button';h.onclick=()=>openPropHistory(propCat);box.append(h);}
+  // tools: builder and history open on their own screen
+  const at=el('div',null,'actiles');
+  const bb=el('button',null,'stile');bb.type='button';bb.append(el('span','🧱','si'),el('b','Prop builder'),el('small',propLegs.length+' leg'+(propLegs.length===1?'':'s')));bb.lastChild.id='pbCount';
+  bb.onclick=openBuilder;const hb=el('button',null,'stile');hb.type='button';hb.append(el('span','📋','si'),el('b','Every finished pick'),el('small',n+' graded'));hb.onclick=()=>openPropHistory(null);
+  at.append(bb,hb);box.append(at);}
 function drawBuilder(){const pb=$('propBuilder');if(!pb)return;const P=propData(D);pb.replaceChildren();
   pb.append(el('p','Stack props and see how they could fare: her chance that every leg hits, next to what Kalshi’s prices say.','hint small'));
   if(!P||P.locked){pb.append(el('p','🔒 The prop builder is for members.','hint'));return;}
