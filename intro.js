@@ -8,15 +8,17 @@
   const reduce=matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   const N='http://www.w3.org/2000/svg';
   const box=document.createElement('div');box.id='mjIntro';box.setAttribute('aria-hidden','true');
-  // shards: faceted triangles that fly in from all sides, settle in a ring, then burst with the light
+  // shards: plain triangles (transform / opacity only) that fly in, settle in a ring, then burst with the light
   let shards='';const cols=['#b44dff','#ff4fd8','#8a2be2','#e9b8ff','#5b2a99','#ff9be9'];
-  for(let i=0;i<18;i++){const a=i/18*Math.PI*2+(i%2?.12:-.08),r=42+(i%3)*7,x=Math.cos(a)*r,y=Math.sin(a)*r,s=5+(i*7%5);
-    const far=150+(i*37%60),fx=Math.cos(a)*far-x,fy=Math.sin(a)*far-y,bx=Math.cos(a)*90,by=Math.sin(a)*90,rot=(i*53%180)-90;
-    shards+=`<path class="mi-shard" d="M${x} ${y-s}L${x+s*.9} ${y+s*.6}L${x-s*.9} ${y+s*.5}Z" fill="${cols[i%cols.length]}" style="--d:${(.05+i*.03).toFixed(2)}s;--fx:${fx.toFixed(0)}px;--fy:${fy.toFixed(0)}px;--bx:${bx.toFixed(0)}px;--by:${by.toFixed(0)}px;--r:${rot}deg"/>`;}
+  for(let i=0;i<12;i++){const a=i/12*Math.PI*2+(i%2?.12:-.08),r=46+(i%3)*8,x=Math.cos(a)*r,y=Math.sin(a)*r,sz=9+(i*7%6);
+    const far=170+(i*37%60),bx=Math.cos(a)*(r+60),by=Math.sin(a)*(r+60),rot=(i*53%180)-90;
+    shards+=`<b class="mi-sh" style="--s:${sz}px;--c:${cols[i%cols.length]};--d:${(.05+i*.04).toFixed(2)}s;--x:${x.toFixed(0)};--y:${y.toFixed(0)};--fx:${(Math.cos(a)*far).toFixed(0)};--fy:${(Math.sin(a)*far).toFixed(0)};--bx:${bx.toFixed(0)};--by:${by.toFixed(0)};--r:${rot}deg"></b>`;}
+  const L='logo-cut.webp?v=2',DEP='logo-depth.webp?v=1',SH='logo-shine.webp?v=1';
+  const depth=[6,5,4,3,2,1].map(i=>`<img src="${DEP}" alt="" style="transform:translateZ(${-i*3}px)">`).join('');
   box.innerHTML=`<div class="mi-grid"></div><div class="mi-flash"></div>
-   <div class="mi-stage"><div class="mi-orbit"><i></i></div><svg class="mi-shards" viewBox="-100 -100 200 200">${shards}</svg><div class="mi-ring"></div>
-    <div class="mi-3d">${Array.from({length:14},(_,i)=>`<img src="logo-cut.webp?v=2" alt="" style="transform:translateZ(${-(i+1)*1.4}px);filter:brightness(${(.28+i*-.012).toFixed(2)}) saturate(1.4)">`).reverse().join('')}<img class="face mi-logo" src="logo-cut.webp?v=2" alt=""><img class="shine" src="logo-cut.webp?v=2" alt="" style="transform:translateZ(.6px)"></div>
-    <div class="mi-floor"><img src="logo-cut.webp?v=2" alt=""></div></div>
+   <div class="mi-stage"><div class="mi-orbit"><i></i></div>${shards}<div class="mi-ring"></div><div class="mi-glow"></div>
+    <div class="mi-3d">${depth}<img class="mi-logo" src="${L}" alt=""><div class="mi-band"><span><img src="${SH}" alt=""></span></div></div>
+    <div class="mi-floor"><img src="${L}" alt=""></div></div>
    <div class="mi-word">${[...'MOHJETA'].map((c,i)=>`<span style="--i:${i}">${c}</span>`).join('')}<span class="dot" style="--i:7">.</span></div>
    <div class="mi-tag">AI sports picks</div><div class="mi-skip">TAP TO SKIP</div>`;
   let done=false;
