@@ -1442,7 +1442,7 @@ async function load(){try{const r=await fetchPublicSnapshot('data.json');if(!r.o
   catch(e){if(!D)$('updated').textContent='Waiting for her first update…';}}
 
 // ---------------- ratings (separate file, refreshed every 10 minutes)
-const NAMES={NFL:'NFL',NCAAF:'College football',NBA:'NBA',WNBA:'WNBA',NHL:'NHL',MLB:'MLB',ATP:'Tennis ATP',WTA:'Tennis WTA'};
+const NAMES={NFL:'NFL',NCAAF:'College football',NBA:'NBA',NCAAB:'College basketball',WNBA:'WNBA',NHL:'NHL',MLB:'MLB',ATP:'Tennis ATP',WTA:'Tennis WTA'};
 let rt=null,rtLeague='NBA',rtView='teams';
 const RVIEWS={teams:'Teams',matchup:'Matchup',byteam:'Players by team',bypos:'Players by position',dvp:'vs Position',leaders:'Leaders'};
 const erf=x=>{const t=1/(1+.3275911*Math.abs(x));const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x);return x>=0?y:-y;};
@@ -1474,12 +1474,41 @@ async function drawNflPos(box,pick,hit,lg){lg=lg||'NFL';const NM=lg==='NFL'?'NFL
     parts.push(el('h3','Best '+(G[cur]||cur).toLowerCase()),tableOf(['#','Player','Team','Rating',...keys.map(k=>STATLBL[k]||k)],ps.slice(0,30).map(p=>[String(p.rank),p.name,p.team||'',sg(p.rating),...keys.map(k=>p.stats&&p.stats[k]!=null?String(p.stats[k]):'—')])),
       el('p',R.player_hint||('Rating = points a game he adds over an average '+(G[cur]||cur).toLowerCase().replace(/s$/,'')+' with a full load of snaps: what he did himself plus how his team did with him on the field. Offensive linemen are rated only by the second part (no stats are kept for blocking).'),'hint small'));}
   parts.push(el('p',R.note||'','hint small'));box.replaceChildren(...parts);}
+// ---------------- position grades for every league with player ratings (built here from the 0-99 player ratings)
+const GRADE_SLOTS={basketball:[['G',2,'Guards'],['F',2,'Forwards'],['C',1,'Centers']],
+  football:[['QB',1,'Quarterback'],['RB',1,'Running back'],['WR',3,'Wide receivers'],['TE',1,'Tight end'],['DL',3,'Defensive line'],['LB',2,'Linebackers'],['DB',4,'Secondary'],['K',1,'Kicker']],
+  baseball:[['C',1,'Catcher'],['1B',1,'First base'],['2B',1,'Second base'],['3B',1,'Third base'],['SS',1,'Shortstop'],['OF',3,'Outfield'],['DH',1,'Designated hitter'],['P',5,'Pitching']]};
+const SPORT_OF={NBA:'basketball',WNBA:'basketball',NCAAB:'basketball',NCAAF:'football',MLB:'baseball'};
+const ROSTER_FILE={NCAAB:'players-ncaab.json',NCAAF:'players-ncaaf.json'},rosterLoaded={};
+async function ensureRoster(lg){const L=rt&&rt.leagues[lg];if(!L||!ROSTER_FILE[lg]||rosterLoaded[lg])return;rosterLoaded[lg]='loading';
+  try{const r=await fetch(ROSTER_FILE[lg]+'?t='+Math.floor(Date.now()/600000),{cache:'no-cache'});if(!r.ok)throw Error();const j=await r.json();
+    L.roster={ready:!!(j.players||[]).length,note:j.note||(L.roster||{}).note,players:j.players||[]};rosterLoaded[lg]='ok';}catch(e){rosterLoaded[lg]=null;}
+  if(rtLeague===lg)drawRatings();}
+function teamGrades(L,lg){const slots=GRADE_SLOTS[SPORT_OF[lg]];const P=((L.roster||{}).players||[]).filter(p=>p.team&&p.rating!=null);if(!slots||!P.length)return null;
+  const by={};for(const p of P)((by[p.team]=by[p.team]||{name:p.team_name,g:{}}).g[p.group]=by[p.team].g[p.group]||[]).push(p);
+  const teams=Object.keys(by).filter(t=>Object.values(by[t].g).flat().length>=4);const out={};
+  for(const t of teams){out[t]={name:by[t].name,slots:{}};let sum=0,w=0;
+    for(const [g,k] of slots){const best=(by[t].g[g]||[]).sort((a,b)=>b.rating-a.rating).slice(0,k);const vals=best.map(p=>p.rating);while(vals.length<k)vals.push(35);
+      const v=vals.reduce((a,b)=>a+b,0)/k;out[t].slots[g]={value:v,players:best};sum+=v*k;w+=k;}out[t].overall=sum/w;}
+  const n=teams.length;const letter=r=>{const q=1-r/Math.max(1,n-1);return q>=.9?'A+':q>=.75?'A':q>=.55?'B':q>=.35?'C':q>=.15?'D':'F';};
+  for(const [g] of slots)teams.slice().sort((a,b)=>out[b].slots[g].value-out[a].slots[g].value).forEach((t,i)=>{out[t].slots[g].rank=i+1;out[t].slots[g].grade=letter(i);});
+  teams.slice().sort((a,b)=>out[b].overall-out[a].overall).forEach((t,i)=>{out[t].rank=i+1;out[t].grade=letter(i);});return {teams:out,n,slots};}
+function drawGrades(L,lg,box,pick,hit){const G=teamGrades(L,lg);if(!G){box.replaceChildren(el('p',(L.roster||{}).note||'Player ratings are not ready for this league yet.','hint'));return;}
+  const keys=Object.keys(G.teams).filter(t=>hit(t)||hit(G.teams[t].name)).sort();if(!keys.length){box.replaceChildren(el('p','No team matches.','hint'));return;}
+  const cur=keys.includes(pick.value)?pick.value:keys[0];pick.replaceChildren(...keys.map(k=>{const o=el('option',k+(G.teams[k].name?' · '+G.teams[k].name:''));o.value=k;return o;}));pick.value=cur;pick.hidden=false;pick.onchange=()=>drawRatings();
+  const T=G.teams[cur];const head=el('div',null,'tiles');const x=el('div',null,'tile');x.append('Overall',gradeCell(T.grade));head.append(x,el('div','#'+T.rank+' of '+G.n,'tile'));
+  box.replaceChildren(el('h3',cur+(T.name?' '+T.name:'')+' · position grades'),head,
+    tableOf(['Position','Grade','Rank','Avg rating','Players'],G.slots.map(([g,k,label])=>{const S=T.slots[g];return [label,gradeCell(S.grade),S.rank+' of '+G.n,rcell(Math.round(S.value)),S.players.map(p=>p.name+' '+p.rating).join(', ')||'—'];})),
+    el('p','Grade = how this team’s best players at each position rate against every other team’s (A+ = top 10%). Built from the 0-99 player ratings: each player ranked against everyone at his position by this season’s production. Thin or missing spots count as below average.','hint small'));}
 function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').value.trim().toLowerCase();const hit=s=>!q||String(s||'').toLowerCase().includes(q);
   const avail=Object.keys(NAMES).filter(k=>rt.leagues[k]);if(!avail.includes(rtLeague))rtLeague=avail[0];
   $('rtChips').replaceChildren(...avail.map(k=>{const b=el('button',NAMES[k]);b.setAttribute('aria-pressed',String(k===rtLeague));b.onclick=()=>{rtLeague=k;drawRatings();};return b;}));
   const L=rt.leagues[rtLeague];if(!L){box.replaceChildren(el('p','No ratings yet.','hint'));return;}
   const pick=$('rtPick');pick.hidden=true;
-  const RV=POSFILE[rtLeague]?{grades:POSICON[rtLeague]+' Position grades',pstars:'⭐ Best at each position',...RVIEWS}:RVIEWS;if(!RV[rtView])rtView='teams';
+  if(ROSTER_FILE[rtLeague]&&!rosterLoaded[rtLeague])ensureRoster(rtLeague);
+  const RV=POSFILE[rtLeague]?{grades:POSICON[rtLeague]+' Position grades',pstars:'⭐ Best at each position',...RVIEWS}:SPORT_OF[rtLeague]?{grades:'📋 Position grades',...RVIEWS}:RVIEWS;if(!RV[rtView])rtView='teams';
+  if(!POSFILE[rtLeague]&&rtView==='grades'){$('rtViews').replaceChildren(...Object.entries(RV).map(([k,l])=>{const b=el('button',l);b.setAttribute('aria-pressed',String(k===rtView));b.onclick=()=>{rtView=k;pick.value='';drawRatings();};return b;}));
+    if(ROSTER_FILE[rtLeague]&&rosterLoaded[rtLeague]==='loading'){box.replaceChildren(el('p','Loading player ratings…','hint'));return;}drawGrades(L,rtLeague,box,pick,hit);return;}
   if(POSFILE[rtLeague]&&(rtView==='grades'||rtView==='pstars')){$('rtViews').replaceChildren(...Object.entries(RV).map(([k,l])=>{const b=el('button',l);b.setAttribute('aria-pressed',String(k===rtView));b.onclick=()=>{rtView=k;pick.value='';drawRatings();};return b;}));drawNflPos(box,pick,hit,rtLeague);return;}
   $('rtViews').replaceChildren(...(L.tennis?[]:Object.entries(RV).map(([k,l])=>{const b=el('button',l);b.setAttribute('aria-pressed',String(k===rtView));b.onclick=()=>{rtView=k;pick.value='';drawRatings();};return b;})));
   if(!L.tennis&&rtView==='matchup'){const M=L.matchups||{};
