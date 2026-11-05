@@ -2,6 +2,13 @@
   "_how_to_edit": "Newest update first. Give each update a new id: the banner shows the top one to everyone who has not closed it yet. 'go' (optional) is the tab its button opens: picks, props, sim, record, play, more. Keep each text short.",
   "updates": [
     {
+      "id": "2026-11-05-ratings",
+      "date": "2026-11-05",
+      "title": "Ratings: college basketball, college football and position grades",
+      "text": "Every college basketball and college football player now has a 0-99 rating against his position, and every team in the NBA, WNBA, college basketball, college football and MLB gets position-by-position grades. More › Ratings.",
+      "go": "ratings"
+    },
+    {
       "id": "2026-11-05-layout",
       "date": "2026-11-05",
       "title": "Less scrolling: tap to open",
