@@ -46,7 +46,9 @@ header{position:sticky;top:0;z-index:20;background:#0b0712f2;backdrop-filter:blu
 .subscribe-entry{font-size:12px;padding:8px 12px;white-space:nowrap}.top{flex-wrap:wrap}.top .updated{min-width:0}
 .brand b{color:var(--pink);text-shadow:0 0 10px var(--pink)}
 .brand{display:inline-flex;align-items:flex-end;white-space:nowrap}.brand-m{height:1.6em;width:auto;margin:0 -.1em -.2em -.14em;filter:drop-shadow(0 0 8px #ff4fd866);transition:transform .3s}.brand:hover .brand-m{transform:rotate(-6deg) scale(1.06)}
-.updated{margin-left:auto;color:var(--green);font-size:13px;text-align:right}
+.updated{margin-left:auto;color:var(--green);font-size:13px;text-align:right}.sndbtn{background:none;border:1px solid var(--line);border-radius:999px;width:36px;height:36px;font-size:17px;line-height:1;color:var(--text);cursor:pointer;flex:none;padding:0}.sndbtn[aria-pressed=false]{opacity:.6}
+.voicebtn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;max-width:100%;margin-top:8px;background:#ff4fd81a;border:1px solid #ff4fd866;color:var(--text);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}.voicebtn.on{background:#ff4fd844}.voicebtn .vb{display:inline-flex;gap:2px;align-items:flex-end;height:12px}.voicebtn .vb i{width:3px;background:var(--pink);border-radius:2px;height:4px}.voicebtn.on .vb i{animation:vb .8s ease-in-out infinite}.voicebtn.on .vb i:nth-child(2){animation-delay:.15s}.voicebtn.on .vb i:nth-child(3){animation-delay:.3s}@keyframes vb{50%{height:12px}}
+.hvoice{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:linear-gradient(135deg,#3a1240,#1a1030);border:1px solid #ff4fd855;border-radius:16px;padding:12px 14px;color:var(--text);font:inherit;cursor:pointer;margin:10px 0}.hvoice img{width:44px;height:44px;border-radius:50%;flex:none;background:#0006}.hvoice b{display:block;font-size:15px}.hvoice small{color:var(--muted)}.hvoice .play{margin-left:auto;font-size:22px;color:var(--pink)}
 .updated.stale{color:var(--yellow)}
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;background:#0d0816f7;backdrop-filter:blur(10px);border-top:1px solid var(--line);
   padding-bottom:var(--safe)}
@@ -438,12 +440,13 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 :is(button,select,[role=button]):focus-visible{outline:3px solid #f3afff;outline-offset:2px}
 @media(hover:hover){.game-picker:hover #simPick,.panel .chips button:hover,.panel button.back:hover{border-color:#f3afff}}
 </style>
-<script src="languages.js?v=4" defer></script>
+<script src="languages.js?v=5" defer></script>
 </head>
 <body>
+<script src="sounds.js?v=1"></script>
 <script src="intro.js?v=3"></script>
 <header>
-  <div class="top"><div class="brand" id="home" role="link" tabindex="0" aria-label="Mohjeta"><img class="brand-m" src="logo-cut.webp?v=2" alt="" width="30" height="30"><span aria-hidden="true">OHJETA</span><b aria-hidden="true">.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><button type="button" class="btn subscribe-entry" id="subscribeEntry">Subscribe</button><span class="updated" id="updated">Loading…</span><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
+  <div class="top"><div class="brand" id="home" role="link" tabindex="0" aria-label="Mohjeta"><img class="brand-m" src="logo-cut.webp?v=2" alt="" width="30" height="30"><span aria-hidden="true">OHJETA</span><b aria-hidden="true">.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><button type="button" class="btn subscribe-entry" id="subscribeEntry">Subscribe</button><span class="updated" id="updated">Loading…</span><button type="button" class="sndbtn" id="sndBtn" data-sound-toggle aria-pressed="true" aria-label="Sound on">🔊</button><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
 </header>
   <nav class="tabs" role="tablist" aria-label="Sections" id="nav">
     <button type="button" class="qjhandle" id="qjOpen" aria-label="All pages (quick jump)"><i></i><span>All pages</span></button>
@@ -533,6 +536,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
       <button type="button" data-go="terms"><span>Terms of use<small>What this site is and is not</small></span>›</button>
       <button type="button" data-go="privacy"><span>Privacy<small>How we use your information</small></span>›</button>
       <button type="button" id="installMenu"><span>Install the app<small>Put Mohjeta on your home screen</small></span>›</button>
+      <button type="button" id="sndToggle" role="switch" aria-checked="true"><span>Sound & vibration<small>Little sounds for wins, badges and saves, and her voice</small></span><i class="switch" aria-hidden="true"></i></button>
       <button type="button" id="cbToggle" role="switch" aria-checked="false"><span>Color-blind mode<small>Blue / orange instead of green / red, with ▲ ▼ on gains and losses</small></span><i class="switch" aria-hidden="true"></i></button>
     </div>
     <div class="notice">Entertainment and information only. Mohjeta's numbers are model estimates, not betting, financial or investment advice, and her bets use paper money. 21+ only. If you bet, follow the law where you live and never bet more than you can afford to lose. Gambling problem? Call 1-800-GAMBLER.</div>
@@ -977,7 +981,7 @@ function badgeData(){try{return JSON.parse(localStorage.getItem('mohjeta.badges'
 function award(kind){const b=badgeData();b._n=b._n||{};b._n[kind]=(b._n[kind]||0)+1;const earn=[];
   const give=k=>{if(!b[k]){b[k]=Date.now();earn.push(k);}};
   if(kind==='sim'){give('sim');if(b._n.sim>=25)give('sim25');}else if(BADGES[kind])give(kind);
-  try{localStorage.setItem('mohjeta.badges',JSON.stringify(b));}catch(e){}for(const k of earn){const md=medalOf(k,false);if(md){const t=toast('Badge unlocked: '+BADGES[k][1]);if(t&&t.prepend)t.prepend(md);}else toast(BADGES[k][0]+' Badge unlocked: '+BADGES[k][1]);}if(earn.length)for(const sh of document.querySelectorAll('.shelf'))sh.replaceWith(badgeShelf());}
+  try{localStorage.setItem('mohjeta.badges',JSON.stringify(b));}catch(e){}for(const k of earn){const md=medalOf(k,false);if(md){const t=toast('Badge unlocked: '+BADGES[k][1]);if(t&&t.prepend)t.prepend(md);}else toast(BADGES[k][0]+' Badge unlocked: '+BADGES[k][1]);}if(earn.length){if(window.MJSound)MJSound.play('badge');for(const sh of document.querySelectorAll('.shelf'))sh.replaceWith(badgeShelf());}}
 function toast(t){const n=document.querySelectorAll('.toast').length;const d=el('div',t,'toast');if(n)d.style.bottom='calc(var(--navh) + '+(24+n*76)+'px)';document.body.append(d);setTimeout(()=>d.classList.add('out'),2200);setTimeout(()=>d.remove(),2700);return d;}
 function badgeShelf(){const b=badgeData();const got=Object.keys(BADGES).filter(k=>b[k]);const d=el('div',null,'shelf');
   d.append(el('span','Badges '+got.length+'/'+Object.keys(BADGES).length,'hint small'));for(const k of Object.keys(BADGES)){const md=medalOf(k,!b[k]);const i=md?el('span',null,'bd'+(b[k]?' on':'')):iel('span',BADGES[k][0],'bd'+(b[k]?' on':''));if(md)i.append(md);i.title=BADGES[k][1]+(b[k]?'':' (locked)');d.append(i);}return d;}
@@ -1007,7 +1011,7 @@ function drawGuess(){const box=$('guessBox');box.replaceChildren();const G=guess
 function todayRows(rows){const now=new Date(),start=new Date(now);start.setHours(6,0,0,0);if(now<start)start.setDate(start.getDate()-1);   // her betting day runs 6 AM to 6 AM
   return (rows||[]).filter(r=>!r.carried&&Date.parse(r.opened)>=start.getTime());}
 function resultFlash(T){if(!T)return;let last=null;try{last=JSON.parse(localStorage.getItem('mohjeta.lastrec')||'null');}catch(e){}
-  if(last&&(T.wins>last.w||T.losses>last.l)){const dw=T.wins-last.w,dl=T.losses-last.l;const msg=[dw>0?'+'+dw+' W ✅':'',dl>0?'+'+dl+' L ❌':''].filter(Boolean).join('  ');if(msg){toast('New results: '+msg);
+  if(last&&(T.wins>last.w||T.losses>last.l)){const dw=T.wins-last.w,dl=T.losses-last.l;const msg=[dw>0?'+'+dw+' W ✅':'',dl>0?'+'+dl+' L ❌':''].filter(Boolean).join('  ');if(msg){toast('New results: '+msg);if(window.MJSound)MJSound.play(dw>=dl?'win':'loss');
     for(const e of document.querySelectorAll('.banner .rec,#periodStats .stat strong'))e.classList.add('flash');}}
   try{localStorage.setItem('mohjeta.lastrec',JSON.stringify({w:T.wins,l:T.losses}));}catch(e){}}
 // ---------------- Supabase: live updates (seconds) + community chat
@@ -1058,7 +1062,9 @@ function deleteMyAccount(parent){
 let liveKey=null;
 function applyLive(L){if(!D||!L){lastLive=L;return;}{let k=null;try{const {updated,...rest}=L;k=JSON.stringify(rest);}catch(e){}
   if(k&&k===liveKey){lastLive=L;const u=$('updated');u.classList.remove('stale');u.textContent='● Live '+hm(L.updated);u.classList.add('livedot');return;}liveKey=k;}lastLive=L;const byId=new Map(D.games.map(g=>[g.id||g.name,g]));
-  for(const g of L.games||[]){const cur=byId.get(g.id||g.name);if(cur)Object.assign(cur,g);else D.games.push(g);}
+  {let locked=false;const mine=pkLoad();
+  for(const g of L.games||[]){const cur=byId.get(g.id||g.name);if(cur){if(cur.state==='UPCOMING'&&g.state&&g.state!=='UPCOMING'&&mine[pkKey(cur)])locked=true;Object.assign(cur,g);}else D.games.push(g);}
+  if(locked&&window.MJSound)MJSound.play('lock');}
   if(L.bets&&D.bets){D.bets.totals=L.bets.totals||D.bets.totals;const key=r=>r.opened+'|'+r.bet;const have=new Map(D.bets.rows.map((r,i)=>[key(r),i]));
     const fresh=[];for(const r of L.bets.rows||[]){const i=have.get(key(r));if(i!=null)D.bets.rows[i]=r;else fresh.push(r);}D.bets.rows=fresh.concat(D.bets.rows);}
   if(L.finals)D.finals=Object.assign(D.finals||{},L.finals);applyMembers(D);notePeople(D);
@@ -1251,6 +1257,18 @@ function oddsLine(g){if(!g.pick||g.state!=='UPCOMING')return null;const f=amer(g
   return 'Fair odds '+f+(v?' · value at '+v.odds+' or better ('+v.cents+'¢ or less)':'');}
 (function(){let ok=false;try{ok=localStorage.getItem('mohjeta.21')==='1';}catch(e){}const gate=$('ageGate');if(!ok)gate.hidden=false;
   $('ageYes').onclick=()=>{try{localStorage.setItem('mohjeta.21','1');}catch(e){}gate.hidden=true;};})();
+(function(){const S=window.MJSound;const b=$('sndBtn'),t=$('sndToggle');if(!S){if(b)b.hidden=true;if(t)t.hidden=true;return;}
+  const paint=()=>{S.paint(b);t.setAttribute('aria-checked',String(S.on()));};paint();
+  b.onclick=()=>{S.toggle();paint();toast(S.on()?'🔊 Sound on':'🔇 Sound off');};t.onclick=()=>{S.toggle();paint();};})();
+// ---------------- her voice: clips recorded on her PC (voice_clips.py), one plays at a time
+let VOICE_AUDIO=null,VOICE_BTN=null;
+function voiceStop(){if(VOICE_AUDIO){VOICE_AUDIO.pause();VOICE_AUDIO=null;}if(VOICE_BTN){VOICE_BTN.classList.remove('on');VOICE_BTN._label&&VOICE_BTN._label();VOICE_BTN=null;}}
+function voicePlay(src,btn){if(VOICE_BTN===btn){voiceStop();return;}voiceStop();const a=new Audio(src);VOICE_AUDIO=a;VOICE_BTN=btn;btn.classList.add('on');btn._label&&btn._label(true);
+  a.onended=a.onerror=()=>{if(VOICE_AUDIO===a)voiceStop();};a.play().catch(()=>{voiceStop();toast('Could not play her voice right now');});}
+function voiceButton(clip,label){const b=el('button',null,'voicebtn');b.type='button';const vb=el('span',null,'vb');vb.append(el('i'),el('i'),el('i'));const tx=el('span');
+  b._label=on=>{tx.textContent=on?'■ Stop':'▶ '+label+(clip.seconds?' · '+Math.round(clip.seconds)+'s':'');};b._label();b.append(vb,tx);b.title=clip.text||'';
+  b.onclick=e=>{e.stopPropagation();voicePlay(clip.src,b);};return b;}
+function voiceFor(g){const v=D&&D.voice&&D.voice.picks;return v&&v[String(g.id)]||null;}
 (function(){const t=$('cbToggle');let on=false;try{on=localStorage.getItem('mohjeta.cb')==='1';}catch(e){}
   const set=v=>{document.documentElement.classList.toggle('cb',v);t.setAttribute('aria-checked',String(v));try{localStorage.setItem('mohjeta.cb',v?'1':'0');}catch(e){}};
   set(on);t.onclick=()=>set(t.getAttribute('aria-checked')!=='true');})();
@@ -1294,6 +1312,7 @@ function miniCard(g){const c=el('article',null,'card tap mini');c.tabIndex=0;c.s
     if(laneOf(g).t==='PRACTICE')c.append(el('div','🧪 Practice: still learning this sport, use with caution','mread prac-note'));
     if(g.pick.held)c.append(el('div','Too close to call: earlier pick stays','mread'));
     if(g.thesis)c.append(el('div',(g.own_team?'Her own read: ':'')+firstLine(g.thesis),'why2'));
+    {const vc=voiceFor(g);if(vc&&g.state==='UPCOMING')c.append(voiceButton(vc,'Hear her'));}
     if(g.teams.length===2&&(g.state==='UPCOMING'||pkLoad()[pkKey(g)])){const pr=pickemRow(g);const cd=countdown(g);if(cd)pr.append(cd);c.append(pr);}}
   c.append(el('div','Full breakdown ›','chev'));return c;}
 
@@ -1313,7 +1332,8 @@ function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');if
     if(g.pick.held)c.append(el('div','Too close to call: her earlier pick stays shown.','hint small'));
     if(ln.t==='PRACTICE')c.append(el('div','🧪 Practice pick: still learning this sport. Use with caution.','hint small prac-note'));
     if(flipped(g))c.append(el('div','⇄ Her read has changed since she bet: she now favors '+g.pick.team+', but her bet stays on '+g.bet.team+'.','small open'));
-    if(g.thesis&&!opts.short)c.append(el('div',(g.own_team?'Her own read (her pick follows the market): ':'')+firstLine(g.thesis),'why1'));}
+    if(g.thesis&&!opts.short)c.append(el('div',(g.own_team?'Her own read (her pick follows the market): ':'')+firstLine(g.thesis),'why1'));
+    {const vc=voiceFor(g);if(vc&&g.state==='UPCOMING')c.append(voiceButton(vc,'Hear her'));}}
   else c.append(el('p','Her pick is coming soon.','hint'));
   c.append(el('div','Full breakdown ›','more'));return c;}
 
@@ -1371,7 +1391,7 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
   if(d.prices&&d.prices.length>2){const c=section('Kalshi price today',chart(d.prices,g.pick&&g.pick.chance));c.append(el('p','Pink = Kalshi’s price for '+(g.pick?g.pick.team:'her side')+' over the last day. Green dashes = her chance.','hint small'));b.append(c);}
   if(d.factors&&d.factors.length){const box=el('div');for(const f of d.factors){const r=el('div',null,'factor');r.append(el('span',f.size||'',('sz '+(f.size||''))));const t=el('div');t.append(el('div',f.fact),el('div','Helps '+(f.helps||'—'),'hint small'));r.append(t);box.append(r);}
     b.append(section('What she weighed',box));}
-  if(g.thesis){const c=section('Her reasoning',el('p',g.thesis));if(g.why_changed&&g.why_changed.length){c.append(el('b','What changed'));const ul=el('ul');for(const r of g.why_changed)ul.append(el('li',r));c.append(ul);}b.append(c);}
+  if(g.thesis){const c=section('Her reasoning',el('p',g.thesis));{const vc=voiceFor(g);if(vc&&g.state==='UPCOMING')c.append(voiceButton(vc,'Hear her'));}if(g.why_changed&&g.why_changed.length){c.append(el('b','What changed'));const ul=el('ul');for(const r of g.why_changed)ul.append(el('li',r));c.append(ul);}b.append(c);}
   if(d.roster&&(d.roster.text||d.roster.chance!=null)){const c=section('Player rating');if(d.roster.chance!=null){const p=el('p');p.append('Built from who actually plays tonight: ',el('b',(g.pick?g.pick.team:'her side')+' '+pct(d.roster.chance)));if(Math.abs(d.roster.chance-(g.pick?g.pick.chance:.5))>=.1)p.append(el('span',' (disagrees with her pick)','open'));c.append(p);}
     if(d.roster.text)c.append(el('p',d.roster.text,'hint small'));b.append(c);}
   if(d.injuries&&d.injuries.length){const ul=el('ul',null,'plain');for(const x of d.injuries)ul.append(el('li',x));b.append(section('Who’s out',ul));}
@@ -1561,6 +1581,9 @@ function pageTile(p,d){const [k,ic,t,sub,tc]=p;const b=el('button',null,'htile')
   const c=pageCount(k,d);b.append(iel('span',ic),el('b',t),el('small',c||sub));b.onclick=()=>goPage(k);return b;}
 function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren();const hr=new Date().getHours();
   const hh=el('div',null,'hhead');hh.append(el('h2',hr<5?'Late night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening'),el('p','Everything happening with her picks, one tap away.','hint small'));box.append(hh);
+  {const dv=d.voice&&d.voice.daily;if(dv){const b=el('button',null,'hvoice');b.type='button';const im=el('img');im.src='logo-cut.webp?v=2';im.alt='';
+    const tx=el('span');tx.append(el('b','Hear her rundown'),el('small','Her top picks in her own voice'+(dv.seconds?' · '+Math.round(dv.seconds)+' seconds':'')));const pl=el('span','▶','play');
+    b._label=on=>{pl.textContent=on?'■':'▶';};b.append(im,tx,pl);b.title=dv.text||'';b.onclick=()=>voicePlay(dv.src,b);box.append(b);}}
   const gs=d.games||[],t=d.bets&&d.bets.totals,live=gs.filter(g=>g.state==='LIVE');
   const up=gs.filter(g=>g.state==='UPCOMING'&&g.pick&&isBetLane(g)).sort((a,b)=>String(a.start).localeCompare(String(b.start)));
   const st=el('div',null,'hstats');const stat=(lab,big,small,ic,tc,go,c)=>{const b=el('button',null,'hstat');b.type='button';b.style.setProperty('--tc',tc);
@@ -2124,7 +2147,7 @@ async function renderFantasy(){const box=$('fantasyBox');if(!box)return;
   const err=fcheck(FT.players,P);const save=el('button',err?err:'💾 Save team','btn');save.type='button';save.disabled=!!err;
   save.onclick=async()=>{if(!/^[A-Za-z0-9 _.'-]{3,24}$/.test(FT.name.trim())){toast('Team name: 3-24 letters or numbers');return;}
     const {error}=await sb.from('fantasy_teams').upsert({user_id:me.id,name:FT.name.trim(),players:FT.players},{onConflict:'user_id'});
-    toast(error?(/function|relation|does not exist/i.test(error.message)?'Run supabase_fantasy.sql in Supabase first':'Not saved: '+error.message):'Team saved ✅ It plays in tonight’s round');if(!error)award('fantasy');};
+    toast(error?(/function|relation|does not exist/i.test(error.message)?'Run supabase_fantasy.sql in Supabase first':'Not saved: '+error.message):'Team saved ✅ It plays in tonight’s round');if(!error){if(window.MJSound)MJSound.play('save');award('fantasy');}};
   const st=el('div',null,'row');st.append(save);if(!err){const tb=iel('button','⚔️ Test battle','btn ghost');tb.type='button';tb.onclick=()=>testBattle(P);st.append(tb);}mine.append(st);box.append(mine);
   // player picker
   const pick=el('div',null,'card');pick.append(el('h4','Players'));const q=el('input');q.className='chatin';q.placeholder='Search players';q.value=FQ;
@@ -2310,7 +2333,7 @@ async function wkBuilder(c,s){const n=s.slots.length;let P;try{P=await wkPool(s.
   save.onclick=async()=>{if(!me){toast('Sign in (Chat) to enter: your lineup is kept on this phone');show('chat');return;}
     const nmv=WK.name.trim();if(!/^[A-Za-z0-9 _.'!&-]{2,30}$/.test(nmv)){toast('Team name: 2-30 letters or numbers');return;}
     save.disabled=true;const {data,error}=await sb.rpc('submit_weekly',{slate:s.id,team_name:nmv,lineup:L});save.disabled=false;
-    toast(error?(/function|relation|does not exist/i.test(error.message)?'Weekly fantasy is being set up':error.message):'Lineup saved ✅ You can change it until '+wkWhen(s.locks_at));if(!error)award('fantasy');};
+    toast(error?(/function|relation|does not exist/i.test(error.message)?'Weekly fantasy is being set up':error.message):'Lineup saved ✅ You can change it until '+wkWhen(s.locks_at));if(!error){if(window.MJSound)MJSound.play('save');award('fantasy');}};
   const auto=el('button','✨ Fill for me','btn ghost');auto.type='button';auto.onclick=()=>{wkAuto(s,P,L);redraw();};
   const clr=el('button','Clear','btn ghost');clr.type='button';clr.onclick=()=>{L.fill(null);redraw();};
   const row=el('div',null,'row');row.append(save,auto,clr);c.append(row);
@@ -2342,6 +2365,7 @@ async function wkLive(c,s){const done=s.status==='final';c.append(el('h4',(done?
   if(me){try{const [{data:e},{data:sc}]=await Promise.all([sb.from('weekly_entries').select('name,lineup').eq('slate_id',s.id).eq('user_id',me.id).maybeSingle(),
       sb.from('weekly_scores').select('points,players,rank').eq('slate_id',s.id).eq('user_id',me.id).maybeSingle()]);
     if(e){const m=el('div',null,'card');m.append(el('b',e.name+' · '+((sc&&sc.points)||0).toFixed(1)+' pts'+(sc&&sc.rank?' · #'+sc.rank:'')));
+      {const k='mohjeta.wkpts.'+s.id,pts=(sc&&sc.points)||0;let was=null;try{was=+localStorage.getItem(k);localStorage.setItem(k,String(pts));}catch(e){}if(was!=null&&pts>was&&window.MJSound)MJSound.play('tick');}
       (e.lineup||[]).forEach((id,k)=>{const p=P[String(id)]||{name:'Player '+id,team:''};const pts=sc&&sc.players?sc.players[String(id)]:null;
         const r=el('div',null,'brow');r.append(el('span',s.slots[k]||'','bk'),el('b',p.name),el('span',' '+(p.team||''),'hint small'),el('span',null,'sp'),el('span',pts==null?'–':Number(pts).toFixed(1),'up'));m.append(r);});c.append(m);}
     else c.append(el('p','You didn’t enter this week. Next week’s lineup is below.','hint small'));}catch(e){}}
