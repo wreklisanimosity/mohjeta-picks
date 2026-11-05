@@ -1645,6 +1645,7 @@ function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(
     if(P.locked)box.append(el('p','🔒 Tonight’s picks are for members.','hint'));
     else if(mine.length){const gr=el('div',null,'mgrid');for(const o of mine.slice(0,propAll?120:12))gr.append(miniProp(o));box.append(gr);
       if(mine.length>12){const mb=el('button',propAll?'Show fewer':'Show all '+mine.length,'btn ghost small');mb.type='button';mb.onclick=()=>{propAll=!propAll;renderProps(D);};box.append(mb);}}
+    else if(P.paused&&P.paused[propCat])box.append(el('p','⏸ '+P.paused[propCat],'hint'));
     else box.append(el('p','No '+(STATNAME[propCat]||'')+' picks tonight yet.','hint'));
     const h=el('button','📋 Every finished '+(STATNAME[propCat]||'')+' pick ›','btn ghost');h.type='button';h.onclick=()=>openPropHistory(propCat);box.append(h);}
   // tools: builder and history open on their own screen
