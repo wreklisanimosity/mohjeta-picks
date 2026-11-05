@@ -358,7 +358,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .podtag{display:inline-block;font-size:11px;font-weight:800;color:#1a1200;background:var(--yellow);border-radius:999px;padding:2px 8px;margin-bottom:6px}
 .fteam .capbar{height:8px;background:#ffffff14;border-radius:4px;overflow:hidden;margin:6px 0 10px}.capbar i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--pink))}.capbar i.over{background:var(--red)}
 .fslots{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}.fslot{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:7px 9px;color:var(--text);position:relative;cursor:pointer;font:inherit}
-.fslot.empty{opacity:.45;border-style:dashed;cursor:default}.fslot .fx{position:absolute;top:4px;right:8px;opacity:.6}
+.fslot.empty{opacity:.45;border-style:dashed;cursor:default}.fslot b{padding-right:18px}#weeklyBox .chips{flex-wrap:wrap}.fslot .fx{position:absolute;top:4px;right:8px;opacity:.6}
 .flist{display:flex;flex-direction:column;gap:4px;max-height:52vh;overflow:auto;margin-top:8px}.frow{display:flex;align-items:center;gap:10px;background:none;border:1px solid var(--line);border-radius:10px;padding:7px 10px;color:var(--text);font:inherit;text-align:left;cursor:pointer}
 .frow.on{border-color:var(--pink);background:#ff4fd814}.frow .frole{width:22px;text-align:center;font-weight:800;color:var(--yellow)}.frow .fn{flex:1;min-width:0;display:flex;flex-direction:column}
 .pushcard{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.pushcard .anyn{display:flex;gap:8px;align-items:center}
@@ -438,7 +438,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 :is(button,select,[role=button]):focus-visible{outline:3px solid #f3afff;outline-offset:2px}
 @media(hover:hover){.game-picker:hover #simPick,.panel .chips button:hover,.panel button.back:hover{border-color:#f3afff}}
 </style>
-<script src="languages.js?v=3" defer></script>
+<script src="languages.js?v=4" defer></script>
 </head>
 <body>
 <script src="intro.js?v=3"></script>
@@ -486,6 +486,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <div class="hub">
       <button type="button" class="hubbtn" data-go="sim"><span class="hi">🎲</span><b>Simulate a game</b><small>Play tonight's games 10,000 times. Sit stars, make trades.</small></button>
       <button type="button" class="hubbtn" data-go="fantasy"><span class="hi">🏀</span><b>Fantasy league</b><small>Draft 8 NBA players and battle other fans every night.</small></button>
+      <button type="button" class="hubbtn" data-go="weekly"><span class="hi">🏈</span><b>Weekly fantasy</b><small>NFL, NBA and college football lineups, scored from real box scores.</small></button>
       <button type="button" class="hubbtn" id="hubGuess"><span class="hi">🔮</span><b>Guess her number</b><small>How sure is she? Guess before you see it.</small></button>
       <button type="button" class="hubbtn" id="hubPickem"><span class="hi">🎯</span><b>Pick'em</b><small>Pick tonight's winners and try to beat her.</small></button>
       <button type="button" class="hubbtn" data-go="chat"><span class="hi">💬</span><b>Community chat</b><small>Talk games with other fans, live.</small></button>
@@ -496,6 +497,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <div class="community-layout"><aside class="community-side"><div class="battle-card"><span class="community-eyebrow">YOUR NEXT MATCHUP</span><h3>A friendly rivalry<br>starts here.</h3><div class="battle-art" aria-hidden="true"><span>M</span><b>VS</b><span>YOU</span></div><p>Tap a player’s name in chat to send a private fantasy invitation.</p><button type="button" class="btn" data-go="fantasy">Build your lineup <span aria-hidden="true">↗</span></button><small>Nightly matchups · No entry fees or prizes</small></div><div id="challengeInbox"></div><details class="community-rules"><summary>Keep the lounge welcoming</summary><p>Be respectful. No selling picks, links, referral codes, or guaranteed-win claims. Moderators can remove messages and mute accounts. 21+ · Gambling problem? 1-800-GAMBLER.</p></details></aside><div class="community-conversation"><div class="lounge-heading"><div><span class="community-eyebrow">THE CONVERSATION</span><h3>Courtside & beyond</h3></div><span class="lounge-label">ALL SPORTS</span></div><select id="chatRoom" class="mpick" aria-label="Choose a chat room"></select><div id="chatBox"></div></div></div></section>
   <section class="panel" id="fantasy" role="tabpanel" aria-label="Fantasy league"><button class="back" data-go="play">‹ Play</button>
     <h2>🏀 Fantasy league</h2><p class="hint small">Draft 8 real NBA players under a $50,000 cap. Every night Mohjeta plays the whole league with the same player ratings behind her picks. Members only · free to play · no entry fees, no prizes.</p><div id="fantasyBox"></div></section>
+  <section class="panel" id="weekly" role="tabpanel" aria-label="Weekly fantasy"><button class="back" data-go="play">‹ Play</button>
+    <h2>🏈 Weekly fantasy</h2><p class="hint small">Pick a lineup under the salary cap each week: NFL, NBA or college football. Points come from your players’ real stats in that week’s games. Free to play · no entry fees, no prizes.</p><div id="weeklyBox"></div></section>
   <section class="panel" id="guess" role="tabpanel" aria-label="Guess her number"><button class="back" data-go="play">‹ Play</button>
     <h2>🔮 Guess her number</h2><p class="hint small">Guess how likely she thinks a team is to win, before you see it. Closer guesses score more (100 for exact). Saved on this phone only, just for fun.</p><div id="guessBox"></div></section>
   <section class="panel" id="props" role="tabpanel" aria-label="Player props">
@@ -719,11 +722,12 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['home','picks','props','sim','record','play','chat','more'];const SUB={games:'more',ratings:'more',guess:'play',fantasy:'play',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
+const TABS=['home','picks','props','sim','record','play','chat','more'];const SUB={games:'more',ratings:'more',guess:'play',fantasy:'play',weekly:'play',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button[data-tab]')];
 function show(name,push){name=LEGACY[name]||name;
   if(name==='fantasy')setTimeout(renderFantasy,0);
+  if(name==='weekly')setTimeout(renderWeekly,0);
   if(name==='news')setTimeout(drawNews,0);   // chat = one floating overlay over any tab
   const panel=name==='record'?'recordp':name;
   for(const s of document.querySelectorAll('main .panel'))s.classList.toggle('on',s.id===panel);
@@ -1536,7 +1540,7 @@ function renderMore(d){$('comboList').replaceChildren(...(d.combos.length?d.comb
 const PAGES=[['picks','⭐','Tonight','Her bets and best picks','#5a3a12','bets picks today'],['live','🟢','Live now','Games in progress','#123a28','live scores in progress'],
  ['props','🎯','Props','Player props, tonight','#3a1230','player points threes assists'],['record','📈','Results','Her full record','#123a24','record track wins losses profit'],
  ['sim','⚔️','Simulate','Any matchup, 10,000 times','#122a4a','simulator matchup'],['play','🖐️',"Pick'em",'Beat her picks','#4a1a12','pickem game badges'],
- ['fantasy','🏀','Fantasy','Draft and battle','#4a2a10','fantasy league draft'],['guess','🔮','Guess her number','Quick game','#2e1650','guess game'],
+ ['fantasy','🏀','Fantasy','Draft and battle','#4a2a10','fantasy league draft'],['weekly','🏈','Weekly fantasy','Real stats, every week','#123a4a','weekly fantasy nfl nba college football lineup salary cap'],['guess','🔮','Guess her number','Quick game','#2e1650','guess game'],
  ['ratings','🏆','Ratings','Teams and players','#4a3a08','ratings players teams grades'],['games','📅','All games','Every game she watches','#4a1a20','schedule games all'],
  ['chat','💬','Chat','Talk with fans','#142a50','chat community fans'],['news','🆕',"What's new",'Latest updates','#4a1238','news updates'],
  ['combos','🎲','Combos','Multi-game ideas','#4a1218','combos parlay'],['score','📊','Scorecard','Her sources, graded','#103a30','scorecard sources accuracy'],
@@ -2260,6 +2264,98 @@ async function joinLeague(code){code=String(code||'').trim().toUpperCase();if(!/
   if(!me){try{sessionStorage.setItem('mohjeta.join',code);}catch(e){}toast('Sign in, then you’ll join automatically');show('chat');return;}
   const {data,error}=await sb.rpc('join_league',{league_code:code});toast(error?error.message:'Joined '+data.name+' 🎉');refreshLeagues();}
 function refreshLeagues(){if(simMode==='fantasy'&&document.querySelector('#sim.on'))renderFantasyEasy();else if(document.querySelector('#fantasy.on'))renderFantasy();}
+// ---------------- Weekly fantasy (supabase_weekly.sql + weekly_fantasy.py): NFL, NBA, college football lineups under a cap, scored from real box scores
+const WK={sport:'NFL',list:null,at:0,pools:{},lineup:{},name:'',pos:'ALL',q:'',err:''};
+const WK_SPORTS=[['NFL','🏈 NFL'],['NBA','🏀 NBA'],['NCAAF','🎓 College football']];
+const WK_FLEX={FLEX:['RB','WR','TE'],UTIL:['G','F','C']};
+const wkFits=(slot,pos)=>slot===pos||(WK_FLEX[slot]||[]).includes(pos);
+function wkWhen(t){const d=new Date(t);return d.toLocaleString(undefined,{weekday:'short',hour:'numeric',minute:'2-digit'});}
+function wkLeft(t){let s=Math.max(0,(new Date(t)-Date.now())/1000);const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+'d '+h+'h':h?h+'h '+m+'m':m+'m';}
+function wkDraftKey(id){return 'mohjeta.weekly.'+id;}
+function wkLoadDraft(id,n){try{const x=JSON.parse(localStorage.getItem(wkDraftKey(id))||'null');if(x&&Array.isArray(x.l)&&x.l.length===n)return x;}catch(e){}return null;}
+function wkSaveDraft(id){try{localStorage.setItem(wkDraftKey(id),JSON.stringify({l:WK.lineup[id],n:WK.name}));}catch(e){}}
+async function wkList(force){if(!force&&WK.list&&Date.now()-WK.at<120000)return WK.list;await supa();
+  const {data,error}=await sb.from('weekly_slates').select('id,sport,label,locks_at,ends_at,cap,slots,status').order('locks_at',{ascending:false}).limit(30);
+  if(error)throw error;WK.list=data||[];WK.at=Date.now();return WK.list;}
+async function wkPool(id){if(WK.pools[id])return WK.pools[id];const {data,error}=await sb.from('weekly_slates').select('pool').eq('id',id).maybeSingle();if(error)throw error;
+  const P={};for(const p of (data&&data.pool)||[])P[String(p.id)]=p;WK.pools[id]=P;return P;}
+async function renderWeekly(){const box=$('weeklyBox');if(!box)return;
+  const chips=el('div',null,'chips');for(const [k,l] of WK_SPORTS){const b=iel('button',l);b.type='button';b.setAttribute('aria-pressed',String(WK.sport===k));b.onclick=()=>{WK.sport=k;WK.pos='ALL';WK.q='';renderWeekly();};chips.append(b);}
+  box.replaceChildren(chips,el('p','Loading this week…','hint'));
+  let list;try{list=await wkList();}catch(e){box.replaceChildren(chips,el('p','Weekly fantasy is being set up. Check back soon.','hint'));return;}
+  const mine=list.filter(s=>s.sport===WK.sport).sort((a,b)=>new Date(a.locks_at)-new Date(b.locks_at));const now=Date.now();
+  const open=mine.find(s=>new Date(s.locks_at)>now);const started=mine.filter(s=>new Date(s.locks_at)<=now);
+  const live=started.filter(s=>s.status!=='final').pop()||started.pop();
+  box.replaceChildren(chips);
+  if(!open&&!live){box.append(el('p','The first '+(WK_SPORTS.find(x=>x[0]===WK.sport)[1].replace(/^\S+ /,''))+' week posts soon (once the schedule is out).','hint'));}
+  if(live){const c=el('div',null,'card board');box.append(c);wkLive(c,live);}
+  if(open){const c=el('div',null,'card fteam');box.append(c);await wkBuilder(c,open);}
+  const s=el('div',null,'card board');box.append(s);wkSeason(s);}
+async function wkBuilder(c,s){const n=s.slots.length;let P;try{P=await wkPool(s.id);}catch(e){c.append(el('p','Players are loading. Try again in a minute.','hint'));return;}
+  if(!WK.lineup[s.id]){let l=Array(n).fill(null);const d=wkLoadDraft(s.id,n);if(d){l=d.l;if(d.n)WK.name=d.n;}
+    if(me){try{const {data}=await sb.from('weekly_entries').select('name,lineup').eq('slate_id',s.id).eq('user_id',me.id).maybeSingle();if(data&&Array.isArray(data.lineup)&&data.lineup.length===n){l=data.lineup.map(String);WK.name=data.name;}}catch(e){}}
+    WK.lineup[s.id]=l.map(x=>x&&P[x]?x:null);}
+  if(!WK.name&&typeof myProfile!=='undefined'&&myProfile&&myProfile.display_name)WK.name=String(myProfile.display_name).slice(0,30);
+  const L=WK.lineup[s.id];const redraw=()=>{wkSaveDraft(s.id);c.replaceChildren();wkBuilder(c,s);};
+  const spent=L.reduce((a,i)=>a+(i?P[i].salary:0),0),filled=L.filter(Boolean).length;
+  c.append(el('h4',s.label+' · build your lineup'),el('div','Locks '+wkWhen(s.locks_at)+' (first game) · in '+wkLeft(s.locks_at),'hint small'));
+  const nm=el('input');nm.className='chatin';nm.maxLength=30;nm.placeholder='Team name';nm.value=WK.name;nm.oninput=()=>{WK.name=nm.value;wkSaveDraft(s.id);};c.append(nm);
+  const bar=el('div',null,'capbar');const f=el('i');f.style.width=Math.min(100,100*spent/s.cap)+'%';if(spent>s.cap)f.classList.add('over');bar.append(f);
+  c.append(el('div',money$(spent)+' of '+money$(s.cap)+' · '+filled+'/'+n+' spots · left '+money$(s.cap-spent)+(filled<n?' · '+money$(Math.round((s.cap-spent)/(n-filled)))+' a spot':''),'hint small'),bar);
+  const slots=el('div',null,'fslots');s.slots.forEach((slot,k)=>{const id=L[k];if(!id){const e=el('button',slot+' · empty','fslot empty');e.type='button';e.style.cursor='pointer';e.onclick=()=>{WK.pos=slot;redraw();};slots.append(e);return;}
+    const p=P[id];const r=el('button',null,'fslot');r.type='button';r.title='Remove';
+    r.append(el('b',slot+' · '+p.name),el('span',p.team+' · '+money$(p.salary)+(p.inj?' · ⚠️ '+p.inj:''),'hint small'),el('span','✕','fx'));r.onclick=()=>{L[k]=null;redraw();};slots.append(r);});c.append(slots);
+  const dup=new Set(L.filter(Boolean)).size!==filled;const err=filled<n?'Fill every spot ('+(n-filled)+' left)':spent>s.cap?'Over the cap by '+money$(spent-s.cap):dup?'A player is in twice':'';
+  const save=el('button',err||'💾 Save lineup','btn');save.type='button';save.disabled=!!err;
+  save.onclick=async()=>{if(!me){toast('Sign in (Chat) to enter: your lineup is kept on this phone');show('chat');return;}
+    const nmv=WK.name.trim();if(!/^[A-Za-z0-9 _.'!&-]{2,30}$/.test(nmv)){toast('Team name: 2-30 letters or numbers');return;}
+    save.disabled=true;const {data,error}=await sb.rpc('submit_weekly',{slate:s.id,team_name:nmv,lineup:L});save.disabled=false;
+    toast(error?(/function|relation|does not exist/i.test(error.message)?'Weekly fantasy is being set up':error.message):'Lineup saved ✅ You can change it until '+wkWhen(s.locks_at));if(!error)award('fantasy');};
+  const auto=el('button','✨ Fill for me','btn ghost');auto.type='button';auto.onclick=()=>{wkAuto(s,P,L);redraw();};
+  const clr=el('button','Clear','btn ghost');clr.type='button';clr.onclick=()=>{L.fill(null);redraw();};
+  const row=el('div',null,'row');row.append(save,auto,clr);c.append(row);
+  // player list
+  const poss=[...new Set(s.slots.filter(x=>!WK_FLEX[x]))];const pc=el('div',null,'chips');
+  for(const k of ['ALL',...poss,...s.slots.filter(x=>WK_FLEX[x]).slice(0,1)]){const b=el('button',k==='ALL'?'All':k);b.type='button';b.setAttribute('aria-pressed',String(WK.pos===k));b.onclick=()=>{WK.pos=k;redraw();};pc.append(b);}
+  const q=el('input');q.className='chatin';q.placeholder='Search players or teams';q.value=WK.q;const list=el('div',null,'flist');
+  const draw=()=>{list.replaceChildren();const qq=WK.q.toLowerCase();const left=s.cap-spent;
+    const ps=Object.values(P).filter(p=>(WK.pos==='ALL'||wkFits(WK.pos,p.pos))&&(!qq||(p.name||'').toLowerCase().includes(qq)||(p.team||'').toLowerCase()===qq)).sort((a,b)=>b.salary-a.salary).slice(0,120);
+    if(!ps.length)list.append(el('p','No players match.','hint small'));
+    for(const p of ps){const id=String(p.id);const on=L.includes(id);const r=el('button',null,'frow'+(on?' on':''));r.type='button';if(!on&&p.salary>left)r.style.opacity='.55';
+      const fn=el('span',null,'fn');fn.append(el('b',p.name+(p.inj?' ⚠️':'')),el('span',p.team+' vs '+(p.opp||'?')+(p.games>1?' · '+p.games+' games':'')+(p.note?' · '+p.note:'')+(p.inj?' · '+p.inj:''),'hint small'));
+      r.append(el('span',p.pos,'frole'),fn,el('b',money$(p.salary)));
+      r.onclick=()=>{if(on){L[L.indexOf(id)]=null;redraw();return;}
+        let k=s.slots.findIndex((x,i)=>!L[i]&&x===p.pos);if(k<0)k=s.slots.findIndex((x,i)=>!L[i]&&wkFits(x,p.pos));
+        if(k<0){toast('No open '+p.pos+' spot: remove someone first');return;}L[k]=id;redraw();};list.append(r);}};
+  q.oninput=()=>{WK.q=q.value;draw();};c.append(el('h4','Players'),pc,q,list);draw();
+  c.append(el('p','Scoring: '+(s.sport==='NBA'?'1 per point, +0.5 per three, 1.25 per rebound, 1.5 per assist, 2 per steal or block, −0.5 per turnover, bonus for double- and triple-doubles. All his games that week count.':'PPR: 1 per catch, 0.1 per rushing or receiving yard, 6 per rushing or receiving TD, 0.04 per passing yard, 4 per passing TD, −2 per interception or lost fumble.')+' Free to play · no entry fees, no prizes.','hint small'));}
+function wkAuto(s,P,L){const used=new Set(L.filter(Boolean));const all=Object.values(P).filter(p=>!p.inj);
+  const cheapest=slot=>Math.min(...all.filter(p=>!used.has(String(p.id))&&wkFits(slot,p.pos)).map(p=>p.salary),99999);
+  const open=s.slots.map((x,i)=>L[i]?null:i).filter(i=>i!=null).sort((a,b)=>(WK_FLEX[s.slots[a]]?1:0)-(WK_FLEX[s.slots[b]]?1:0));
+  open.forEach((k,n)=>{const spent=L.reduce((a,i)=>a+(i?P[i].salary:0),0);const rest=open.slice(n+1);
+    const room=s.cap-spent-rest.reduce((a,j)=>a+cheapest(s.slots[j]),0);const aim=(s.cap-spent)/(rest.length+1)*1.25;   // spread the cap: about an even share each, a little over
+    const c=all.filter(p=>!used.has(String(p.id))&&wkFits(s.slots[k],p.pos)&&p.salary<=Math.min(room,aim)).sort((a,b)=>b.salary-a.salary);
+    const pick=c.length?c[Math.floor(Math.random()*Math.min(4,c.length))]:all.filter(p=>!used.has(String(p.id))&&wkFits(s.slots[k],p.pos)&&p.salary<=room).sort((a,b)=>a.salary-b.salary)[0];
+    if(pick){L[k]=String(pick.id);used.add(String(pick.id));}});}
+async function wkLive(c,s){const done=s.status==='final';c.append(el('h4',(done?'✅ ':'🔴 ')+s.label+(done?' · final':' · live')),el('div',done?'Every game is finished.':'Points update about every 10 minutes from the real box scores.','hint small'));
+  let P={};try{P=await wkPool(s.id);}catch(e){}
+  if(me){try{const [{data:e},{data:sc}]=await Promise.all([sb.from('weekly_entries').select('name,lineup').eq('slate_id',s.id).eq('user_id',me.id).maybeSingle(),
+      sb.from('weekly_scores').select('points,players,rank').eq('slate_id',s.id).eq('user_id',me.id).maybeSingle()]);
+    if(e){const m=el('div',null,'card');m.append(el('b',e.name+' · '+((sc&&sc.points)||0).toFixed(1)+' pts'+(sc&&sc.rank?' · #'+sc.rank:'')));
+      (e.lineup||[]).forEach((id,k)=>{const p=P[String(id)]||{name:'Player '+id,team:''};const pts=sc&&sc.players?sc.players[String(id)]:null;
+        const r=el('div',null,'brow');r.append(el('span',s.slots[k]||'','bk'),el('b',p.name),el('span',' '+(p.team||''),'hint small'),el('span',null,'sp'),el('span',pts==null?'–':Number(pts).toFixed(1),'up'));m.append(r);});c.append(m);}
+    else c.append(el('p','You didn’t enter this week. Next week’s lineup is below.','hint small'));}catch(e){}}
+  try{const {data,error}=await sb.from('weekly_scores').select('name,points,rank,user_id').eq('slate_id',s.id).order('points',{ascending:false}).limit(25);if(error)throw error;
+    if(!(data||[]).length)c.append(el('p','No points yet: scores show once the first game is under way.','hint small'));
+    else{c.append(el('h4','🏆 Everyone'));(data||[]).forEach((r,i)=>{const row=el('div',null,'brow');row.append(el('span',['🥇','🥈','🥉'][i]||String(i+1),'bk'),el('b',r.name+(me&&r.user_id===me.id?' (you)':'')),el('span',null,'sp'),el('span',Number(r.points).toFixed(1),'up'));c.append(row);});}}
+  catch(e){c.append(el('p','Scores are being set up.','hint small'));}
+  if(me){try{const {data:ls}=await sb.rpc('my_leagues');for(const l of ls||[]){const {data}=await sb.rpc('league_weekly',{lid:l.id,slate:s.id});if(!(data||[]).length)continue;
+      c.append(el('h4','👥 '+l.name));data.forEach((r,i)=>{const row=el('div',null,'brow');row.append(el('span',String(i+1),'bk'),el('b',r.name),el('span',null,'sp'),el('span',Number(r.points).toFixed(1),'up'));c.append(row);});}}catch(e){}}}
+async function wkSeason(c){c.append(el('h4','📅 Season · '+WK_SPORTS.find(x=>x[0]===WK.sport)[1].replace(/^\S+ /,'')),el('div','Total points over every week played.','hint small'));
+  try{const {data,error}=await sb.from('weekly_season').select('name,points,weeks,user_id').eq('sport',WK.sport).order('points',{ascending:false}).limit(20);if(error)throw error;
+    if(!(data||[]).length){c.append(el('p','No finished weeks yet.','hint small'));return;}
+    data.forEach((r,i)=>{const row=el('div',null,'brow');row.append(el('span',['🥇','🥈','🥉'][i]||String(i+1),'bk'),el('b',r.name+(me&&r.user_id===me.id?' (you)':'')),el('span',' '+r.weeks+' wk'+(r.weeks===1?'':'s'),'hint small'),el('span',null,'sp'),el('span',Number(r.points).toFixed(1),'up'));c.append(row);});}
+  catch(e){c.append(el('p','Season totals are being set up.','hint small'));}}
 // ---------------- Pick'em leaderboard (Supabase; picks lock at the start time, graded by Mohjeta)
 async function pkCloud(event,team){try{if(!me||!sb)return;const {error}=await sb.from('pickem').upsert({event,team},{onConflict:'user_id,event'});
   if(error&&/profiles|foreign/i.test(error.message))toast('Pick a chat name in Chat to join the leaderboard');}catch(e){}}
