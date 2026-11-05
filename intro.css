@@ -1,0 +1,41 @@
+/* Opening animation: faceted shards gather into her M, a pulse of light, the name. ~2.6 s, once per visit, tap to skip. */
+#mjIntro{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(120% 90% at 50% 42%,#2a0f45 0%,#12081e 45%,#07050b 100%);overflow:hidden;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;contain:strict}
+#mjIntro.out{animation:miOut .55s cubic-bezier(.6,0,.2,1) forwards}
+@keyframes miOut{to{opacity:0;transform:scale(1.08);filter:blur(6px)}}
+#mjIntro .mi-grid{position:absolute;inset:-20%;background:
+  linear-gradient(115deg,transparent 49.6%,#b44dff14 50%,transparent 50.4%) 0 0/46px 46px,
+  linear-gradient(65deg,transparent 49.6%,#ff4fd810 50%,transparent 50.4%) 0 0/46px 46px;
+  animation:miGrid 2.6s linear both;mask-image:radial-gradient(circle at 50% 42%,#000 0,transparent 60%);-webkit-mask-image:radial-gradient(circle at 50% 42%,#000 0,transparent 60%)}
+@keyframes miGrid{from{opacity:0;transform:scale(1.2) rotate(-4deg)}30%{opacity:1}to{opacity:.5;transform:scale(1) rotate(0)}}
+#mjIntro .mi-stage{position:relative;width:min(46vw,190px);aspect-ratio:1;margin-top:-6vh}
+#mjIntro .mi-shards{position:absolute;inset:-60%;width:220%;height:220%;overflow:visible}
+#mjIntro .mi-shard{transform-box:fill-box;transform-origin:center;opacity:0;
+  animation:miIn .9s cubic-bezier(.2,.8,.2,1) var(--d) forwards,miBurst .7s cubic-bezier(.3,0,.2,1) 1.3s forwards}
+@keyframes miIn{from{opacity:0;transform:translate(var(--fx),var(--fy)) rotate(var(--r)) scale(.4)}60%{opacity:1}to{opacity:1;transform:none}}
+@keyframes miBurst{from{opacity:1;transform:none}to{opacity:0;transform:translate(var(--bx),var(--by)) rotate(calc(var(--r) * -1)) scale(.6)}}
+#mjIntro .mi-logo{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 0 #ff4fd800);animation:miGlow 1.2s ease 1.05s forwards}
+#mjIntro .mi-logo .trace{fill:none;stroke:url(#miStroke);stroke-width:.9;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:120;stroke-dashoffset:120;animation:miDraw .95s cubic-bezier(.6,.05,.3,1) .3s forwards}
+#mjIntro .mi-logo .body{fill:url(#miFill);opacity:0;animation:miFill .5s ease .95s forwards}
+#mjIntro .mi-logo .facet{fill:#ff4fd8;opacity:0;transform-box:fill-box;transform-origin:50% 0;animation:miFacet .55s cubic-bezier(.2,.9,.3,1.3) 1.1s forwards}
+@keyframes miDraw{to{stroke-dashoffset:0}}
+@keyframes miFill{to{opacity:1}}
+@keyframes miFacet{from{opacity:0;transform:scaleY(.2)}to{opacity:.95;transform:none}}
+@keyframes miGlow{0%{filter:drop-shadow(0 0 0 #ff4fd800)}35%{filter:drop-shadow(0 0 22px #ff4fd8cc)}100%{filter:drop-shadow(0 0 12px #b44dff88)}}
+#mjIntro .mi-ring{position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1;border-radius:50%;translate:-50% -50%;
+  border:2px solid #ffb8f2;box-shadow:0 0 30px #ff4fd8,inset 0 0 30px #b44dff;opacity:0;animation:miRing .9s cubic-bezier(.1,.6,.2,1) 1.28s forwards}
+@keyframes miRing{from{opacity:.95;transform:scale(.35)}to{opacity:0;transform:scale(3.2)}}
+#mjIntro .mi-flash{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,#ffd9f8aa,transparent 40%);opacity:0;animation:miFlash .6s ease-out 1.25s}
+@keyframes miFlash{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+#mjIntro .mi-word{margin-top:6vh;display:flex;gap:.06em;font:800 clamp(30px,9vw,54px)/1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.14em;color:#f6f0ff}
+#mjIntro .mi-word span{display:inline-block;opacity:0;transform:translateY(18px);filter:blur(8px);animation:miLetter .55s cubic-bezier(.2,.9,.3,1.2) calc(1.35s + var(--i) * .055s) forwards}
+#mjIntro .mi-word .dot{color:#ff4fd8;text-shadow:0 0 14px #ff4fd8,0 0 30px #ff4fd8}
+@keyframes miLetter{to{opacity:1;transform:none;filter:none}}
+#mjIntro .mi-tag{margin-top:14px;font:600 12px/1 system-ui,sans-serif;letter-spacing:.42em;text-transform:uppercase;color:#cbbfe0;opacity:0;animation:miTag .6s ease 1.85s forwards}
+@keyframes miTag{from{opacity:0;letter-spacing:.8em}to{opacity:.85;letter-spacing:.42em}}
+#mjIntro .mi-skip{position:absolute;bottom:max(22px,env(safe-area-inset-bottom));font:500 11px system-ui,sans-serif;color:#9d8fb5;letter-spacing:.2em;opacity:0;animation:miTag .4s ease .8s forwards}
+@media (prefers-reduced-motion:reduce){
+  #mjIntro *{animation-duration:.01s!important;animation-delay:0s!important}
+  #mjIntro .mi-shard,#mjIntro .mi-ring,#mjIntro .mi-flash{display:none}
+}
