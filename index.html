@@ -729,7 +729,7 @@ function show(name,push){name=LEGACY[name]||name;
   for(const s of document.querySelectorAll('main .panel'))s.classList.toggle('on',s.id===panel);
   {const p=document.getElementById(panel);if(p){p.classList.add('enter');clearTimeout(p._enterT);p._enterT=setTimeout(()=>p.classList.remove('enter'),900);}}
   const top=SUB[name]||name;for(const b of navBtns)b.setAttribute('aria-selected',String(b.dataset.tab===top));
-  closeSheet(true);window.scrollTo(0,0);if(push!==false)try{history.pushState(null,'','#'+name);}catch(e){}
+  closeSheet(true);window.scrollTo(0,0);if(push!==false)try{history.pushState(null,'','#'+name);navDepth++;}catch(e){}
   if(name==='chat')openChat();}
 navBtns.forEach(b=>b.onclick=()=>show(b.dataset.tab));
 {const q=$('qjOpen');if(q)q.onclick=openQJ;let y0=null;const nv=$('nav');   // tap the handle, or swipe up on the bar, for every page
@@ -740,7 +740,14 @@ $('home').onclick=()=>show('home');$('home').onkeydown=e=>{if(e.key==='Enter')sh
 function route(){const h=location.hash.slice(1);if(h.startsWith('game/')){openGame(decodeURIComponent(h.slice(5)),false);return;}
   if(h.startsWith('join/')){simMode='fantasy';show('sim',false);$('anyBox').replaceChildren();renderSim();setTimeout(()=>joinLeague(h.slice(5)),1500);return;}
   show(h&&(TABS.includes(LEGACY[h]||h)||SUB[h])?h:'home',false);}
-window.addEventListener('popstate',route);
+window.addEventListener('popstate',()=>{navDepth=Math.max(0,navDepth-1);route();});
+// every page except Home gets a back button: back to the page you came from, or (opened fresh) to its parent / Home
+var navDepth=0;
+function goBack(fallback){if(navDepth>0){history.back();return;}show(fallback||'home');}
+for(const sec of document.querySelectorAll('main section.panel')){if(sec.id==='home')continue;
+  let b=sec.querySelector(':scope > .back');const parent=b&&b.dataset.go||'home';
+  if(!b){b=el('button','‹ Back','back');b.type='button';sec.prepend(b);}else b.textContent='‹ Back';
+  b.onclick=e=>{e.preventDefault();e.stopPropagation();goBack(parent);};}
 
 // ---------------- color-blind switch
 // ---------------- Simulate tab: runs on the visitor's phone from the player rating's numbers
