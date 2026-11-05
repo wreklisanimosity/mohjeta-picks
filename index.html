@@ -364,6 +364,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .mprop .pn{font-weight:800;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mprop .pl2{font-size:12px;color:var(--muted)}
 .mprop .row{gap:6px;flex-wrap:nowrap}.mprop .pk{font-size:12px;white-space:nowrap;padding:4px 8px}.mprop .mpct{margin-left:auto;font-size:20px;font-weight:800;color:var(--green)}
 .mprop .add{min-height:32px;font-size:12px;padding:0 10px}
+.kpteams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:6px}.kpteams b{display:block;font-size:13px;margin-bottom:2px}
 .actiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
 .card.tap,.hubbtn{border-color:#5b3a7a}
 </style>
@@ -1259,6 +1260,10 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
     if(g.trend&&g.pregame){const msg={up:'▲ More confident than before the game',down:'▼ Less confident than before the game',steady:'● Holding steady since the start',flipped:'⇄ Changed her pick during the game'}[g.trend];if(msg)c.append(el('p',msg,g.trend==='up'?'up':g.trend==='flipped'?'down':'hint'));}
     if(g.own_team)c.append(el('p','Her own read favored '+g.own_team+'; her final number leans on Kalshi’s price, so the two can differ.','hint small'));
     b.append(c);}
+  if(g.key_players&&(g.key_players.facts||[]).length){const KP=g.key_players;const c=section('Who makes the difference');const ul=el('ul',null,'plain');for(const f of KP.facts)ul.append(el('li',f));c.append(ul);
+    const tm=Object.entries(KP.teams||{}).filter(([,ps])=>ps&&ps.length);if(tm.length){const tw=el('div',null,'kpteams');for(const [t,ps] of tm){const d=el('div');d.append(el('b',t));
+      for(const p of ps)d.append(el('div',p.name+(p.rating!=null?' · '+(Number.isInteger(p.rating)?'rated '+p.rating:sg(p.rating)):'')+(p.stats?' · '+p.stats:''),'hint small'));tw.append(d);}c.append(tw);}
+    c.append(el('p','From her player ratings (each player ranked against his position this season) and the injury report.','hint small'));b.append(c);}
   if(window.GameMatchups){GameMatchups.theme={badge:teamBadge,color:n=>TEAM_COLORS[teamNick(n)]};b.append(GameMatchups.render(g));}   // after her bet and pick, so those come first
   if(g.event){const cb=iel('button','💬 Chat about it ›','btn ghost');cb.type='button';cb.onclick=()=>{closeSheet(true);show('chat');};b.append(cb);}
   if(g.sim&&g.state==='UPCOMING'){const sb=el('button','Simulate this game ›','btn');sb.type='button';sb.onclick=()=>{simId=g.id||g.name;show('sim');renderSim();};b.append(sb);}
