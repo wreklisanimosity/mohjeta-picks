@@ -2,6 +2,13 @@
   "_how_to_edit": "Newest update first. Give each update a new id: the banner shows the top one to everyone who has not closed it yet. 'go' (optional) is the tab its button opens: picks, props, sim, record, play, more. Keep each text short.",
   "updates": [
     {
+      "id": "2026-11-05-injuries-reb",
+      "date": "2026-11-05",
+      "title": "Official injury report for every NBA pick; rebound picks paused",
+      "text": "Her NBA game picks now use the league's own game-day injury report, so a player listed Probable is no longer treated like a 30% chance to sit. Rebound prop picks are paused: her rebound chances have not been more accurate than Kalshi's price yet. Earlier rebound picks stay in her record.",
+      "go": "props"
+    },
+    {
       "id": "2026-11-05-ratings",
       "date": "2026-11-05",
       "title": "Ratings: college basketball, college football and position grades",
