@@ -52,7 +52,13 @@ function paint(s,name){
  }
  s.classList.add('mj-color');
 }
-function icon(name,label){
+// 3D icons: every glyph pre-rendered as a glossy bevelled piece (icons-3d.webp, one sprite sheet); the SVG drawing
+// stays as the fallback and inside the medals
+const SHEET={"cols": 10, "rows": 8, "names": ["picks", "simulate", "props", "results", "play", "more", "practice", "fantasy", "forecast", "pickem", "chat", "calendar", "crown", "news", "money", "lock", "share", "alerts", "compare", "save", "friends", "mohjeta", "spark", "win", "loss", "pending", "basketball", "football", "hockey", "baseball", "soccer", "tennis", "fight", "target", "assist", "rebound", "fire", "star", "gold", "silver", "bronze", "check", "cross", "close", "warn", "pause", "clock", "refresh", "edit", "plus", "minus", "eye", "broom", "boom", "party", "sleep", "fist", "clipboard", "mail", "chart", "chartdown", "live", "build", "dice", "undo", "open", "swap", "updown", "arena", "hand", "arrow", "trophy", "robot", "gamepad", "new", "home", "grid", "search"]};const IDX=Object.fromEntries(SHEET.names.map((n,i)=>[n,i]));
+function icon3d(name,label){const k=IDX[name];if(k==null)return null;const s=document.createElement('span');s.className='mj-icon mj-'+name+' mj-color mj-3d';
+ s.style.backgroundPosition=((k%SHEET.cols)/(SHEET.cols-1)*100)+'% '+(Math.floor(k/SHEET.cols)/(SHEET.rows-1)*100)+'%';
+ if(label){s.setAttribute('role','img');s.setAttribute('aria-label',label);}else s.setAttribute('aria-hidden','true');return s;}
+function icon(name,label){{const t=icon3d(shapes[name]?name:'mohjeta',label);if(t)return t;}
  const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 32 32');s.setAttribute('class','mj-icon mj-'+name);s.setAttribute('focusable','false');
  if(label){s.setAttribute('role','img');s.setAttribute('aria-label',label);}else s.setAttribute('aria-hidden','true');
  s.innerHTML=shapes[name]||shapes.mohjeta;paint(s,shapes[name]?name:'mohjeta');return s;
