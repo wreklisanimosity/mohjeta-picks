@@ -2,3 +2,19 @@
 .mj-icon .pink{fill:#f062d5}.mj-icon .light{fill:#f8eaff}.mj-icon .ink{fill:none;stroke:#faecff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tabs .mj-icon{width:25px;height:25px;fill:#a997bd;stroke:none}.tabs .mj-icon .pink{fill:#c3a6ce}.tabs [aria-selected=true] .mj-icon{fill:#ac73ff}.tabs [aria-selected=true] .mj-icon .pink{fill:#f062d5}
 .hi .mj-icon{width:36px;height:36px}.bd .mj-icon{width:26px;height:26px}.bd:not(.on) .mj-icon{filter:grayscale(1);opacity:.5}
+.mj-icon .ink.bold{stroke-width:3}.mj-icon .ink.thin{stroke-width:1.4}.mj-icon .ink.dash{stroke-dasharray:3 3}
+.mj-icon .go{fill:#39ff88}.mj-icon .goring{fill:none;stroke:#39ff8866;stroke-width:2}
+.mj-live .goring{animation:mjpulse 1.6s ease-out infinite;transform-origin:16px 16px}@keyframes mjpulse{from{transform:scale(.6);opacity:1}to{transform:scale(1.15);opacity:0}}
+.mj-win{fill:#2fd67b}.mj-win .ink{stroke:#eafff3}.mj-loss{fill:#ff5470}.mj-loss .ink{stroke:#fff0f3}.mj-pending{fill:#c9a4ff}
+.mj-check .ink,.mj-cross .ink,.mj-close .ink,.mj-plus .ink,.mj-minus .ink,.mj-undo .ink,.mj-swap .ink,.mj-updown .ink,.mj-refresh .ink{stroke:currentColor}
+.mj-gold{fill:#f5c542}.mj-silver{fill:#cfd3e0}.mj-bronze{fill:#d08a4e}.mj-gold .pink,.mj-silver .pink,.mj-bronze .pink{fill:#ff4fd8}
+.mj-gold .ink,.mj-silver .ink,.mj-bronze .ink{stroke:#2a1640}
+/* badges: struck medals */
+.mj-medal{width:44px;height:50px;flex:none;overflow:visible;filter:drop-shadow(0 3px 6px #0009)}
+.mj-medal .glyph{fill:#fff6ff;filter:drop-shadow(0 1px 1px #0008)}.mj-medal .glyph .pink{fill:#ffd2f6}.mj-medal .glyph .light{fill:#ffffff}.mj-medal .glyph .ink{stroke:#3a1452}
+.mj-medal .shine{animation:mjshine 4.5s ease-in-out infinite}.mj-medal.locked .shine{display:none}
+@keyframes mjshine{0%,70%{transform:translateX(-40px)}100%{transform:translateX(90px)}}
+.mj-medal.locked{opacity:.55}.mj-medal.locked .glyph{fill:#6f667c}.mj-medal.locked .glyph .pink,.mj-medal.locked .glyph .light{fill:#857b93}.mj-medal.locked .glyph .ink{stroke:#2a2433}
+.bd .mj-medal{width:40px;height:46px}.bd{display:inline-flex}.bd:not(.on) .mj-medal{filter:none}
+.toast .mj-medal{width:34px;height:39px;vertical-align:middle;margin-right:6px}
+@media (prefers-reduced-motion:reduce){.mj-medal .shine,.mj-live .goring{animation:none}}
