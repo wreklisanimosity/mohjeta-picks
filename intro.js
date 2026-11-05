@@ -1,7 +1,9 @@
 /* Opening animation (see intro.css). Shown once per visit, never blocks the app: the page loads underneath and the
    intro removes itself after ~2.6 s or on the first tap / key. */
 (()=>{
-  let seen=false;try{seen=sessionStorage.getItem('mohjeta.intro')==='1';sessionStorage.setItem('mohjeta.intro','1');}catch(e){}
+  // plays when the app is opened (again after 30+ minutes away), not on every tab reload
+  let seen=false;try{const now=Date.now(),last=+localStorage.getItem('mohjeta.introAt')||0;
+    seen=sessionStorage.getItem('mohjeta.intro')==='1'&&now-last<30*60000;sessionStorage.setItem('mohjeta.intro','1');if(!seen)localStorage.setItem('mohjeta.introAt',String(now));}catch(e){}
   if(seen||/[?&]nointro\b/.test(location.search))return;
   const reduce=matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   const N='http://www.w3.org/2000/svg';
