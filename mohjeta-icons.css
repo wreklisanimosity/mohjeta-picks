@@ -22,3 +22,9 @@
 .mj-icon.mj-color{filter:drop-shadow(0 1px 2px #0009)}
 .tabs .mj-icon.mj-color{filter:saturate(.3) brightness(.9);opacity:.75;transition:filter .25s,opacity .25s,transform .25s}
 .tabs [aria-selected=true] .mj-icon.mj-color{filter:drop-shadow(0 0 6px #ff4fd8aa);opacity:1;transform:scale(1.08)}
+
+/* 3D sprite icons */
+.mj-icon.mj-3d{display:inline-block;background:url(icons-3d.webp?v=1) 0 0/1000% 800% no-repeat;transform:scale(1.32);filter:none}
+.tabs .mj-icon.mj-3d{filter:saturate(.35) brightness(.85);opacity:.8}.tabs [aria-selected=true] .mj-icon.mj-3d{filter:drop-shadow(0 0 6px #ff4fd8aa);opacity:1;transform:scale(1.45)}
+.mj-medal.mj-medal3d{display:inline-block;width:44px;height:50px;background:url(medals-3d.webp?v=1) 0 0/1300% 200% no-repeat;filter:none}
+.mj-medal.mj-medal3d.locked{opacity:.85}.bd .mj-medal.mj-medal3d{width:42px;height:48px}.toast .mj-medal.mj-medal3d{width:34px;height:39px;vertical-align:middle}
