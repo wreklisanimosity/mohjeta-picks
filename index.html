@@ -403,7 +403,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
   <section class="panel" id="guess" role="tabpanel" aria-label="Guess her number"><button class="back" data-go="play">‹ Play</button>
     <h2>🔮 Guess her number</h2><p class="hint small">Guess how likely she thinks a team is to win, before you see it. Closer guesses score more (100 for exact). Saved on this phone only, just for fun.</p><div id="guessBox"></div></section>
   <section class="panel" id="props" role="tabpanel" aria-label="Player props">
-    <h2>Player props</h2><p class="hint">NBA points props from her player rating: every game simulated 4,000 times, player by player. Kept separate from her game picks.</p>
+    <h2>Player props</h2><p class="hint">NBA player props (points, assists, threes, rebounds) from her player rating: every game simulated 4,000 times, player by player. Kept separate from her game picks.</p>
     <div id="propsBox"></div>
   </section>
   <section class="panel" id="sim" role="tabpanel" aria-label="Simulate">
@@ -1476,14 +1476,20 @@ function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(
     for(const k of keys){const v=days[k];const col=el('div',null,'b');const top=el('div');top.style.cssText='height:50%;display:flex;align-items:flex-end';const bot=el('div');bot.style.cssText='height:50%';
       const i=el('i');i.style.height=Math.max(2,Math.abs(v)/mx*100)+'%';i.style.width='100%';i.style.background=v>=0?'var(--green)':'var(--red)';(v>=0?top:bot).append(i);col.append(top,bot);col.title=k+': '+signed(v);bars.append(col);}
     card.append(el('div','Profit by day','hint small'),bars);}
-  box.append(card);
+  const BS=P.by_stat||[];
+  if(BS.length>1){const c2=el('div',null,'card');c2.append(iel('h4','📊 By prop type · most profitable first'));
+    c2.append(tableOf(['Prop type','Record','Profit','Return'],BS.map(b=>[STATNAME[b.stat]?STATNAME[b.stat][0].toUpperCase()+STATNAME[b.stat].slice(1):b.stat,b.won+'-'+b.lost,
+      el('span',signed(b.pl),cls(b.pl)),b.roi==null?'—':(b.roi>0?'+':'')+Math.round(b.roi*100)+'%'])));
+    c2.append(el('p','Tonight’s picks below are listed in this order: her most profitable prop type first.','hint small'));box.append(card,c2);}
+  else box.append(card);
   // tonight's picks
   box.append(el('h3',"Tonight's prop picks"));
   if(P.locked){const c=el('div',null,'banner members');c.append(iel('b','🔒 '+(P.open_hidden||'Her')+' prop pick'+(P.open_hidden===1?'':'s')+' tonight for members'),el('div','Members see every prop pick and can use the prop builder. Her record above is always public.','hint small'));
     const row=el('div',null,'row');row.append(...membershipButtons());c.append(row);box.append(c);}
-  else if(!(P.open||[]).length)box.append(el('p','No prop picks yet. She prices tonight’s NBA props every 30 minutes and picks only when Kalshi’s price is at least 8 points off her number.','hint'));
-  else{const all=P.open.slice().sort((x,y)=>(y.her-y.price)-(x.her-x.price));const list=propAll?all:all.slice(0,15);
-    box.append(el('p',all.length>15&&!propAll?'Her '+list.length+' strongest of '+all.length+' prop picks tonight (biggest gap between her chance and Kalshi’s price).':all.length+' prop pick'+(all.length===1?'':'s')+' tonight, strongest first.','hint small'));
+  else if(!(P.open||[]).length)box.append(el('p','No prop picks yet. She prices tonight’s NBA props (points, assists, threes, rebounds) every 30 minutes and picks only when Kalshi’s price is at least 8 points off her number.','hint'));
+  else{const rank=st=>{const i=BS.findIndex(b=>b.stat===st);return i<0?99:i;};
+    const all=P.open.slice().sort((x,y)=>rank(x.stat)-rank(y.stat)||(y.her-y.price)-(x.her-x.price));const list=propAll?all:all.slice(0,15);
+    box.append(el('p',all.length>15&&!propAll?'Her top '+list.length+' of '+all.length+' prop picks tonight: most profitable prop type first, then the biggest gap between her chance and Kalshi’s price.':all.length+' prop pick'+(all.length===1?'':'s')+' tonight: most profitable prop type first.','hint small'));
     const gr=el('div',null,'grid');for(const o of list){const c=el('div',null,'card prop');
       c.append(el('div',o.game,'hint small'),el('div',propName(o),'pname'));
       const r=el('div',null,'row');r.append(el('span',propSide(o),'pk'),el('span',null,'sp'),el('b',pct(o.her),'up'));c.append(r);
@@ -1491,7 +1497,7 @@ function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(
       const add=el('button','+ Add to prop builder','btn ghost small');add.type='button';add.onclick=()=>addLeg({player:o.player,stat:o.stat,line:o.line,side:o.side,her:o.her,price:o.price,game:o.game});
       c.append(add);gr.append(c);}
     box.append(gr);
-    if(all.length>15){const mb=el('button',propAll?'Show only her strongest 15':'Show all '+all.length+' prop picks','btn ghost small');mb.type='button';mb.onclick=()=>{propAll=!propAll;renderProps(D);};box.append(mb);}}
+    if(all.length>15){const mb=el('button',propAll?'Show only her top 15':'Show all '+all.length+' prop picks','btn ghost small');mb.type='button';mb.onclick=()=>{propAll=!propAll;renderProps(D);};box.append(mb);}}
   // prop builder
   const pb=el('div',null,'card');pb.id='propBuilder';box.append(el('h3','🧱 Prop builder'),pb);drawBuilder();
   // every finished prop
