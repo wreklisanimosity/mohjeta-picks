@@ -158,7 +158,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 .simin{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}.simin label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 .simin input{width:110px;background:var(--card2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:8px 10px;font:inherit}
 .hist{width:100%;height:120px;display:block}
-.hist .bar{transform-box:fill-box;transform-origin:50% 100%;animation:grow .55s cubic-bezier(.2,.9,.3,1.2) both}
+.hist .bar{transform-box:fill-box;transform-origin:50% 100%}.panel.enter .hist .bar,.sheet-enter .hist .bar{animation:grow .55s cubic-bezier(.2,.9,.3,1.2) both}
 @keyframes grow{from{transform:scaleY(0);opacity:.2}to{transform:scaleY(1);opacity:1}}
 .btn,.tog,.chips button,nav.tabs button,.menu button{transition:transform .12s ease,box-shadow .2s ease,background .2s ease}
 .btn:active,.tog:active,.chips button:active,.menu button:active{transform:scale(.94)}
@@ -167,7 +167,8 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 @keyframes shake{0%,100%{transform:rotate(0)}20%{transform:rotate(-6deg) scale(1.05)}40%{transform:rotate(6deg) scale(1.05)}60%{transform:rotate(-4deg)}80%{transform:rotate(3deg)}}
 .tog{transition:transform .12s ease,background .25s ease,color .25s ease}
 .tog:active{transform:scale(.88)}
-.panel.on .card{animation:rise .35s ease both}.panel.on .card:nth-child(2){animation-delay:.05s}.panel.on .card:nth-child(3){animation-delay:.1s}.panel.on .card:nth-child(4){animation-delay:.15s}
+/* entrance animations play when a tab opens, not on every data refresh (that replay was the flicker) */
+.panel.on.enter .card{animation:rise .35s ease both}.panel.on.enter .card:nth-child(2){animation-delay:.05s}.panel.on.enter .card:nth-child(3){animation-delay:.1s}.panel.on.enter .card:nth-child(4){animation-delay:.15s}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 #simBox .tile{animation:pop .4s ease both}
 @keyframes pop{0%{transform:scale(.9);opacity:0}70%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
@@ -197,7 +198,7 @@ nav.tabs button[aria-selected=true] svg{animation:navglow .4s ease}
 .guessv{font-size:44px;font-weight:900;text-align:center;color:var(--green);text-shadow:0 0 16px #39ff8866}
 .guessr{width:100%;accent-color:var(--pink);margin:6px 0 12px}
 .reveal{margin-top:12px;animation:pop .45s ease both}
-.todaylist{margin:8px 0 14px}.trow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;animation:rise .3s ease both}
+.todaylist{margin:8px 0 14px}.trow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.panel.enter .trow{animation:rise .3s ease both}
 .trow .tn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .flash{animation:flashrec 1.4s ease 2}@keyframes flashrec{0%,100%{text-shadow:none}50%{text-shadow:0 0 18px var(--green);color:var(--green)}}
 .chatlist{max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin:8px 0;padding-right:4px}
@@ -653,6 +654,7 @@ function show(name,push){name=LEGACY[name]||name;
   if(name==='news')setTimeout(drawNews,0);   // chat = one floating overlay over any tab
   const panel=name==='record'?'recordp':name;
   for(const s of document.querySelectorAll('main .panel'))s.classList.toggle('on',s.id===panel);
+  {const p=document.getElementById(panel);if(p){p.classList.add('enter');clearTimeout(p._enterT);p._enterT=setTimeout(()=>p.classList.remove('enter'),900);}}
   const top=SUB[name]||name;for(const b of navBtns)b.setAttribute('aria-selected',String(b.dataset.tab===top));
   closeSheet(true);window.scrollTo(0,0);if(push!==false)try{history.pushState(null,'','#'+name);}catch(e){}
   if(name==='chat')openChat();}
@@ -957,7 +959,9 @@ function deleteMyAccount(parent){
     }catch{status.textContent='Could not complete deletion. Try again or request deletion using the link above.';input.disabled=false;confirm.disabled=input.value!=='DELETE';cancel.disabled=false;}
   };box.append(status,confirm,cancel);document.body.append(ov);
 }
-function applyLive(L){lastLive=L;if(!D||!L)return;const byId=new Map(D.games.map(g=>[g.id||g.name,g]));
+let liveKey=null;
+function applyLive(L){if(!D||!L){lastLive=L;return;}{let k=null;try{const {updated,...rest}=L;k=JSON.stringify(rest);}catch(e){}
+  if(k&&k===liveKey){lastLive=L;const u=$('updated');u.classList.remove('stale');u.textContent='● Live '+hm(L.updated);u.classList.add('livedot');return;}liveKey=k;}lastLive=L;const byId=new Map(D.games.map(g=>[g.id||g.name,g]));
   for(const g of L.games||[]){const cur=byId.get(g.id||g.name);if(cur)Object.assign(cur,g);else D.games.push(g);}
   if(L.bets&&D.bets){D.bets.totals=L.bets.totals||D.bets.totals;const key=r=>r.opened+'|'+r.bet;const have=new Map(D.bets.rows.map((r,i)=>[key(r),i]));
     const fresh=[];for(const r of L.bets.rows||[]){const i=have.get(key(r));if(i!=null)D.bets.rows[i]=r;else fresh.push(r);}D.bets.rows=fresh.concat(D.bets.rows);}
@@ -1441,9 +1445,13 @@ function render(d){D=d;applyMembers(d);const up=new Date(d.updated);const u=$('u
   navBtns.find(b=>b.dataset.tab==='record').hidden=!d.bets;
   if(sheetGame){const g=d.games.find(x=>String(x.id||x.name)===String(sheetGame.id||sheetGame.name));if(g){sheetGame=g;const s=$('sheet');const y=s.scrollTop;$('sheetBody').replaceChildren(gameView(g));s.scrollTop=y;}}}
 let first=true;
-let dataTag=null;
+let dataTag=null,dataKey=null;
+function sameData(d){let k;try{const {updated,...rest}=d;k=JSON.stringify(rest);}catch(e){return false;}const s=k===dataKey;dataKey=k;return s;}
 async function load(){try{const r=await fetchPublicSnapshot('data.json');if(!r.ok)throw Error();   // revalidates: an unchanged file costs a tiny 304, not the whole download
-  const tag=r.headers.get('etag')||r.headers.get('last-modified');if(tag&&tag===dataTag&&!first){return;}dataTag=tag;render(await r.json());if(first){first=false;route();}}
+  const tag=r.headers.get('etag')||r.headers.get('last-modified');if(tag&&tag===dataTag&&!first){return;}dataTag=tag;
+  const d=await r.json();const same=sameData(d);   // her PC republishes often; when nothing but the time changed, only the clock updates (no rebuild, no flicker)
+  if(same&&!first){D.updated=d.updated;const u=$('updated');if(!lastLive||Date.parse(lastLive.updated)<=Date.parse(d.updated)){u.textContent='Updated '+hm(d.updated);u.classList.remove('stale','livedot');}return;}
+  render(d);if(first){first=false;route();}}
   catch(e){if(!D)$('updated').textContent='Waiting for her first update…';}}
 
 // ---------------- ratings (separate file, refreshed every 10 minutes)
