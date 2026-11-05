@@ -391,7 +391,13 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
   background:linear-gradient(#21152f,#160e22);border:1px solid #6d4686;border-radius:14px;padding:12px 30px 12px 12px;min-height:84px}
 .stile:hover,.stile:focus-visible{border-color:var(--pink)}.stile:active{transform:scale(.98)}
 .stile::after{content:'›';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--pink);font-size:24px;font-weight:700}
-.stile .si{font-size:22px;line-height:1}.stile .si.art{display:block;width:52px;height:52px;margin-bottom:6px}.stile .si.art svg{width:100%;height:100%;filter:drop-shadow(0 4px 8px #000a);transition:transform .3s}.stile:hover .si.art svg{transform:perspective(200px) rotateX(8deg) rotateY(-10deg) scale(1.06)}
+.stile .si{font-size:22px;line-height:1}.stile .si.art{display:block;width:52px;height:52px;margin-bottom:6px}
+/* compact sport tiles: picture on the left, text on the right */
+.stile:has(.si.art){display:grid;grid-template-columns:40px minmax(0,1fr);grid-auto-rows:auto;column-gap:10px;row-gap:1px;align-items:center;align-content:center;min-height:0;padding:9px 26px 9px 10px}
+.stile .si.art{grid-row:1 / span 3;width:40px;height:40px;margin:0}
+.stile:has(.si.art) b{font-size:14px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stile:has(.si.art) small{font-size:11.5px;line-height:1.3}
+.stile:has(.si.art)::after{right:9px;font-size:20px}
+@media(max-width:599px){.stiles:has(.si.art){grid-template-columns:minmax(0,1fr);gap:8px}}.stile .si.art svg{width:100%;height:100%;filter:drop-shadow(0 4px 8px #000a);transition:transform .3s}.stile:hover .si.art svg{transform:perspective(200px) rotateX(8deg) rotateY(-10deg) scale(1.06)}
 .crumb h4 .sport-art{width:30px;height:30px;vertical-align:-9px;margin-right:4px;border-radius:8px}.stile b{font-size:15px}.stile small{color:var(--muted);font-size:12px}.stile .pl{font-weight:800}
 .stile.hot{border-color:var(--red)}.stile.on{border-color:var(--pink);box-shadow:0 0 0 1px var(--pink) inset}
 .crumb{display:flex;align-items:center;gap:8px;margin:0 0 10px;flex-wrap:wrap}.crumb h4{margin:0;font-size:16px}
