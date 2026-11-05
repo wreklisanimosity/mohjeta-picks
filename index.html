@@ -342,6 +342,9 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .mbet.won{border-color:var(--green)}.mbet.lost{border-color:var(--red);background:#1b0f1b}
 .mpick{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.mpick b{font-size:15px}.mpick .mpct{margin-left:auto;font-size:20px;font-weight:800;color:var(--green)}
 .mread{font-size:11px;color:var(--muted)}
+.mini .why2{font-size:12px;color:var(--muted);line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.mini .pickem{flex-wrap:wrap;gap:4px;font-size:11px}.mini .pickem .pk{min-height:30px;padding:0 8px;font-size:12px}.mini .pickem .cd{font-size:11px}
+.mini .mtop .lv{overflow:hidden;text-overflow:ellipsis}
 .chev{margin-top:auto;font-size:12px;font-weight:800;color:var(--pink)}
 .stiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 6px}
 @media(min-width:760px){.stiles{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}}
@@ -405,8 +408,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
   <section class="panel on" id="picks" role="tabpanel" aria-label="Picks">
     <div id="record"></div><div id="installBox"></div><div id="alertsBox"></div>
     <div id="liveBox"></div>
-    <h3>Tonight she's betting</h3><p class="hint small xp">Tap a sport to see her bets. Each bet is $5 of paper money at Kalshi's real price.</p><div id="betting"></div>
-    <h3>Her most confident picks</h3><p class="hint small xp">Tap any pick for the full breakdown. 🧪 = practice sport (still learning, use with caution).</p><div class="mgrid" id="best"></div>
+    <h3>Tonight she's betting</h3><p class="hint small xp">Games where she puts $5 of paper money on her pick at Kalshi's real price. Tap a sport to see them.</p><div id="betting"></div>
+    <h3>Her most confident picks</h3><p class="hint small xp">Her most confident calls in every sport. 🧪 Practice picks are sports she is still learning and does not bet yet: less information behind them, so use them with caution. Their results are in Results. Tap any pick for the full breakdown.</p><div class="mgrid" id="best"></div>
     <h3>Latest results</h3><div class="strip" id="recent"></div>
     <button type="button" class="hero" id="heroSim"><span class="hi">⚔️</span><span><b>Simulate any matchup</b><small>Pick two teams and watch them battle 10,000 times</small></span><span class="go">›</span></button>
   </section>
@@ -1178,13 +1181,20 @@ function betBlock(g,big){const r=g.bet;const k=r.result==='WON'?' won':r.result=
 function miniCard(g){const c=el('article',null,'card tap mini');c.tabIndex=0;c.setAttribute('role','button');c.setAttribute('aria-label',(g.name||'Game')+': open the full breakdown');
   c.onclick=()=>openGame(g.id||g.name);c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openGame(g.id||g.name);}};
   const top=el('div',null,'mtop');top.append(el('span',sportIcon(g.league)+' '+sname(g.league).toUpperCase(),'league'));
-  top.append(g.state==='LIVE'?el('span','● LIVE','lv'):el('span',when(g.start),'when'));c.append(top);
+  top.append(g.state==='LIVE'?el('span','● LIVE'+(g.detail?' '+g.detail:''),'lv'):el('span',when(g.start),'when'));c.append(top);
   for(const t of g.teams||[]){const r=el('div',null,'mt'+(g.pick&&g.pick.team===t.name?' mine':''));r.append(teamBadge(t.name),el('span',shortTeam(t.name)));
     if(g.state==='LIVE')r.append(el('b',String(t.score??0)));c.append(r);}
   if(g.bet){c.append(betBlock(g,false));if(g.pick&&(g.state==='LIVE'||flipped(g)))c.append(el('div',(flipped(g)?'⇄ ':'')+'Her read now: '+shortTeam(g.pick.team)+' '+pct(g.pick.chance),'mread'));}
   else if(g.pick){const p=el('div',null,'mpick');p.append(el('span',laneOf(g).t==='PRACTICE'?'🧪 HER PICK':'HER PICK','lbl'),el('b',shortTeam(g.pick.team)),el('span',pct(g.pick.chance),'mpct'));c.append(p);}
   else c.append(el('div','Pick coming soon','hint small'));
-  c.append(el('div','Details ›','chev'));return c;}
+  if(g.pick){const k=kal(g),gt=gapText(g);if(k!=null||gt)c.append(el('div',[k!=null?'Kalshi '+k+'¢':'',gt?gt[0].replace('She is ','').replace('She agrees with Kalshi','same as Kalshi'):''].filter(Boolean).join(' · '),'mread'));
+    const ol=oddsLine(g);if(ol)c.append(el('div',ol,'mread'));
+    const wm=winMeter(g);if(wm)c.append(wm);
+    if(laneOf(g).t==='PRACTICE')c.append(el('div','🧪 Practice: still learning this sport, use with caution','mread prac-note'));
+    if(g.pick.held)c.append(el('div','Too close to call: earlier pick stays','mread'));
+    if(g.thesis)c.append(el('div',(g.own_team?'Her own read: ':'')+firstLine(g.thesis),'why2'));
+    if(g.teams.length===2&&(g.state==='UPCOMING'||pkLoad()[pkKey(g)])){const pr=pickemRow(g);const cd=countdown(g);if(cd)pr.append(cd);c.append(pr);}}
+  c.append(el('div','Full breakdown ›','chev'));return c;}
 
 // ---------------- cards
 function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');if(pw().on&&String(g.id)===String(pw().pod))c.append(el('div','⭐ Free Pick of the Day','podtag'));c.tabIndex=0;c.setAttribute('role','button');
@@ -1538,7 +1548,7 @@ const statLabel=st=>{const n=STATNAME[st]||st;return n[0].toUpperCase()+n.slice(
 const STATICON={pts:'🏀',ast:'🤝',fg3:'🎯',reb:'🧲'};
 function miniProp(o){const c=el('div',null,'card mprop');c.append(el('div',o.player,'pn'),el('div',o.line+'+ '+(STATNAME[o.stat]||o.stat)+' · '+o.game,'pl2'));
   const r=el('div',null,'row');r.append(el('span',o.side==='YES'?'YES · '+o.line+'+':'NO · under '+o.line,'pk'),el('span',pct(o.her),'mpct'));c.append(r);
-  c.append(el('div','Kalshi '+Math.round(o.price*100)+'¢','hint small'));
+  c.append(el('div','Her chance '+pct(o.her)+' · Kalshi '+Math.round(o.price*100)+'¢ (about '+pct(o.price)+')','hint small'));
   const add=el('button','+ Add to builder','btn ghost small add');add.type='button';add.onclick=e=>{e.stopPropagation();addLeg({player:o.player,stat:o.stat,line:o.line,side:o.side,her:o.her,price:o.price,game:o.game});};
   c.append(add);return c;}
 function openBuilder(){openSheet(()=>{const w=el('div');w.append(el('h2','🧱 Prop builder'));const pb=el('div',null,'card');pb.id='propBuilder';w.append(pb);return w;});drawBuilder();}
@@ -1569,7 +1579,13 @@ function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(
   const st=el('div',null,'stats');const stat=(l,v,c)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,c||''));st.append(s);};
   stat('Record',(R.won||0)+'-'+(R.lost||0));stat('Profit',signed(R.pl||0),cls(R.pl||0));stat('Win rate',R.hit==null?'—':pct(R.hit));
   stat('Return',R.roi==null?'—':(R.roi>0?'+':'')+Math.round(R.roi*100)+'%',cls(R.roi||0));card.append(st);
-  if(n)card.append(el('p','Kalshi’s prices said '+pct(R.price_said)+'; they won '+pct(R.hit)+'. $5 per pick on paper since '+R.since+'.'+(n<300?' Still early: '+n+' finished picks.':''),'hint small'));
+  if(n)card.append(el('p','Kalshi’s prices said these picks would win '+pct(R.price_said)+' of the time. They won '+pct(R.hit)+'. $5 per pick on paper since '+R.since+', graded from Kalshi’s official results.','hint small'));
+  if(n&&n<300)card.append(el('p','Still early: '+n+' finished picks. A few hundred are needed before a record like this means much.','hint small'));
+  {const days={};for(const r of P.rows||[]){const k=new Date(r.at*1000).toLocaleDateString('en-CA');days[k]=(days[k]||0)+r.pnl;}const keys=Object.keys(days).sort().slice(-30);
+   if(keys.length>1){const mx=Math.max(1,...keys.map(k=>Math.abs(days[k])));const bars=el('div',null,'bars');bars.append(el('div',null,'zero'));
+    for(const k of keys){const v=days[k];const col=el('div',null,'b');const top=el('div');top.style.cssText='height:50%;display:flex;align-items:flex-end';const bot=el('div');bot.style.cssText='height:50%';
+      const i=el('i');i.style.height=Math.max(2,Math.abs(v)/mx*100)+'%';i.style.width='100%';i.style.background=v>=0?'var(--green)':'var(--red)';(v>=0?top:bot).append(i);col.append(top,bot);col.title=k+': '+signed(v);bars.append(col);}
+    card.append(el('div','Profit by day','hint small'),bars);}}
   box.append(card);
   const BS=(P.by_stat||[]).slice();const open=(P.open||[]).slice();
   const rank=st=>{const i=BS.findIndex(b=>b.stat===st);return i<0?99:i;};
@@ -1601,7 +1617,7 @@ function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(
   const at=el('div',null,'actiles');
   const bb=el('button',null,'stile');bb.type='button';bb.append(el('span','🧱','si'),el('b','Prop builder'),el('small',propLegs.length+' leg'+(propLegs.length===1?'':'s')));bb.lastChild.id='pbCount';
   bb.onclick=openBuilder;const hb=el('button',null,'stile');hb.type='button';hb.append(el('span','📋','si'),el('b','Every finished pick'),el('small',n+' graded'));hb.onclick=()=>openPropHistory(null);
-  at.append(bb,hb);box.append(at);}
+  at.append(bb,hb);box.append(at,el('p',P.rule||'','hint small'));}
 function drawBuilder(){const pb=$('propBuilder');if(!pb)return;const P=propData(D);pb.replaceChildren();
   pb.append(el('p','Stack props and see how they could fare: her chance that every leg hits, next to what Kalshi’s prices say.','hint small'));
   if(!P||P.locked){pb.append(el('p','🔒 The prop builder is for members.','hint'));return;}
