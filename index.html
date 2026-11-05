@@ -937,10 +937,10 @@ async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
   chatFab();startPresence();logVisit();drawPush($('pushBox'));memberRefresh(true);setInterval(()=>memberRefresh(false),60000);
   liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();
-  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;if(me)setTimeout(finishPlayPurchase,0);myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN'){toast('Signed in ✅');let jc=null;try{jc=sessionStorage.getItem('mohjeta.join');sessionStorage.removeItem('mohjeta.join');}catch(e){}if(jc)setTimeout(()=>joinLeague(jc),800);}if(chatOpen())openChat();});
+  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;setTimeout(preparePlayCheckout,0);if(me)setTimeout(finishPlayPurchase,0);myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN'){toast('Signed in ✅');let jc=null;try{jc=sessionStorage.getItem('mohjeta.join');sessionStorage.removeItem('mohjeta.join');}catch(e){}if(jc)setTimeout(()=>joinLeague(jc),800);}if(chatOpen())openChat();});
   if(/[?&]code=/.test(location.search)){for(let i=0;i<20&&!(await sb.auth.getSession()).data.session;i++)await new Promise(r=>setTimeout(r,250));
     try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}}
-  const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;updateAcct();memberRefresh(true);
+  const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;preparePlayCheckout();updateAcct();memberRefresh(true);
   let after=null;try{after=sessionStorage.getItem('mohjeta.afterLogin');sessionStorage.removeItem('mohjeta.afterLogin');}catch(e){}
   if(location.hash==='#chat'||(after==='chat'&&me))show('chat');}
 function avatarOf(u){const m=(u&&u.user_metadata)||{};return m.avatar_url||m.picture||null;}
@@ -1806,6 +1806,7 @@ function openMembership(){
  const close=el('button','Close','btn ghost');close.type='button';close.onclick=()=>dialog.close();dialog.append(close);
  dialog.addEventListener('close',()=>dialog.remove());document.body.append(dialog);dialog.showModal();
 }
+let playReady = null;
 const subscribeEntry=$('subscribeEntry');
 if(isPlayApp()){
  const checkout=playButton();checkout.id='subscribeEntry';checkout.classList.add('subscribe-entry');checkout.textContent='Subscribe';subscribeEntry.replaceWith(checkout);
@@ -1828,21 +1829,41 @@ async function finishPlayPurchase(){
   }catch{toast('Purchase verification is pending. Reopen your account to retry.');}
   finally{playVerifying=false;}
 }
+function preparePlayCheckout() {
+  const userId = me?.id;
+  if (!isPlayApp() || !userId || !sb) { playReady = null; updatePlayButtons(); return; }
+  if (playReady?.userId === userId && !playReady.failed) return;
+  const request = {userId, account: null, failed: false};
+  playReady = request;
+  updatePlayButtons();
+  Promise.all([
+    sb.functions.invoke('play-billing', {body: {action: 'prepare'}}),
+    crypto.subtle.digest('SHA-256', new TextEncoder().encode(userId))
+  ]).then(([response, digest]) => {
+    if (response.error || !response.data?.ready) throw Error();
+    request.account = Array.from(new Uint8Array(digest), v => v.toString(16).padStart(2, '0')).join('');
+  }).catch(() => { request.failed = true; })
+    .finally(() => { if (playReady === request) updatePlayButtons(); });
+}
+function updatePlayButtons() {
+  for (const button of document.querySelectorAll('[data-play-checkout]')) setPlayButtonState(button);
+}
+function setPlayButtonState(button) {
+  const pending = sessionStorage.getItem('mohjeta.play.pending');
+  button.disabled = !!me && !pending && playReady?.userId === me.id && !playReady.account && !playReady.failed;
+  button.setAttribute('aria-busy', String(button.disabled));
+}
 function playButton(){
   const b=el('button','View Google Play subscription','btn');b.type='button';
-  b.onclick=async()=>{
+  b.dataset.playCheckout='';
+  setPlayButtonState(b);
+  b.onclick=()=>{
     if(!me){show('chat');toast('Sign in to Mohjeta to subscribe.');return;}
-    if(sessionStorage.getItem('mohjeta.play.pending')){await finishPlayPurchase();return;}
-    const userId=me.id;b.disabled=true;
-    try{
-      const {data,error}=await sb.functions.invoke('play-billing',{body:{action:'prepare'}});
-      if(error||!data?.ready)throw Error();
-      const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(userId));
-      const account=Array.from(new Uint8Array(digest),v=>v.toString(16).padStart(2,'0')).join('');
-      b.textContent='Continue to Google Play';
-      b.onclick=()=>{if(me?.id===userId)location.href='intent://checkout?account='+account+'#Intent;scheme=mohjetaplay;package=com.mohjeta.picks;end';};
-    }catch{toast('Google Play checkout is temporarily unavailable.');}
-    finally{b.disabled=false;}
+    if(sessionStorage.getItem('mohjeta.play.pending')){finishPlayPurchase();return;}
+    if(playReady?.userId!==me.id || !playReady.account){
+      preparePlayCheckout();toast('Preparing Google Play checkout…');return;
+    }
+    location.href='intent://checkout?account='+playReady.account+'#Intent;scheme=mohjetaplay;package=com.mohjeta.picks;end';
   };return b;
 }
 function trialBtn(){if(isPlayApp())return playButton();const used=ACCESS&&ACCESS.trial_used;const b=el('button',used?'Trial used':'⭐ Start '+(pw().trial_days||7)+'-day free trial','btn');b.type='button';b.disabled=!!used;
