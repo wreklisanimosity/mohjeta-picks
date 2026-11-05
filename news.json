@@ -2,6 +2,13 @@
   "_how_to_edit": "Newest update first. Give each update a new id: the banner shows the top one to everyone who has not closed it yet. 'go' (optional) is the tab its button opens: picks, props, sim, record, play, more. Keep each text short.",
   "updates": [
     {
+      "id": "2026-11-05-layout",
+      "date": "2026-11-05",
+      "title": "Less scrolling: tap to open",
+      "text": "Tonight and Props are now organized in tiles. Tap a sport to see her bets in it, or a prop type to see its picks. Games show as small cards side by side: tap any card for the full breakdown. When she has a bet on a game, her bet now shows first and biggest.",
+      "go": "picks"
+    },
+    {
       "id": "2026-11-05-props",
       "date": "2026-11-05",
       "title": "Props: assists, threes and rebounds added",
