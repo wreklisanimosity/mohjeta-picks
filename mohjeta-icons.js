@@ -5,10 +5,56 @@ const shapes={"picks": "<path d=\"M16 3 20 11 29 13 22 19 23 28 16 24 9 28 10 19
 const map={"🔒": "lock", "✅": "win", "🏀": "basketball", "🎯": "target", "⇄": "swap", "🧪": "practice", "💬": "chat", "⚔": "simulate", "🔔": "alerts", "✕": "close", "🎲": "dice", "💵": "money", "🔮": "forecast", "❌": "loss", "⭐": "star", "🏆": "trophy", "📤": "share", "⚖": "compare", "🏈": "football", "📋": "clipboard", "🤖": "robot", "⏳": "pending", "↩": "undo", "🔥": "fire", "👑": "crown", "🏟": "arena", "🏒": "hockey", "🎾": "tennis", "🥊": "fight", "🧱": "build", "🎉": "party", "🟢": "live", "💾": "save", "✨": "spark", "↗": "open", "📅": "calendar", "➖": "minus", "😤": "fist", "🖐": "hand", "🏹": "arrow", "⏱": "clock", "📬": "mail", "🧹": "broom", "📈": "chart", "🎮": "gamepad", "⇅": "updown", "💥": "boom", "⚾": "baseball", "⚽": "soccer", "✓": "check", "✗": "cross", "🤝": "assist", "🧲": "rebound", "📊": "chart", "⏸": "pause", "⚠": "warn", "↻": "refresh", "🔄": "refresh", "⏰": "clock", "👀": "eye", "✏": "edit", "👥": "friends", "➕": "plus", "🥇": "gold", "🥈": "silver", "🥉": "bronze", "😴": "sleep", "🆕": "new", "📉": "chartdown", "🏅": "gold", "💸": "money", "📣": "news", "🗓": "calendar", "⚡": "spark"};
 const keys=Object.keys(map).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
 const RX=new RegExp('('+keys.join('|')+')\\uFE0F?','gu');
+// colour: each icon gets its own glossy gradient (base), a second gradient for its accent part, a highlight colour and a
+// line colour. [base top, base bottom, accent top, accent bottom, highlight, line]
+const W='#ffffff',INK='#2a1440';
+const PAL={
+ picks:['#ffe27a','#ff9d1c','#fff','#fff',W,W], simulate:['#9fe7ff','#3f7bff','#ff8ad8','#e0237f',W,W], props:['#7dffcf','#12b38a','#ffb08a','#ff4f6d',W,W],
+ results:['#b6ff7a','#1fc06b','#fff','#fff',W,W], play:['#ff9ad5','#ff3d6e','#ffe9a8','#ffc531','#fff4d6',W], more:['#e3c8ff','#9b5cff','#fff','#fff',W,W],
+ practice:['#c9fbff','#5fd6ff','#d8ff5c','#6fd419',W,'#0f4c66'], fantasy:['#ffb36b','#e8561c','#fff','#fff',W,'#3a1305'], forecast:['#d7a8ff','#6b3cff','#9ffcff','#28c6ff',W,W],
+ pickem:['#ff9a7a','#ff3b55','#fff','#fff',W,W], chat:['#8fd3ff','#4b5cff','#fff','#fff',W,W], calendar:['#ffb4a2','#ff5a5f','#fff','#fff',W,W],
+ crown:['#fff3a6','#ffb000','#fff','#fff',W,'#ffd75a'], news:['#a9c2ff','#5560ff','#ffe36e','#ffae00',W,W], money:['#b9ffb0','#22b35d','#fff','#fff',W,W],
+ lock:['#e6e9f5','#8d93ad','#fff','#fff','#ffd24a','#4a3f63'], share:['#8ef0ff','#2a8cff','#ffc27a','#ff7a1c',W,W], alerts:['#ffe48a','#ff9a00','#fff','#fff',W,'#7a3d00'],
+ compare:['#f0f2ff','#9aa3c7','#fff','#fff',W,'#5b4b8a'], save:['#9cd8ff','#2f6bff','#fff','#fff',W,W], friends:['#8ff7e1','#14b8a6','#ffb3e6','#ff4fd8',W,W],
+ mohjeta:['#d79bff','#8a2be2','#ffb3ef','#ff4fd8',W,W], spark:['#fff2a8','#ffc300','#ffb3ef','#ff4fd8',W,W], win:['#8dffbd','#13b85e','#fff','#fff',W,W],
+ loss:['#ff9aa8','#ff2f55','#fff','#fff',W,W], pending:['#ffe08a','#ffa41c','#fff6c9','#ffcf4a',W,W],
+ basketball:['#ffb56b','#e2591a','#fff','#fff',W,'#3a1305'], football:['#c9824f','#7a3a17','#fff6ea','#e9d8c4',W,W], hockey:['#e8b97a','#a8692e','#5d6577','#1e222b',W,'#c9d6e8'],
+ baseball:['#ffffff','#d9d2c4','#fff','#fff',W,'#e2263a'], soccer:['#ffffff','#cfd3dd','#3a3f4b','#0e1015',W,'#0e1015'], tennis:['#f4ff8a','#b6e01c','#fff','#fff',W,W],
+ fight:['#ff7a7a','#d0151f','#ffffff','#e6e0d6',W,W], target:['#ff8a8a','#e3142d','#ffffff','#ffd0d6','#e3142d',W], assist:['#7ff0ff','#1aa6d6','#ffd36e','#ff9a1c',W,W],
+ rebound:['#ff7a7a','#d4143a','#f2f4fa','#a7afc4',W,W], fire:['#ffd36e','#ff4d1c','#fff2a8','#ffb000',W,W], star:['#fff3a6','#ffb000','#ffe066','#ff9a00',W,W],
+ check:['#fff','#fff','#fff','#fff',W,'#39ff88'], cross:['#fff','#fff','#fff','#fff',W,'#ff4f6d'], close:['#fff','#fff','#fff','#fff',W,'currentColor'],
+ warn:['#ffe066','#ff9a00','#fff','#fff','#3a1d00','#3a1d00'], pause:['#9ffcff','#28a7ff','#fff','#fff',W,W], clock:['#a6f5ff','#2f9bff','#fff','#fff',W,W],
+ refresh:['#8dffbd','#13b85e','#fff','#fff',W,'#39d98a'], edit:['#ffe066','#ff9a00','#ffb3c1','#ff5a7a',W,'#7a3d00'], plus:['#fff','#fff','#fff','#fff',W,'#39d98a'],
+ minus:['#fff','#fff','#fff','#fff',W,'#cbbfe0'], eye:['#f2f4ff','#c4c9e6','#7ff0ff','#1aa6d6','#0e1015',W], broom:['#d9a066','#8a5427','#ffe39a','#e0a628',W,W],
+ boom:['#ffd36e','#ff4d1c','#fff','#fff','#fffbe6',W], party:['#b28dff','#6b3cff','#ffd36e','#ff7a1c',W,'#ff4fd8'], sleep:['#c9d2ff','#5b6cff','#fff','#fff',W,W],
+ fist:['#ff8a7a','#d0151f','#ffe6d6','#e6c3a8',W,W], clipboard:['#ffe9c4','#e0b27a','#c9a27a','#8a5a2b',W,'#6b4320'], mail:['#a9e4ff','#3d8bff','#fff','#fff',W,W],
+ chart:['#b6ff7a','#1fc06b','#d8ff5c','#9be22b',W,'#cbbfe0'], chartdown:['#ffb0b0','#ff2f55','#ff9aa8','#ff4f6d',W,'#cbbfe0'], live:['#fff','#fff','#fff','#fff',W,W],
+ build:['#ff9a6b','#c2410c','#ffd36e','#ff9a00',W,W], dice:['#ff8a8a','#e3142d','#fff','#fff',W,W], undo:['#fff','#fff','#fff','#fff',W,'currentColor'],
+ open:['#8ef0ff','#2a8cff','#fff','#fff',W,'#8ef0ff'], swap:['#fff','#fff','#fff','#fff',W,'currentColor'], updown:['#fff','#fff','#fff','#fff',W,'currentColor'],
+ arena:['#c79bff','#6b3cff','#7dffcf','#12b38a',W,W], hand:['#ffe39a','#ffb347','#fff','#fff',W,W], arrow:['#ffe066','#ff9a00','#ff8a8a','#e3142d',W,'#ffd36e'],
+ trophy:['#fff3a6','#ffb000','#ffe066','#d18b00',W,'#ffd75a'], robot:['#c9f2ff','#5fa8d3','#ff8ad8','#e0237f','#e0fbff','#1b3a52'], gamepad:['#c79bff','#6b3cff','#7ff0ff','#1aa6d6','#ffffff',W],
+ new:['#ff9ad5','#ff3d6e','#fff','#fff',W,W], gold:['#fff3a6','#f5b400','#ff8ad8','#e0237f',W,'#5a3a00'], silver:['#ffffff','#b9bccb','#8fd3ff','#4b5cff',W,'#2a2f40'],
+ bronze:['#f7c08a','#b8692c','#ff9a7a','#ff3b55',W,'#3a1a05']};
+let gid=0;
+function paint(s,name){
+ const c=PAL[name];if(!c)return;const id='mjg'+(++gid);
+ const d=document.createElementNS('http://www.w3.org/2000/svg','defs');
+ d.innerHTML=`<linearGradient id="${id}a" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></linearGradient>`+
+  `<linearGradient id="${id}b" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${c[2]}"/><stop offset="1" stop-color="${c[3]}"/></linearGradient>`;
+ s.prepend(d);
+ for(const e of s.querySelectorAll('path,circle,rect,ellipse')){
+  const k=e.classList;
+  if(k.contains('ink'))e.style.stroke=c[5];
+  else if(k.contains('pink'))e.style.fill=`url(#${id}b)`;
+  else if(k.contains('light'))e.style.fill=c[4];
+  else if(!k.contains('go')&&!k.contains('goring'))e.style.fill=`url(#${id}a)`;
+ }
+ s.classList.add('mj-color');
+}
 function icon(name,label){
  const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 32 32');s.setAttribute('class','mj-icon mj-'+name);s.setAttribute('focusable','false');
  if(label){s.setAttribute('role','img');s.setAttribute('aria-label',label);}else s.setAttribute('aria-hidden','true');
- s.innerHTML=shapes[name]||shapes.mohjeta;return s;
+ s.innerHTML=shapes[name]||shapes.mohjeta;paint(s,shapes[name]?name:'mohjeta');return s;
 }
 const SKIP=new Set(['SCRIPT','STYLE','TEXTAREA','INPUT','TITLE','NOSCRIPT','CANVAS','svg']);
 function skip(p){for(let n=p;n&&n.nodeType===1;n=n.parentNode){if(SKIP.has(n.tagName)||n.isContentEditable||(n.classList&&(n.classList.contains('msg')||n.classList.contains('no-icons'))))return true;}return false;}
@@ -52,6 +98,6 @@ function medal(name,o){o=o||{};const id='md'+(++uid);const tier=TIERS[o.locked?'
  <svg x="15" y="11" width="26" height="26" viewBox="0 0 32 32" class="mj-icon glyph">${shapes[name]||shapes.mohjeta}</svg>`;
  return s;
 }
-window.MohjetaIcons={icon,decorate,medal,names:Object.keys(shapes)};
+window.MohjetaIcons={icon,decorate,medal,paint,names:Object.keys(shapes)};
 if(document.body)watch();else document.addEventListener('DOMContentLoaded',watch);
 })();
