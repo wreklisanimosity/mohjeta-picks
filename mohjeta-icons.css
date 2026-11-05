@@ -18,3 +18,7 @@
 .bd .mj-medal{width:40px;height:46px}.bd{display:inline-flex}.bd:not(.on) .mj-medal{filter:none}
 .toast .mj-medal{width:34px;height:39px;vertical-align:middle;margin-right:6px}
 @media (prefers-reduced-motion:reduce){.mj-medal .shine,.mj-live .goring{animation:none}}
+/* colour icons (each its own gradient, set in mohjeta-icons.js PAL) */
+.mj-icon.mj-color{filter:drop-shadow(0 1px 2px #0009)}
+.tabs .mj-icon.mj-color{filter:saturate(.3) brightness(.9);opacity:.75;transition:filter .25s,opacity .25s,transform .25s}
+.tabs [aria-selected=true] .mj-icon.mj-color{filter:drop-shadow(0 0 6px #ff4fd8aa);opacity:1;transform:scale(1.08)}
