@@ -54,6 +54,43 @@ nav.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;jus
   color:var(--dim);font-size:12px;font-weight:700;cursor:pointer;padding:0}
 nav.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 nav.tabs button[aria-selected=true]{color:var(--pink)}
+nav.tabs .qjhandle{position:absolute;left:50%;top:-15px;transform:translateX(-50%);flex:none;height:22px;width:auto;flex-direction:row;gap:6px;padding:0 12px;
+  border:1px solid #ff4fd866;border-radius:12px 12px 0 0;border-bottom:0;background:#0d0816f7;color:var(--pink);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+nav.tabs .qjhandle i{width:9px;height:9px;border-left:2px solid currentColor;border-top:2px solid currentColor;transform:translateY(2px) rotate(45deg)}
+nav.tabs button{min-width:0}nav.tabs button:not(.qjhandle){font-size:11px}
+/* Home dashboard */
+.hhead h2{margin:4px 0 2px;font-size:24px}.hhead p{margin:0}
+.hstats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.hstat{position:relative;text-align:left;font:inherit;color:var(--text);cursor:pointer;padding:12px 14px;border-radius:16px;border:1px solid #ffffff14;
+  background:radial-gradient(130% 130% at 0 0,var(--tc) 0,#150d21 62%);box-shadow:inset 0 1px 0 #ffffff12}
+.hstat small{display:block;color:var(--muted);font-size:12px}.hstat b{display:block;font-size:25px;line-height:1.15;margin:3px 0 1px;letter-spacing:.01em}
+.hstat .mj-icon{position:absolute;right:10px;top:10px;width:24px;height:24px;opacity:.95}
+.hstat:active,.htile:active,.hnext:active{transform:scale(.97)}
+.hnext{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--text);cursor:pointer;padding:12px;margin:0 0 16px;border-radius:18px;
+  border:1px solid #ff4fd877;background:linear-gradient(120deg,#3a1650,#170e25 70%);box-shadow:0 0 22px #ff4fd822}
+.hnext .sport-art{width:54px;height:54px;flex:none}.hnext .nx{flex:1;min-width:0}.hnext small{color:var(--muted);font-size:12px;display:block}
+.hnext b{display:block;font-size:16px;margin:2px 0}.hnext .cd{font-weight:800;color:var(--yellow)}.hnext .go{font-size:24px;color:var(--pink)}
+.hsec{margin:6px 0 8px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.htiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.htile{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:98px;padding:12px;border-radius:18px;text-align:left;font:inherit;color:var(--text);cursor:pointer;
+  border:1px solid #ffffff14;background:radial-gradient(140% 120% at 0 0,var(--tc) 0,#150d21 64%);box-shadow:inset 0 1px 0 #ffffff12;transition:transform .15s}
+.htile .mj-icon{width:34px;height:34px}.htile b{font-size:14px;line-height:1.2}.htile small{font-size:11.5px;color:var(--muted);line-height:1.25}
+.htile .bdg{margin-left:auto;align-self:flex-start}
+@media(min-width:700px){.hstats{grid-template-columns:repeat(4,minmax(0,1fr))}.htiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(min-width:1000px){.htiles{grid-template-columns:repeat(6,minmax(0,1fr))}}
+/* Quick jump: every page, searchable */
+#qj{position:fixed;inset:0;z-index:60;display:none}#qj.on{display:block}
+#qj .qjbg{position:absolute;inset:0;background:#000a;backdrop-filter:blur(3px);animation:qjFade .2s ease}
+#qj .qjp{position:absolute;left:0;right:0;bottom:0;max-height:86vh;overflow:auto;background:#120b1d;border-top:1px solid #ff4fd855;border-radius:22px 22px 0 0;
+  padding:10px 16px calc(18px + var(--safe));animation:qjUp .28s cubic-bezier(.2,.9,.3,1);max-width:900px;margin:0 auto}
+#qj .qjgrip{width:44px;height:5px;border-radius:3px;background:#ffffff33;margin:2px auto 10px}
+#qj .qjtop{display:flex;align-items:center;gap:8px;margin-bottom:10px}#qj .qjtop h3{margin:0;flex:1}
+#qj .qjsearch{display:flex;align-items:center;gap:8px;background:#1d1430;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:12px}
+#qj .qjsearch input{flex:1;background:none;border:0;color:var(--text);font:inherit;font-size:15px;outline:none}#qj .qjsearch .mj-icon{width:20px;height:20px}
+#qj .htiles{grid-template-columns:repeat(4,minmax(0,1fr))}#qj .htile{min-height:84px;padding:10px}#qj .htile .mj-icon{width:28px;height:28px}#qj .htile small{display:none}
+@media(max-width:380px){#qj .htiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:900px){nav.tabs .qjhandle{position:static;transform:none;height:auto;border:1px solid #ff4fd866;border-radius:10px;padding:8px 14px;order:99;margin-left:auto}}
+@keyframes qjUp{from{transform:translateY(100%)}to{transform:none}}@keyframes qjFade{from{opacity:0}}
 nav.tabs button[aria-selected=true] svg{filter:drop-shadow(0 0 6px #ff4fd8aa)}
 @media(min-width:900px){
   body{padding-bottom:24px}
@@ -374,7 +411,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 <link rel="stylesheet" href="mohjeta-icons.css?v=3">
 <link rel="stylesheet" href="intro.css?v=3">
 <link rel="stylesheet" href="community.css?v=1">
-<script src="mohjeta-icons.js?v=3"></script>
+<script src="mohjeta-icons.js?v=4"></script>
 <script src="sport-art.js?v=2"></script>
 <script src="live-data.js?v=1"></script>
 <link rel="stylesheet" href="game-matchups.css?v=2">
@@ -402,7 +439,9 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
   <div class="top"><div class="brand" id="home" role="link" tabindex="0" aria-label="Mohjeta"><img class="brand-m" src="logo-cut.webp?v=2" alt="" width="30" height="30"><span aria-hidden="true">OHJETA</span><b aria-hidden="true">.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><button type="button" class="btn subscribe-entry" id="subscribeEntry">Subscribe</button><span class="updated" id="updated">Loading…</span><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
 </header>
   <nav class="tabs" role="tablist" aria-label="Sections" id="nav">
-    <button role="tab" data-tab="picks" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5 2 7.5L12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>Tonight</button>
+    <button type="button" class="qjhandle" id="qjOpen" aria-label="All pages (quick jump)"><i></i><span>All pages</span></button>
+    <button role="tab" data-tab="home" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3Z"/></svg>Home</button>
+    <button role="tab" data-tab="picks" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5 2 7.5L12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>Tonight</button>
     <button role="tab" data-tab="props" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/><path d="M17 4l2-2M19 6h2"/></svg>Props</button>
     <button role="tab" data-tab="sim" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg>Simulate</button>
     <button role="tab" data-tab="record" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Results</button>
@@ -412,7 +451,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
   </nav>
 <main>
   <div id="newsBar"></div>
-  <section class="panel on" id="picks" role="tabpanel" aria-label="Picks">
+  <section class="panel on" id="home" role="tabpanel" aria-label="Home"><div id="homeBox"><p class="hint">Loading her dashboard…</p></div></section>
+  <section class="panel" id="picks" role="tabpanel" aria-label="Picks">
     <div id="record"></div><div id="installBox"></div><div id="alertsBox"></div>
     <div id="liveBox"></div>
     <h3>Tonight she's betting</h3><p class="hint small xp">Games where she puts $5 of paper money on her pick at Kalshi's real price. Tap a sport to see them.</p><div id="betting"></div>
@@ -580,7 +620,7 @@ const el=(t,txt,cls)=>{const n=document.createElement(t);if(txt!=null)n.textCont
 const iel=(t,txt,cls)=>{const n=el(t,txt,cls);return window.MohjetaIcons?MohjetaIcons.decorate(n):n;};
 if(window.MohjetaIcons){
  document.querySelectorAll('.hi,h2,#recSwitch button,#more button span').forEach(n=>MohjetaIcons.decorate(n));
- const names={picks:'picks',props:'props',sim:'simulate',record:'results',play:'play',chat:'chat',more:'more'};
+ const names={home:'home',picks:'picks',props:'props',sim:'simulate',record:'results',play:'play',chat:'chat',more:'more'};
  document.querySelectorAll('#nav [data-tab]').forEach(b=>{const old=b.querySelector('svg');if(old)old.replaceWith(MohjetaIcons.icon(names[b.dataset.tab]));});
 }
 
@@ -651,9 +691,9 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['picks','props','sim','record','play','chat','more'];const SUB={games:'more',ratings:'more',guess:'play',fantasy:'play',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
+const TABS=['home','picks','props','sim','record','play','chat','more'];const SUB={games:'more',ratings:'more',guess:'play',fantasy:'play',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
-const navBtns=[...document.querySelectorAll('#nav button')];
+const navBtns=[...document.querySelectorAll('#nav button[data-tab]')];
 function show(name,push){name=LEGACY[name]||name;
   if(name==='fantasy')setTimeout(renderFantasy,0);
   if(name==='news')setTimeout(drawNews,0);   // chat = one floating overlay over any tab
@@ -664,11 +704,14 @@ function show(name,push){name=LEGACY[name]||name;
   closeSheet(true);window.scrollTo(0,0);if(push!==false)try{history.pushState(null,'','#'+name);}catch(e){}
   if(name==='chat')openChat();}
 navBtns.forEach(b=>b.onclick=()=>show(b.dataset.tab));
+{const q=$('qjOpen');if(q)q.onclick=openQJ;let y0=null;const nv=$('nav');   // tap the handle, or swipe up on the bar, for every page
+ nv.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;},{passive:true});nv.addEventListener('touchend',e=>{if(y0!=null&&y0-e.changedTouches[0].clientY>40)openQJ();y0=null;},{passive:true});
+ addEventListener('keydown',e=>{if(e.key==='Escape')closeQJ();});}
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
-$('home').onclick=()=>show('picks');$('home').onkeydown=e=>{if(e.key==='Enter')show('picks');};
+$('home').onclick=()=>show('home');$('home').onkeydown=e=>{if(e.key==='Enter')show('home');};
 function route(){const h=location.hash.slice(1);if(h.startsWith('game/')){openGame(decodeURIComponent(h.slice(5)),false);return;}
   if(h.startsWith('join/')){simMode='fantasy';show('sim',false);$('anyBox').replaceChildren();renderSim();setTimeout(()=>joinLeague(h.slice(5)),1500);return;}
-  show(h&&(TABS.includes(LEGACY[h]||h)||SUB[h])?h:'picks',false);}
+  show(h&&(TABS.includes(LEGACY[h]||h)||SUB[h])?h:'home',false);}
 window.addEventListener('popstate',route);
 
 // ---------------- color-blind switch
@@ -977,7 +1020,7 @@ function applyLive(L){if(!D||!L){lastLive=L;return;}{let k=null;try{const {updat
   if(L.bets&&D.bets){D.bets.totals=L.bets.totals||D.bets.totals;const key=r=>r.opened+'|'+r.bet;const have=new Map(D.bets.rows.map((r,i)=>[key(r),i]));
     const fresh=[];for(const r of L.bets.rows||[]){const i=have.get(key(r));if(i!=null)D.bets.rows[i]=r;else fresh.push(r);}D.bets.rows=fresh.concat(D.bets.rows);}
   if(L.finals)D.finals=Object.assign(D.finals||{},L.finals);applyMembers(D);
-  try{renderPicks(D);renderGames(D);renderRecord(D);}catch(e){}
+  try{renderPicks(D);renderGames(D);renderRecord(D);renderHome(D);}catch(e){}
   const u=$('updated');u.classList.remove('stale');u.textContent='● Live '+hm(L.updated);u.classList.add('livedot');}
 const BAD=/\b(fuck|shit|bitch|cunt|nigg\w*|fag\w*|retard\w*)\b/gi;
 function clean(t){return String(t).replace(BAD,m=>m[0]+'*'.repeat(m.length-1));}
@@ -1449,9 +1492,60 @@ function renderMore(d){$('comboList').replaceChildren(...(d.combos.length?d.comb
   table('All picks',sc.overall);for(const [lg,tbl] of Object.entries(sc.by_league))table(sname(lg),tbl);}
 
 // ---------------- load + render
+
+// ---------------- Home dashboard + quick jump (every page, one tap)
+// [page, icon, title, subtitle, tint, keywords]
+const PAGES=[['picks','⭐','Tonight','Her bets and best picks','#5a3a12','bets picks today'],['live','🟢','Live now','Games in progress','#123a28','live scores in progress'],
+ ['props','🎯','Props','Player props, tonight','#3a1230','player points threes assists'],['record','📈','Results','Her full record','#123a24','record track wins losses profit'],
+ ['sim','⚔️','Simulate','Any matchup, 10,000 times','#122a4a','simulator matchup'],['play','🖐️',"Pick'em",'Beat her picks','#4a1a12','pickem game badges'],
+ ['fantasy','🏀','Fantasy','Draft and battle','#4a2a10','fantasy league draft'],['guess','🔮','Guess her number','Quick game','#2e1650','guess game'],
+ ['ratings','🏆','Ratings','Teams and players','#4a3a08','ratings players teams grades'],['games','📅','All games','Every game she watches','#4a1a20','schedule games all'],
+ ['chat','💬','Chat','Talk with fans','#142a50','chat community fans'],['news','🆕',"What's new",'Latest updates','#4a1238','news updates'],
+ ['combos','🎲','Combos','Multi-game ideas','#4a1218','combos parlay'],['score','📊','Scorecard','Her sources, graded','#103a30','scorecard sources accuracy'],
+ ['how','🤖','How she picks','Her method','#14304a','method how explanation'],['odds','⚖️','Use her picks','Fair odds anywhere','#2a2a40','odds sportsbook value'],
+ ['safe','⚠️','Play responsibly','21+ and help','#4a3208','responsible help limits'],['terms','📋','Terms','What this is','#2a2236','terms legal'],['privacy','🔒','Privacy','Your information','#232a36','privacy data']];
+function goPage(k){closeQJ();if(k==='live'){show('picks');setTimeout(()=>{const l=$('liveBox');if(l&&l.childElementCount)l.scrollIntoView({behavior:'smooth',block:'start'});},60);return;}
+  if(k==='fantasy'){show('fantasy');return;}if(k==='guess'){show('guess');if(typeof drawGuess==='function')drawGuess();return;}show(k);}
+function pageCount(k,d){d=d||D;if(!d)return '';const gs=d.games||[];const t=d.bets&&d.bets.totals;
+  if(k==='picks'){const n=gs.filter(g=>g.state==='UPCOMING'&&g.pick&&isBetLane(g)).length;return n?n+' bet'+(n===1?'':'s')+' tonight':'';}
+  if(k==='live'){const n=gs.filter(g=>g.state==='LIVE').length;return n?n+' live':'None right now';}
+  if(k==='props'){const n=((d.props||{}).open||[]).length;return n?n+' picks open':'';}
+  if(k==='record')return t&&t.settled?t.wins+'-'+t.losses+' · '+signed(t.net):'';
+  if(k==='games')return gs.length?gs.length+' games':'';
+  if(k==='chat')return typeof online!=='undefined'&&online.n?online.n+' online':'';
+  if(k==='news'){const u=NEWS&&(NEWS.updates||[])[0];return u&&newsSeen()!==u.id?'New update':'';}
+  return '';}
+function pageTile(p,d){const [k,ic,t,sub,tc]=p;const b=el('button',null,'htile');b.type='button';b.style.setProperty('--tc',tc);
+  const c=pageCount(k,d);b.append(iel('span',ic),el('b',t),el('small',c||sub));b.onclick=()=>goPage(k);return b;}
+function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren();const hr=new Date().getHours();
+  const hh=el('div',null,'hhead');hh.append(el('h2',hr<5?'Late night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening'),el('p','Everything happening with her picks, one tap away.','hint small'));box.append(hh);
+  const gs=d.games||[],t=d.bets&&d.bets.totals,live=gs.filter(g=>g.state==='LIVE');
+  const up=gs.filter(g=>g.state==='UPCOMING'&&g.pick&&isBetLane(g)).sort((a,b)=>String(a.start).localeCompare(String(b.start)));
+  const st=el('div',null,'hstats');const stat=(lab,big,small,ic,tc,go,c)=>{const b=el('button',null,'hstat');b.type='button';b.style.setProperty('--tc',tc);
+    b.append(el('small',lab),el('b',big,c||''),el('small',small));if(window.MohjetaIcons)b.append(MohjetaIcons.icon(ic));b.onclick=go;return b;};
+  st.append(stat('Record',t&&t.settled?t.wins+'-'+t.losses:'—',t&&t.settled?pct(t.win_rate)+' wins':'Starting soon','results','#123a24',()=>show('record')),
+    stat('Profit',t?signed(t.net):'—','paper money','money','#103a1c',()=>show('record'),'pl '+(t?cls(t.net):'')),
+    stat('Live now',String(live.length),live.filter(g=>g.pick&&isBetLane(g)).length+' with her bet','live','#123a28',()=>goPage('live')),
+    stat('Tonight',String(up.length),'games she bets','picks','#4a3010',()=>show('picks')));box.append(st);
+  const nx=up[0];if(nx){const b=el('button',null,'hnext');b.type='button';if(window.SportArt)b.append(SportArt.el(nx.league));
+    const info=el('div',null,'nx');const team=(nx.pick&&(nx.pick.team||nx.pick.name))||'';info.append(el('small','Next up · '+sname(nx.league)),el('b',nx.name||''));
+    const line=el('small',(team?'Her pick: '+team+(typeof nx.pick.chance==='number'?' ('+pct(nx.pick.chance)+')':'')+' · ':''));const cd=countdown(nx);if(cd)line.append(cd);info.append(line);
+    b.append(info,el('span','›','go'));b.onclick=()=>openGame(nx.id||nx.name);box.append(b);}
+  box.append(el('div','Go to','hsec'));const tiles=el('div',null,'htiles');for(const p of PAGES.slice(0,12))tiles.append(pageTile(p,d));box.append(tiles);
+  const more=el('button','All pages ⌃','btn ghost small');more.type='button';more.onclick=openQJ;box.append(more);}
+function closeQJ(){const q=$('qj');if(q)q.classList.remove('on');document.body.style.overflow='';}
+function openQJ(){let q=$('qj');if(!q){q=el('div');q.id='qj';q.setAttribute('role','dialog');q.setAttribute('aria-label','All pages');document.body.append(q);}
+  q.replaceChildren();const bg=el('div',null,'qjbg');bg.onclick=closeQJ;const pn=el('div',null,'qjp');pn.append(el('div',null,'qjgrip'));
+  const top=el('div',null,'qjtop');const x=el('button','✕','back');x.type='button';x.setAttribute('aria-label','Close');x.onclick=closeQJ;top.append(el('h3','All pages'),x);pn.append(top);
+  const sr=el('label',null,'qjsearch');if(window.MohjetaIcons)sr.append(MohjetaIcons.icon('search'));const inp=el('input');inp.type='search';inp.placeholder='Search pages (props, ratings, chat…)';sr.append(inp);pn.append(sr);
+  const grid=el('div',null,'htiles');const draw=()=>{const qq=inp.value.trim().toLowerCase();grid.replaceChildren(...[['home','🏠','Home','Dashboard','#3a1650','home dashboard'],...PAGES]
+    .filter(p=>!qq||(p[2]+' '+p[3]+' '+p[5]).toLowerCase().includes(qq)).map(p=>{const b=pageTile(p,D);if(p[0]==='home')b.onclick=()=>{closeQJ();show('home');};return b;}));
+    if(!grid.childElementCount)grid.append(el('p','No page matches.','hint'));};
+  inp.oninput=draw;inp.onkeydown=e=>{if(e.key==='Enter'){const f=grid.querySelector('.htile');if(f)f.click();}if(e.key==='Escape')closeQJ();};draw();pn.append(grid);
+  q.append(bg,pn);q.classList.add('on');document.body.style.overflow='hidden';}
 function render(d){D=d;applyMembers(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
-  $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderMore(d),()=>renderSim(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
+  $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderMore(d),()=>renderSim(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
   if(lastLive&&Date.parse(lastLive.updated)>Date.parse(d.updated))applyLive(lastLive);
   navBtns.find(b=>b.dataset.tab==='record').hidden=!d.bets;
   if(sheetGame){const g=d.games.find(x=>String(x.id||x.name)===String(sheetGame.id||sheetGame.name));if(g){sheetGame=g;const s=$('sheet');const y=s.scrollTop;$('sheetBody').replaceChildren(gameView(g));s.scrollTop=y;}}}
