@@ -369,9 +369,10 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .actiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
 .card.tap,.hubbtn{border-color:#5b3a7a}
 </style>
-<link rel="stylesheet" href="mohjeta-icons.css?v=1">
+<link rel="stylesheet" href="mohjeta-icons.css?v=2">
+<link rel="stylesheet" href="intro.css?v=1">
 <link rel="stylesheet" href="community.css?v=1">
-<script src="mohjeta-icons.js?v=1"></script>
+<script src="mohjeta-icons.js?v=2"></script>
 <script src="live-data.js?v=1"></script>
 <link rel="stylesheet" href="game-matchups.css?v=2">
 <script src="game-matchups.js?v=2"></script>
@@ -393,6 +394,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 <script src="languages.js?v=2" defer></script>
 </head>
 <body>
+<script src="intro.js?v=1"></script>
 <header>
   <div class="top"><div class="brand" id="home" role="link" tabindex="0">MOHJETA<b>.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><button type="button" class="btn subscribe-entry" id="subscribeEntry">Subscribe</button><span class="updated" id="updated">Loading…</span><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
 </header>
@@ -876,15 +878,21 @@ function shareCard(c){const W=1080,H=1350,cv=document.createElement('canvas');cv
     try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Mohjeta',text:c.title});return;}}catch(e){if(e&&e.name==='AbortError')return;}
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mohjeta.png';document.body.append(a);a.click();a.remove();},'image/png');}
 function wrapText(x,t,cx,y,maxW,lh){const words=String(t).split(' ');let line='';for(const w of words){const test=line?line+' '+w:w;if(x.measureText(test).width>maxW&&line){x.fillText(line,cx,y);y+=lh;line=w;}else line=test;}x.fillText(line,cx,y);}
+// each badge is its own struck medal: icon, metal tier, enamel colour, shape (mohjeta-icons.js medal())
+const MEDAL={first_pick:['target','bronze','#e0337a','hex'],five_picks:['hand','silver','#7b3fe4','round'],beat_her:['crown','gold','#b0129b','star'],
+  sim:['dice','bronze','#3c63e0','round'],sim25:['practice','silver','#17a589','hex'],trade:['swap','bronze','#d9622b','shield'],share:['share','bronze','#c2378f','round'],
+  guess:['forecast','bronze','#6a3ad8','hex'],sharp:['arrow','gold','#d23a3a','shield'],chat:['chat','bronze','#2b8fd6','round'],compare:['compare','silver','#8a4fd8','shield'],
+  fantasy:['basketball','silver','#e2701c','star'],alerts:['alerts','bronze','#c99a16','shield']};
+function medalOf(k,locked){const m=MEDAL[k];if(!m||!window.MohjetaIcons||!MohjetaIcons.medal)return null;return MohjetaIcons.medal(m[0],{tier:m[1],color:m[2],shape:m[3],locked,label:BADGES[k][1]+(locked?' (locked)':'')});}
 const BADGES={first_pick:['🎯','First pick'],five_picks:['🖐️','5 picks made'],beat_her:['👑','Beating the AI'],sim:['🎲','First simulation'],sim25:['🧪','25 simulations'],trade:['⇄','Trade machine'],share:['📤','Shared a card'],guess:['🔮','First guess'],sharp:['🏹','Guessed within 3 pts'],chat:['💬','First chat message'],compare:['⚖️','Compared players'],fantasy:['🏀','Drafted a fantasy team'],alerts:['🔔','Turned on alerts']};
 function badgeData(){try{return JSON.parse(localStorage.getItem('mohjeta.badges')||'{}')||{};}catch(e){return {};}}
 function award(kind){const b=badgeData();b._n=b._n||{};b._n[kind]=(b._n[kind]||0)+1;const earn=[];
   const give=k=>{if(!b[k]){b[k]=Date.now();earn.push(k);}};
   if(kind==='sim'){give('sim');if(b._n.sim>=25)give('sim25');}else if(BADGES[kind])give(kind);
-  try{localStorage.setItem('mohjeta.badges',JSON.stringify(b));}catch(e){}for(const k of earn)toast(BADGES[k][0]+' Badge unlocked: '+BADGES[k][1]);if(earn.length)for(const sh of document.querySelectorAll('.shelf'))sh.replaceWith(badgeShelf());}
-function toast(t){const n=document.querySelectorAll('.toast').length;const d=el('div',t,'toast');if(n)d.style.bottom='calc(var(--navh) + '+(24+n*76)+'px)';document.body.append(d);setTimeout(()=>d.classList.add('out'),2200);setTimeout(()=>d.remove(),2700);}
+  try{localStorage.setItem('mohjeta.badges',JSON.stringify(b));}catch(e){}for(const k of earn){const md=medalOf(k,false);if(md){const t=toast('Badge unlocked: '+BADGES[k][1]);if(t&&t.prepend)t.prepend(md);}else toast(BADGES[k][0]+' Badge unlocked: '+BADGES[k][1]);}if(earn.length)for(const sh of document.querySelectorAll('.shelf'))sh.replaceWith(badgeShelf());}
+function toast(t){const n=document.querySelectorAll('.toast').length;const d=el('div',t,'toast');if(n)d.style.bottom='calc(var(--navh) + '+(24+n*76)+'px)';document.body.append(d);setTimeout(()=>d.classList.add('out'),2200);setTimeout(()=>d.remove(),2700);return d;}
 function badgeShelf(){const b=badgeData();const got=Object.keys(BADGES).filter(k=>b[k]);const d=el('div',null,'shelf');
-  d.append(el('span','Badges '+got.length+'/'+Object.keys(BADGES).length,'hint small'));for(const k of Object.keys(BADGES)){const i=iel('span',BADGES[k][0],'bd'+(b[k]?' on':''));i.title=BADGES[k][1]+(b[k]?'':' (locked)');d.append(i);}return d;}
+  d.append(el('span','Badges '+got.length+'/'+Object.keys(BADGES).length,'hint small'));for(const k of Object.keys(BADGES)){const md=medalOf(k,!b[k]);const i=md?el('span',null,'bd'+(b[k]?' on':'')):iel('span',BADGES[k][0],'bd'+(b[k]?' on':''));if(md)i.append(md);i.title=BADGES[k][1]+(b[k]?'':' (locked)');d.append(i);}return d;}
 function countdown(g){if(g.state!=='UPCOMING'||!g.start)return null;const d=el('span',null,'cd');d.dataset.start=g.start;tick1(d);return d;}
 function tick1(d){const ms=new Date(d.dataset.start)-Date.now();if(ms<=0){d.textContent='🔒 locked';return;}
   const h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),sec=Math.floor(ms%60000/1000);
