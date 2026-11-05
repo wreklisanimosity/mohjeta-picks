@@ -353,7 +353,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
   background:linear-gradient(#21152f,#160e22);border:1px solid #6d4686;border-radius:14px;padding:12px 30px 12px 12px;min-height:84px}
 .stile:hover,.stile:focus-visible{border-color:var(--pink)}.stile:active{transform:scale(.98)}
 .stile::after{content:'›';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--pink);font-size:24px;font-weight:700}
-.stile .si{font-size:22px;line-height:1}.stile b{font-size:15px}.stile small{color:var(--muted);font-size:12px}.stile .pl{font-weight:800}
+.stile .si{font-size:22px;line-height:1}.stile .si.art{display:block;width:52px;height:52px;margin-bottom:6px}.stile .si.art svg{width:100%;height:100%;filter:drop-shadow(0 4px 8px #000a);transition:transform .3s}.stile:hover .si.art svg{transform:perspective(200px) rotateX(8deg) rotateY(-10deg) scale(1.06)}
+.crumb h4 .sport-art{width:30px;height:30px;vertical-align:-9px;margin-right:4px;border-radius:8px}.stile b{font-size:15px}.stile small{color:var(--muted);font-size:12px}.stile .pl{font-weight:800}
 .stile.hot{border-color:var(--red)}.stile.on{border-color:var(--pink);box-shadow:0 0 0 1px var(--pink) inset}
 .crumb{display:flex;align-items:center;gap:8px;margin:0 0 10px;flex-wrap:wrap}.crumb h4{margin:0;font-size:16px}
 .crumb button{min-height:36px;padding:0 14px;border:1px solid #79568c;border-radius:999px;background:#241732;color:#f5ebff;font:inherit;font-size:13px;cursor:pointer}
@@ -373,6 +374,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 <link rel="stylesheet" href="intro.css?v=1">
 <link rel="stylesheet" href="community.css?v=1">
 <script src="mohjeta-icons.js?v=2"></script>
+<script src="sport-art.js?v=2"></script>
 <script src="live-data.js?v=1"></script>
 <link rel="stylesheet" href="game-matchups.css?v=2">
 <script src="game-matchups.js?v=2"></script>
@@ -1311,11 +1313,11 @@ function drawBetting(d){const box=$('betting');box.replaceChildren();
   if(!tonSport){const t=el('div',null,'stiles');
     for(const lg of sports){const gs=by[lg];const placed=gs.filter(g=>g.bet).length;const b=el('button',null,'stile');b.type='button';
       b.setAttribute('aria-label',sname(lg)+': '+gs.length+' bet games. Open');
-      b.append(el('span',sportIcon(lg),'si'),el('b',sname(lg)),el('small',gs.length+' game'+(gs.length===1?'':'s')+(placed?' · '+placed+' bet'+(placed===1?'':'s')+' placed':'')),el('small','Next: '+when(gs[0].start)));
+      b.append(window.SportArt?(()=>{const w=el('span',null,'si art');w.append(SportArt.el(lg,sname(lg)));return w;})():el('span',sportIcon(lg),'si'),el('b',sname(lg)),el('small',gs.length+' game'+(gs.length===1?'':'s')+(placed?' · '+placed+' bet'+(placed===1?'':'s')+' placed':'')),el('small','Next: '+when(gs[0].start)));
       b.onclick=()=>{tonSport=lg;drawBetting(D);};t.append(b);}
     box.append(t);return;}
   const cr=el('div',null,'crumb');if(sports.length>1){const back=el('button','‹ All sports');back.type='button';back.onclick=()=>{tonSport=null;drawBetting(D);};cr.append(back);}
-  cr.append(el('h4',sportIcon(tonSport)+' '+sname(tonSport)+' · '+by[tonSport].length));box.append(cr);
+  {const h=el('h4',' '+sname(tonSport)+' · '+by[tonSport].length);if(window.SportArt)h.prepend(SportArt.el(tonSport));else h.prepend(sportIcon(tonSport));cr.append(h);}box.append(cr);
   const gr=el('div',null,'mgrid');for(const g of by[tonSport])gr.append(miniCard(g));box.append(gr);}
 function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(pickemCard(),boardCard(),myPicks());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
