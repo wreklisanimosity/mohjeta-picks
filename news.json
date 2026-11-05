@@ -2,6 +2,13 @@
   "_how_to_edit": "Newest update first. Give each update a new id: the banner shows the top one to everyone who has not closed it yet. 'go' (optional) is the tab its button opens: picks, props, sim, record, play, more. Keep each text short.",
   "updates": [
     {
+      "id": "2026-11-05-look",
+      "date": "2026-11-05",
+      "title": "New look: opening animation, custom icons and medals",
+      "text": "A new opening animation, our own icons in place of stock emoji across the app, and every badge is now its own medal (bronze, silver or gold). The app also no longer flickers when new data arrives.",
+      "go": "play"
+    },
+    {
       "id": "2026-11-05-injuries-reb",
       "date": "2026-11-05",
       "title": "Official injury report for every NBA pick; rebound and points-over picks paused",
