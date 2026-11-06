@@ -440,7 +440,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 :is(button,select,[role=button]):focus-visible{outline:3px solid #f3afff;outline-offset:2px}
 @media(hover:hover){.game-picker:hover #simPick,.panel .chips button:hover,.panel button.back:hover{border-color:#f3afff}}
 </style>
-<script src="languages.js?v=5" defer></script>
+<script src="languages.js?v=6" defer></script>
 </head>
 <body>
 <script src="sounds.js?v=1"></script>
@@ -1313,6 +1313,7 @@ function miniCard(g){const c=el('article',null,'card tap mini');c.tabIndex=0;c.s
     if(g.pick.held)c.append(el('div','Too close to call: earlier pick stays','mread'));
     if(g.thesis)c.append(el('div',(g.own_team?'Her own read: ':'')+firstLine(g.thesis),'why2'));
     {const vc=voiceFor(g);if(vc&&g.state==='UPCOMING')c.append(voiceButton(vc,'Hear her'));}
+    if(g.no_bet&&!g.bet)c.append(el('div','🚫 '+g.no_bet.charAt(0).toUpperCase()+g.no_bet.slice(1),'hint small nobet'));
     if(g.teams.length===2&&(g.state==='UPCOMING'||pkLoad()[pkKey(g)])){const pr=pickemRow(g);const cd=countdown(g);if(cd)pr.append(cd);c.append(pr);}}
   c.append(el('div','Full breakdown ›','chev'));return c;}
 
@@ -1333,7 +1334,8 @@ function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');if
     if(ln.t==='PRACTICE')c.append(el('div','🧪 Practice pick: still learning this sport. Use with caution.','hint small prac-note'));
     if(flipped(g))c.append(el('div','⇄ Her read has changed since she bet: she now favors '+g.pick.team+', but her bet stays on '+g.bet.team+'.','small open'));
     if(g.thesis&&!opts.short)c.append(el('div',(g.own_team?'Her own read (her pick follows the market): ':'')+firstLine(g.thesis),'why1'));
-    {const vc=voiceFor(g);if(vc&&g.state==='UPCOMING')c.append(voiceButton(vc,'Hear her'));}}
+    {const vc=voiceFor(g);if(vc&&g.state==='UPCOMING')c.append(voiceButton(vc,'Hear her'));}
+    if(g.no_bet&&!g.bet)c.append(el('div','🚫 '+g.no_bet.charAt(0).toUpperCase()+g.no_bet.slice(1),'hint small nobet'));}
   else c.append(el('p','Her pick is coming soon.','hint'));
   c.append(el('div','Full breakdown ›','more'));return c;}
 
