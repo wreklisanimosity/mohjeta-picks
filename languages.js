@@ -10,6 +10,8 @@ Object.assign(MOHJETA_LANGUAGES,{"Picks she skipped (over 95¢)": {"es": "Pronó
 const MJ_DAYS={es:{Mon:'lun',Tue:'mar',Wed:'mié',Thu:'jue',Fri:'vie',Sat:'sáb',Sun:'dom'},fr:{Mon:'lun.',Tue:'mar.',Wed:'mer.',Thu:'jeu.',Fri:'ven.',Sat:'sam.',Sun:'dim.'},ar:{Mon:'الإثنين',Tue:'الثلاثاء',Wed:'الأربعاء',Thu:'الخميس',Fri:'الجمعة',Sat:'السبت',Sun:'الأحد'}};
 const MJ_STAT={threes:{es:'triples',fr:'paniers à 3 pts',ar:'ثلاثيات'},points:{es:'puntos',fr:'points',ar:'نقاط'},assists:{es:'asistencias',fr:'passes',ar:'تمريرات حاسمة'},rebounds:{es:'rebotes',fr:'rebonds',ar:'مرتدات'}};
 const MOHJETA_PATTERNS=[
+  [/^💵 Her open bets \((\d+)\)$/,{es:'💵 Sus apuestas abiertas ($1)',fr:'💵 Ses paris en cours ($1)',ar:'💵 رهاناتها المفتوحة ($1)'}],
+  [/^(\$[\d.,]+) riding · every bet that has not finished yet, in one list$/,{es:'$1 en juego · todas las apuestas que aún no terminan, en una lista',fr:'$1 en jeu · tous les paris pas encore terminés, dans une liste',ar:'$1 قيد اللعب · كل الرهانات التي لم تنتهِ بعد في قائمة واحدة'}],
   [/^🚫 No bet: Kalshi has (.+) at (\d+)¢ \(too little to win\)$/,{es:'🚫 Sin apuesta: Kalshi tiene a $1 a $2¢ (se gana muy poco)',fr:'🚫 Pas de pari : Kalshi met $1 à $2¢ (trop peu à gagner)',ar:'🚫 لا رهان: سعر $1 على Kalshi هو $2¢ (الربح ضئيل جدًا)'}],
   [/^🚫 No bet: Kalshi has no price to buy \(the favorite is at \$1\)$/,{es:'🚫 Sin apuesta: Kalshi no tiene precio para comprar (el favorito está a 1 $)',fr:'🚫 Pas de pari : aucun prix disponible sur Kalshi (le favori est à 1 $)',ar:'🚫 لا رهان: لا يوجد سعر للشراء على Kalshi (المرشح بسعر 1$)'}],
   [/^▶ Hear her( · \d+s)?$/,{es:'▶ Escúchala$1',fr:'▶ Écoutez-la$1',ar:'▶ استمع إليها$1'}],
