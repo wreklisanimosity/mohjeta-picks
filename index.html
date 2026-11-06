@@ -336,6 +336,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .gone{display:flex;justify-content:center;margin:6px 0 10px;min-height:0}
 .cpic{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none;font-size:10px;align-self:center}
 .feedrow{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.feedrow:first-of-type{border-top:0}.feed .fic{font-size:18px;line-height:1.3;flex:none}.feed .fbody{min-width:0}.feed .ftext{font-size:14px;line-height:1.35}.feedrow.hot .ftext{font-weight:700}.feed a{color:var(--pink)}.hfeed .row{margin-bottom:2px}#feedChips{flex-wrap:wrap}
+.brow.parlay{display:block;padding:8px 0;border-top:1px solid var(--line)}
 .openbets h4{margin:0 0 2px}.obrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:9px 0;color:var(--text);font:inherit;cursor:pointer}.obrow .obl{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.obrow .obr{font-weight:800;white-space:nowrap}
 .board .brow{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.board .bk{width:26px;text-align:center}
 .rest{margin:8px 0}.rest .anyn{display:flex;gap:6px;align-items:center;margin:4px 0}.rest summary{cursor:pointer;font-weight:600}.rest b{display:block;margin-top:6px}
@@ -450,7 +451,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 :is(button,select,[role=button]):focus-visible{outline:3px solid #f3afff;outline-offset:2px}
 @media(hover:hover){.game-picker:hover #simPick,.panel .chips button:hover,.panel button.back:hover{border-color:#f3afff}}
 </style>
-<script src="languages.js?v=10" defer></script>
+<script src="languages.js?v=11" defer></script>
 </head>
 <body>
 <script src="sounds.js?v=1"></script>
@@ -1829,8 +1830,19 @@ function openPropHistory(stat){const P=propData(D);if(!P)return;
       if(!rows.length){const tr=el('tr');const td=el('td','No finished prop picks here yet.');td.colSpan=2;tr.append(td);tb.append(tr);}
       tw.append(tb);box.append(tw,el('p',P.rule||'','hint small'));};
     draw();return w;});}
+// ---------------- her $2 paper prop parlays (prop_parlays.py): threes + assists, legs from different games
+function propParlaysCard(d){const P=d.prop_parlays;if(!P||!P.rows||!P.rows.length)return null;const R=P.record||{};
+  const c=el('div',null,'card');c.append(iel('h4','🎲 Her prop parlays ($2 paper)'));
+  const st=el('div',null,'stats');const stat=(l,v,cl)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cl||''));st.append(s);};
+  stat('Record',(R.won||0)+'-'+(R.lost||0));stat('Profit',signed(R.pl||0),'pl '+cls(R.pl||0));if(R.open)stat('Open',String(R.open));c.append(st);
+  for(const x of P.rows.slice(0,6)){const r=el('div',null,'brow parlay');const legs=el('div',null,'fn');
+    x.legs.forEach(l=>legs.append(el('div',(STATICON[l.stat]||'')+' '+l.player+' '+(l.side==='YES'?'over ':'under ')+l.line+' '+(STATNAME[l.stat]||l.stat)+' · '+Math.round(l.price*100)+'¢','small')));
+    legs.append(el('div',x.result==='OPEN'?'$'+x.stake.toFixed(0)+' to win $'+(x.pays-x.stake).toFixed(2)+' · her '+Math.round(x.her*100)+'%':(x.result==='WON'?'✅ Won ':'❌ Lost ')+signed(x.pnl),'hint small'));
+    r.append(legs);c.append(r);}
+  c.append(el('p',P.rule||'','hint small'));return c;}
 function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(d);box.replaceChildren();
   if(!P){box.append(el('p','Her props will show here within a few minutes of the next update.','hint'));return;}
+  try{const pp=propParlaysCard(d);if(pp)box.append(pp);}catch(e){}
   const R=P.record||{},n=(R.won||0)+(R.lost||0);
   // report card (separate from her game bets)
   const card=el('div',null,'card');card.append(iel('h4','🎯 Her props report card'));
