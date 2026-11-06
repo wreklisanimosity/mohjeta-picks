@@ -2,6 +2,13 @@
   "_how_to_edit": "Newest update first. Give each update a new id: the banner shows the top one to everyone who has not closed it yet. 'go' (optional) is the tab its button opens: picks, props, sim, record, play, more. Keep each text short.",
   "updates": [
     {
+      "id": "2026-11-06-feed",
+      "date": "2026-11-06",
+      "title": "New: live feed",
+      "text": "More → Live feed shows news for today's games as it happens: injury and lineup news, foul trouble, big Kalshi price moves, her pick changes and her bets. The newest three are on Home too. Mohjeta also reads ESPN's headlines now and re-checks a game when injury news breaks.",
+      "go": "feed"
+    },
+    {
       "id": "2026-11-05-sound",
       "date": "2026-11-05",
       "title": "New: sounds, vibration and her voice",
