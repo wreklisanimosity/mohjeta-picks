@@ -1,7 +1,7 @@
 // Mohjeta Picks offline helper: the app shell is cached; picks data is always fetched fresh and
 // falls back to the last copy only when the phone is offline.
-const SHELL = 'mohjeta-shell-parlays-v19';
-const FILES = ['./languages.js?v=11', './languages.css?v=3', './game-matchups.js?v=2', './game-matchups.css?v=2', './live-data.js?v=1', './community.css?v=1', './mohjeta-icons.js?v=5', './mohjeta-icons.css?v=5', './sounds.js?v=1', './intro.js?v=3', './intro.css?v=3', './sport-art.js?v=2', './logo-cut.webp?v=2', './notification-badge.png', './nba-sim.js?v=nba-lineups-v1', './nba-sim-ui.js?v=nba-lineups-v1', './', './index.html', './manifest.webmanifest', './icon-192.png?v=mohjeta-black-v1', './icon-512.png?v=mohjeta-black-v1', './apple-touch-icon.png?v=mohjeta-black-v1'];
+const SHELL = 'mohjeta-shell-ios-v20';
+const FILES = ['./languages.js?v=11', './languages.css?v=3', './game-matchups.js?v=2', './game-matchups.css?v=2', './live-data.js?v=1', './community.css?v=1', './mohjeta-icons.js?v=5', './mohjeta-icons.css?v=5', './sounds.js?v=2', './intro.js?v=3', './intro.css?v=3', './sport-art.js?v=2', './logo-cut.webp?v=2', './notification-badge.png', './nba-sim.js?v=nba-lineups-v1', './nba-sim-ui.js?v=nba-lineups-v1', './', './index.html', './manifest.webmanifest', './icon-192.png?v=mohjeta-black-v1', './icon-512.png?v=mohjeta-black-v1', './apple-touch-icon.png?v=mohjeta-black-v1'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== SHELL && k !== 'mohjeta-data').map(k => caches.delete(k)))).then(() => self.clients.claim()));
