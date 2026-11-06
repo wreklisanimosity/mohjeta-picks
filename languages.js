@@ -9,6 +9,8 @@ Object.assign(MOHJETA_LANGUAGES,{"Sound & vibration": {"es": "Sonido y vibració
 const MJ_DAYS={es:{Mon:'lun',Tue:'mar',Wed:'mié',Thu:'jue',Fri:'vie',Sat:'sáb',Sun:'dom'},fr:{Mon:'lun.',Tue:'mar.',Wed:'mer.',Thu:'jeu.',Fri:'ven.',Sat:'sam.',Sun:'dim.'},ar:{Mon:'الإثنين',Tue:'الثلاثاء',Wed:'الأربعاء',Thu:'الخميس',Fri:'الجمعة',Sat:'السبت',Sun:'الأحد'}};
 const MJ_STAT={threes:{es:'triples',fr:'paniers à 3 pts',ar:'ثلاثيات'},points:{es:'puntos',fr:'points',ar:'نقاط'},assists:{es:'asistencias',fr:'passes',ar:'تمريرات حاسمة'},rebounds:{es:'rebotes',fr:'rebonds',ar:'مرتدات'}};
 const MOHJETA_PATTERNS=[
+  [/^🚫 No bet: Kalshi has (.+) at (\d+)¢ \(too little to win\)$/,{es:'🚫 Sin apuesta: Kalshi tiene a $1 a $2¢ (se gana muy poco)',fr:'🚫 Pas de pari : Kalshi met $1 à $2¢ (trop peu à gagner)',ar:'🚫 لا رهان: سعر $1 على Kalshi هو $2¢ (الربح ضئيل جدًا)'}],
+  [/^🚫 No bet: Kalshi has no price to buy \(the favorite is at \$1\)$/,{es:'🚫 Sin apuesta: Kalshi no tiene precio para comprar (el favorito está a 1 $)',fr:'🚫 Pas de pari : aucun prix disponible sur Kalshi (le favori est à 1 $)',ar:'🚫 لا رهان: لا يوجد سعر للشراء على Kalshi (المرشح بسعر 1$)'}],
   [/^▶ Hear her( · \d+s)?$/,{es:'▶ Escúchala$1',fr:'▶ Écoutez-la$1',ar:'▶ استمع إليها$1'}],
   [/^Her top picks in her own voice(.*)$/,(m,l)=>({es:'Sus mejores pronósticos con su propia voz (en inglés)',fr:'Ses meilleurs pronostics avec sa propre voix (en anglais)',ar:'أفضل توقعاتها بصوتها (بالإنجليزية)'})[l]+m[1].replace(' seconds',{es:' segundos',fr:' secondes',ar:' ثانية'}[l]||' seconds')],
   [/^(NFL|NBA|College football) week (\d+) · build your lineup$/,{es:'Semana $2 de $1 · arma tu alineación',fr:'$1, semaine $2 · composez votre équipe',ar:'$1 الأسبوع $2 · كوّن تشكيلتك'}],
