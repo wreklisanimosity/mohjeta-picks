@@ -46,6 +46,14 @@ header{position:sticky;top:0;z-index:20;background:#0b0712f2;backdrop-filter:blu
 .subscribe-entry{font-size:12px;padding:8px 12px;white-space:nowrap}.top{flex-wrap:wrap}.top .updated{min-width:0}
 .brand b{color:var(--pink);text-shadow:0 0 10px var(--pink)}
 .brand{display:inline-flex;align-items:flex-end;white-space:nowrap}.brand-m{height:1.6em;width:auto;margin:0 -.1em -.2em -.14em;filter:drop-shadow(0 0 8px #ff4fd866);transition:transform .3s}.brand:hover .brand-m{transform:rotate(-6deg) scale(1.06)}
+.ticker{display:flex;align-items:center;gap:6px;margin:8px -16px -8px;padding:0 8px 0 0;background:linear-gradient(90deg,#2a0f33,#170b22);border-top:1px solid #ff4fd833;border-bottom:1px solid #ff4fd833;height:34px;overflow:hidden}
+.ticker[hidden]{display:none}.tk-view{flex:1;overflow:hidden;position:relative;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.tk-track{display:inline-flex;white-space:nowrap;will-change:transform;animation:tk var(--tkdur,60s) linear infinite}.ticker:hover .tk-track,.ticker.paused .tk-track{animation-play-state:paused}
+@keyframes tk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tk-item{display:inline-flex;align-items:center;gap:6px;padding:0 18px;font-size:13px;color:var(--text);background:none;border:0;font:inherit;font-size:13px;cursor:pointer;text-decoration:none;height:34px}
+.tk-item b{color:var(--yellow);font-size:11px;letter-spacing:.06em}.tk-item.site b{color:var(--pink)}.tk-item+.tk-item{border-left:1px solid #ffffff1f}
+.tk-go{color:var(--pink);font-weight:800}.tk-x{background:none;border:0;color:var(--dim);font-size:13px;cursor:pointer;padding:6px;flex:none}
+@media (prefers-reduced-motion:reduce){.tk-track{animation:none}.tk-view{overflow-x:auto}}
 .updated{margin-left:auto;color:var(--green);font-size:13px;text-align:right}.sndbtn{background:none;border:1px solid var(--line);border-radius:999px;width:36px;height:36px;font-size:17px;line-height:1;color:var(--text);cursor:pointer;flex:none;padding:0}.sndbtn[aria-pressed=false]{opacity:.6}
 .voicebtn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;max-width:100%;margin-top:8px;background:#ff4fd81a;border:1px solid #ff4fd866;color:var(--text);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}.voicebtn.on{background:#ff4fd844}.voicebtn .vb{display:inline-flex;gap:2px;align-items:flex-end;height:12px}.voicebtn .vb i{width:3px;background:var(--pink);border-radius:2px;height:4px}.voicebtn.on .vb i{animation:vb .8s ease-in-out infinite}.voicebtn.on .vb i:nth-child(2){animation-delay:.15s}.voicebtn.on .vb i:nth-child(3){animation-delay:.3s}@keyframes vb{50%{height:12px}}
 .hvoice{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:linear-gradient(135deg,#3a1240,#1a1030);border:1px solid #ff4fd855;border-radius:16px;padding:12px 14px;color:var(--text);font:inherit;cursor:pointer;margin:10px 0}.hvoice img{width:44px;height:44px;border-radius:50%;flex:none;background:#0006}.hvoice b{display:block;font-size:15px}.hvoice small{color:var(--muted)}.hvoice .play{margin-left:auto;font-size:22px;color:var(--pink)}
@@ -449,6 +457,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 <script src="intro.js?v=3"></script>
 <header>
   <div class="top"><div class="brand" id="home" role="link" tabindex="0" aria-label="Mohjeta"><img class="brand-m" src="logo-cut.webp?v=2" alt="" width="30" height="30"><span aria-hidden="true">OHJETA</span><b aria-hidden="true">.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><button type="button" class="btn subscribe-entry" id="subscribeEntry">Subscribe</button><span class="updated" id="updated">Loading…</span><button type="button" class="sndbtn" id="sndBtn" data-sound-toggle aria-pressed="true" aria-label="Sound on">🔊</button><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
+  <div class="ticker" id="ticker" hidden role="region" aria-label="Sports headlines and site news"><div class="tk-view"><div class="tk-track" id="tkTrack"></div></div><button type="button" class="tk-x" id="tkClose" aria-label="Hide the headlines">✕</button></div>
 </header>
   <nav class="tabs" role="tablist" aria-label="Sections" id="nav">
     <button type="button" class="qjhandle" id="qjOpen" aria-label="All pages (quick jump)"><i></i><span>All pages</span></button>
@@ -1628,8 +1637,7 @@ function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren
     stat('Profit',t?signed(t.net):'—','paper money','money','#103a1c',()=>show('record'),'pl '+(t?cls(t.net):'')),
     stat('Live now',String(live.length),live.filter(g=>g.pick&&isBetLane(g)).length+' with her bet','live','#123a28',()=>goPage('live')),
     stat('Tonight',String(up.length),'games she bets','picks','#4a3010',()=>show('picks')));box.append(st);
-  {const fd=(d.feed||[]).slice(0,3);if(fd.length){const c=el('div',null,'card feed hfeed');const h=el('div',null,'row');h.append(iel('b','📰 Latest'),el('span',null,'sp'));
-    const all=el('button','See all ›','mlink');all.type='button';all.onclick=()=>show('feed');h.append(all);c.append(h);fd.forEach(x=>c.append(feedRow(x)));box.append(c);}}
+  // (no feed card here: the headline banner at the top carries the news, so Home stays uncluttered)
   const nx=up[0];if(nx){const b=el('button',null,'hnext');b.type='button';if(window.SportArt)b.append(SportArt.el(nx.league));
     const info=el('div',null,'nx');const team=(nx.pick&&(nx.pick.team||nx.pick.name))||'';info.append(el('small','Next up · '+sname(nx.league)),el('b',nx.name||''));
     const line=el('small',(team?'Her pick: '+team+(typeof nx.pick.chance==='number'?' ('+pct(nx.pick.chance)+')':'')+' · ':''));const cd=countdown(nx);if(cd)line.append(cd);info.append(line);
@@ -1646,7 +1654,7 @@ function openQJ(){let q=$('qj');if(!q){q=el('div');q.id='qj';q.setAttribute('rol
     if(!grid.childElementCount)grid.append(el('p','No page matches.','hint'));};
   inp.oninput=draw;inp.onkeydown=e=>{if(e.key==='Enter'){const f=grid.querySelector('.htile');if(f)f.click();}if(e.key==='Escape')closeQJ();};draw();pn.append(grid);
   q.append(bg,pn);q.classList.add('on');document.body.style.overflow='hidden';}
-function render(d){D=d;notePeople(d);applyMembers(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
+function render(d){D=d;try{drawTicker();}catch(e){}notePeople(d);applyMembers(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
   $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderSkipped(d),()=>renderMore(d),()=>renderSim(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
   if(lastLive&&Date.parse(lastLive.updated)>Date.parse(d.updated))applyLive(lastLive);
@@ -1938,7 +1946,7 @@ function renderPractice(d){const box=$('practiceBox');if(!box)return;box.replace
 // ---------------- What's new banner + page (from news.json in the site folder: edit it to post an update)
 let NEWS=null;
 function newsSeen(){try{return localStorage.getItem('mohjeta.newsSeen')||'';}catch(e){return '';}}
-function drawNewsBar(){const bar=$('newsBar');if(!bar)return;bar.replaceChildren();const u=NEWS&&(NEWS.updates||[])[0];if(!u||newsSeen()===u.id)return;
+function drawNewsBar(){const bar=$('newsBar');if(!bar)return;bar.replaceChildren();{const tk=$('ticker');if(tk&&!tk.hidden)return;}   // site news rides in the headline banner insteadconst u=NEWS&&(NEWS.updates||[])[0];if(!u||newsSeen()===u.id)return;
   const box=el('div',null,'newsbar');box.setAttribute('role','status');const go=el('button',null,'nb');go.type='button';
   go.append(iel('b','🆕 '+u.title),document.createTextNode(' '),el('span','See what’s new ›'));go.onclick=()=>show('news');
   const x=el('button','✕','x');x.type='button';x.setAttribute('aria-label','Hide this update');
@@ -1949,7 +1957,23 @@ function drawNews(){const box=$('newsBox');if(!box||!NEWS)return;box.replaceChil
       if(u.go){const b=el('button','Take me there ›','btn ghost small');b.type='button';b.onclick=()=>show(u.go);it.append(b);}box.append(it);}}
   const gd=NEWS.guides||[];if(gd.length){box.append(el('h3','How to use the site'));for(const g of gd){const c=el('div',null,'card');c.append(el('h4',g.title),el('p',g.text,'small'));box.append(c);}}
   const u=up[0];if(u){try{localStorage.setItem('mohjeta.newsSeen',u.id);}catch(e){}drawNewsBar();}}
-function loadNews(){fetch('news.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(n=>{if(!n)return;NEWS=n;drawNewsBar();if(document.querySelector('#news.on'))drawNews();}).catch(()=>{});}
+// ---------------- running banner at the top: newest sports headlines (news_feed.headlines) + Mohjeta's own news
+let tkKey='';
+function tickerItems(){const out=[];const cut=Date.now()-14*864e5;
+  for(const u of ((NEWS&&NEWS.updates)||[]).slice(0,3)){if(Date.parse(u.date)>=cut)out.push({site:true,label:'MOHJETA',text:u.title,go:'news'});}   // tap: the full update on What's new
+  for(const h of ((D&&D.headlines)||[]))out.push({label:(SPORT_ICON[h.league]||'')+' '+sname(h.league).toUpperCase(),text:h.text,link:h.link});
+  return out;}
+function drawTicker(){const bar=$('ticker'),tr=$('tkTrack');if(!bar||!tr)return;let off=false;try{off=sessionStorage.getItem('mohjeta.tk')==='0';}catch(e){}
+  const items=off?[]:tickerItems();if(!items.length){bar.hidden=true;return;}const key=JSON.stringify(items);if(key===tkKey&&!bar.hidden)return;tkKey=key;
+  const one=()=>items.map(x=>{const a=x.link?el('a',null,'tk-item'):el('button',null,'tk-item'+(x.site?' site':''));
+    if(x.link){a.href=x.link;a.target='_blank';a.rel='noopener noreferrer';}else{a.type='button';a.onclick=()=>show(x.go);}
+    a.title=x.link?'Read the full story on ESPN':'Read the full update';a.append(el('b',x.label),el('span',x.text),el('span','›','tk-go'));return a;});
+  if(bar.parentNode&&bar.parentNode.lastElementChild!==bar)bar.parentNode.append(bar);   // below the language picker (added to the header later)
+  tr.replaceChildren(...one(),...one());bar.hidden=false;{const nb=$('newsBar');if(nb)nb.replaceChildren();}   // two copies: the loop restarts without a jump
+  requestAnimationFrame(()=>{const w=tr.scrollWidth/2;tr.style.setProperty('--tkdur',Math.max(25,Math.round(w/55))+'s');});}
+{const bar=$('ticker');if(bar){bar.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')bar.classList.toggle('paused');},{passive:true});
+  $('tkClose').onclick=()=>{try{sessionStorage.setItem('mohjeta.tk','0');}catch(e){}bar.hidden=true;try{drawNewsBar();}catch(e){}};}}
+function loadNews(){fetch('news.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(n=>{if(!n)return;NEWS=n;drawNewsBar();try{drawTicker();}catch(e){}if(document.querySelector('#news.on'))drawNews();}).catch(()=>{});}
 loadNews();setInterval(loadNews,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadNews();});
 // new version of the page: it reloads itself at a quiet moment (never while someone is typing, chatting or building props)
 let pageTag=null,newPage=false,lastTouch=Date.now();
