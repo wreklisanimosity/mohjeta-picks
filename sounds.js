@@ -46,7 +46,9 @@
   const BUZZ={win:[20,50,30],loss:[60],badge:[15,40,15,40,50],save:[18],lock:[12],intro:[10,60,25],land:[25]};
   function play(name){if(!on())return;
     const now=performance.now();if(last[name]&&now-last[name]<(name==='tap'?40:250))return;last[name]=now;
-    if(BUZZ[name]&&navigator.vibrate&&document.visibilityState==='visible')try{navigator.vibrate(BUZZ[name]);}catch(e){}
+    const H=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Haptics;   // the iPhone app: real haptics
+    if(BUZZ[name]&&H&&document.visibilityState==='visible'){try{if(name==='win'||name==='badge')H.notification({type:'SUCCESS'});else if(name==='loss')H.notification({type:'WARNING'});else H.impact({style:name==='lock'||name==='save'?'MEDIUM':'LIGHT'});}catch(e){}}
+    else if(BUZZ[name]&&navigator.vibrate&&document.visibilityState==='visible')try{navigator.vibrate(BUZZ[name]);}catch(e){}
     if(!ready())return;try{SOUNDS[name]&&SOUNDS[name](ctx.currentTime+.01);}catch(e){}}
   function set(v){try{localStorage.setItem(KEY,v?'1':'0');}catch(e){}if(v){unlock();setTimeout(()=>play('save'),60);}else if(navigator.vibrate)try{navigator.vibrate(0);}catch(e){}
     document.querySelectorAll('[data-sound-toggle]').forEach(paint);}
