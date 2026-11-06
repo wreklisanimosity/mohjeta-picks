@@ -2,6 +2,13 @@
   "_how_to_edit": "Newest update first. Give each update a new id: the banner shows the top one to everyone who has not closed it yet. 'go' (optional) is the tab its button opens: picks, props, sim, record, play, more. Keep each text short.",
   "updates": [
     {
+      "id": "2026-11-06-ticker",
+      "date": "2026-11-06",
+      "title": "New: headline banner",
+      "text": "A running banner under the top of the site now scrolls the newest sports headlines from every league plus Mohjeta's own news. Tap a headline to read the full story, or a Mohjeta item to read the whole update. Tap the banner to pause it, or ✕ to hide it.",
+      "go": "news"
+    },
+    {
       "id": "2026-11-06-feed",
       "date": "2026-11-06",
       "title": "New: live feed",
