@@ -434,7 +434,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 <link rel="stylesheet" href="community.css?v=1">
 <script src="mohjeta-icons.js?v=5"></script>
 <script src="sport-art.js?v=2"></script>
-<script src="live-data.js?v=1"></script>
+<script src="live-data.js?v=2"></script>
 <link rel="stylesheet" href="game-matchups.css?v=2">
 <script src="game-matchups.js?v=2"></script>
 <link rel="stylesheet" href="languages.css?v=3">
@@ -756,7 +756,8 @@ function show(name,push){name=LEGACY[name]||name;
   {const p=document.getElementById(panel);if(p){p.classList.add('enter');clearTimeout(p._enterT);p._enterT=setTimeout(()=>p.classList.remove('enter'),900);}}
   const top=SUB[name]||name;for(const b of navBtns)b.setAttribute('aria-selected',String(b.dataset.tab===top));
   closeSheet(true);window.scrollTo(0,0);if(push!==false)try{history.pushState(null,'','#'+name);navDepth++;}catch(e){}
-  if(name==='chat')openChat();}
+  if(name==='chat')openChat();
+  if(name==='sim'||name==='props')setTimeout(needDet,0);}
 navBtns.forEach(b=>b.onclick=()=>show(b.dataset.tab));
 {const q=$('qjOpen');if(q)q.onclick=openQJ;let y0=null;const nv=$('nav');   // tap the handle, or swipe up on the bar, for every page
  nv.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;},{passive:true});nv.addEventListener('touchend',e=>{if(y0!=null&&y0-e.changedTouches[0].clientY>40)openQJ();y0=null;},{passive:true});
@@ -1040,10 +1041,15 @@ async function supa(){if(sb)return sb;const r=await fetch('live-config.json?t='+
   sb=window.supabase.createClient(c.url,c.anon_key,{auth:{persistSession:true,detectSessionInUrl:true,flowType:'pkce'}});
   try{const st=await fetch(c.url+'/auth/v1/settings',{headers:{apikey:c.anon_key}}).then(r=>r.json());window._authProviders=st.external||{};}catch(e){window._authProviders={};}
   return sb;}
+// Nov 6 2026 (Supabase egress): live updates stop a minute after the page is hidden and resume (with one fresh read) when it's back
+function liveSub(){if(!sb||liveCh)return;liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();}
+let liveHideT=null;
+document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(liveHideT);liveHideT=setTimeout(()=>{if(sb&&liveCh&&document.hidden){try{sb.removeChannel(liveCh);}catch(e){}liveCh=null;}},60000);return;}
+  clearTimeout(liveHideT);if(sb&&!liveCh){sb.from('live_state').select('data').eq('id',1).maybeSingle().then(({data})=>{if(data&&data.data)applyLive(data.data);}).catch(()=>{});liveSub();}});
 async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
-  chatFab();startPresence();logVisit();drawPush($('pushBox'));memberRefresh(true);setInterval(()=>memberRefresh(false),60000);
-  liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();
+  chatFab();startPresence();logVisit();drawPush($('pushBox'));memberRefresh(true);setInterval(()=>{if(!document.hidden)memberRefresh(false);},60000);
+  liveSub();
   sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;setTimeout(preparePlayCheckout,0);if(me)setTimeout(finishPlayPurchase,0);myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN'){toast('Signed in ✅');let jc=null;try{jc=sessionStorage.getItem('mohjeta.join');sessionStorage.removeItem('mohjeta.join');}catch(e){}if(jc)setTimeout(()=>joinLeague(jc),800);}if(chatOpen())openChat();});
   if(/[?&]code=/.test(location.search)){for(let i=0;i<20&&!(await sb.auth.getSession()).data.session;i++)await new Promise(r=>setTimeout(r,250));
     try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}}
@@ -1221,14 +1227,14 @@ function myPicks(){const all=pkLoad(),F=(D&&D.finals)||{};const rows=Object.entr
     r.append(el('span',res[0],'ti'),mid,el('span',null,'sp'),el('span',res[1],res[2]));c.append(r);}
   return c;}
 let simId=null;const simState={};
-function simGames(){return (D&&D.games||[]).filter(g=>g.sim&&g.state==='UPCOMING');}
+function simGames(){return (D&&D.games||[]).filter(g=>(g.sim||g.has_sim)&&g.state==='UPCOMING');}
 function renderSim(){if(simLocked()){drawSimLock();return;}drawModeChips();if(simMode==='fantasy'){$('simPick').hidden=true;if(!$('anyBox').childElementCount)renderFantasyEasy();return;}if(simMode==='any'){$('simPick').hidden=true;if(!$('anyBox').childElementCount)renderAny();return;}$('anyBox').replaceChildren();
   const gs=simGames();const sel=$('simPick');sel.replaceChildren();
   if(!gs.length){$('simBox').replaceChildren(el('p','No games ready to simulate right now. Games show up here when the player rating has numbers for them (basketball, football, hockey and baseball, up to 36 hours ahead).','hint'));sel.hidden=true;simulationScorecard($('simBox'));return;}
   sel.hidden=false;for(const g of gs){const o=el('option',sname(g.league)+' · '+g.name+' · '+when(g.start));o.value=g.id||g.name;sel.append(o);}
   if(!gs.some(g=>(g.id||g.name)===simId))simId=gs[0].id||gs[0].name;sel.value=simId;sel.onchange=()=>{simId=sel.value;drawSim();};drawSim();}
 function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
-function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId)||(customG&&customG.id===simId?customG:null);const box=$('simBox');box.replaceChildren();if(!g)return;const s=g.sim;if(s.nba_model){drawNbaSim(g,box,run);return;}
+function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId)||(customG&&customG.id===simId?customG:null);const box=$('simBox');box.replaceChildren();if(!g)return;if(!g.sim){box.append(el('p','Loading the simulation…','hint'));needDet();return;}const s=g.sim;if(s.nba_model){drawNbaSim(g,box,run);return;}
   const st=simState[simId]||(simState[simId]={sits:{},spread:'',total:s.total!=null?String(s.total):''});
   // players
   let shift=0;const teamsCard=el('div',null,'card');teamsCard.append(el('h4','Who plays?'));
@@ -1406,7 +1412,8 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
     c.append(el('p','From her player ratings (each player ranked against his position this season) and the injury report.','hint small'));b.append(c);}
   if(window.GameMatchups){GameMatchups.theme={badge:teamBadge,color:n=>TEAM_COLORS[teamNick(n)]};b.append(GameMatchups.render(g));}   // after her bet and pick, so those come first
   if(g.event){const cb=iel('button','💬 Chat about it ›','btn ghost');cb.type='button';cb.onclick=()=>{closeSheet(true);show('chat');};b.append(cb);}
-  if(g.sim&&g.state==='UPCOMING'){const sb=el('button','Simulate this game ›','btn');sb.type='button';sb.onclick=()=>{simId=g.id||g.name;show('sim');renderSim();};b.append(sb);}
+  if((g.sim||g.has_sim)&&g.state==='UPCOMING'){const sb=el('button','Simulate this game ›','btn');sb.type='button';sb.onclick=()=>{simId=g.id||g.name;show('sim');renderSim();};b.append(sb);}
+  if(g.has_more&&!g.details&&!g.sim&&!g.key_players&&!g.lineups)b.append(el('p','Loading the full breakdown…','hint small'));
   const d=g.details||{};
   if(d.prices&&d.prices.length>2){const c=section('Kalshi price today',chart(d.prices,g.pick&&g.pick.chance));c.append(el('p','Pink = Kalshi’s price for '+(g.pick?g.pick.team:'her side')+' over the last day. Green dashes = her chance.','hint small'));b.append(c);}
   if(d.factors&&d.factors.length){const box=el('div');for(const f of d.factors){const r=el('div',null,'factor');r.append(el('span',f.size||'',('sz '+(f.size||''))));const t=el('div');t.append(el('div',f.fact),el('div','Helps '+(f.helps||'—'),'hint small'));r.append(t);box.append(r);}
@@ -1425,7 +1432,7 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
   b.append(el('p','Entertainment only. Model estimates, not betting advice.','hint small'));return b;}
 function openGame(id,push){if(!D)return;const g=D.games.find(x=>String(x.id||x.name)===String(id));
   if(!g){openSheet(()=>el('p','This game is no longer listed: it has finished or moved past the next 24 hours.','empty'),'Gone');return;}
-  sheetGame=g;openSheet(()=>gameView(g),'Game');if(push!==false)try{history.pushState(null,'','#game/'+encodeURIComponent(g.id||g.name));}catch(e){}}
+  sheetGame=g;openSheet(()=>gameView(g),'Game');needDet();if(push!==false)try{history.pushState(null,'','#game/'+encodeURIComponent(g.id||g.name));}catch(e){}}
 
 // ---------------- live feed (data.json 'feed', built by news_feed.py): everything she picks up, newest first
 const FEED_KINDS={news:['📰','News'],injury:['🩹','Injury report'],foul:['🟨','Foul trouble'],move:['📉','Kalshi move'],pick:['🔄','Her pick'],bet:['💵','Her bet']};
@@ -1677,16 +1684,27 @@ function openQJ(){let q=$('qj');if(!q){q=el('div');q.id='qj';q.setAttribute('rol
     if(!grid.childElementCount)grid.append(el('p','No page matches.','hint'));};
   inp.oninput=draw;inp.onkeydown=e=>{if(e.key==='Enter'){const f=grid.querySelector('.htile');if(f)f.click();}if(e.key==='Escape')closeQJ();};draw();pn.append(grid);
   q.append(bg,pn);q.classList.add('on');document.body.style.overflow='hidden';}
-function render(d){D=d;try{drawTicker();}catch(e){}notePeople(d);applyMembers(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
+// ---------------- details.json (live_snapshots.py splits it off data.json): game breakdowns, simulation inputs, the props board.
+// Fetched only while a game is open or the Simulate / Props page is on screen; re-checked at most every 2 minutes.
+let DET=null,detAt=0,detBusy=null;
+function mergeDet(d){if(!DET||!d||!d.games)return;const G=DET.games||{};for(const g of d.games){if(!g.has_more)continue;const x=G[String(g.id||g.name)];if(x)Object.assign(g,x);}
+  if(d.props&&d.props.board==null&&DET.props_board)d.props.board=DET.props_board;}
+function refreshSheet(){if(!sheetGame||!D)return;const g=D.games.find(x=>String(x.id||x.name)===String(sheetGame.id||sheetGame.name));if(g){sheetGame=g;const s=$('sheet');const y=s.scrollTop;$('sheetBody').replaceChildren(gameView(g));s.scrollTop=y;}}
+function needDet(){if(!D||!(D.games||[]).some(g=>g.has_more)||detBusy||(DET&&Date.now()-detAt<120000))return;
+  const on=id=>{const p=document.getElementById(id);return !!(p&&p.classList.contains('on'));};
+  if(!(sheetGame&&sheetGame.has_more)&&!on('sim')&&!on('props'))return;
+  detBusy=fetchPublicSnapshot('details.json').then(r=>r.ok?r.json():null).then(x=>{if(!x||!x.games)return;DET=x;detAt=Date.now();if(!D)return;mergeDet(D);
+    try{renderSim();}catch(e){}try{renderProps(D);}catch(e){}refreshSheet();}).catch(()=>{}).finally(()=>{detBusy=null;});}
+function render(d){D=d;try{drawTicker();}catch(e){}notePeople(d);applyMembers(d);mergeDet(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
   $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderSkipped(d),()=>renderMore(d),()=>renderSim(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
   if(lastLive&&Date.parse(lastLive.updated)>Date.parse(d.updated))applyLive(lastLive);
   navBtns.find(b=>b.dataset.tab==='record').hidden=!d.bets;
-  if(sheetGame){const g=d.games.find(x=>String(x.id||x.name)===String(sheetGame.id||sheetGame.name));if(g){sheetGame=g;const s=$('sheet');const y=s.scrollTop;$('sheetBody').replaceChildren(gameView(g));s.scrollTop=y;}}}
+  refreshSheet();setTimeout(needDet,0);}
 let first=true;
 let dataTag=null,dataKey=null;
 function sameData(d){let k;try{const {updated,...rest}=d;k=JSON.stringify(rest);}catch(e){return false;}const s=k===dataKey;dataKey=k;return s;}
-async function load(){try{const r=await fetchPublicSnapshot('data.json');if(!r.ok)throw Error();   // revalidates: an unchanged file costs a tiny 304, not the whole download
+async function load(){try{const r=await fetchPublicSnapshot('data.json');if(!r.ok)throw Error();   // asks for the timestamp first: an unchanged file costs a few bytes, not the whole download
   const tag=r.headers.get('etag')||r.headers.get('last-modified');if(tag&&tag===dataTag&&!first){return;}dataTag=tag;
   const d=await r.json();const same=sameData(d);   // her PC republishes often; when nothing but the time changed, only the clock updates (no rebuild, no flicker)
   if(same&&!first){D.updated=d.updated;const u=$('updated');if(!lastLive||Date.parse(lastLive.updated)<=Date.parse(d.updated)){u.textContent='Updated '+hm(d.updated);u.classList.remove('stale','livedot');}return;}
@@ -1800,8 +1818,8 @@ function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').va
 $('rtFind').oninput=drawRatings;$('rtPick').onchange=drawRatings;
 async function loadRatings(){try{const r=await fetchPublicSnapshot('ratings.json');if(!r.ok)throw Error();rt=await r.json();drawRatings();}
   catch(e){$('rtBox').replaceChildren(el('p','Ratings will appear after her next update.','hint'));}}
-load();setInterval(load,20000);initLive();loadRatings();setInterval(loadRatings,600000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
+load();setInterval(()=>{if(!document.hidden)load();},20000);initLive();loadRatings();let rtAt=Date.now();setInterval(()=>{if(!document.hidden){rtAt=Date.now();loadRatings();}},600000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){load();if(Date.now()-rtAt>600000){rtAt=Date.now();loadRatings();}}});
 // ---------------- Google one-tap sign-in (a small Google pop-up on the page: tap your account, done; no page change)
 const GOOGLE_CLIENT_ID='883955987231-l1v1fltv25f3hbavnrf3pe1ut8gb5u2u.apps.googleusercontent.com';     // public ID (not a secret); also read from live-config.json (google_client_id)
 let gsiP=null;
@@ -1933,6 +1951,7 @@ function drawBuilder(){const pb=$('propBuilder');if(!pb)return;const P=propData(
     pb.append(el('p','Props from the same game tend to move together, so the true chance of a same-game stack can differ. Uses each leg’s own Kalshi price before fees; a real combo’s price can differ. Entertainment only.','hint small'));
     const clr=el('button','Clear','btn ghost small');clr.type='button';clr.onclick=()=>{propLegs=[];drawBuilder();};pb.append(clr);}
   // choose props
+  if(P.board==null&&P.board_n){pb.append(el('p','Loading tonight’s props…','hint'));setTimeout(needDet,0);return;}
   const board=P.board||[];if(!board.length){pb.append(el('p','No props priced yet for tonight. They appear a few hours before NBA games.','hint'));return;}
   const games=[...new Set(board.map(b=>b.game))];if(!games.includes(propGame))propGame=games[0];
   const gc=el('div',null,'chips');for(const g of games){const x=el('button',g);x.type='button';x.setAttribute('aria-pressed',String(g===propGame));x.onclick=()=>{propGame=g;drawBuilder();};gc.append(x);}
