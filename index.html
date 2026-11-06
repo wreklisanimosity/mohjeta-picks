@@ -1444,12 +1444,12 @@ function renderFeed(d){const box=$('feedBox'),ch=$('feedChips');if(!box||!ch)ret
 // her record counting the picks she skipped (95c+ favorites, no bet): shown next to her betting record, which stays bets only
 function withSkipped(d,w,l){const S=d&&d.skipped&&d.skipped.record;if(!S||!S.n)return null;return {w:w+S.won,l:l+(S.n-S.won),sw:S.won,sl:S.n-S.won};}
 // ---------------- parlay legs: her picks on heavy favorites (95c+) that she does not bet (95c cap), for clients' own parlays
-function legGames(d){const now=Date.now();return (d.games||[]).filter(g=>g.state==='UPCOMING'&&g.pick&&!g.bet&&Date.parse(g.start)>now&&
+function legGames(d){const now=Date.now();return (d.games||[]).filter(g=>g.state==='UPCOMING'&&g.pick&&Date.parse(g.start)>now&&
   ((typeof g.kalshi==='number'&&g.kalshi>0.95)||g.no_bet||(g.pick.chance>=0.95&&!(typeof g.kalshi==='number'))))
   .sort((a,b)=>Math.max(b.pick.chance,b.kalshi||0)-Math.max(a.pick.chance,a.kalshi||0));}
 function renderLegs(d){const box=$('legsBox');if(!box)return;box.replaceChildren();const gs=legGames(d);const S=d.skipped&&d.skipped.record;
   if(!gs.length&&!(S&&S.n))return;
-  box.append(iel('h3','🔗 Parlay legs'),el('p','Her picks on heavy favorites: games where the market prices the favorite above 95%. She does not bet these (a $5 bet would win pennies), but her pick is tracked. Use them as legs on any betting site.','hint small'));
+  box.append(iel('h3','🔗 Parlay legs'),el('p','Her picks on heavy favorites: games where the market prices the favorite above 95%. Her pick is tracked on each. Use them as legs on any betting site.','hint small'));
   const c=el('div',null,'card legs');
   if(S&&S.n)c.append(el('div','Her record on these legs: '+S.won+'-'+(S.n-S.won)+' ('+pct(S.won/S.n)+')','legrec'));
   let all=1;
