@@ -441,7 +441,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 :is(button,select,[role=button]):focus-visible{outline:3px solid #f3afff;outline-offset:2px}
 @media(hover:hover){.game-picker:hover #simPick,.panel .chips button:hover,.panel button.back:hover{border-color:#f3afff}}
 </style>
-<script src="languages.js?v=8" defer></script>
+<script src="languages.js?v=9" defer></script>
 </head>
 <body>
 <script src="sounds.js?v=1"></script>
@@ -1417,7 +1417,9 @@ function renderOpenBets(d){const box=$('openBets');if(!box)return;box.replaceChi
   c.append(iel('h4','💵 Her open bets ('+rows.length+')'),el('div',usd(paid)+' riding · every bet that has not finished yet, in one list','hint small'));
   rows.slice().sort((a,b)=>String(b.opened).localeCompare(String(a.opened))).forEach(r=>{
     const g=games.find(x=>key(x.bet.opened)===key(r.opened));const row=el('button',null,'obrow');row.type='button';
-    const st=g?(g.state==='LIVE'?'🟢 Live'+(g.detail?' · '+g.detail:''):g.state==='UPCOMING'?'Starts '+when(g.start):'Waiting for the result'):'Waiting for the result';
+    const kn=r.now!=null?' · Kalshi now '+Math.round(r.now*100)+'¢'+(r.now<=0.03?' (likely lost)':r.now>=0.97?' (likely won)':''):'';
+    const st=g&&g.state!=='FINAL'?(g.state==='LIVE'?'🟢 Live'+(g.detail?' · '+g.detail:''):g.state==='UPCOMING'?'Starts '+when(g.start):'Waiting for the result'):
+      r.state==='over'?'🏁 '+(r.what||'Game')+' over, waiting for Kalshi to confirm'+kn:'Waiting for the result'+kn;
     const left=el('span',null,'obl');left.append(el('b',r.bet||r.title),el('span',(r.league?sname(r.league)+' · ':'')+Math.round(r.price*100)+'¢ · paid '+usd(r.paid)+' · '+st,'hint small'));
     row.append(left,el('span','+'+usd(Math.max(0,(r.count||0)-r.paid)),'up obr'));row.title='Pays '+usd(Math.max(0,(r.count||0)-r.paid))+' if it wins';
     row.onclick=()=>{if(g)openGame(g.id||g.name);else show('record');};c.append(row);});
