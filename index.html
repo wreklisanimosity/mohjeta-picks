@@ -1439,6 +1439,8 @@ function renderFeed(d){const box=$('feedBox'),ch=$('feedChips');if(!box||!ch)ret
   const f=FEED_FILTERS.find(x=>x[0]===feedFilter)[2];const items=(d.feed||[]).filter(x=>!f||f.includes(x.kind));box.replaceChildren();
   if(!items.length){box.append(el('p','Nothing yet in the last few hours. News shows up here as soon as she picks it up.','hint'));return;}
   const c=el('div',null,'card feed');items.forEach(x=>c.append(feedRow(x)));box.append(c);}
+// her record counting the picks she skipped (95c+ favorites, no bet): shown next to her betting record, which stays bets only
+function withSkipped(d,w,l){const S=d&&d.skipped&&d.skipped.record;if(!S||!S.n)return null;return {w:w+S.won,l:l+(S.n-S.won),sw:S.won,sl:S.n-S.won};}
 // ---------------- every open bet in one place (on the Tonight page), whatever kind it is or wherever its game is shown
 function renderOpenBets(d){const box=$('openBets');if(!box)return;box.replaceChildren();const rows=((d.bets&&d.bets.rows)||[]).filter(r=>r.result==='OPEN');if(!rows.length)return;
   const key=v=>String(v||'').slice(0,16);const games=(d.games||[]).filter(g=>g.bet);
@@ -1474,7 +1476,7 @@ function drawBetting(d){const box=$('betting');box.replaceChildren();
 function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();try{renderOpenBets(d);}catch(e){}try{if(document.querySelector('#feed.on'))renderFeed(d);}catch(e){}setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(pickemCard(),boardCard(),myPicks());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
-    const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));
+    const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));{const ws=withSkipped(d,t.wins,t.losses);if(ws)box.append(el('div',ws.w+'-'+ws.l+' counting the '+(ws.sw+ws.sl)+' picks she skipped at 95¢+ (no bet on those)','hint small'));}
     const go=el('button','See the full track record ›','more');go.style.cssText='background:none;border:0;padding:0;cursor:pointer';go.onclick=()=>show('record');box.append(go);rec.append(box);}
   const ab=$('alertsBox');ab.replaceChildren();if(d.alerts_url){const a=iel('a','🔔 Get her picks as they happen','btn');a.href=d.alerts_url;a.target='_blank';a.rel='noopener';ab.append(a);ab.style.margin='0 0 14px';}
   const live=d.games.filter(g=>g.state==='LIVE'&&g.pick&&isBetLane(g));const lb=$('liveBox');lb.replaceChildren();
@@ -1529,7 +1531,7 @@ function renderRecord(d){const b=d.bets;if(!b)return;
     ps.after(list);}
   const w=period&&period!=='today'?windowStats(b.rows,period):null;
   if(period==='today'){}else if(w){stat('Record',w.won+'-'+w.lost);stat('Profit',signed(w.net),cls(w.net));stat('Win rate',w.won+w.lost?pct(w.won/(w.won+w.lost)):'—');stat('Return',w.roi==null?'—':(w.roi>0?'+':'')+Math.round(w.roi*100)+'%',cls(w.roi||0));}
-  else{stat('Record',T.wins+'-'+T.losses);stat('Profit',signed(T.net),cls(T.net));stat('Win rate',pct(T.win_rate));stat('Return',T.roi==null?'—':(T.roi>0?'+':'')+Math.round(T.roi*100)+'%',cls(T.roi||0));stat('Still riding',usd(T.at_risk),'open');}
+  else{stat('Record',T.wins+'-'+T.losses);{const ws=withSkipped(D,T.wins,T.losses);if(ws)stat('With skipped picks',ws.w+'-'+ws.l);}stat('Profit',signed(T.net),cls(T.net));stat('Win rate',pct(T.win_rate));stat('Return',T.roi==null?'—':(T.roi>0?'+':'')+Math.round(T.roi*100)+'%',cls(T.roi||0));stat('Still riding',usd(T.at_risk),'open');}
   // profit by day
   const days={};for(const r of b.rows)if(r.pnl!=null&&!r.carried){const k=new Date(r.opened).toLocaleDateString('en-CA');days[k]=(days[k]||0)+r.pnl;}
   const keys=Object.keys(days).sort().slice(period?-period:-60);const mx=Math.max(1,...keys.map(k=>Math.abs(days[k])));const bars=$('dayBars');bars.replaceChildren(el('div',null,'zero'));
@@ -1634,10 +1636,10 @@ function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren
   const up=gs.filter(g=>g.state==='UPCOMING'&&g.pick&&isBetLane(g)).sort((a,b)=>String(a.start).localeCompare(String(b.start)));
   const st=el('div',null,'hstats');const stat=(lab,big,small,ic,tc,go,c)=>{const b=el('button',null,'hstat');b.type='button';b.style.setProperty('--tc',tc);
     b.append(el('small',lab),el('b',big,c||''),el('small',small));if(window.MohjetaIcons)b.append(MohjetaIcons.icon(ic));b.onclick=go;return b;};
-  st.append(stat('Record',t&&t.settled?t.wins+'-'+t.losses:'—',t&&t.settled?pct(t.win_rate)+' wins':'Starting soon','results','#123a24',()=>show('record')),
+  {const ws=t&&t.settled?withSkipped(d,t.wins,t.losses):null;st.append(stat('Record',t&&t.settled?t.wins+'-'+t.losses:'—',ws?ws.w+'-'+ws.l+' with skipped picks':t&&t.settled?pct(t.win_rate)+' wins':'Starting soon','results','#123a24',()=>show('record')),
     stat('Profit',t?signed(t.net):'—','paper money','money','#103a1c',()=>show('record'),'pl '+(t?cls(t.net):'')),
     stat('Live now',String(live.length),live.filter(g=>g.pick&&isBetLane(g)).length+' with her bet','live','#123a28',()=>goPage('live')),
-    stat('Tonight',String(up.length),'games she bets','picks','#4a3010',()=>show('picks')));box.append(st);
+    stat('Tonight',String(up.length),'games she bets','picks','#4a3010',()=>show('picks')));}box.append(st);
   // (no feed card here: the headline banner at the top carries the news, so Home stays uncluttered)
   const nx=up[0];if(nx){const b=el('button',null,'hnext');b.type='button';if(window.SportArt)b.append(SportArt.el(nx.league));
     const info=el('div',null,'nx');const team=(nx.pick&&(nx.pick.team||nx.pick.name))||'';info.append(el('small','Next up · '+sname(nx.league)),el('b',nx.name||''));
