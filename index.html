@@ -440,7 +440,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 :is(button,select,[role=button]):focus-visible{outline:3px solid #f3afff;outline-offset:2px}
 @media(hover:hover){.game-picker:hover #simPick,.panel .chips button:hover,.panel button.back:hover{border-color:#f3afff}}
 </style>
-<script src="languages.js?v=6" defer></script>
+<script src="languages.js?v=7" defer></script>
 </head>
 <body>
 <script src="sounds.js?v=1"></script>
@@ -478,7 +478,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <h2>Track record</h2><div class="chips seg" id="recSwitch" role="tablist" aria-label="Show"><button type="button" data-rv="bets" aria-pressed="true">💵 Her bets</button><button type="button" data-rv="prac" aria-pressed="false">🧪 Practice</button></div><div id="dropNote"></div>
     <div class="chips" id="periodChips"></div><div class="stats" id="periodStats"></div>
     <div class="card"><div class="row"><b>Profit by day</b><span class="sp"></span><span class="hint small" id="barsNote"></span></div><div class="bars" id="dayBars"></div></div>
-    <div id="dayCard"></div><div id="bySport"></div><div id="bestWorst"></div>
+    <div id="dayCard"></div><div id="skipBox"></div><div id="bySport"></div><div id="bestWorst"></div>
     <h3>Every bet</h3><div class="chips" id="sportChips"></div><div class="tablewrap" id="betTable"></div>
     <p class="hint small">Tap any bet to see why she placed it. 🔒 = sealed: fingerprinted the moment she placed it.</p>
     <div id="practiceBox"></div>
@@ -1612,7 +1612,7 @@ function openQJ(){let q=$('qj');if(!q){q=el('div');q.id='qj';q.setAttribute('rol
   q.append(bg,pn);q.classList.add('on');document.body.style.overflow='hidden';}
 function render(d){D=d;notePeople(d);applyMembers(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
-  $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderMore(d),()=>renderSim(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
+  $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderSkipped(d),()=>renderMore(d),()=>renderSim(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
   if(lastLive&&Date.parse(lastLive.updated)>Date.parse(d.updated))applyLive(lastLive);
   navBtns.find(b=>b.dataset.tab==='record').hidden=!d.bets;
   if(sheetGame){const g=d.games.find(x=>String(x.id||x.name)===String(sheetGame.id||sheetGame.name));if(g){sheetGame=g;const s=$('sheet');const y=s.scrollTop;$('sheetBody').replaceChildren(gameView(g));s.scrollTop=y;}}}
@@ -1873,6 +1873,14 @@ function drawBuilder(){const pb=$('propBuilder');if(!pb)return;const P=propData(
   pb.append(el('p','Each button: her chance for that side · Kalshi’s price. YES = the number or more; NO = less.','hint small'));}
 // ---------------- Results: practice picks ($0) — sports she picks every game but does not bet
 let pracSport='ALL';
+function renderSkipped(d){const box=$('skipBox');if(!box)return;box.replaceChildren();const S=d.skipped;if(!S||!S.record||!S.record.n)return;
+  const R=S.record;const c=el('div',null,'card');c.append(iel('h4','🚫 Picks she skipped (over 95¢)'),el('p','Games where Kalshi had her side above 95¢, so a $5 bet would win only pennies. She did not bet them, but her pick is still graded here. Not part of her betting record.','hint small'));
+  const st=el('div',null,'stats');const stat=(l,v,cl)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cl||''));st.append(s);};
+  stat('Record',R.won+'-'+(R.n-R.won));stat('Win rate',pct(R.won/R.n));stat('If she had bet $5',signed(R.would),'pl '+cls(R.would));c.append(st);
+  const det=el('details');det.append(el('summary','Every skipped pick'));const tw=el('div',null,'tablewrap');const tb=el('table');const hr=el('tr');for(const x of ['Pick','Result'])hr.append(el('th',x));tb.append(hr);
+  for(const r of S.rows||[]){const tr=el('tr');const a=el('td');a.append(el('div',r.team),el('div',new Date(r.at*1000).toLocaleDateString([],{month:'short',day:'numeric'})+' · '+sname(r.league)+(r.price!=null?' · '+Math.round(r.price*100)+'¢':' · no price'),'hint small'));
+    tr.append(a,el('td',r.result==='WON'?'✅ Won':'❌ Lost',r.result==='WON'?'up':'down'));tb.append(tr);}
+  tw.append(tb);det.append(tw);c.append(det);box.append(c);}
 function renderPractice(d){const box=$('practiceBox');if(!box)return;box.replaceChildren();const P=d.practice;if(!P||!P.record||!P.record.n)return;
   const R=P.record;box.append(iel('h3','🧪 Practice picks ($0)'),el('div','These are learning picks: sports she picks every game but does not bet yet, because she has less information on them. They are tracked here so she can prove herself before they go live. Rely on them with caution.','notice'),el('p','Graded the same way as her bets, from Kalshi’s official results. “Kalshi said” is how often Kalshi’s prices said her picks would win.','hint small'));
   const st=el('div',null,'stats');const stat=(l,v,c)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,c||''));st.append(s);};
