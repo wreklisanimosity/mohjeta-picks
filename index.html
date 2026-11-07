@@ -390,7 +390,58 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .frow.on{border-color:var(--pink);background:#ff4fd814}.frow .frole{width:22px;text-align:center;font-weight:800;color:var(--yellow)}.frow .fn{flex:1;min-width:0;display:flex;flex-direction:column}
 .pushcard{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.pushcard .anyn{display:flex;gap:8px;align-items:center}
 
-.chatperson{display:inline-flex;align-items:center;gap:8px;background:none;color:inherit;border:0;padding:4px;cursor:pointer;border-radius:8px}.chatperson:focus-visible{outline:2px solid var(--pink)}#chatBox .chatlist{height:50dvh;min-height:240px;max-height:650px}#chat .chatin{max-width:100%}.challenge-row{padding:12px 0;border-bottom:1px solid var(--line)}nav.tabs button{min-width:0} @media(max-width:480px){nav.tabs button{font-size:10px;padding-left:1px;padding-right:1px}}
+.chatperson{display:inline-flex;align-items:center;gap:8px;background:none;color:inherit;border:0;padding:4px;cursor:pointer;border-radius:8px}.chatperson:focus-visible{outline:2px solid var(--pink)}#chatBox .chatlist{height:50dvh;min-height:240px;max-height:650px}#chat .chatin{max-width:100%}
+/* fan lounge v2 (fix351): bubbles, mentions, reactions, badges next to names */
+#chat #chatBox .chatlist{gap:2px;padding:6px 4px 6px 0}
+#chat #chatBox .msg{display:flex;gap:8px;align-items:flex-end;background:none;border:0;padding:0;margin:8px 0 0;animation:none;max-width:100%;box-shadow:none;border-radius:0}#chat #chatBox .chatlist{gap:0;padding:10px 4px}
+#chat #chatBox .msg.cont{margin-top:2px}#chat #chatBox .msg.fresh{animation:rise .25s ease both}
+#chat #chatBox .msg .mav{flex:none;width:30px;padding:0;align-self:flex-start;margin-top:18px}#chat #chatBox .msg.cont .mav{margin-top:0}#chat #chatBox .msg .mav.gap{display:block;height:1px}
+#chat #chatBox .msg .mav .cpic{width:30px;height:30px;font-size:11px}
+#chat #chatBox .mcol{display:flex;flex-direction:column;align-items:flex-start;min-width:0;max-width:82%}
+#chat #chatBox .msg.mine{justify-content:flex-end}#chat #chatBox .msg.mine .mcol{align-items:flex-end}
+#chat #chatBox .mh{display:flex;align-items:center;gap:6px;margin:0 0 3px 4px;flex-wrap:wrap}
+#chat #chatBox .mh{justify-content:flex-start}.mname{background:none;border:0;padding:0;color:#e9d6ff;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
+.mtime{color:var(--dim);font-size:11px}.mtime.in{display:inline-block;margin-left:8px;font-size:10px;opacity:.7;vertical-align:-1px}
+.mrole{font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:6px;background:#ff4fd833;color:#ff9be6;border:1px solid #ff4fd866}
+.mbub{position:relative;background:linear-gradient(180deg,#24173a,#1c1230);border:1px solid #3a2858;border-radius:18px 18px 18px 6px;padding:8px 12px;line-height:1.4;cursor:pointer;box-shadow:0 2px 8px #0005;word-break:break-word}
+#chat #chatBox .msg.cont .mbub{border-radius:6px 18px 18px 6px}
+#chat #chatBox .msg.mine .mbub{background:linear-gradient(135deg,#a12fd6,#e0237f);border-color:#ff7fd655;border-radius:18px 18px 6px 18px;color:#fff}
+#chat #chatBox .msg.mine.cont .mbub{border-radius:18px 6px 6px 18px}
+#chat #chatBox .msg.mine .mtime.in{color:#ffe1f5}
+#chat #chatBox .msg.tagme .mbub{border-color:#f5c542;box-shadow:0 0 0 1px #f5c54255,0 0 16px #f5c54233}
+.mtagme{font-size:11px;color:#f5c542;font-weight:700;margin:0 0 3px 4px}
+#chat #chatBox .mb,.mb{white-space:pre-wrap;display:inline;margin:0;font-size:14px;line-height:1.4}
+.mtag{color:#8fd3ff;font-weight:700;background:#3d8bff22;border-radius:6px;padding:0 3px}.mtag.you{color:#1a0f00;background:#f5c542}
+#chat #chatBox .msg.mine .mtag{color:#fff;background:#ffffff2e}#chat #chatBox .msg.mine .mtag.you{color:#1a0f00;background:#ffe27a}
+.mreact{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}.mreact:empty{display:none}
+.rpill{display:inline-flex;align-items:center;gap:4px;background:#1b1229;border:1px solid #3a2858;border-radius:999px;padding:2px 8px;font-size:13px;color:var(--text);cursor:pointer}
+.rpill b{font-size:11px}.rpill.on{border-color:#ff4fd8;background:#ff4fd822}
+#chat #chatBox .ma{display:none;gap:12px;margin:3px 4px 0;position:relative}#chat #chatBox .msg.open .ma{display:flex}
+.rpick{position:absolute;bottom:100%;left:0;display:flex;gap:2px;background:#1b1229;border:1px solid #ff4fd866;border-radius:999px;padding:4px 6px;box-shadow:0 6px 18px #000a;z-index:5}
+.rpe{background:none;border:0;font-size:22px;padding:2px 4px;cursor:pointer;transition:transform .12s}.rpe:hover,.rpe:active{transform:scale(1.25)}
+.mday{align-self:center;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--dim);background:#1b1229;border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin:12px 0 4px;text-transform:uppercase}
+.mempty{align-self:center;color:var(--dim);font-size:14px;padding:30px 10px;text-align:center}
+.lounge-composer{position:relative}.mcomp{display:flex;gap:8px;align-items:flex-end}
+#chat .lounge-composer .lounge-input{flex:1;border-radius:22px!important;padding:11px 16px!important;resize:none!important;margin:0!important;min-height:44px;height:44px;max-height:120px;line-height:1.35}
+.msend{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:linear-gradient(135deg,#a12fd6,#ff4fd8);color:#fff;font-size:18px;cursor:pointer;box-shadow:0 4px 14px #ff4fd855}.msend:disabled{opacity:.5}
+.memo{display:flex;gap:2px;overflow-x:auto;margin:0 0 6px;scrollbar-width:none}.memo::-webkit-scrollbar{display:none}
+.memob{flex:none;background:#1b1229;border:1px solid var(--line);border-radius:10px;font-size:18px;padding:3px 7px;cursor:pointer}
+.msug{position:absolute;left:12px;right:12px;bottom:100%;margin-bottom:6px;background:#1b1229;border:1px solid #ff4fd866;border-radius:14px;padding:4px;box-shadow:0 8px 24px #000b;z-index:6;display:flex;flex-direction:column}
+.msug[hidden]{display:none}.msugb{display:flex;align-items:center;gap:8px;background:none;border:0;color:var(--text);font:inherit;padding:7px 8px;border-radius:10px;text-align:left;cursor:pointer}.msugb:hover,.msugb:focus{background:#ff4fd822}
+.mwho{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}.mwho .mlink{margin-left:6px}
+.lounge-label.here{color:#39ff88}
+.nbadges .mj-medal.mj-medal3d{width:18px;height:20px}.nbadges.sm .mj-medal.mj-medal3d{width:18px;height:20px}.nbadges.lg .mj-medal.mj-medal3d{width:34px;height:39px}.tslot .mj-medal.mj-medal3d{width:34px;height:39px}.nbadges{display:inline-flex;gap:2px;align-items:center;vertical-align:middle}.nbadges .mj-medal{width:18px;height:20px;filter:none}.nbadges.sm .mj-medal{width:15px;height:17px}.nbadges.lg{gap:6px;margin:2px 0 6px}.nbadges.lg .mj-medal{width:34px;height:39px}
+.cpop.tag{border-color:#f5c542!important;box-shadow:0 0 18px #f5c54255}
+.shelf{cursor:pointer}
+.trophies .tpinned{background:#1b1229;border:1px solid #f5c54255;border-radius:14px;padding:12px;margin:10px 0 14px}
+.tprow{align-items:center;gap:8px;margin:6px 0}.tprow b{font-size:16px;margin-right:4px}
+.tslot{display:inline-flex;align-items:center;justify-content:center;width:44px;height:48px;border:1px dashed #5a4878;border-radius:12px;color:#5a4878;background:none;font-size:18px}
+.tslot.on{border:1px solid #f5c542;background:#f5c54214;cursor:pointer}.tslot .mj-medal{width:34px;height:39px}
+.tgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media(min-width:620px){.tgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tcard{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 8px;color:var(--text);font:inherit;cursor:pointer}
+.tcard .mj-medal{width:48px;height:55px}.tcard b{font-size:14px}.tcard small{color:var(--dim);font-size:11px;line-height:1.3}
+.tcard.on{border-color:#ff4fd855;background:linear-gradient(180deg,#2a1838,#1a0f24)}.tcard.shown{border-color:#f5c542;box-shadow:0 0 14px #f5c54233}.tcard:not(.on){opacity:.75}
+.challenge-row{padding:12px 0;border-bottom:1px solid var(--line)}nav.tabs button{min-width:0} @media(max-width:480px){nav.tabs button{font-size:10px;padding-left:1px;padding-right:1px}}
 
 /* compact layout (Nov 2026): tap-to-open tiles and small cards, less scrolling */
 .mgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 6px}
@@ -1003,7 +1054,8 @@ function wrapText(x,t,cx,y,maxW,lh){const words=String(t).split(' ');let line=''
 const MEDAL={first_pick:['target','bronze','#e0337a','hex'],five_picks:['hand','silver','#7b3fe4','round'],beat_her:['crown','gold','#b0129b','star'],
   sim:['dice','bronze','#3c63e0','round'],sim25:['practice','silver','#17a589','hex'],trade:['swap','bronze','#d9622b','shield'],share:['share','bronze','#c2378f','round'],
   guess:['forecast','bronze','#6a3ad8','hex'],sharp:['arrow','gold','#d23a3a','shield'],chat:['chat','bronze','#2b8fd6','round'],compare:['compare','silver','#8a4fd8','shield'],
-  fantasy:['basketball','silver','#e2701c','star'],alerts:['alerts','bronze','#c99a16','shield']};
+  fantasy:['basketball','silver','#e2701c','star'],alerts:['alerts','bronze','#c99a16','shield'],
+  beat_her_fantasy:['robot','gold','#8a2be2','star'],tester:['tools','neon','#c99a16','shield']};
 const MEDAL_ORDER=['first_pick','five_picks','beat_her','sim','sim25','trade','share','guess','sharp','chat','compare','fantasy','alerts'];
 function medalOf(k,locked){const i=MEDAL_ORDER.indexOf(k);if(i>=0){const s=el('span',null,'mj-medal mj-medal3d'+(locked?' locked':''));   // 3D-rendered medals (medals-3d.webp)
     s.style.backgroundPosition=(i/(MEDAL_ORDER.length-1)*100)+'% '+(locked?'100%':'0%');s.setAttribute('role','img');s.setAttribute('aria-label',BADGES[k][1]+(locked?' (locked)':''));return s;}
@@ -1053,10 +1105,54 @@ function badgeData(){try{return JSON.parse(localStorage.getItem('mohjeta.badges'
 function award(kind){const b=badgeData();b._n=b._n||{};b._n[kind]=(b._n[kind]||0)+1;const earn=[];
   const give=k=>{if(!b[k]){b[k]=Date.now();earn.push(k);}};
   if(kind==='sim'){give('sim');if(b._n.sim>=25)give('sim25');}else if(BADGES[kind])give(kind);
-  try{localStorage.setItem('mohjeta.badges',JSON.stringify(b));}catch(e){}if(kind!=='tester')setTimeout(()=>{try{testerCheck();}catch(e){}},0);for(const k of earn){const md=medalOf(k,false);if(md){const t=toast('Badge unlocked: '+BADGES[k][1]);if(t&&t.prepend)t.prepend(md);}else toast(BADGES[k][0]+' Badge unlocked: '+BADGES[k][1]);}if(earn.length){if(window.MJSound)MJSound.play('badge');for(const sh of document.querySelectorAll('.shelf'))sh.replaceWith(badgeShelf());}}
+  try{localStorage.setItem('mohjeta.badges',JSON.stringify(b));}catch(e){}if(kind!=='tester')setTimeout(()=>{try{testerCheck();}catch(e){}},0);for(const k of earn){const md=medalOf(k,false);if(md){const t=toast('Badge unlocked: '+BADGES[k][1]);if(t&&t.prepend)t.prepend(md);}else toast(BADGES[k][0]+' Badge unlocked: '+BADGES[k][1]);}if(earn.length){if(window.MJSound)MJSound.play('badge');if(me&&myProfile)setTimeout(syncBadges,0);for(const sh of document.querySelectorAll('.shelf'))sh.replaceWith(badgeShelf());}}
 function toast(t){const n=document.querySelectorAll('.toast').length;const d=el('div',t,'toast');if(n)d.style.bottom='calc(var(--navh) + '+(24+n*76)+'px)';document.body.append(d);setTimeout(()=>d.classList.add('out'),2200);setTimeout(()=>d.remove(),2700);return d;}
-function badgeShelf(){const b=badgeData();const got=Object.keys(BADGES).filter(k=>b[k]);const d=el('div',null,'shelf');
-  d.append(el('span','Badges '+got.length+'/'+Object.keys(BADGES).length,'hint small'));for(const k of Object.keys(BADGES)){const md=medalOf(k,!b[k]);const i=md?el('span',null,'bd'+(b[k]?' on':'')):iel('span',BADGES[k][0],'bd'+(b[k]?' on':''));if(md)i.append(md);i.title=BADGES[k][1]+(b[k]?'':' (locked)');d.append(i);}return d;}
+function badgeShelf(){const b=badgeData();const got=Object.keys(BADGES).filter(k=>b[k]);const d=el('div',null,'shelf');d.setAttribute('role','button');d.tabIndex=0;d.title='Open your trophy case';
+  d.append(el('span','🏆 Badges '+got.length+'/'+Object.keys(BADGES).length+' · tap for your trophy case','hint small'));for(const k of Object.keys(BADGES)){const md=medalOf(k,!b[k]);const i=md?el('span',null,'bd'+(b[k]?' on':'')):iel('span',BADGES[k][0],'bd'+(b[k]?' on':''));if(md)i.append(md);i.title=BADGES[k][1]+(b[k]?'':' (locked)');d.append(i);}
+  d.onclick=openTrophies;d.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openTrophies();}};return d;}
+// ---------------- badges on your account (fix351, owner: "badge system make over ... show your badges off next to your name").
+// Earned badges still live on the phone first (award()), and when signed in they are copied to profiles.badges, so they
+// follow you to any device. Pick up to 3 to show next to your chat name (profiles.badge_show). supabase_chat2.sql.
+const BADGE_HOW={first_pick:'Make your first Pick’em pick.',five_picks:'Make 5 Pick’em picks.',beat_her:'Finish a night of Pick’em ahead of Mohjeta.',
+  sim:'Simulate any game once.',sim25:'Run 25 simulations.',trade:'Make a trade in the trade machine (Simulate).',share:'Share any card with a friend.',
+  guess:'Play Guess her number once.',sharp:'Guess her number within 3 points.',chat:'Send your first message in the Fan Lounge.',compare:'Compare two players side by side.',
+  fantasy:'Draft a nightly fantasy team.',alerts:'Turn on phone alerts.',beat_her_fantasy:'Outscore Mohjeta’s weekly fantasy lineup.',tester:'Finish every step of the beta tester challenge.'};
+const BADGE_SHOW={};let badgeSyncing=false;
+function badgeShowList(){try{const v=JSON.parse(localStorage.getItem('mohjeta.badgeShow')||'[]');return Array.isArray(v)?v.filter(k=>BADGES[k]).slice(0,3):[];}catch(e){return [];}}
+function myBadges(p,size){const list=(p&&p.id&&BADGE_SHOW[p.id])||(p&&Array.isArray(p.badge_show)?p.badge_show:null)||(p&&me&&p.id===me.id?badgeShowList():[]);
+  const s=el('span',null,'nbadges'+(size?' '+size:''));for(const k of (list||[]).slice(0,3)){if(!BADGES[k])continue;const md=medalOf(k,false);if(md){md.title=BADGES[k][1];s.append(md);}}return s;}
+async function syncBadges(){if(badgeSyncing||!sb||!me||!myProfile)return;badgeSyncing=true;
+  try{const b=badgeData();const server=Array.isArray(myProfile.badges)?myProfile.badges:[];let changed=false;
+    for(const k of server)if(BADGES[k]&&!b[k]){b[k]=Date.now();changed=true;}          // earned on another device
+    if(changed){try{localStorage.setItem('mohjeta.badges',JSON.stringify(b));}catch(e){}document.querySelectorAll('.shelf').forEach(sh=>sh.replaceWith(badgeShelf()));}
+    const got=Object.keys(BADGES).filter(k=>b[k]);let show=badgeShowList();
+    let picked=false;try{picked=localStorage.getItem('mohjeta.badgeShowSet')==='1';}catch(e){}
+    if(!picked&&!show.length&&Array.isArray(myProfile.badge_show))show=myProfile.badge_show.filter(k=>b[k]).slice(0,3);   // picked on another device
+    try{localStorage.setItem('mohjeta.badgeShow',JSON.stringify(show));}catch(e){}
+    const same=(x,y)=>JSON.stringify([...(x||[])].sort())===JSON.stringify([...(y||[])].sort());
+    if(!same(got,server)||!same(show,myProfile.badge_show||[])){const {error}=await sb.from('profiles').update({badges:got,badge_show:show}).eq('id',me.id);
+      if(!error){myProfile.badges=got;myProfile.badge_show=show;BADGE_SHOW[me.id]=show;}}}
+  catch(e){}finally{badgeSyncing=false;}}
+function setShow(k){const b=badgeData();if(!b[k])return;let show=badgeShowList();
+  if(show.includes(k))show=show.filter(x=>x!==k);else{if(show.length>=3){toast('You can show 3. Tap one of your 3 to swap it out.');return;}show.push(k);}
+  try{localStorage.setItem('mohjeta.badgeShow',JSON.stringify(show));localStorage.setItem('mohjeta.badgeShowSet','1');}catch(e){}if(me)BADGE_SHOW[me.id]=show;
+  if(me&&myProfile)syncBadges();else toast('Sign in (Fan Lounge) to show them next to your name');openTrophies();}
+// the trophy case: every badge, how to earn it, and the 3 you show off
+function openTrophies(){openSheet(()=>{const w=el('div',null,'trophies');const b=badgeData();const keys=Object.keys(BADGES);const got=keys.filter(k=>b[k]);const show=badgeShowList();
+  w.append(el('h2','🏆 Trophy case'));
+  const bar=el('div',null,'tbar');const fill=el('i');fill.style.width=Math.round(got.length/keys.length*100)+'%';bar.append(fill);
+  w.append(el('b',got.length+' of '+keys.length+' earned'),bar);
+  const pin=el('div',null,'tpinned');pin.append(el('span','Next to your name','community-eyebrow'));const row=el('div',null,'row tprow');
+  const nm=el('b',myProfile?myProfile.display_name:'You');row.append(nm);for(let i=0;i<3;i++){const k=show[i];if(k){const md=medalOf(k,false);const s=el('button',null,'tslot on');s.type='button';s.append(md);s.title='Remove '+BADGES[k][1];s.onclick=()=>setShow(k);row.append(s);}
+    else row.append(el('span','＋','tslot'));}
+  pin.append(row,el('p',got.length?'Tap an earned badge below to show it (up to 3). Everyone sees them next to your name in the Fan Lounge.':'Earn a badge, then pick it here to show it next to your name.','hint small'));
+  if(!me)pin.append(el('p','Sign in in the Fan Lounge so your badges follow your account.','hint small'));w.append(pin);
+  const grid=el('div',null,'tgrid');
+  for(const k of [...got.sort((x,y)=>b[y]-b[x]),...keys.filter(k=>!b[k])]){const on=!!b[k];const c=el('button',null,'tcard'+(on?' on':'')+(show.includes(k)?' shown':''));c.type='button';
+    const md=medalOf(k,!on);if(md)c.append(md);else c.append(iel('span',BADGES[k][0],'tem'));
+    c.append(el('b',BADGES[k][1]),el('small',on?'Earned '+new Date(b[k]).toLocaleDateString([],{month:'short',day:'numeric'})+(show.includes(k)?' · showing':' · tap to show'):(BADGE_HOW[k]||'Keep playing to unlock.')));
+    if(on)c.onclick=()=>setShow(k);else c.onclick=()=>toast('🔒 '+(BADGE_HOW[k]||'Keep playing to unlock.'));grid.append(c);}
+  w.append(grid);return w;},'Trophy case');}
 function countdown(g){if(g.state!=='UPCOMING'||!g.start)return null;const d=el('span',null,'cd');d.dataset.start=g.start;tick1(d);return d;}
 function tick1(d){const ms=new Date(d.dataset.start)-Date.now();if(ms<=0){d.textContent='🔒 locked';return;}
   const h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),sec=Math.floor(ms%60000/1000);
@@ -1210,28 +1306,96 @@ async function openChat(){chatRoom='lobby';const box=$('chatBox');box.replaceChi
   if(!rooms.some(r=>r[0]===chatRoom))rooms.push([chatRoom,'Game chat']);for(const [v,l] of rooms){const o=el('option',l);o.value=v;sel.append(o);}sel.value=chatRoom;sel.onchange=()=>{chatRoom=sel.value;openChat();};sel.hidden=true;   // one room for now
   const {data:ses}=await sb.auth.getSession();me=ses&&ses.session&&ses.session.user||null;
   if(me&&!myProfile){const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();myProfile=data||null;syncPic();retrack();}
-  box.replaceChildren();const list=el('div',null,'chatlist');box.append(list);
-  let {data:msgs,error}=await sb.from('messages').select('id,user_id,name,body,hidden,created_at,profiles(avatar_url)').eq('room',chatRoom).order('created_at',{ascending:false}).limit(80);
-  if(error)({data:msgs,error}=await sb.from('messages').select('id,user_id,name,body,hidden,created_at').eq('room',chatRoom).order('created_at',{ascending:false}).limit(80));
-  for(const m of msgs||[])if(m.profiles&&m.profiles.avatar_url)PICS[m.user_id]=m.profiles.avatar_url;
+  if(me&&myProfile)syncBadges();
+  box.replaceChildren();const list=el('div',null,'chatlist');list.id='chatList';box.append(list);
+  // fix351 (owner: "@ people in chat ... the chat is kinda bland"): bubbles grouped by person, day lines, @mentions
+  // (highlighted; the person gets a ping), quick reactions, who's here now, emoji bar. supabase_chat2.sql adds
+  // messages.mentions (set by the server from the text) and message_reactions; without it chat works as before.
+  const tries=['id,user_id,name,body,hidden,created_at,mentions,profiles(avatar_url,role,badge_show)','id,user_id,name,body,hidden,created_at,profiles(avatar_url,role)','id,user_id,name,body,hidden,created_at,profiles(avatar_url)','id,user_id,name,body,hidden,created_at'];
+  let msgs=null,error=null;for(const cols of tries){({data:msgs,error}=await sb.from('messages').select(cols).eq('room',chatRoom).order('created_at',{ascending:false}).limit(80));if(!error)break;}
+  for(const m of msgs||[]){if(m.profiles&&m.profiles.avatar_url)PICS[m.user_id]=m.profiles.avatar_url;if(m.profiles&&m.profiles.role)ROLES[m.user_id]=m.profiles.role;if(m.profiles&&Array.isArray(m.profiles.badge_show))BADGE_SHOW[m.user_id]=m.profiles.badge_show;chatName(m.name);}
+  if(myProfile)chatName(myProfile.display_name);
   if(error){list.append(el('p','Chat could not load right now.','hint'));}
-  for(const m of (msgs||[]).reverse())list.append(msgRow(m));list.scrollTop=list.scrollHeight;
+  const rows=(msgs||[]).reverse();if(!error&&!rows.length)list.append(el('div','👋 Quiet in here. Say hi, or @ someone to get them in.','mempty'));
+  for(const m of rows)chatAppend(list,m,false);list.scrollTop=list.scrollHeight;
+  loadReacts(rows.map(m=>m.id));
   if(chatCh)sb.removeChannel(chatCh);
   chatCh=sb.channel('room-'+chatRoom).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'room=eq.'+chatRoom},p=>{
-    const m=p.new;if(!m)return;const old=list.querySelector('[data-id="'+m.id+'"]');
+    const m=p.new;if(!m)return;const old=list.querySelector('[data-id="'+m.id+'"]');chatName(m.name);
     if(m.hidden&&!(myProfile&&myProfile.role!=='member')){if(old)old.remove();return;}
-    if(old)old.replaceWith(msgRow(m));else{list.append(msgRow(m));list.scrollTop=list.scrollHeight;}}).subscribe();
-  box.append(composer());unread=0;badgeCount();drawChallenges();}
-function msgRow(m){const r=el('div',null,'msg'+(m.hidden?' hid':'')+(me&&m.user_id===me.id?' mine':''));r.dataset.id=m.id;
-  const head=el('div',null,'mh');const person=el('button',null,'chatperson');person.type='button';person.append(chatPic(m),el('b',m.name||'fan'));person.setAttribute('aria-haspopup','dialog');person.onclick=()=>chatPersonMenu(m,person);head.append(person,el('span',new Date(m.created_at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}),'hint small'));
-  r.append(head,el('div',clean(m.body),'mb'));const acts=el('div',null,'ma');
+    if(old){const prev=old.previousElementSibling;old.replaceWith(msgRow(m,prev&&prev._m));drawReacts(m.id);}
+    else{list.querySelector('.mempty')?.remove();const near=list.scrollHeight-list.scrollTop-list.clientHeight<120;chatAppend(list,m,true);
+      if(near||(me&&m.user_id===me.id))list.scrollTop=list.scrollHeight;
+      if(p.eventType==='INSERT'&&me&&m.user_id!==me.id&&mentionsMe(m)){toast('🔔 '+(m.name||'Someone')+' mentioned you');try{navigator.vibrate&&navigator.vibrate([40,40,40]);}catch(e){}}}})
+    .on('postgres_changes',{event:'*',schema:'public',table:'message_reactions'},p=>{const r=p.new&&p.new.message_id?p.new:p.old;if(!r||!r.message_id)return;
+      const set=((RX[r.message_id]=RX[r.message_id]||{})[r.emoji]=RX[r.message_id][r.emoji]||new Set());if(p.eventType==='DELETE')set.delete(r.user_id);else set.add(r.user_id);drawReacts(r.message_id);})
+    .subscribe();
+  lounge();box.append(composer());unread=0;badgeCount();drawChallenges();}
+let ROLES={},RX={},CHAT_NAMES=new Set(),loungeCh=null;
+const REACTS=['🔥','💯','😂','👀','🎯','🙌'];
+function chatName(n){if(n&&String(n).length>=2)CHAT_NAMES.add(String(n));}
+function escRx(t){return String(t).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function mentionsMe(m){if(!me)return false;if(Array.isArray(m.mentions)&&m.mentions.includes(me.id))return true;
+  const n=myProfile&&myProfile.display_name;return !!n&&new RegExp('@'+escRx(n)+'(?![A-Za-z0-9_])','i').test(String(m.body||''));}
+function mbody(text){const box=el('div',null,'mb');const t=clean(text);const names=[...CHAT_NAMES].sort((a,b)=>b.length-a.length).map(escRx);
+  if(!names.length||t.indexOf('@')<0){box.textContent=t;return box;}
+  const rx=new RegExp('@('+names.join('|')+')(?![A-Za-z0-9_])','gi');let at=0,m;
+  while((m=rx.exec(t))){if(m.index>at)box.append(document.createTextNode(t.slice(at,m.index)));
+    const me2=myProfile&&m[1].toLowerCase()===String(myProfile.display_name).toLowerCase();box.append(el('span','@'+m[1],'mtag'+(me2?' you':'')));at=m.index+m[0].length;}
+  if(at<t.length)box.append(document.createTextNode(t.slice(at)));return box;}
+function dayLabel(d){const t=new Date(),y=new Date(Date.now()-864e5);const same=(a,b)=>a.toDateString()===b.toDateString();
+  return same(d,t)?'Today':same(d,y)?'Yesterday':d.toLocaleDateString([],{weekday:'long',month:'short',day:'numeric'});}
+function chatAppend(list,m,live){let prev=null;for(let n=list.lastElementChild;n;n=n.previousElementSibling)if(n._m){prev=n._m;break;}
+  const d=new Date(m.created_at);if(!prev||new Date(prev.created_at).toDateString()!==d.toDateString())list.append(el('div',dayLabel(d),'mday'));
+  const r=msgRow(m,prev);if(live)r.classList.add('fresh');list.append(r);}
+function msgRow(m,prev){const mine=me&&m.user_id===me.id;
+  const cont=prev&&prev.user_id===m.user_id&&!prev.hidden&&(new Date(m.created_at)-new Date(prev.created_at))<5*60e3&&new Date(prev.created_at).toDateString()===new Date(m.created_at).toDateString();
+  const r=el('div',null,'msg'+(m.hidden?' hid':'')+(mine?' mine':'')+(cont?' cont':'')+(!mine&&mentionsMe(m)?' tagme':''));r.dataset.id=m.id;r._m=m;
+  const person=el('button',null,'chatperson mav');person.type='button';person.append(chatPic(m));person.setAttribute('aria-label','Options for '+(m.name||'fan'));person.onclick=()=>chatPersonMenu(m,person);
+  const col=el('div',null,'mcol');
+  if(!cont&&!mine){const head=el('div',null,'mh');const nm=el('button',m.name||'fan','mname');nm.type='button';nm.onclick=()=>chatPersonMenu(m,person);head.append(nm,myBadges({id:m.user_id},'sm'));
+    const role=ROLES[m.user_id];if(role==='admin'||role==='mod')head.append(el('span',role==='admin'?'ADMIN':'MOD','mrole'));
+    head.append(el('span',new Date(m.created_at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}),'mtime'));col.append(head);}
+  const bub=el('div',null,'mbub');bub.append(mbody(m.body));
+  if(mine||cont)bub.append(el('span',new Date(m.created_at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}),'mtime in'));
+  if(!mine&&mentionsMe(m))col.append(el('span','🔔 mentioned you','mtagme'));
+  col.append(bub);const rx=el('div',null,'mreact');rx.dataset.for=m.id;col.append(rx);
+  const acts=el('div',null,'ma');
+  if(me&&!m.hidden){const rp=el('button','↩ Reply','mlink');rp.type='button';rp.onclick=()=>mentionInsert(m.name);acts.append(rp);
+    const add=el('button','＋ React','mlink');add.type='button';add.onclick=e=>{e.stopPropagation();reactPicker(m.id,add);};acts.append(add);}
   if(me&&m.user_id!==me.id){const rp=el('button','Report','mlink');rp.type='button';rp.onclick=async()=>{const {error}=await sb.from('reports').insert({message_id:m.id,reason:'reported in chat'});toast(error?'Already reported':'Reported. Thanks, a moderator will look.');};acts.append(rp);}
   if(myProfile&&myProfile.role!=='member'){
     const h=el('button',m.hidden?'Unhide':'Hide','mlink');h.type='button';h.onclick=async()=>{await sb.rpc('mod_hide',{msg:m.id,hide:!m.hidden});openChat();};
     const mu=el('button','Mute 1h','mlink');mu.type='button';mu.onclick=async()=>{const {error}=await sb.rpc('mod_user',{target:m.user_id,ban:false,mute_minutes:60});toast(error?error.message:'Muted for 1 hour');};
     const bn=el('button','Ban','mlink');bn.type='button';bn.onclick=async()=>{if(!window.confirm||confirm('Ban '+m.name+'?')){const {error}=await sb.rpc('mod_user',{target:m.user_id,ban:true,mute_minutes:0});toast(error?error.message:'Banned');}};
     if(m.user_id!==me.id)acts.append(h,mu,bn);else acts.append(h);}
-  r.append(acts);return r;}
+  col.append(acts);
+  bub.onclick=e=>{if(e.target.closest('button'))return;document.querySelectorAll('.msg.open').forEach(x=>{if(x!==r)x.classList.remove('open');});r.classList.toggle('open');};
+  bub.ondblclick=()=>{if(me&&!m.hidden)toggleReact(m.id,'🔥');};
+  if(!mine)r.append(cont?el('span',null,'mav gap'):person);r.append(col);
+  if(RX[m.id])setTimeout(()=>drawReacts(m.id),0);
+  return r;}
+async function loadReacts(ids){if(!ids.length)return;try{const {data,error}=await sb.from('message_reactions').select('message_id,user_id,emoji').in('message_id',ids);if(error)return;
+  for(const x of data||[]){((RX[x.message_id]=RX[x.message_id]||{})[x.emoji]=RX[x.message_id][x.emoji]||new Set()).add(x.user_id);}ids.forEach(drawReacts);}catch(e){}}
+function drawReacts(id){const box=document.querySelector('.mreact[data-for="'+id+'"]');if(!box)return;box.replaceChildren();const r=RX[id]||{};
+  for(const e of REACTS){const set=r[e];if(!set||!set.size)continue;const b=el('button',null,'rpill'+(me&&set.has(me.id)?' on':''));b.type='button';
+    b.append(el('span',e),el('b',String(set.size)));b.setAttribute('aria-label',e+' '+set.size+(me&&set.has(me.id)?', you reacted':''));b.onclick=()=>toggleReact(id,e);box.append(b);}}
+async function toggleReact(id,e){if(!me){toast('Sign in to react');return;}const set=((RX[id]=RX[id]||{})[e]=RX[id][e]||new Set());const had=set.has(me.id);
+  if(had)set.delete(me.id);else set.add(me.id);drawReacts(id);
+  const q=had?sb.from('message_reactions').delete().eq('message_id',id).eq('user_id',me.id).eq('emoji',e):sb.from('message_reactions').insert({message_id:id,emoji:e});
+  const {error}=await q;if(error){if(had)set.add(me.id);else set.delete(me.id);drawReacts(id);toast(/relation|does not exist|schema/i.test(error.message)?'Reactions are being set up':'Could not react right now');}}
+function reactPicker(id,anchor){document.querySelectorAll('.rpick').forEach(x=>x.remove());const p=el('div',null,'rpick');
+  for(const e of REACTS){const b=el('button',e,'rpe');b.type='button';b.setAttribute('aria-label','React '+e);b.onclick=()=>{p.remove();toggleReact(id,e);};p.append(b);}
+  anchor.after(p);setTimeout(()=>document.addEventListener('pointerdown',function f(ev){if(!p.contains(ev.target)){p.remove();document.removeEventListener('pointerdown',f);}}),0);}
+function mentionInsert(name){const t=document.querySelector('#chatBox textarea');if(!t||!name)return;const tag='@'+name+' ';
+  if(!t.value.includes(tag))t.value=(t.value&&!/\s$/.test(t.value)?t.value+' ':t.value)+tag;t.focus();t.setSelectionRange(t.value.length,t.value.length);}
+// who's in the lounge right now (Supabase presence; signed-in names feed the @ suggestions)
+function lounge(){const lab=document.querySelector('#chat .lounge-label');if(!sb)return;
+  if(loungeCh)sb.removeChannel(loungeCh);const key=me?me.id:'guest-'+Math.random().toString(36).slice(2,10);
+  loungeCh=sb.channel('lounge-here',{config:{presence:{key}}});
+  loungeCh.on('presence',{event:'sync'},()=>{const st=loungeCh.presenceState();const n=Object.keys(st).length;
+    for(const k in st)for(const x of st[k])chatName(x.name);if(lab){lab.textContent='● '+n+' here now';lab.classList.add('here');}})
+    .subscribe(async s=>{if(s==='SUBSCRIBED'){try{await loungeCh.track({name:myProfile?myProfile.display_name:null,at:Date.now()});}catch(e){}}});}
 function composer(){const c=el('div',null,'card lounge-composer');
   if(!me){c.append(el('p','Sign in to chat. No password needed.','small'));
     const prov=(window._authProviders||{});const redirectTo=location.origin+location.pathname;try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}
@@ -1269,15 +1433,34 @@ function composer(){const c=el('div',null,'card lounge-composer');
     const go=el('button','Save name','btn');go.type='button';go.onclick=async()=>{const {error}=await sb.from('profiles').insert({id:me.id,display_name:i.value.trim()});if(error){toast(/duplicate|unique/i.test(error.message)?'That name is taken':'Name not allowed');return;}myProfile=null;openChat();};
     c.append(i,go);return c;}
   if(myProfile.banned){c.append(el('p','Your account cannot post in chat.','hint'));return c;}
-  const t=el('textarea');t.maxLength=500;t.rows=2;t.placeholder='Say something about the game…';t.className='chatin';
-  const go=el('button','Send','btn');go.type='button';const send=async()=>{const body=t.value.trim();if(!body)return;
+  const t=el('textarea');t.maxLength=500;t.rows=1;t.placeholder='Say something… type @ to tag someone';t.className='chatin lounge-input';
+  const sug=el('div',null,'msug');sug.hidden=true;
+  const findTag=()=>{const pos=t.selectionStart||t.value.length;const before=t.value.slice(0,pos);const m=before.match(/(^|\s)@([^@\n]{0,20})$/);return m?{q:m[2],start:pos-m[2].length-1,pos}:null;};
+  const showSug=()=>{const f=findTag();sug.replaceChildren();if(!f){sug.hidden=true;return;}const q=f.q.toLowerCase();
+    const mine=myProfile?String(myProfile.display_name).toLowerCase():'';
+    const list=[...CHAT_NAMES].filter(n=>n.toLowerCase()!==mine&&n.toLowerCase().startsWith(q)).sort((a,b)=>a.localeCompare(b)).slice(0,6);
+    if(!list.length){sug.hidden=true;return;}
+    for(const n of list){const b=el('button',null,'msugb');b.type='button';b.append(chatPic({name:n}),el('span','@'+n));
+      b.onmousedown=e=>e.preventDefault();b.onclick=()=>{const f2=findTag()||f;t.value=t.value.slice(0,f2.start)+'@'+n+' '+t.value.slice(f2.pos);const c=f2.start+n.length+2;t.focus();t.setSelectionRange(c,c);sug.hidden=true;grow();};sug.append(b);}
+    sug.hidden=false;};
+  const grow=()=>{t.style.height='auto';t.style.height=Math.min(120,t.scrollHeight)+'px';};
+  t.addEventListener('input',()=>{grow();showSug();});t.addEventListener('click',showSug);t.addEventListener('blur',()=>setTimeout(()=>{sug.hidden=true;},150));
+  const emo=el('div',null,'memo');for(const e of ['🔥','💯','😂','👀','🏀','🏈','🏒','⚾','🙌','😤']){const b=el('button',e,'memob');b.type='button';
+    b.onmousedown=ev=>ev.preventDefault();b.onclick=()=>{const p=t.selectionStart??t.value.length;t.value=t.value.slice(0,p)+e+t.value.slice(p);t.focus();t.setSelectionRange(p+e.length,p+e.length);grow();};emo.append(b);}
+  emo.classList.add('no-icons');
+  const go=el('button',null,'msend');go.type='button';go.setAttribute('aria-label','Send');go.append(el('span','➤'));const send=async()=>{const body=t.value.trim();if(!body)return;
     if(/https?:\/\/|www\.|\.com\b/i.test(body)){toast('Links are not allowed in chat');return;}
     if(/\b(guarantee\w*|lock of|can'?t lose|free money)\b/i.test(body)){toast('No "guaranteed" or "lock" talk, please');return;}
     go.disabled=true;const {error}=await sb.from('messages').insert({room:chatRoom,body});go.disabled=false;
-    if(error){toast(/slow down/i.test(error.message)?'Slow down a little':/row-level|policy/i.test(error.message)?'You can’t post right now':'Not sent: '+error.message);return;}t.value='';award('chat');};
-  go.onclick=send;t.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}};
+    if(error){toast(/slow down/i.test(error.message)?'Slow down a little':/row-level|policy/i.test(error.message)?'You can’t post right now':'Not sent: '+error.message);return;}t.value='';grow();sug.hidden=true;award('chat');};
+  go.onclick=send;t.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){if(!sug.hidden&&sug.firstChild){e.preventDefault();sug.firstChild.click();return;}e.preventDefault();send();}
+    else if(e.key==='Escape')sug.hidden=true;};
   const out=el('button','Sign out','mlink');out.type='button';out.onclick=async()=>{await sb.auth.signOut();me=null;myProfile=null;openChat();};
-  updateAcct();c.append(el('div','Chatting as '+myProfile.display_name+(myProfile.role!=='member'?' · '+myProfile.role:''),'hint small'),t,go,out);
+  const row=el('div',null,'mcomp');row.append(t,go);
+  const who=el('div',null,'mwho');who.append(el('span','Chatting as ','hint small'),el('b',myProfile.display_name),myBadges(myProfile));
+  if(myProfile.role!=='member')who.append(el('span',myProfile.role==='admin'?'ADMIN':'MOD','mrole'));
+  const pin=el('button','🏅 Show badges','mlink');pin.type='button';pin.onclick=openTrophies;who.append(pin,out);
+  updateAcct();c.append(sug,emo,row,who);
   if(myProfile.role==='admin'){const cl=el('button','🧹 Clear chat','mlink');cl.type='button';
     cl.onclick=async()=>{if(window.confirm&&!confirm('Delete ALL messages in this chat for everyone? This cannot be undone.'))return;
       const {data,error}=await sb.rpc('mod_clear',{target_room:chatRoom});
@@ -2399,11 +2582,11 @@ function chatOpen(){return !!document.querySelector('#chat.panel.on');}
 function popsOn(){try{return localStorage.getItem('mohjeta.chatpop')!=='0';}catch(e){return true;}}
 function chatFab(){
   if(sb&&!popCh)popCh=sb.channel('pop').on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room=eq.lobby'},p=>{const m=p.new;
-    if(!m||m.hidden||(me&&m.user_id===me.id)||chatOpen())return;unread++;badgeCount();if(popsOn())chatPop(m);})
+    if(!m||m.hidden||(me&&m.user_id===me.id)||chatOpen())return;unread++;badgeCount();const tag=mentionsMe(m);if(tag||popsOn())chatPop(m,tag);if(tag)try{navigator.vibrate&&navigator.vibrate([40,40,40]);}catch(e){}})
     .on('postgres_changes',{event:'DELETE',schema:'public',table:'messages'},p=>{const id=p.old&&p.old.id;if(id!=null){const r=document.querySelector('.chatlist [data-id="'+id+'"]');if(r)r.remove();}}).subscribe();}
 function badgeCount(){const b=document.querySelector('#nav [data-tab=chat]');if(b)b.setAttribute('aria-label',unread?'Community chat, '+unread+' unread messages':'Community chat');}
-function chatPop(m){document.querySelectorAll('.cpop').forEach(x=>x.remove());const c=el('button',null,'cpop');c.type='button';
-  const t=el('div',null,'cptext');t.append(el('b',m.name||'fan'),el('span',clean(String(m.body||'')).slice(0,90)));c.append(chatPic(m),t);
+function chatPop(m,tag){document.querySelectorAll('.cpop').forEach(x=>x.remove());const c=el('button',null,'cpop'+(tag?' tag':''));c.type='button';
+  const t=el('div',null,'cptext');t.append(el('b',(m.name||'fan')+(tag?' mentioned you':'')),el('span',clean(String(m.body||'')).slice(0,90)));c.append(chatPic(m),t);
   c.onclick=()=>{c.remove();openDrawer();};document.body.append(c);
   const f=document.querySelector('#nav [data-tab=chat]');if(f){const r=f.getBoundingClientRect();setPos(c,Math.min(r.right-c.offsetWidth,innerWidth-c.offsetWidth-8),r.top-c.offsetHeight-8);}setTimeout(()=>c.classList.add('out'),4200);setTimeout(()=>c.remove(),4700);}
 function openDrawer(){show('chat');}
@@ -2860,7 +3043,7 @@ function comparePlayers(L){const ov=el('div',null,'gate');const box=el('div',nul
 function chatPersonMenu(m,opener){
  const dialog=document.createElement('dialog');dialog.className='gatebox player-menu';dialog.setAttribute('aria-label','Options for '+(m.name||'player'));
  const close=()=>dialog.close();dialog.addEventListener('close',()=>{dialog.remove();opener?.focus();});
- const cover=el('div',null,'player-cover');cover.append(chatPic(m),el('span','MOHJETA COMMUNITY','community-eyebrow'));dialog.append(cover,el('h3',m.name||'Player'),el('p','Make your next connection.','hint small'));
+ const cover=el('div',null,'player-cover');cover.append(chatPic(m),el('span','MOHJETA COMMUNITY','community-eyebrow'));dialog.append(cover,el('h3',m.name||'Player'));{const bs=myBadges({id:m.user_id},'lg');if(bs.childNodes.length)dialog.append(bs);}dialog.append(el('p','Make your next connection.','hint small'));
  const action=(label,fn)=>{const b=el('button',label,'btn ghost');b.type='button';b.onclick=fn;dialog.append(b);return b;};
  action('Reply in chat',()=>{close();const input=document.querySelector('#chatBox textarea');if(input){input.value='@'+(m.name||'fan')+' ';input.focus();}});
  if(!me)action('Sign in to challenge',()=>{close();document.querySelector('#chatBox input')?.focus();});
