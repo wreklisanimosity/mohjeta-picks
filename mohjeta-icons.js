@@ -5,7 +5,8 @@ const shapes={"picks": "<path d=\"M16 3 20 11 29 13 22 19 23 28 16 24 9 28 10 19
 const map={"🏠": "home", "🔒": "lock", "✅": "win", "🏀": "basketball", "🎯": "target", "⇄": "swap", "🧪": "practice", "💬": "chat", "⚔": "simulate", "🔔": "alerts", "✕": "close", "🎲": "dice", "💵": "money", "🔮": "forecast", "❌": "loss", "⭐": "star", "🏆": "trophy", "📤": "share", "⚖": "compare", "🏈": "football", "📋": "clipboard", "🤖": "robot", "⏳": "pending", "↩": "undo", "🔥": "fire", "👑": "crown", "🏟": "arena", "🏒": "hockey", "🎾": "tennis", "🥊": "fight", "🧱": "build", "🎉": "party", "🟢": "live", "💾": "save", "✨": "spark", "↗": "open", "📅": "calendar", "➖": "minus", "😤": "fist", "🖐": "hand", "🏹": "arrow", "⏱": "clock", "📬": "mail", "🧹": "broom", "📈": "chart", "🎮": "gamepad", "⇅": "updown", "💥": "boom", "⚾": "baseball", "⚽": "soccer", "✓": "check", "✗": "cross", "🤝": "assist", "🧲": "rebound", "📊": "chart", "⏸": "pause", "⚠": "warn", "↻": "refresh", "🔄": "refresh", "⏰": "clock", "👀": "eye", "✏": "edit", "👥": "friends", "➕": "plus", "🥇": "gold", "🥈": "silver", "🥉": "bronze", "😴": "sleep", "🆕": "new", "📉": "chartdown", "🏅": "gold", "💸": "money", "📣": "news", "🗓": "calendar", "⚡": "spark", "📰": "news", "🔊": "sound", "🔇": "mute", "🛠": "tools", "💼": "briefcase", "🚫": "ban", "🔗": "link", "🌐": "globe", "⬜": "square", "🩹": "bandage", "🟨": "card", "🏁": "flag", "🏃": "run", "🙌": "catch", "🧤": "glove", "🥅": "goalnet", "💳": "creditcard", "🎓": "cap", "💰": "moneybag", "💪": "flex", "🔴": "rec", "👇": "pointdown", "🔑": "key"};
 const keys=Object.keys(map).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
 const RX=new RegExp('('+keys.join('|')+')\\uFE0F?','gu');
-// forged metal (owner, Nov 7 2026: "take what we already had, make them 3D and metallic, more unique designs"): every Facet
+// forged metal (owner, Nov 7 2026; fix348 "look like they are floating above the panels": a second, far, soft shadow
+// under every icon so it hovers, and the big card icons bob gently): "take what we already had, make them 3D and metallic, more unique designs"): every Facet
 // icon is struck in polished metal: a banded metal body (5-stop gradient read in one light direction across the whole
 // icon), coloured enamel inlays, chrome or engraved line work, and a real bevel (SVG lighting filter) plus a cast shadow.
 // One shared <defs> block (mjDefs) holds the metals, enamels and filters, so each icon carries no defs of its own.
@@ -43,7 +44,7 @@ function defs(){
  if(document.getElementById('mjDefs'))return;
  const g=(id,c)=>`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="5" y1="1" x2="25" y2="31"><stop offset="0" stop-color="${c[0]}"/><stop offset=".28" stop-color="${c[1]}"/><stop offset=".55" stop-color="${c[2]}"/><stop offset=".74" stop-color="${c[3]}"/><stop offset="1" stop-color="${c[4]}"/></linearGradient>`;
  const e=(id,c)=>`<radialGradient id="${id}" gradientUnits="userSpaceOnUse" cx="11" cy="9" r="24"><stop offset="0" stop-color="${c[0]}"/><stop offset=".35" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></radialGradient>`;
- const bevel=(id,b,sc)=>`<filter id="${id}" filterUnits="userSpaceOnUse" x="-4" y="-4" width="40" height="42" color-interpolation-filters="sRGB">
+ const bevel=(id,b,sc,fl)=>`<filter id="${id}" filterUnits="userSpaceOnUse" x="-6" y="-6" width="46" height="52" color-interpolation-filters="sRGB">
   <feGaussianBlur in="SourceAlpha" stdDeviation="${b}" result="bl"/>
   <feSpecularLighting in="bl" surfaceScale="${sc}" specularConstant="1.15" specularExponent="18" lighting-color="#ffffff" result="sp"><feDistantLight azimuth="225" elevation="42"/></feSpecularLighting>
   <feComposite in="sp" in2="SourceAlpha" operator="in" result="sp2"/>
@@ -51,13 +52,15 @@ function defs(){
   <feComposite in="SourceGraphic" in2="df" operator="arithmetic" k1="1.25" k2="0" k3="0" k4="0" result="shade"/>
   <feComposite in="shade" in2="SourceAlpha" operator="in" result="shade2"/>
   <feComposite in="shade2" in2="sp2" operator="arithmetic" k1="0" k2="1" k3=".9" k4="0" result="lit"/>
-  <feOffset in="SourceAlpha" dx=".6" dy="1.3" result="o"/><feGaussianBlur in="o" stdDeviation=".9" result="ob"/>
-  <feFlood flood-color="#05010a" flood-opacity=".7"/><feComposite in2="ob" operator="in" result="sh"/>
-  <feMerge><feMergeNode in="sh"/><feMergeNode in="lit"/></feMerge></filter>`;
+  <feOffset in="SourceAlpha" dx=".4" dy=".9" result="o"/><feGaussianBlur in="o" stdDeviation=".5" result="ob"/>
+  <feFlood flood-color="#05010a" flood-opacity=".55"/><feComposite in2="ob" operator="in" result="sh"/>
+  <feOffset in="SourceAlpha" dx="1" dy="${fl}" result="o2"/><feGaussianBlur in="o2" stdDeviation="${fl*.42}" result="ob2"/>
+  <feFlood flood-color="#000000" flood-opacity=".95"/><feComposite in2="ob2" operator="in" result="far"/>
+  <feMerge><feMergeNode in="far"/><feMergeNode in="sh"/><feMergeNode in="lit"/></feMerge></filter>`;
  const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.id='mjDefs';s.setAttribute('aria-hidden','true');s.setAttribute('focusable','false');
  s.style.cssText='position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
  s.innerHTML='<defs>'+Object.entries(METAL).map(([k,c])=>g('mjm-'+k,c)).join('')+Object.entries(ENAMEL).map(([k,c])=>e('mje-'+k,c)).join('')+
-  bevel('mjBevel',.9,2.4)+bevel('mjBevelW',.55,1.6)+'</defs>';
+  bevel("mjBevel",.9,2.4,5.5)+bevel("mjBevelW",.55,1.6,4)+'</defs>';
  (document.body||document.documentElement).prepend(s);
 }
 function paint(s,name){
