@@ -434,7 +434,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 <link rel="stylesheet" href="community.css?v=1">
 <script src="mohjeta-icons.js?v=5"></script>
 <script src="sport-art.js?v=2"></script>
-<script src="live-data.js?v=2"></script>
+<script src="live-data.js?v=3"></script>
 <link rel="stylesheet" href="game-matchups.css?v=2">
 <script src="game-matchups.js?v=2"></script>
 <link rel="stylesheet" href="languages.css?v=3">
@@ -1042,10 +1042,15 @@ async function supa(){if(sb)return sb;const r=await fetch('live-config.json?t='+
   try{const st=await fetch(c.url+'/auth/v1/settings',{headers:{apikey:c.anon_key}}).then(r=>r.json());window._authProviders=st.external||{};}catch(e){window._authProviders={};}
   return sb;}
 // Nov 6 2026 (Supabase egress): live updates stop a minute after the page is hidden and resume (with one fresh read) when it's back
-function liveSub(){if(!sb||liveCh)return;liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();}
-let liveHideT=null;
+function liveSub(){if(!sb||liveCh||liveCdn)return;liveCh=sb.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live_state'},p=>{if(p.new&&p.new.data)applyLive(p.new.data);}).subscribe();}
+let liveHideT=null,liveCdn=null,liveTag=null;
+// with Cloudflare on (cdn-config.json), the live scoreboard is a small file checked every 15 s while the page is on screen
+async function liveCdnPoll(){if(!liveCdn||document.hidden)return;try{const r=await fetch(liveCdn+'/live.json',{cache:'no-cache',signal:AbortSignal.timeout(8000)});
+  if(!r.ok)return;const t=r.headers.get('etag');if(t&&t===liveTag)return;liveTag=t;const L=await r.json();if(L&&L.games)applyLive(L);}catch(e){}}
+(window.publicCdn?publicCdn():Promise.resolve(null)).then(b=>{if(!b)return;liveCdn=b;if(sb&&liveCh){try{sb.removeChannel(liveCh);}catch(e){}liveCh=null;}
+  liveCdnPoll();setInterval(liveCdnPoll,15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)liveCdnPoll();});});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(liveHideT);liveHideT=setTimeout(()=>{if(sb&&liveCh&&document.hidden){try{sb.removeChannel(liveCh);}catch(e){}liveCh=null;}},60000);return;}
-  clearTimeout(liveHideT);if(sb&&!liveCh){sb.from('live_state').select('data').eq('id',1).maybeSingle().then(({data})=>{if(data&&data.data)applyLive(data.data);}).catch(()=>{});liveSub();}});
+  clearTimeout(liveHideT);if(sb&&!liveCh&&!liveCdn){sb.from('live_state').select('data').eq('id',1).maybeSingle().then(({data})=>{if(data&&data.data)applyLive(data.data);}).catch(()=>{});liveSub();}});
 async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
   chatFab();startPresence();logVisit();drawPush($('pushBox'));memberRefresh(true);setInterval(()=>{if(!document.hidden)memberRefresh(false);},60000);
