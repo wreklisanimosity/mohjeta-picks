@@ -59,8 +59,8 @@ header{position:sticky;top:0;z-index:20;background:#0b0712f2;backdrop-filter:blu
 .brand b{color:var(--pink);text-shadow:0 0 10px var(--pink)}
 .brand{display:inline-flex;align-items:flex-end;white-space:nowrap}.brand-m{height:1.6em;width:auto;margin:0 -.1em -.2em -.14em;filter:drop-shadow(0 0 8px #ff4fd866);transition:transform .3s}.brand:hover .brand-m{transform:rotate(-6deg) scale(1.06)}
 .ticker{display:flex;align-items:center;gap:6px;margin:8px -16px -8px;padding:0 8px 0 0;background:linear-gradient(90deg,#2a0f33,#170b22);border-top:1px solid #ff4fd833;border-bottom:1px solid #ff4fd833;height:34px;overflow:hidden}
-.ticker[hidden]{display:none}.tk-view{flex:1;overflow:hidden;position:relative;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
-.tk-track{display:inline-flex;white-space:nowrap;will-change:transform;animation:tk var(--tkdur,60s) linear infinite}.ticker:hover .tk-track,.ticker.paused .tk-track{animation-play-state:paused}
+.ticker[hidden]{display:none}.tk-view{flex:1;overflow:hidden;position:relative}.tk-view::before,.tk-view::after{content:"";position:absolute;top:0;bottom:0;width:18px;z-index:1;pointer-events:none}.tk-view::before{left:0;background:linear-gradient(90deg,#0b0712,#0b071200)}.tk-view::after{right:0;background:linear-gradient(270deg,#0b0712,#0b071200)}
+.tk-track{display:inline-flex;white-space:nowrap;animation:tk var(--tkdur,60s) linear infinite}.ticker:hover .tk-track,.ticker.paused .tk-track{animation-play-state:paused}
 @keyframes tk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .tk-item{display:inline-flex;align-items:center;gap:6px;padding:0 18px;font-size:13px;color:var(--text);background:none;border:0;font:inherit;font-size:13px;cursor:pointer;text-decoration:none;height:34px}
 .tk-item b{color:var(--yellow);font-size:11px;letter-spacing:.06em}.tk-item.site b{color:var(--pink)}.tk-item+.tk-item{border-left:1px solid #ffffff1f}
@@ -442,10 +442,10 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .actiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
 .card.tap,.hubbtn{border-color:#5b3a7a}
 </style>
-<link rel="stylesheet" href="mohjeta-icons.css?v=7">
+<link rel="stylesheet" href="mohjeta-icons.css?v=8">
 <link rel="stylesheet" href="intro.css?v=3">
 <link rel="stylesheet" href="community.css?v=1">
-<script src="mohjeta-icons.js?v=7"></script>
+<script src="mohjeta-icons.js?v=8"></script>
 <script src="sport-art.js?v=2"></script>
 <script src="live-data.js?v=3"></script>
 <link rel="stylesheet" href="game-matchups.css?v=2">
@@ -2142,9 +2142,11 @@ function drawNews(){const box=$('newsBox');if(!box||!NEWS)return;box.replaceChil
   const u=up[0];if(u){try{localStorage.setItem('mohjeta.newsSeen',u.id);}catch(e){}drawNewsBar();}}
 // ---------------- running banner at the top: newest sports headlines (news_feed.headlines) + Mohjeta's own news
 let tkKey='';
+const TK_MAX=10;   // fix349: the banner is one long sliding strip (twice over); dozens of headlines made it tens of thousands of
+                   // pixels wide, past what an iPhone can keep on screen, and the page could flash black. Newest 10 only.
 function tickerItems(){const out=[];const cut=Date.now()-14*864e5;
   for(const u of ((NEWS&&NEWS.updates)||[]).slice(0,3)){if(Date.parse(u.date)>=cut)out.push({site:true,label:'MOHJETA',text:u.title,go:'news'});}   // tap: the full update on What's new
-  for(const h of ((D&&D.headlines)||[]))out.push({label:(SPORT_ICON[h.league]||'')+' '+sname(h.league).toUpperCase(),text:h.text,link:h.link});
+  for(const h of ((D&&D.headlines)||[]).slice(0,TK_MAX))out.push({label:(SPORT_ICON[h.league]||'')+' '+sname(h.league).toUpperCase(),text:h.text,link:h.link});
   return out;}
 function drawTicker(){const bar=$('ticker'),tr=$('tkTrack');if(!bar||!tr)return;let off=false;try{off=sessionStorage.getItem('mohjeta.tk')==='0';}catch(e){}
   const items=off?[]:tickerItems();if(!items.length){bar.hidden=true;return;}const key=JSON.stringify(items);if(key===tkKey&&!bar.hidden)return;tkKey=key;
