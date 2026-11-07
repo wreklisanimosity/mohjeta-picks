@@ -33,3 +33,9 @@
 .mj-icon.mj-metal{filter:none;overflow:visible}
 .tabs .mj-icon.mj-metal{filter:saturate(.25) brightness(.8);opacity:.8}.tabs [aria-selected=true] .mj-icon.mj-metal{filter:drop-shadow(0 0 5px #ff4fd88c);opacity:1;transform:scale(1.1)}
 .bd:not(.on) .mj-icon.mj-metal{filter:grayscale(1);opacity:.5}
+/* floating (fix348): the far shadow is in the SVG filter; big icons on cards bob slowly, each a little out of step */
+.hi .mj-icon.mj-metal,.hubbtn .mj-icon.mj-metal,.card h3>.mj-icon.mj-metal,.card h4>.mj-icon.mj-metal{animation:mjfloat 3.6s ease-in-out infinite}
+.hubbtn:nth-child(2n) .mj-icon.mj-metal{animation-delay:-1.2s}.hubbtn:nth-child(3n) .mj-icon.mj-metal{animation-delay:-2.4s}
+@keyframes mjfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){.mj-icon.mj-metal{animation:none!important}}
+.hubbtn .hi .mj-icon.mj-metal{width:40px;height:40px;margin-bottom:6px}
