@@ -78,12 +78,20 @@ function paint(s,name){
  g.append(...s.childNodes);s.append(g);
  s.classList.add('mj-color','mj-metal');
 }
-function icon(name,label){
+// phones draw the metal from one pre-rendered picture (icons-metal.webp, made from the SVG above with
+// the same lighting): live SVG lighting filters on dozens of icons are heavy for an iPhone's graphics memory (fix349).
+// Each cell is the icon's 32-unit box plus room for its shadow (-7..39 across, -5..41 down).
+const SHEET={cols:10,rows:10,names:["picks", "simulate", "props", "results", "play", "more", "practice", "fantasy", "forecast", "pickem", "chat", "calendar", "crown", "news", "money", "lock", "share", "alerts", "compare", "save", "friends", "mohjeta", "spark", "win", "loss", "pending", "basketball", "football", "hockey", "baseball", "soccer", "tennis", "fight", "target", "assist", "rebound", "fire", "star", "gold", "silver", "bronze", "check", "cross", "close", "warn", "pause", "clock", "refresh", "edit", "plus", "minus", "eye", "broom", "boom", "party", "sleep", "fist", "clipboard", "mail", "chart", "chartdown", "live", "build", "dice", "undo", "open", "swap", "updown", "arena", "hand", "arrow", "trophy", "robot", "gamepad", "new", "home", "grid", "search", "sound", "mute", "tools", "briefcase", "ban", "link", "globe", "square", "bandage", "card", "flag", "run", "catch", "glove", "goalnet", "creditcard", "cap", "moneybag", "flex", "rec", "pointdown", "key"]};const IDX=Object.fromEntries(SHEET.names.map((n,i)=>[n,i]));
+function iconRaster(name,label){const k=IDX[name];if(k==null)return null;const s=document.createElement('span');s.className='mj-icon mj-'+name+' mj-color mj-metal mj-ras';
+ const i=document.createElement('i');i.style.backgroundPosition=((k%SHEET.cols)/(SHEET.cols-1)*100)+'% '+(Math.floor(k/SHEET.cols)/(SHEET.rows-1)*100)+'%';s.append(i);
+ if(label){s.setAttribute('role','img');s.setAttribute('aria-label',label);}else s.setAttribute('aria-hidden','true');return s;}
+function iconSvg(name,label){
  const n=shapes[name]?name:'mohjeta';
  const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 32 32');s.setAttribute('class','mj-icon mj-'+name);s.setAttribute('focusable','false');
  if(label){s.setAttribute('role','img');s.setAttribute('aria-label',label);}else s.setAttribute('aria-hidden','true');
  s.innerHTML=shapes[n];paint(s,n);return s;
 }
+function icon(name,label){return iconRaster(shapes[name]?name:'mohjeta',label)||iconSvg(name,label);}
 const SKIP=new Set(['SCRIPT','STYLE','TEXTAREA','INPUT','TITLE','NOSCRIPT','CANVAS','svg']);
 function skip(p){for(let n=p;n&&n.nodeType===1;n=n.parentNode){if(SKIP.has(n.tagName)||n.isContentEditable||(n.classList&&(n.classList.contains('msg')||n.classList.contains('no-icons'))))return true;}return false;}
 function swapText(t){
@@ -126,6 +134,6 @@ function medal(name,o){o=o||{};const id='md'+(++uid);const tier=TIERS[o.locked?'
  <svg x="15" y="11" width="26" height="26" viewBox="0 0 32 32" class="mj-icon glyph">${shapes[name]||shapes.mohjeta}</svg>`;
  return s;
 }
-window.MohjetaIcons={icon,decorate,medal,paint,names:Object.keys(shapes)};
+window.MohjetaIcons={icon,iconSvg,decorate,medal,paint,names:Object.keys(shapes)};
 if(document.body)watch();else document.addEventListener('DOMContentLoaded',watch);
 })();
