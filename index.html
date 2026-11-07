@@ -2260,7 +2260,7 @@ function playButton(){
     location.href='intent://checkout?account='+playReady.account+'#Intent;scheme=mohjetaplay;package=com.mohjeta.picks;end';
   };return b;
 }
-function trialBtn(){if(isPlayApp())return playButton();const used=ACCESS&&ACCESS.trial_used;const b=el('button',used?'Trial used':'⭐ Start '+(pw().trial_days||7)+'-day free trial','btn');b.type='button';b.disabled=!!used;
+function trialBtn(){if(isPlayApp())return playButton();if(STRIPE_ON&&!isIOSApp()){const used=ACCESS&&(ACCESS.trial_used||ACCESS.stripe);const b=el('button',used?'Subscribe':'⭐ Start '+(pw().trial_days||7)+'-day free trial','btn');b.type='button';b.onclick=()=>openPlans();return b;}const used=ACCESS&&ACCESS.trial_used;const b=el('button',used?'Trial used':'⭐ Start '+(pw().trial_days||7)+'-day free trial','btn');b.type='button';b.disabled=!!used;
   b.onclick=async()=>{if(!me){try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}toast('Sign in first (free), then start your trial');show('chat');return;}
     const {data,error}=await sb.rpc('start_trial');if(error){toast('Could not start: '+error.message);return;}ACCESS=data;accessAt=Date.now();
     toast(data&&data.access?'Free trial started: '+daysLeft(data.trial_ends)+' days 🎉':'Your free trial was already used');memberRefresh(true);if(D)renderPicks(D);};return b;}
@@ -2278,10 +2278,12 @@ async function stripeGo(action,plan,btn){if(!me){try{sessionStorage.setItem('moh
 async function openPlans(){if(isIOSApp())return;if(isPlayApp()){playButton().click();return;}
   const {box,x}=sheetGate('Mohjeta Premium');box.append(el('p','Every pick with her reasoning, her open bets, the full simulator and props builder. Her record stays public, always.','hint small'));
   let left=null;try{const r=await sb.rpc('founding_left');if(!r.error)left=r.data;}catch(e){}
+  const a=ACCESS||{};const trialOk=!a.trial_used&&!a.stripe;   // card-up-front trial: once per account
+  if(trialOk)box.append(el('div','⭐ First 7 days free on any plan. You won’t be charged until day 8, and you can cancel anytime before then.','banner members small'));
   const wrap=el('div',null,'plans');for(const [id,name,price,per,note] of PLANS){if(id==='founding'&&!(left>0))continue;
     const b=el('button',null,'plan'+(id==='founding'?' best':''));b.type='button';const l=el('span',null,'pl');const t=el('b',name);if(id==='founding'&&left!=null){t.append(el('span',left+' left','tag'));}
     l.append(t,el('span',note,'hint small'));const pr=el('span',price,'pr');pr.append(el('small',per));b.append(l,pr);b.onclick=()=>stripeGo('checkout',id,b);wrap.append(b);}
-  box.append(wrap,el('p','Pay with card, Apple Pay or Google Pay on Stripe’s secure page. Renews automatically until you cancel; cancel anytime from your account. 21+.','hint small'),x);}
+  box.append(wrap,el('p',(trialOk?'Your card is saved now and charged after the 7-day trial unless you cancel. ':'')+'Pay with card, Apple Pay or Google Pay on Stripe’s secure page. Renews automatically until you cancel; cancel anytime from your account. 21+.','hint small'),x);}
 function manageBtn(){const b=el('button','💳 Manage subscription','btn ghost');b.type='button';b.onclick=()=>stripeGo('portal',null,b);return b;}
 (function(){const q=new URLSearchParams(location.search);const paid=q.get('paid');if(paid==null&&q.get('paytest')==null)return;
   if(paid!=null){q.delete('paid');history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:'')+location.hash);}
