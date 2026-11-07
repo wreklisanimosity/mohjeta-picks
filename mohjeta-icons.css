@@ -28,3 +28,8 @@
 .tabs .mj-icon.mj-3d{filter:saturate(.35) brightness(.85);opacity:.8}.tabs [aria-selected=true] .mj-icon.mj-3d{filter:drop-shadow(0 0 6px #ff4fd8aa);opacity:1;transform:scale(1.45)}
 .mj-medal.mj-medal3d{display:inline-block;width:44px;height:50px;background:url(medals-3d.webp?v=1) 0 0/1300% 200% no-repeat;filter:none}
 .mj-medal.mj-medal3d.locked{opacity:.85}.bd .mj-medal.mj-medal3d{width:42px;height:48px}.toast .mj-medal.mj-medal3d{width:34px;height:39px;vertical-align:middle}
+
+/* forged metal icons (fix347): the shading, bevel and shadow live inside the SVG (mjDefs), so no CSS shadow on top */
+.mj-icon.mj-metal{filter:none;overflow:visible}
+.tabs .mj-icon.mj-metal{filter:saturate(.25) brightness(.8);opacity:.8}.tabs [aria-selected=true] .mj-icon.mj-metal{filter:drop-shadow(0 0 5px #ff4fd88c);opacity:1;transform:scale(1.1)}
+.bd:not(.on) .mj-icon.mj-metal{filter:grayscale(1);opacity:.5}
