@@ -438,7 +438,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 <script src="sport-art.js?v=2"></script>
 <script src="live-data.js?v=3"></script>
 <link rel="stylesheet" href="game-matchups.css?v=2">
-<script src="game-matchups.js?v=2"></script>
+<script src="game-matchups.js?v=3"></script>
 <link rel="stylesheet" href="languages.css?v=3">
 <style>
 .game-picker{position:relative;display:block;margin-block:12px;cursor:pointer}
@@ -1422,7 +1422,7 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
     b.append(c);}
   if(g.key_players&&(g.key_players.facts||[]).length){const KP=g.key_players;const c=section('Who makes the difference');const ul=el('ul',null,'plain');for(const f of KP.facts)ul.append(el('li',f));c.append(ul);
     const tm=Object.entries(KP.teams||{}).filter(([,ps])=>ps&&ps.length);if(tm.length){const tw=el('div',null,'kpteams');for(const [t,ps] of tm){const d=el('div');d.append(el('b',t));
-      for(const p of ps)d.append(el('div',p.name+(p.rating!=null?' · '+(Number.isInteger(p.rating)?'rated '+p.rating:sg(p.rating)):'')+(p.stats?' · '+p.stats:''),'hint small'));tw.append(d);}c.append(tw);}
+      for(const p of ps)d.append(el('div',p.name+(p.rating!=null?' · '+(Number.isInteger(p.rating)?'rated '+p.rating:sg(p.rating)):'')+(/[1-9]/.test(String(p.stats||''))?' · '+p.stats:''),'hint small'));tw.append(d);}c.append(tw);}
     c.append(el('p','From her player ratings (each player ranked against his position this season) and the injury report.','hint small'));b.append(c);}
   if(window.GameMatchups){GameMatchups.theme={badge:teamBadge,color:n=>TEAM_COLORS[teamNick(n)]};b.append(GameMatchups.render(g));}   // after her bet and pick, so those come first
   if(g.event){const cb=iel('button','💬 Chat about it ›','btn ghost');cb.type='button';cb.onclick=()=>{closeSheet(true);show('chat');};b.append(cb);}
@@ -1436,6 +1436,7 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
   if(d.roster&&(d.roster.text||d.roster.chance!=null)){const c=section('Player rating');if(d.roster.chance!=null){const p=el('p');p.append('Built from who actually plays tonight: ',el('b',(g.pick?g.pick.team:'her side')+' '+pct(d.roster.chance)));if(Math.abs(d.roster.chance-(g.pick?g.pick.chance:.5))>=.1)p.append(el('span',' (disagrees with her pick)','open'));c.append(p);}
     if(d.roster.text)c.append(el('p',d.roster.text,'hint small'));b.append(c);}
   if(d.injuries&&d.injuries.length){const ul=el('ul',null,'plain');for(const x of d.injuries)ul.append(el('li',x));b.append(section('Who’s out',ul));}
+  else if(g.details&&Array.isArray(d.injuries))b.append(section('Who’s out',el('p','No injuries reported for either team.'+(/^NCAA/.test(g.league)?' College teams often don’t publish injury reports, so a player can still be out.':''),'hint')));
   const facts=[];if(d.line)facts.push(d.line);if(d.rest)facts.push(d.rest);for(const f of d.form||[])facts.push(f);
   if(d.elo){for(const [t,v] of Object.entries(d.elo))if(v&&v.rank)facts.push(t+': #'+v.rank+' of '+v.of+' in team strength');}
   if(facts.length){const ul=el('ul',null,'plain');for(const x of facts)ul.append(el('li',x));b.append(section('The matchup',ul));}
