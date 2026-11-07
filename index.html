@@ -40,6 +40,8 @@ body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none
 a{color:var(--pink)}
 button{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+  .ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 4px);transform:translate(-50%,-60px);z-index:60;background:#1a1024;border:1px solid #b44dff66;color:#e9dcff;
+    font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;opacity:0;transition:opacity .15s;pointer-events:none}.ptr.on{opacity:1}
 header{position:sticky;top:0;z-index:20;background:#0b0712f2;backdrop-filter:blur(10px);border-bottom:1px solid #b44dff44;padding-top:env(safe-area-inset-top,0px)}
 .top{max-width:1100px;margin:auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
 .brand{font-size:21px;font-weight:800;letter-spacing:.12em;text-shadow:0 0 14px #b44dff88;cursor:pointer}
@@ -1138,7 +1140,14 @@ function composer(){const c=el('div',null,'card lounge-composer');
       b.onclick=async()=>{const {error}=await sb.auth.signInWithOAuth({provider:id,options:{redirectTo}});if(error)toast('Could not start sign-in: '+error.message);};c.append(b);}
     if(Object.values(prov).some(Boolean))c.append(el('p','or get a sign-in link by email:','hint small'));const i=el('input');i.type='email';i.placeholder='you@email.com';i.className='chatin';
     const go=el('button','Send sign-in link','btn');go.type='button';go.onclick=async()=>{const email=i.value.trim();if(!/^\S+@\S+\.\S+$/.test(email)){toast('Enter a valid email');return;}try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}
-      const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});toast(error?'Could not send: '+error.message:'Check your email for the sign-in link 📬');};
+      const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});toast(error?'Could not send: '+error.message:'Check your email for the sign-in code 📬');
+      if(!error){   // Nov 6 2026: the email also has a 6-digit code; typing it signs in right here (the link would open Safari, not the iPhone app)
+        c.querySelectorAll('.otpbox').forEach(x=>x.remove());const box=el('div',null,'otpbox');const code=el('input');code.inputMode='numeric';code.autocomplete='one-time-code';
+        code.placeholder='Code from the email';code.className='chatin';code.maxLength=10;const ok=el('button','Sign in with code','btn');ok.type='button';
+        ok.onclick=async()=>{const t=code.value.replace(/\D/g,'');if(t.length<6){toast('Enter the code from the email');return;}ok.disabled=true;
+          try{const {error:e2}=await sb.auth.verifyOtp({email,token:t,type:'email'});if(e2)toast('That code did not work. Check it, or send a new one.');}catch(e){toast('Could not connect. Try again.');}finally{ok.disabled=false;}};
+        code.onkeydown=e=>{if(e.key==='Enter')ok.click();};
+        box.append(el('p',isIOSApp()?'Type the code from the email here (the link in the email opens Safari, not the app).':'Type the code from the email, or tap its link.','hint small'),code,ok);go.after(box);setTimeout(()=>code.focus(),50);}};
     i.autocomplete='username';
     const options=el('details'),label=el('summary','Sign in with a password');
     const form=el('form'),password=el('input'),login=el('button','Sign in','btn');
@@ -2099,6 +2108,13 @@ if(isPlayApp()){
  const checkout=playButton();checkout.id='subscribeEntry';checkout.classList.add('subscribe-entry');checkout.textContent='Subscribe';subscribeEntry.replaceWith(checkout);
 }else if(isIOSApp()){
  subscribeEntry.hidden=true;subscribeEntry.style.display='none';document.documentElement.classList.add('ios-app');
+ // pull down at the top of the page to refresh (the iPhone app has no browser reload button)
+ {let y0=null,d=0;const ind=el('div','↓ Pull to refresh','ptr');document.body.append(ind);
+  const blocked=t=>{for(let n=t;n&&n!==document.body;n=n.parentElement){if(n.scrollTop>0)return true;}return [...document.querySelectorAll('#sheet.on, .gate')].some(x=>!x.hidden&&x.getClientRects().length>0);};
+  addEventListener('touchstart',e=>{y0=(window.scrollY<=0&&!blocked(e.target))?e.touches[0].clientY:null;d=0;},{passive:true});
+  addEventListener('touchmove',e=>{if(y0==null)return;d=e.touches[0].clientY-y0;if(d<=0){ind.classList.remove('on');return;}
+    ind.classList.add('on');ind.style.transform='translate(-50%,'+(Math.min(d,110)*0.6)+'px)';ind.textContent=d>90?'↻ Release to refresh':'↓ Pull to refresh';},{passive:true});
+  addEventListener('touchend',()=>{if(y0==null)return;y0=null;ind.style.transform='';if(d>90){ind.textContent='Refreshing…';try{MJSound.play('tick');}catch(e){}setTimeout(()=>location.reload(),150);}else ind.classList.remove('on');},{passive:true});}
 }else{
  subscribeEntry.onclick=()=>{location.href='https://play.google.com/store/apps/details?id=com.mohjeta.picks';};
 }
