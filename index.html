@@ -209,7 +209,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 .hero .side .badge{width:52px;height:52px;font-size:18px}.hero .sc{font-size:30px;font-weight:800}
 .chart{width:100%;height:auto;display:block}
 .gate{position:fixed;inset:0;z-index:99;background:#07050bf2;display:flex;align-items:center;justify-content:center;padding:16px}.gate[hidden]{display:none}
-.gatebox.wide{max-width:640px;max-height:88vh;overflow:auto}.tblwrap{overflow-x:auto}.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:10px 0}.stat{background:#1d1129;border:1px solid var(--line);border-radius:12px;padding:8px 10px}.stat small{display:block;color:var(--muted,#bba)}.stat b{font-size:18px}.mono{font-family:ui-monospace,monospace;word-break:break-all}.plans{display:grid;gap:10px;margin:12px 0}.plan{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:#1d1129;border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:inherit;font:inherit;cursor:pointer}.plan:hover{border-color:#b98cff}.plan.best{border-color:#f5c542;box-shadow:0 0 0 1px #f5c54255}.plan .pl{flex:1}.plan .pl b{display:block;font-size:16px}.plan .pr{font-size:20px;font-weight:800;white-space:nowrap}.plan .pr small{font-size:12px;font-weight:500;opacity:.75}.plan .tag{display:inline-block;font-size:11px;font-weight:700;background:#f5c542;color:#1a1024;border-radius:6px;padding:1px 6px;margin-left:6px}.plan[disabled]{opacity:.5;cursor:wait}
+.gatebox.wide{max-width:640px;max-height:88vh;overflow:auto}.tblwrap{overflow-x:auto}.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:10px 0}.stat{background:#1d1129;border:1px solid var(--line);border-radius:12px;padding:8px 10px}.stat small{display:block;color:var(--muted,#bba)}.stat b{font-size:18px}.mono{font-family:ui-monospace,monospace;word-break:break-all}.tester-hub{border-color:#f5c542!important}.tbar{height:8px;border-radius:6px;background:#2a1838;margin:6px 0 12px;overflow:hidden}.tbar i{display:block;height:100%;background:linear-gradient(90deg,#b98cff,#f5c542)}.tlist{display:grid;gap:8px;margin-bottom:12px}.trow{padding:10px 12px;display:block!important}.trow .btn{margin-top:2px}.trow .row{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}.trow.done{opacity:.6}.trow p{margin:4px 0 6px}.tchk{font-size:18px}.plans{display:grid;gap:10px;margin:12px 0}.plan{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:#1d1129;border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:inherit;font:inherit;cursor:pointer}.plan:hover{border-color:#b98cff}.plan.best{border-color:#f5c542;box-shadow:0 0 0 1px #f5c54255}.plan .pl{flex:1}.plan .pl b{display:block;font-size:16px}.plan .pr{font-size:20px;font-weight:800;white-space:nowrap}.plan .pr small{font-size:12px;font-weight:500;opacity:.75}.plan .tag{display:inline-block;font-size:11px;font-weight:700;background:#f5c542;color:#1a1024;border-radius:6px;padding:1px 6px;margin-left:6px}.plan[disabled]{opacity:.5;cursor:wait}
 .gatebox{max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}.gatebox h2{margin-top:0}
 .odds{color:var(--muted)}
 .simrow{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}.simrow:last-child{border-bottom:0}
@@ -520,7 +520,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
       <button type="button" class="hubbtn" id="hubGuess"><span class="hi">🔮</span><b>Guess her number</b><small>How sure is she? Guess before you see it.</small></button>
       <button type="button" class="hubbtn" id="hubPickem"><span class="hi">🎯</span><b>Pick'em</b><small>Pick tonight's winners and try to beat her.</small></button>
       <button type="button" class="hubbtn" data-go="chat"><span class="hi">💬</span><b>Community chat</b><small>Talk games with other fans, live.</small></button>
-    </div><div id="playBadges"></div>
+    </div><button type="button" class="hubbtn tester-hub" id="hubTester"><span class="hi">🛠️</span><b>Beta tester challenge</b><small id="testerProg">Test every part of Mohjeta and earn the Beta tester badge.</small></button><div id="playBadges"></div>
   </section>
   <section class="panel" id="chat" role="tabpanel" aria-label="Community chat">
     <header class="community-hero"><div class="community-copy"><span class="community-eyebrow">THE MOHJETA COMMUNITY</span><h2>The Fan Lounge<span>.</span></h2><p>Talk the game. Find your rivals.<br>Let your lineup do the talking.</p><div class="community-pills"><span>Community chat</span><span>Fantasy battles</span></div></div><div class="community-emblem" aria-hidden="true"><img src="icon-192.png" alt=""><span>MEET. TALK. COMPETE.</span></div></header>
@@ -1008,12 +1008,41 @@ const MEDAL_ORDER=['first_pick','five_picks','beat_her','sim','sim25','trade','s
 function medalOf(k,locked){const i=MEDAL_ORDER.indexOf(k);if(i>=0){const s=el('span',null,'mj-medal mj-medal3d'+(locked?' locked':''));   // 3D-rendered medals (medals-3d.webp)
     s.style.backgroundPosition=(i/(MEDAL_ORDER.length-1)*100)+'% '+(locked?'100%':'0%');s.setAttribute('role','img');s.setAttribute('aria-label',BADGES[k][1]+(locked?' (locked)':''));return s;}
   const m=MEDAL[k];if(!m||!window.MohjetaIcons||!MohjetaIcons.medal)return null;return MohjetaIcons.medal(m[0],{tier:m[1],color:m[2],shape:m[3],locked,label:BADGES[k][1]+(locked?' (locked)':'')});}
-const BADGES={first_pick:['🎯','First pick'],five_picks:['🖐️','5 picks made'],beat_her:['👑','Beating the AI'],sim:['🎲','First simulation'],sim25:['🧪','25 simulations'],trade:['⇄','Trade machine'],share:['📤','Shared a card'],guess:['🔮','First guess'],sharp:['🏹','Guessed within 3 pts'],chat:['💬','First chat message'],compare:['⚖️','Compared players'],fantasy:['🏀','Drafted a fantasy team'],alerts:['🔔','Turned on alerts']};
+const BADGES={first_pick:['🎯','First pick'],five_picks:['🖐️','5 picks made'],beat_her:['👑','Beating the AI'],sim:['🎲','First simulation'],sim25:['🧪','25 simulations'],trade:['⇄','Trade machine'],share:['📤','Shared a card'],guess:['🔮','First guess'],sharp:['🏹','Guessed within 3 pts'],chat:['💬','First chat message'],compare:['⚖️','Compared players'],fantasy:['🏀','Drafted a fantasy team'],alerts:['🔔','Turned on alerts'],tester:['🛠️','Beta tester']};
+// ---------------- beta tester challenge (owner, Nov 7 2026): every part testers should try, each with how-to steps; each task
+// is ticked automatically the first time it is done (award() counts it), the last one by hand; all done -> the Beta tester badge
+function TESTS(){const ios=isIOSApp();return [
+  ['signin','Sign in','Tap “Sign in” at the top right. Use Apple, Google, or your email (type it, then enter the 6-digit code we send you).',()=>show('chat')],
+  ['breakdown','Open a game breakdown','On Home or Tonight, tap any game card, then scroll through her pick, the reasons, injuries and head-to-head.',()=>show('picks')],
+  ['voice','Hear her reason','On Tonight, tap the 🔊 play button on one of her top picks and listen to her explain it.',()=>show('picks')],
+  ['first_pick',"Make a Pick'em pick","On the Play page, tap Pick'em, then tap a team on any game to pick the winner.",()=>$('hubPickem').click()],
+  ['guess','Guess her number','On the Play page, tap “Guess her number”. Slide to how sure you think she is, then reveal.',()=>{show('guess');drawGuess();}],
+  ['sim','Simulate a game','Open Simulate, choose two teams, and press Simulate to play the game 10,000 times.',()=>show('sim')],
+  ['prop_builder','Add a prop to the builder','Open Props, tap a prop type (like Threes), then “+ Add to builder” on a pick.',()=>show('props')],
+  ['chat','Say hi in chat','Open Chat and post a message (sign in first). Keep it friendly.',()=>show('chat')],
+  ['alerts','Turn on alerts','Open More, tap “🔔 Turn on alerts” and allow notifications when your phone asks.',()=>show('more')],
+  ['share','Share a card','After a simulation, tap “📤 Share” and send or save the card.',()=>show('sim')],
+  ['language','Switch the language','Tap 🌐 EN under the sound button, pick another language, look around, then switch back.',()=>window.scrollTo({top:0,behavior:'smooth'})],
+  ...(ios?[['refresh','Pull to refresh','At the very top of any page, drag down until it says “Release to refresh”, then let go.',null]]:[]),
+  ['feedback','Report one thing','Found a bug or have an idea? Take a screenshot and send it from the TestFlight app (or post it in chat). Then tap “Mark done”.',null,true]];}
+function testerState(){const b=badgeData();const n=b._n||{};return TESTS().map(t=>({t,done:!!n[t[0]]}));}
+function testerCheck(){const st=testerState();const done=st.filter(x=>x.done).length;const pg=$('testerProg');
+  if(pg)pg.textContent=done===st.length?'✅ All '+st.length+' done: you earned the Beta tester badge!':done+' of '+st.length+' done · tap to see what’s left';
+  if(done===st.length&&!badgeData().tester)award('tester');}
+function openTester(){openSheet(()=>{const w=el('div');w.append(el('h2','🛠️ Beta tester challenge'),el('p','Try each of these. They tick themselves off when you do them. Finish them all to earn the Beta tester badge.','hint small'));
+  const st=testerState();const done=st.filter(x=>x.done).length;const bar=el('div',null,'tbar');const fill=el('i');fill.style.width=Math.round(done/st.length*100)+'%';bar.append(fill);w.append(el('b',done+' of '+st.length+' done'),bar);
+  const list=el('div',null,'tlist');st.forEach(({t,done},i)=>{const row=el('div',null,'card trow'+(done?' done':''));const top=el('div',null,'row');
+    top.append(el('span',done?'✅':'⬜','tchk'),el('b',(i+1)+'. '+t[1]));row.append(top,el('p',t[2],'hint small'));
+    if(!done&&t[4]){const m=el('button','Mark done','btn ghost small');m.type='button';m.onclick=()=>{award(t[0]);testerCheck();openTester();};row.append(m);}
+    else if(!done&&t[3]){const g=el('button','Go ›','btn ghost small');g.type='button';g.onclick=()=>{closeSheet();setTimeout(t[3],120);};row.append(g);}
+    list.append(row);});w.append(list,badgeShelf());return w;},'Tester');}
+setTimeout(()=>addEventListener('mohjeta:language',()=>award('language')),3000);   // a change the visitor makes, not the first load
+function drawPlayBadges(){const pb=$('playBadges');if(pb)pb.replaceChildren(badgeShelf());testerCheck();}
 function badgeData(){try{return JSON.parse(localStorage.getItem('mohjeta.badges')||'{}')||{};}catch(e){return {};}}
 function award(kind){const b=badgeData();b._n=b._n||{};b._n[kind]=(b._n[kind]||0)+1;const earn=[];
   const give=k=>{if(!b[k]){b[k]=Date.now();earn.push(k);}};
   if(kind==='sim'){give('sim');if(b._n.sim>=25)give('sim25');}else if(BADGES[kind])give(kind);
-  try{localStorage.setItem('mohjeta.badges',JSON.stringify(b));}catch(e){}for(const k of earn){const md=medalOf(k,false);if(md){const t=toast('Badge unlocked: '+BADGES[k][1]);if(t&&t.prepend)t.prepend(md);}else toast(BADGES[k][0]+' Badge unlocked: '+BADGES[k][1]);}if(earn.length){if(window.MJSound)MJSound.play('badge');for(const sh of document.querySelectorAll('.shelf'))sh.replaceWith(badgeShelf());}}
+  try{localStorage.setItem('mohjeta.badges',JSON.stringify(b));}catch(e){}if(kind!=='tester')setTimeout(()=>{try{testerCheck();}catch(e){}},0);for(const k of earn){const md=medalOf(k,false);if(md){const t=toast('Badge unlocked: '+BADGES[k][1]);if(t&&t.prepend)t.prepend(md);}else toast(BADGES[k][0]+' Badge unlocked: '+BADGES[k][1]);}if(earn.length){if(window.MJSound)MJSound.play('badge');for(const sh of document.querySelectorAll('.shelf'))sh.replaceWith(badgeShelf());}}
 function toast(t){const n=document.querySelectorAll('.toast').length;const d=el('div',t,'toast');if(n)d.style.bottom='calc(var(--navh) + '+(24+n*76)+'px)';document.body.append(d);setTimeout(()=>d.classList.add('out'),2200);setTimeout(()=>d.remove(),2700);return d;}
 function badgeShelf(){const b=badgeData();const got=Object.keys(BADGES).filter(k=>b[k]);const d=el('div',null,'shelf');
   d.append(el('span','Badges '+got.length+'/'+Object.keys(BADGES).length,'hint small'));for(const k of Object.keys(BADGES)){const md=medalOf(k,!b[k]);const i=md?el('span',null,'bd'+(b[k]?' on':'')):iel('span',BADGES[k][0],'bd'+(b[k]?' on':''));if(md)i.append(md);i.title=BADGES[k][1]+(b[k]?'':' (locked)');d.append(i);}return d;}
@@ -1080,6 +1109,7 @@ function avatarOf(u){const m=(u&&u.user_metadata)||{};return m.avatar_url||m.pic
 function displayOf(u){const m=(u&&u.user_metadata)||{};return (myProfile&&myProfile.display_name)||m.full_name||m.name||(u&&u.email)||'You';}
 function updateAcct(){const b=$('acct');if(!b||!sb)return;b.hidden=false;b.replaceChildren();
   if(!me){b.append(el('span','Sign in','acctin'));b.onclick=()=>show('chat');return;}
+  try{if(!((badgeData()._n||{}).signin))award('signin');}catch(e){}
   const pic=avatarOf(me);if(pic){const im=document.createElement('img');im.src=pic;im.alt='';im.referrerPolicy='no-referrer';im.onerror=()=>{im.replaceWith(badge(displayOf(me)));};b.append(im);}else b.append(badge(displayOf(me)));
   b.onclick=()=>{const ov=el('div',null,'gate');const box=el('div',null,'gatebox');ov.append(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};
     const head=el('div',null,'row');const big=b.firstChild.cloneNode(true);big.classList.add('acctbig');head.append(big,el('div',null,''));head.lastChild.append(el('b',displayOf(me)),el('div',me.email||'','hint small'));
@@ -1249,6 +1279,7 @@ function composer(){const c=el('div',null,'card lounge-composer');
   set(on);$('xpToggle').onclick=()=>{on=!on;set(on);toast(on?'Expert mode on: all the numbers':'Simple mode');};
   $('heroSim').onclick=()=>{simMode='any';$('anyBox').replaceChildren();show('sim');renderSim();};
   $('hubGuess').onclick=()=>{show('guess');drawGuess();};
+  $('hubTester').onclick=openTester;drawPlayBadges();
   $('hubPickem').onclick=()=>{show('picks');setTimeout(()=>{const x=document.querySelector('.pickem');if(x)x.scrollIntoView({behavior:'smooth',block:'center'});toast('Tap a team on any game to make your pick 🎯');},200);};})();
 // first-visit welcome: three short screens
 function tour(){let seen=false;try{seen=localStorage.getItem('mohjeta.tour')==='1';}catch(e){}if(seen)return;
@@ -1365,7 +1396,7 @@ function oddsLine(g){if(!g.pick||g.state!=='UPCOMING')return null;const f=amer(g
 // ---------------- her voice: clips recorded on her PC (voice_clips.py), one plays at a time
 let VOICE_AUDIO=null,VOICE_BTN=null;
 function voiceStop(){if(VOICE_AUDIO){VOICE_AUDIO.pause();VOICE_AUDIO=null;}if(VOICE_BTN){VOICE_BTN.classList.remove('on');VOICE_BTN._label&&VOICE_BTN._label();VOICE_BTN=null;}}
-function voicePlay(src,btn){if(VOICE_BTN===btn){voiceStop();return;}voiceStop();const a=new Audio(src);VOICE_AUDIO=a;VOICE_BTN=btn;btn.classList.add('on');btn._label&&btn._label(true);
+function voicePlay(src,btn){if(VOICE_BTN===btn){voiceStop();return;}voiceStop();award('voice');const a=new Audio(src);VOICE_AUDIO=a;VOICE_BTN=btn;btn.classList.add('on');btn._label&&btn._label(true);
   a.onended=a.onerror=()=>{if(VOICE_AUDIO===a)voiceStop();};a.play().catch(()=>{voiceStop();toast('Could not play her voice right now');});}
 function voiceButton(clip,label){const b=el('button',null,'voicebtn');b.type='button';const vb=el('span',null,'vb');vb.append(el('i'),el('i'),el('i'));const tx=el('span');
   b._label=on=>{tx.textContent=on?'■ Stop':'▶ '+label+(clip.seconds?' · '+Math.round(clip.seconds)+'s':'');};b._label();b.append(vb,tx);b.title=clip.text||'';
@@ -1511,7 +1542,7 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
   b.append(el('p','Entertainment only. Model estimates, not betting advice.','hint small'));return b;}
 function openGame(id,push){if(!D)return;const g=D.games.find(x=>String(x.id||x.name)===String(id));
   if(!g){openSheet(()=>el('p','This game is no longer listed: it has finished or moved past the next 24 hours.','empty'),'Gone');return;}
-  sheetGame=g;openSheet(()=>gameView(g),'Game');needDet();if(push!==false)try{history.pushState(null,'','#game/'+encodeURIComponent(g.id||g.name));}catch(e){}}
+  sheetGame=g;openSheet(()=>gameView(g),'Game');needDet();award('breakdown');if(push!==false)try{history.pushState(null,'','#game/'+encodeURIComponent(g.id||g.name));}catch(e){}}
 
 // ---------------- live feed (data.json 'feed', built by news_feed.py): everything she picks up, newest first
 const FEED_KINDS={news:['📰','News'],injury:['🩹','Injury report'],foul:['🟨','Foul trouble'],move:['📉','Kalshi move'],pick:['🔄','Her pick'],bet:['💵','Her bet']};
@@ -1939,7 +1970,7 @@ function propName(o){return o.player+' · '+o.line+'+ '+(STATNAME[o.stat]||o.sta
 function propSide(o){return o.side==='YES'?'YES · '+o.line+' or more':'NO · '+(o.line-1)+' or fewer';}
 function propData(d){const P=d&&d.props;if(!P)return null;
   if(P.locked&&MEMBERS&&MEMBERS.props)return Object.assign({},P,{open:MEMBERS.props.open||[],board:MEMBERS.props.board||[],locked:false});return P;}
-function addLeg(leg){propLegs=propLegs.filter(x=>x.player!==leg.player);propLegs.push(leg);if(propLegs.length>8)propLegs.shift();drawBuilder();
+function addLeg(leg){award('prop_builder');propLegs=propLegs.filter(x=>x.player!==leg.player);propLegs.push(leg);if(propLegs.length>8)propLegs.shift();drawBuilder();
   const n=$('pbCount');if(n)n.textContent=propLegs.length+' leg'+(propLegs.length===1?'':'s');toast('Added to prop builder ('+propLegs.length+')');}
 let propCat=null;
 const statLabel=st=>{const n=STATNAME[st]||st;return n[0].toUpperCase()+n.slice(1);};
@@ -2199,7 +2230,7 @@ if(isPlayApp()){
   addEventListener('touchstart',e=>{y0=(window.scrollY<=0&&!blocked(e.target))?e.touches[0].clientY:null;d=0;},{passive:true});
   addEventListener('touchmove',e=>{if(y0==null)return;d=e.touches[0].clientY-y0;if(d<=0){ind.classList.remove('on');return;}
     ind.classList.add('on');ind.style.transform='translate(-50%,'+(Math.min(d,110)*0.6)+'px)';ind.textContent=d>90?'↻ Release to refresh':'↓ Pull to refresh';},{passive:true});
-  addEventListener('touchend',()=>{if(y0==null)return;y0=null;ind.style.transform='';if(d>90){ind.textContent='Refreshing…';try{MJSound.play('tick');}catch(e){}setTimeout(()=>location.reload(),150);}else ind.classList.remove('on');},{passive:true});}
+  addEventListener('touchend',()=>{if(y0==null)return;y0=null;ind.style.transform='';if(d>90){award('refresh');ind.textContent='Refreshing…';try{MJSound.play('tick');}catch(e){}setTimeout(()=>location.reload(),150);}else ind.classList.remove('on');},{passive:true});}
 }else{
  subscribeEntry.onclick=()=>{if(STRIPE_ON){openPlans();return;}location.href='https://play.google.com/store/apps/details?id=com.mohjeta.picks';};
 }
