@@ -1135,10 +1135,13 @@ function composer(){const c=el('div',null,'card lounge-composer');
   if(!me){c.append(el('p','Sign in to chat. No password needed.','small'));
     const prov=(window._authProviders||{});const redirectTo=location.origin+location.pathname;try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}
     const one=el('div',null,'gone');c.append(one);
+    if(nativeSL()){   // iPhone app build with native sign-in: Apple and Google one tap, never leaving the app
+      for(const [id,label,ic] of [['apple','Continue with Apple',''],['google','Continue with Google','G']]){const b=el('button',null,'oauth '+id);b.type='button';
+        b.append(el('span',ic,'oi'),el('span',label));b.onclick=()=>nativeLogin(id,b);c.append(b);}}
     for(const [id,label,ic] of [['google','Continue with Google','G'],['discord','Continue with Discord','D'],['apple','Continue with Apple','']]){
       if(!prov[id]||(isIOSApp()&&id!=='apple'))continue;const b=el('button',null,'oauth '+id);if(id==='google')b.dataset.g='1';b.type='button';b.append(el('span',ic,'oi'),el('span',label));
       b.onclick=async()=>{const {error}=await sb.auth.signInWithOAuth({provider:id,options:{redirectTo}});if(error)toast('Could not start sign-in: '+error.message);};c.append(b);}
-    if(Object.values(prov).some(Boolean))c.append(el('p','or get a sign-in link by email:','hint small'));const i=el('input');i.type='email';i.placeholder='you@email.com';i.className='chatin';
+    if(Object.values(prov).some(Boolean)||nativeSL())c.append(el('p','or get a sign-in link by email:','hint small'));const i=el('input');i.type='email';i.placeholder='you@email.com';i.className='chatin';
     const go=el('button','Send sign-in link','btn');go.type='button';go.onclick=async()=>{const email=i.value.trim();if(!/^\S+@\S+\.\S+$/.test(email)){toast('Enter a valid email');return;}try{sessionStorage.setItem('mohjeta.afterLogin','chat');}catch(e){}
       const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});toast(error?'Could not send: '+error.message:'Check your email for the sign-in code 📬');
       if(!error){   // Nov 6 2026: the email also has a 6-digit code; typing it signs in right here (the link would open Safari, not the iPhone app)
@@ -1839,6 +1842,25 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden){load();if
 const GOOGLE_CLIENT_ID='883955987231-l1v1fltv25f3hbavnrf3pe1ut8gb5u2u.apps.googleusercontent.com';     // public ID (not a secret); also read from live-config.json (google_client_id)
 let gsiP=null;
 async function sha256hex(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+// ---------------- native one-tap sign-in inside the iPhone app (@capgo/capacitor-social-login): the OS sign-in sheet
+// gives an ID token; Supabase checks it (with a nonce) and signs in the same account as on the website.
+const IOS_GOOGLE_CLIENT_ID='883955987231-p3blap1bo8s4r1rvmkdsntt3dimkc8r1.apps.googleusercontent.com';   // public ID (not a secret)
+function nativeSL(){return isIOSApp()&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.SocialLogin||null;}
+let nativeReady=null;
+async function nativeLogin(provider,btn){const SL=nativeSL();if(!SL){toast('Update the Mohjeta app to use this');return;}
+  if(btn)btn.disabled=true;
+  try{await supa();
+    if(!nativeReady)nativeReady=SL.initialize({google:{iOSClientId:IOS_GOOGLE_CLIENT_ID,iOSServerClientId:(window._cfg&&window._cfg.google_client_id)||GOOGLE_CLIENT_ID,mode:'online'},apple:{clientId:'com.mohjeta.picks'}});
+    await nativeReady;
+    const go=async()=>{const raw=[...crypto.getRandomValues(new Uint8Array(16))].map(x=>x.toString(16).padStart(2,'0')).join('');const hashed=await sha256hex(raw);
+      const res=await SL.login({provider,options:{scopes:provider==='google'?['email','profile']:['email','name'],nonce:hashed}});
+      const r=(res&&res.result)||{};const token=r.idToken||r.identityToken;if(!token)throw Error('no token');
+      return sb.auth.signInWithIdToken({provider,token,nonce:raw});};
+    let {error}=await go();
+    if(error&&provider==='google'&&/nonce/i.test(error.message)){try{await SL.logout({provider:'google'});}catch(e){}({error}=await go());}   // a cached Google token with an old nonce: once more
+    if(error)toast('Sign-in did not finish: '+error.message);
+  }catch(e){const m=String(e&&e.message||e);if(!/cancel/i.test(m))toast('Sign-in did not finish. Try again, or use the email code.');}
+  finally{if(btn)btn.disabled=false;}}
 function gsi(){if(isIOSApp())return Promise.resolve(false);   // Google blocks sign-in inside apps (it jumps out to accounts.google.com): email code / password there
   if(gsiP)return gsiP;gsiP=(async()=>{try{await supa();const id=(window._cfg&&window._cfg.google_client_id)||GOOGLE_CLIENT_ID;
     if(!id||!(window._authProviders||{}).google)return false;
