@@ -209,7 +209,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 .hero .side .badge{width:52px;height:52px;font-size:18px}.hero .sc{font-size:30px;font-weight:800}
 .chart{width:100%;height:auto;display:block}
 .gate{position:fixed;inset:0;z-index:99;background:#07050bf2;display:flex;align-items:center;justify-content:center;padding:16px}.gate[hidden]{display:none}
-.gatebox.wide{max-width:640px;max-height:88vh;overflow:auto}.tblwrap{overflow-x:auto}.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:10px 0}.stat{background:#1d1129;border:1px solid var(--line);border-radius:12px;padding:8px 10px}.stat small{display:block;color:var(--muted,#bba)}.stat b{font-size:18px}.mono{font-family:ui-monospace,monospace;word-break:break-all}
+.gatebox.wide{max-width:640px;max-height:88vh;overflow:auto}.tblwrap{overflow-x:auto}.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:10px 0}.stat{background:#1d1129;border:1px solid var(--line);border-radius:12px;padding:8px 10px}.stat small{display:block;color:var(--muted,#bba)}.stat b{font-size:18px}.mono{font-family:ui-monospace,monospace;word-break:break-all}.plans{display:grid;gap:10px;margin:12px 0}.plan{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:#1d1129;border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:inherit;font:inherit;cursor:pointer}.plan:hover{border-color:#b98cff}.plan.best{border-color:#f5c542;box-shadow:0 0 0 1px #f5c54255}.plan .pl{flex:1}.plan .pl b{display:block;font-size:16px}.plan .pr{font-size:20px;font-weight:800;white-space:nowrap}.plan .pr small{font-size:12px;font-weight:500;opacity:.75}.plan .tag{display:inline-block;font-size:11px;font-weight:700;background:#f5c542;color:#1a1024;border-radius:6px;padding:1px 6px;margin-left:6px}.plan[disabled]{opacity:.5;cursor:wait}
 .gatebox{max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}.gatebox h2{margin-top:0}
 .odds{color:var(--muted)}
 .simrow{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}.simrow:last-child{border-bottom:0}
@@ -1073,6 +1073,8 @@ async function initLive(){try{await supa();}catch(e){return;}
     try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}}
   const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;preparePlayCheckout();updateAcct();memberRefresh(true);if(me)setTimeout(claimStoredRef,600);
   let after=null;try{after=sessionStorage.getItem('mohjeta.afterLogin');sessionStorage.removeItem('mohjeta.afterLogin');}catch(e){}
+  let plans=null;try{plans=sessionStorage.getItem('mohjeta.afterPlans');if(me)sessionStorage.removeItem('mohjeta.afterPlans');}catch(e){}
+  if(plans&&me&&!isIOSApp()){setTimeout(openPlans,700);return;}
   if(location.hash==='#chat'||(after==='chat'&&me))show('chat');}
 function avatarOf(u){const m=(u&&u.user_metadata)||{};return m.avatar_url||m.picture||null;}
 function displayOf(u){const m=(u&&u.user_metadata)||{};return (myProfile&&myProfile.display_name)||m.full_name||m.name||(u&&u.email)||'You';}
@@ -1099,6 +1101,7 @@ async function claimStoredRef(){let r=null;try{r=JSON.parse(localStorage.getItem
 const money=n=>'$'+(Number(n)||0).toFixed(2);
 async function drawRefTools(box,ov){if(!sb||!me)return;box.replaceChildren();
   let mine=null,admin=false;try{const r=await sb.rpc('my_affiliate');mine=r.data;}catch(e){}try{const p=await sb.from('profiles').select('role').eq('id',me.id).maybeSingle();admin=p.data&&p.data.role==='admin';}catch(e){}
+  if(!isIOSApp()&&!isPlayApp()){try{if(!ACCESS)await memberRefresh(true);}catch(e){}if(ACCESS&&ACCESS.stripe)box.append(manageBtn());}
   if(mine){const b=iel('button','🤝 Partner dashboard','btn');b.type='button';b.onclick=()=>{ov.remove();partnerDash(mine);};box.append(b);}
   if(admin){const b=iel('button','💼 Affiliates (owner)','btn ghost');b.type='button';b.onclick=()=>{ov.remove();ownerAffiliates();};box.append(b);}
   const d=el('details');d.append(el('summary','Have a referral code?'));const i=el('input');i.className='chatin';i.placeholder='Code from the person who sent you';i.maxLength=20;i.autocapitalize='characters';
@@ -2197,7 +2200,7 @@ if(isPlayApp()){
     ind.classList.add('on');ind.style.transform='translate(-50%,'+(Math.min(d,110)*0.6)+'px)';ind.textContent=d>90?'↻ Release to refresh':'↓ Pull to refresh';},{passive:true});
   addEventListener('touchend',()=>{if(y0==null)return;y0=null;ind.style.transform='';if(d>90){ind.textContent='Refreshing…';try{MJSound.play('tick');}catch(e){}setTimeout(()=>location.reload(),150);}else ind.classList.remove('on');},{passive:true});}
 }else{
- subscribeEntry.onclick=()=>{location.href='https://play.google.com/store/apps/details?id=com.mohjeta.picks';};
+ subscribeEntry.onclick=()=>{if(STRIPE_ON){openPlans();return;}location.href='https://play.google.com/store/apps/details?id=com.mohjeta.picks';};
 }
 // iPhone app (ios-app/: Capacitor shell loading https://mohjeta.com/?app=ios): no outside checkout links (Apple rules),
 // no Google / Discord sign-in (Google blocks sign-in inside apps; Apple then wants Sign in with Apple) and native haptics.
@@ -2261,17 +2264,38 @@ function trialBtn(){if(isPlayApp())return playButton();const used=ACCESS&&ACCESS
     const {data,error}=await sb.rpc('start_trial');if(error){toast('Could not start: '+error.message);return;}ACCESS=data;accessAt=Date.now();
     toast(data&&data.access?'Free trial started: '+daysLeft(data.trial_ends)+' days 🎉':'Your free trial was already used');memberRefresh(true);if(D)renderPicks(D);};return b;}
 function subBtn(ghost){if(isPlayApp())return playButton();if(isIOSApp())return el('span','','');const b=el('button','Subscribe','btn'+(ghost?' ghost':''));b.type='button';
-  b.onclick=()=>{const u=pw().subscribe_url;if(u&&/^https:\/\//.test(u))window.open(u,'_blank','noopener');else toast('Subscriptions open soon. Enjoy the free trial!');};return b;}
+  b.onclick=()=>openPlans();return b;}
+// ---------------- website checkout (Stripe: card, Apple Pay, Google Pay on Stripe's page). Owner, Nov 7 2026.
+// STRIPE_ON=false: the header Subscribe button still goes to Google Play; ?paytest=1 opens the plans for testing.
+const STRIPE_ON=false;
+const PLANS=[['founding','⭐ Founding member','$9.99','/month','Locked in for life. First 100 members only.'],['monthly','Monthly','$14.99','/month','Cancel anytime.'],['yearly','Yearly','$119','/year','About $9.92/month: save 34%.']];
+async function stripeGo(action,plan,btn){if(!me){try{sessionStorage.setItem('mohjeta.afterPlans','1');}catch(e){}toast('Sign in first (free), then pick your plan');show('chat');return;}
+  if(btn)btn.disabled=true;try{const {data,error}=await sb.functions.invoke('stripe',{body:{action,plan}});let msg=data&&data.error;
+    if(error){try{msg=(await error.context.json()).error;}catch(e){}}
+    if(data&&data.url&&/^https:\/\/(checkout|billing)\.stripe\.com\//.test(data.url)){if(data.already)toast('You already have a plan: opening your subscription');location.href=data.url;return;}
+    toast(msg||'Checkout is unavailable right now');}catch(e){toast('Checkout is unavailable right now');}if(btn)btn.disabled=false;}
+async function openPlans(){if(isIOSApp())return;if(isPlayApp()){playButton().click();return;}
+  const {box,x}=sheetGate('Mohjeta Premium');box.append(el('p','Every pick with her reasoning, her open bets, the full simulator and props builder. Her record stays public, always.','hint small'));
+  let left=null;try{const r=await sb.rpc('founding_left');if(!r.error)left=r.data;}catch(e){}
+  const wrap=el('div',null,'plans');for(const [id,name,price,per,note] of PLANS){if(id==='founding'&&!(left>0))continue;
+    const b=el('button',null,'plan'+(id==='founding'?' best':''));b.type='button';const l=el('span',null,'pl');const t=el('b',name);if(id==='founding'&&left!=null){t.append(el('span',left+' left','tag'));}
+    l.append(t,el('span',note,'hint small'));const pr=el('span',price,'pr');pr.append(el('small',per));b.append(l,pr);b.onclick=()=>stripeGo('checkout',id,b);wrap.append(b);}
+  box.append(wrap,el('p','Pay with card, Apple Pay or Google Pay on Stripe’s secure page. Renews automatically until you cancel; cancel anytime from your account. 21+.','hint small'),x);}
+function manageBtn(){const b=el('button','💳 Manage subscription','btn ghost');b.type='button';b.onclick=()=>stripeGo('portal',null,b);return b;}
+(function(){const q=new URLSearchParams(location.search);const paid=q.get('paid');if(paid==null&&q.get('paytest')==null)return;
+  if(paid!=null){q.delete('paid');history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:'')+location.hash);}
+  const go=()=>{if(!sb){setTimeout(go,400);return;}if(paid==='1'){toast('Welcome to Mohjeta Premium! 🎉 Unlocking your picks…');setTimeout(()=>memberRefresh(true),2500);setTimeout(()=>memberRefresh(true),8000);}
+    else if(paid==='0')toast('Checkout canceled: you were not charged');else openPlans();};setTimeout(go,600);})();
 function planBox(){if(isIOSApp()){const c=el('div',null,'card'),a=ACCESS||{};const active=a.sub_until&&Date.parse(a.sub_until)>Date.now();
   c.append(el('b',a.staff?'Team account: full access':active?'Member until '+new Date(a.sub_until).toLocaleDateString():'Free account'),el('p','Memberships are not sold in the iPhone app.','hint small'));return c;}
   if(isPlayApp()){const c=el('div',null,'card'),a=ACCESS||{};
   const active=a.sub_until&&Date.parse(a.sub_until)>Date.now();c.append(el('b',a.staff?'Team account: full access':active?'Member until '+new Date(a.sub_until).toLocaleDateString():'Mohjeta Premium'));
   const checkout=playButton();checkout.textContent=active?'Restore or verify Google Play purchase':'Subscribe or restore Google Play purchase';c.append(checkout);
   const manage=el('a','Manage or cancel Google Play subscription');manage.href='https://play.google.com/store/account/subscriptions?sku=mohjeta_premium&package=com.mohjeta.picks';manage.target='_blank';manage.rel='noopener';c.append(manage);
-  c.append(el('p','Eligible new subscribers: 7 days free, then the monthly price shown by Google Play. Renews until canceled.','hint small'));void finishPlayPurchase();return c;}if(!pw().on)return null;const c=el('div',null,'card');c.style.margin='8px 0';
+  c.append(el('p','Eligible new subscribers: 7 days free, then the monthly price shown by Google Play. Renews until canceled.','hint small'));void finishPlayPurchase();return c;}if(!pw().on&&!(ACCESS&&ACCESS.stripe))return null;const c=el('div',null,'card');c.style.margin='8px 0';
   const a=ACCESS||{};const line=a.staff?'Team account: full access':a.sub_until&&Date.parse(a.sub_until)>Date.now()?'Member until '+new Date(a.sub_until).toLocaleDateString():
     a.access?'Free trial: '+daysLeft(a.trial_ends)+' days left':a.trial_used?'Free plan (trial used)':'Free plan';
-  c.append(el('b','Your plan: '+line));if(!a.access)c.append(trialBtn());if(!a.staff&&!(a.sub_until&&Date.parse(a.sub_until)>Date.now()))c.append(subBtn(true));return c;}
+  c.append(el('b','Your plan: '+line+(a.plan==='founding'?' ⭐ founding':'')));if(a.stripe)c.append(manageBtn());if(!a.access)c.append(trialBtn());if(!a.staff&&!(a.sub_until&&Date.parse(a.sub_until)>Date.now()))c.append(subBtn(true));return c;}
 // ---------------- phone alerts (Web Push): her pick changed, game starting, Pick'em and fantasy results
 const PUSH_KINDS=[['bets','💵 Her wins and losses'],['picks','🔄 Her pick changes'],['start','⏰ My Pick’em games starting'],['results','✅ My Pick’em results'],['fantasy','🏀 My fantasy results']];
 function pushPrefs(){try{return JSON.parse(localStorage.getItem('mohjeta.pushprefs')||'null')||{bets:true,picks:true,start:true,results:true,fantasy:true};}catch(e){return {bets:true,picks:true,start:true,results:true,fantasy:true};}}
