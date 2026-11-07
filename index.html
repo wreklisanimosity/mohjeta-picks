@@ -1934,7 +1934,7 @@ function gsi(){if(isIOSApp())return Promise.resolve(false);   // Google blocks s
 // ---------------- members-only picks (only when the owner turns the paywall on): 7-day free trial, then subscription
 // ---------------- Props tab: her NBA points props, their own report card, and a prop builder
 let propLegs=[],propGame=null,propFind='',propShow='ALL',propStake=10,propAll=false;
-const STATNAME={pts:'points',reb:'rebounds',ast:'assists',fg3:'threes'};
+const STATNAME={pts:'points',reb:'rebounds',ast:'assists',fg3:'threes',nfl_pass_yds:'passing yards',nfl_rush_yds:'rushing yards',nfl_rec_yds:'receiving yards',nfl_rec:'catches',nfl_pass_td:'passing TDs',nfl_td:'touchdowns',nhl_goals:'goals',nhl_points:'points (NHL)',nhl_sog:'shots on goal'};
 function propName(o){return o.player+' · '+o.line+'+ '+(STATNAME[o.stat]||o.stat);}
 function propSide(o){return o.side==='YES'?'YES · '+o.line+' or more':'NO · '+(o.line-1)+' or fewer';}
 function propData(d){const P=d&&d.props;if(!P)return null;
@@ -1943,7 +1943,7 @@ function addLeg(leg){propLegs=propLegs.filter(x=>x.player!==leg.player);propLegs
   const n=$('pbCount');if(n)n.textContent=propLegs.length+' leg'+(propLegs.length===1?'':'s');toast('Added to prop builder ('+propLegs.length+')');}
 let propCat=null;
 const statLabel=st=>{const n=STATNAME[st]||st;return n[0].toUpperCase()+n.slice(1);};
-const STATICON={pts:'🏀',ast:'🤝',fg3:'🎯',reb:'🧲'};
+const STATICON={pts:'🏀',ast:'🤝',fg3:'🎯',reb:'🧲',nfl_pass_yds:'🏈',nfl_rush_yds:'🏃',nfl_rec_yds:'🙌',nfl_rec:'🧤',nfl_pass_td:'🎯',nfl_td:'🏈',nhl_goals:'🥅',nhl_points:'🏒',nhl_sog:'🏒'};
 function miniProp(o){const c=el('div',null,'card mprop');c.append(el('div',o.player,'pn'),el('div',o.line+'+ '+(STATNAME[o.stat]||o.stat)+' · '+o.game,'pl2'));
   const r=el('div',null,'row');r.append(el('span',o.side==='YES'?'YES · '+o.line+'+':'NO · under '+o.line,'pk'),el('span',pct(o.her),'mpct'));c.append(r);
   c.append(el('div','Her chance '+pct(o.her)+' · Kalshi '+Math.round(o.price*100)+'¢ (about '+pct(o.price)+')','hint small'));
@@ -2013,7 +2013,7 @@ function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(
     box.append(t);
     if(!P.locked&&open.length){const top=open.sort((x,y)=>rank(x.stat)-rank(y.stat)||(y.her-y.price)-(x.her-x.price)).slice(0,4);
       box.append(el('h3','Her top picks tonight'));const gr=el('div',null,'mgrid');for(const o of top)gr.append(miniProp(o));box.append(gr);}
-    else if(!P.locked)box.append(el('p','No prop picks yet. She prices tonight’s NBA props every 30 minutes and picks only when Kalshi’s price is at least 8 points off her number.','hint'));}
+    else if(!P.locked)box.append(el('p','No prop picks yet. She prices tonight’s NBA and NFL props and picks only when Kalshi’s price is at least 8 points off her number.','hint'));}
   else{const b=BS.find(x=>x.stat===propCat);const cr=el('div',null,'crumb');const back=el('button','‹ All prop types');back.type='button';back.onclick=()=>{propCat=null;renderProps(D);};
     cr.append(back,el('h4',(STATICON[propCat]||'')+' '+statLabel(propCat)+' · '+b.won+'-'+b.lost+' · '+signed(b.pl)));box.append(cr);
     const mine=open.filter(o=>o.stat===propCat).sort((x,y)=>(y.her-y.price)-(x.her-x.price));
