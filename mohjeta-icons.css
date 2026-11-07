@@ -39,3 +39,6 @@
 @keyframes mjfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 @media (prefers-reduced-motion:reduce){.mj-icon.mj-metal{animation:none!important}}
 .hubbtn .hi .mj-icon.mj-metal{width:40px;height:40px;margin-bottom:6px}
+/* pre-rendered metal (fix349): the picture cell is bigger than the icon so the float shadow fits */
+.mj-icon.mj-ras{position:relative;display:inline-block}
+.mj-ras>i{position:absolute;left:-21.875%;top:-15.625%;width:143.75%;height:143.75%;background:url(icons-metal.webp?v=1) 0 0/1000% 1000% no-repeat;pointer-events:none}
