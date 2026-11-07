@@ -209,6 +209,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 .hero .side .badge{width:52px;height:52px;font-size:18px}.hero .sc{font-size:30px;font-weight:800}
 .chart{width:100%;height:auto;display:block}
 .gate{position:fixed;inset:0;z-index:99;background:#07050bf2;display:flex;align-items:center;justify-content:center;padding:16px}.gate[hidden]{display:none}
+.gatebox.wide{max-width:640px;max-height:88vh;overflow:auto}.tblwrap{overflow-x:auto}.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:10px 0}.stat{background:#1d1129;border:1px solid var(--line);border-radius:12px;padding:8px 10px}.stat small{display:block;color:var(--muted,#bba)}.stat b{font-size:18px}.mono{font-family:ui-monospace,monospace;word-break:break-all}
 .gatebox{max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}.gatebox h2{margin-top:0}
 .odds{color:var(--muted)}
 .simrow{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}.simrow:last-child{border-bottom:0}
@@ -1067,10 +1068,10 @@ async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
   chatFab();startPresence();logVisit();drawPush($('pushBox'));memberRefresh(true);setInterval(()=>{if(!document.hidden)memberRefresh(false);},60000);
   liveSub();
-  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;setTimeout(preparePlayCheckout,0);if(me)setTimeout(finishPlayPurchase,0);myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN'){toast('Signed in ✅');let jc=null;try{jc=sessionStorage.getItem('mohjeta.join');sessionStorage.removeItem('mohjeta.join');}catch(e){}if(jc)setTimeout(()=>joinLeague(jc),800);}if(chatOpen())openChat();});
+  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;setTimeout(preparePlayCheckout,0);if(me){setTimeout(finishPlayPurchase,0);setTimeout(claimStoredRef,600);}myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN'){toast('Signed in ✅');let jc=null;try{jc=sessionStorage.getItem('mohjeta.join');sessionStorage.removeItem('mohjeta.join');}catch(e){}if(jc)setTimeout(()=>joinLeague(jc),800);}if(chatOpen())openChat();});
   if(/[?&]code=/.test(location.search)){for(let i=0;i<20&&!(await sb.auth.getSession()).data.session;i++)await new Promise(r=>setTimeout(r,250));
     try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}}
-  const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;preparePlayCheckout();updateAcct();memberRefresh(true);
+  const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;preparePlayCheckout();updateAcct();memberRefresh(true);if(me)setTimeout(claimStoredRef,600);
   let after=null;try{after=sessionStorage.getItem('mohjeta.afterLogin');sessionStorage.removeItem('mohjeta.afterLogin');}catch(e){}
   if(location.hash==='#chat'||(after==='chat'&&me))show('chat');}
 function avatarOf(u){const m=(u&&u.user_metadata)||{};return m.avatar_url||m.picture||null;}
@@ -1084,7 +1085,53 @@ function updateAcct(){const b=$('acct');if(!b||!sb)return;b.hidden=false;b.repla
     const out=el('button','Sign out','btn ghost');out.type='button';out.onclick=async()=>{await sb.auth.signOut();me=null;myProfile=null;ov.remove();updateAcct();toast('Signed out');};
     const x=el('button','Close','mlink');x.type='button';x.onclick=()=>ov.remove();
     const del=el('button','Delete account','mlink');del.type='button';del.onclick=()=>deleteMyAccount(ov);
-    const plan=planBox();const pb=el('div');drawPush(pb);box.append(head,el('p','You\u2019re signed in. Your chat name and messages show to other fans; your email stays private.','hint small'));if(plan)box.append(plan);box.append(pb,chat,out,del,x);document.body.append(ov);};}
+    const refBox=el('div');drawRefTools(refBox,ov);
+    const plan=planBox();const pb=el('div');drawPush(pb);box.append(head,el('p','You\u2019re signed in. Your chat name and messages show to other fans; your email stays private.','hint small'));if(plan)box.append(plan);box.append(pb,refBox,chat,out,del,x);document.body.append(ov);};}
+// ---------------- referral program (supabase_affiliates.sql): team 50% / partners 25% of what Mohjeta receives, for as long
+// as the subscriber stays. A link ?ref=CODE is remembered for 60 days and claimed when that person signs in.
+(function(){try{const r=new URLSearchParams(location.search).get('ref');if(r&&/^[A-Za-z0-9]{3,20}$/.test(r))localStorage.setItem('mohjeta.ref',JSON.stringify({c:r.toUpperCase(),t:Date.now()}));}catch(e){}})();
+async function claimRef(code,quiet){if(!sb||!me)return null;const {data,error}=await sb.rpc('claim_referral',{ref_code:code});
+  if(error){if(!quiet)toast('Could not save the code right now');return null;}
+  if(data&&data.ok){toast('Thanks! You joined through '+data.code+' 🤝');}else if(!quiet&&data)toast(data.reason);return data;}
+async function claimStoredRef(){let r=null;try{r=JSON.parse(localStorage.getItem('mohjeta.ref')||'null');}catch(e){}if(!r||!r.c)return;
+  if(Date.now()-r.t>60*864e5){try{localStorage.removeItem('mohjeta.ref');}catch(e){}return;}
+  const d=await claimRef(r.c,true);if(d){try{localStorage.removeItem('mohjeta.ref');}catch(e){}}}
+const money=n=>'$'+(Number(n)||0).toFixed(2);
+async function drawRefTools(box,ov){if(!sb||!me)return;box.replaceChildren();
+  let mine=null,admin=false;try{const r=await sb.rpc('my_affiliate');mine=r.data;}catch(e){}try{const p=await sb.from('profiles').select('role').eq('id',me.id).maybeSingle();admin=p.data&&p.data.role==='admin';}catch(e){}
+  if(mine){const b=iel('button','🤝 Partner dashboard','btn');b.type='button';b.onclick=()=>{ov.remove();partnerDash(mine);};box.append(b);}
+  if(admin){const b=iel('button','💼 Affiliates (owner)','btn ghost');b.type='button';b.onclick=()=>{ov.remove();ownerAffiliates();};box.append(b);}
+  const d=el('details');d.append(el('summary','Have a referral code?'));const i=el('input');i.className='chatin';i.placeholder='Code from the person who sent you';i.maxLength=20;i.autocapitalize='characters';
+  const go=el('button','Save code','btn ghost small');go.type='button';go.onclick=async()=>{const c=i.value.trim().toUpperCase();if(!/^[A-Z0-9]{3,20}$/.test(c)){toast('Codes are 3 to 20 letters or numbers');return;}go.disabled=true;const r=await claimRef(c,false);go.disabled=false;if(r&&r.ok)d.remove();};
+  d.append(i,go);box.append(d);}
+function sheetGate(title){const ov=el('div',null,'gate');const box=el('div',null,'gatebox wide');ov.append(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  const x=el('button','Close','mlink');x.type='button';x.onclick=()=>ov.remove();box.append(el('h2',title));document.body.append(ov);return {ov,box,x};}
+function partnerDash(m){const {box,x}=sheetGate('🤝 Partner dashboard');
+  const link='https://mohjeta.com/?ref='+m.code;const owed=(Number(m.earned)||0)-(Number(m.paid)||0);
+  box.append(el('p',(m.tier==='team'?'Team':'Partner')+' · you get '+Math.round(m.rate*100)+'% of what Mohjeta receives from every subscriber you bring in, for as long as they stay subscribed.'+(m.active?'':' (paused)'),'hint small'));
+  const lk=el('div',null,'card');lk.append(el('b','Your link'),el('div',link,'mono small'));const cp=el('button','Copy link','btn small');cp.type='button';
+  cp.onclick=async()=>{try{await navigator.clipboard.writeText(link);toast('Link copied');}catch(e){toast(link);}};lk.append(cp);
+  if(navigator.share){const sh=el('button','Share','btn ghost small');sh.type='button';sh.onclick=()=>navigator.share({title:'Mohjeta',text:'Her picks, her record, all public. Join me on Mohjeta:',url:link}).catch(()=>{});lk.append(sh);}
+  lk.append(el('div','App users can type your code instead: '+m.code,'hint small'));box.append(lk);
+  const st=el('div',null,'stats');for(const [l,v] of [['Sign-ups',m.referrals],['Paying now',m.paying],['Earned',money(m.earned)],['Paid to you',money(m.paid)],['Owed',money(owed)]]){const c=el('div',null,'stat');c.append(el('small',l),el('b',String(v)));st.append(c);}box.append(st);
+  if((m.recent||[]).length){const ul=el('ul',null,'plain');for(const r of m.recent)ul.append(el('li',new Date(r.at).toLocaleDateString()+' · '+r.name+' · '+r.source+' · +'+money(r.commission)));box.append(el('h4','Latest earnings'),ul);}
+  else box.append(el('p','No earnings yet. You earn each time someone who joined through you pays for a month.','hint small'));
+  if((m.payouts||[]).length){const ul=el('ul',null,'plain');for(const r of m.payouts)ul.append(el('li',new Date(r.paid_at).toLocaleDateString()+' · '+money(r.amount)+' · '+r.method));box.append(el('h4','Payouts'),ul);}
+  box.append(el('p','Rules: say you earn a commission (#ad) every time you post, show her full record, keep it 21+, and present it as a model’s estimate, not betting advice.','hint small'),x);}
+async function ownerAffiliates(){const {box,x}=sheetGate('💼 Affiliates');const list=el('div');box.append(list);
+  const draw=async()=>{list.replaceChildren(el('p','Loading…','hint'));const {data}=await sb.rpc('affiliates_report');const rows=data||[];list.replaceChildren();
+    if(!rows.length){list.append(el('p','No affiliates yet. Add your team below (they must sign in once first).','hint small'));return;}
+    const t=el('table',null,'tbl');const hr=el('tr');for(const h of ['Code','Name','Tier','Sign-ups','Earned','Paid','Owed'])hr.append(el('th',h));t.append(hr);
+    for(const r of rows){const tr=el('tr');for(const v of [r.code+(r.active?'':' (off)'),r.name||r.email,r.tier+' '+Math.round(r.rate*100)+'%',r.referrals,money(r.earned),money(r.paid),money(r.owed)])tr.append(el('td',String(v)));t.append(tr);}
+    const wrap=el('div',null,'tblwrap');wrap.append(t);list.append(wrap);};
+  const form=(title,fields,btn,run)=>{const f=el('div',null,'card');f.append(el('b',title));const ins=fields.map(([ph,type,opts])=>{let i;if(opts){i=el('select');for(const o of opts){const op=el('option',o);op.value=o;i.append(op);}}else{i=el('input');i.className='chatin';i.placeholder=ph;if(type)i.type=type;}f.append(i);return i;});
+    const b=el('button',btn,'btn small');b.type='button';b.onclick=async()=>{b.disabled=true;try{const msg=await run(ins.map(i=>i.value.trim()));toast(msg);draw();}catch(e){toast('Failed: '+(e.message||e));}finally{b.disabled=false;}};f.append(b);box.insertBefore(f,x);};
+  box.append(x);
+  form('Add or change an affiliate',[['Their email'],['Code (e.g. JAYPICKS)'],['',null,['team','partner']]],'Save affiliate',async([e,c,t])=>{const {data,error}=await sb.rpc('add_affiliate',{email_addr:e,new_code:c,new_tier:t});if(error)throw error;return data;});
+  form('Record a payout you sent',[['Code'],['Amount','number'],['Method (paypal, cash app…)']],'Record payout',async([c,a,m])=>{const {data,error}=await sb.rpc('record_payout',{aff_code:c,amount:Number(a),pay_method:m});if(error)throw error;return data;});
+  form('What Mohjeta keeps per paid month (after store fees)',[['',null,['google','apple','web']],['Net amount, e.g. 4.25','number']],'Save price',async([s2,n])=>{const {data,error}=await sb.rpc('set_affiliate_price',{pay_source:s2,net:Number(n)});if(error)throw error;return data;});
+  form('Pause or restart an affiliate',[['Code'],['',null,['pause','restart']]],'Apply',async([c,v])=>{const {data,error}=await sb.rpc('set_affiliate_active',{aff_code:c,is_active:v==='restart'});if(error)throw error;return data;});
+  draw();}
 function deleteMyAccount(parent){
   const ov=el('div',null,'gate'),box=el('div',null,'gatebox');ov.append(box);
   box.append(el('h2','Delete your account?'),el('p','This permanently deletes your profile, messages, picks, saved team, leagues you own, alerts and membership records. This cannot be undone.'));
