@@ -2368,7 +2368,11 @@ let pageTag=null,newPage=false,lastTouch=Date.now();
 function quiet(){const a=document.activeElement;return Date.now()-lastTouch>45000&&!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))&&
   !(typeof chatOpen==='function'&&chatOpen())&&!(typeof propLegs!=='undefined'&&propLegs.length)&&!document.querySelector('#sheet.on,.sheet.open');}
 function maybeReload(){if(newPage&&(document.hidden||quiet()))location.reload();}
-async function checkPage(){try{const r=await fetch('index.html?v='+Date.now(),{method:'HEAD',cache:'no-store'});const t=r.headers.get('etag')||r.headers.get('last-modified');
+// fix354 (owner: "screen keeps going black"): GitHub Pages' ETag is <deploy time>-<size> and every deploy (voice clip,
+// ratings, sim files: several an hour) gives every file a new time, so the page reloaded itself (a black flash) after
+// each deploy even when index.html had not changed. Compare only the size part: a real page change changes its size.
+async function checkPage(){try{const r=await fetch('index.html?v='+Date.now(),{method:'HEAD',cache:'no-store'});const e=r.headers.get('etag');
+  const t=e?(e.replace(/^W\//,'').replace(/"/g,'').split('-').pop()||e):r.headers.get('content-length');
   if(!t)return;if(pageTag===null){pageTag=t;return;}if(t!==pageTag)newPage=true;maybeReload();}catch(e){}}
 checkPage();setInterval(checkPage,60000);setInterval(maybeReload,15000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)maybeReload();else checkPage();});
