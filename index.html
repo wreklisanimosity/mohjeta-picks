@@ -204,7 +204,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 .sheethead{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:#0b0712f2;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .back,.share{background:none;border:1px solid var(--line);border-radius:10px;padding:7px 12px;cursor:pointer;font-weight:700}
 .sheetbody{max-width:760px;margin:auto;padding:14px 16px}
-.hero{text-align:center;padding:6px 0 4px}.hero .vs{display:flex;align-items:center;justify-content:center;gap:12px;margin:10px 0}
+.hero{text-align:center;padding:6px 0 4px}.hero .vs{display:flex;align-items:center;justify-content:center;gap:12px;margin:10px 0}.hero .vs .side{min-width:0;flex:1 1 0}.hero .vs:has(.sbug){gap:4px;align-self:stretch;width:100%;box-sizing:border-box}.hero .vs:has(.sbug) .side{overflow:hidden}.hero .vs:has(.sbug) .team-portrait,.hero .vs:has(.sbug) .badge{width:64px!important;height:64px!important}.hero .vs:has(.sbug) .tplate{max-width:100%;font-size:8px;padding:2px 4px;letter-spacing:0;white-space:nowrap;border-width:1px}
 .hero .side{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:700;min-width:0}
 .hero .side .badge{width:64px;height:64px;font-size:20px}.hero .sc{font-size:30px;font-weight:800}
 .chart{width:100%;height:auto;display:block}
@@ -575,6 +575,20 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .mside.mine .mnm{color:var(--text);font-weight:800}
 .mright{justify-content:flex-start}.mleft .mnm{margin-top:2px}.mright .mnm{margin-bottom:2px}
 .mface{grid-template-rows:auto}.mleft{align-self:start}.mright{align-self:end}
+.sbug{display:flex;align-items:stretch;gap:3px;padding:4px;border-radius:12px;background:linear-gradient(180deg,#0d0a14,#05040a);border:1px solid #ffffff1f;box-shadow:inset 0 1px 0 #ffffff14,0 4px 12px #0009}
+.sbx{position:relative;min-width:34px;padding:2px 6px;border-radius:8px;background:#ffffff08;display:grid;place-items:center;overflow:hidden}
+.sbx::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--tc,#8b5cf6)}
+.sbn{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:24px;font-weight:900;line-height:1.15;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.02em;
+  text-shadow:0 0 6px color-mix(in srgb,var(--tc,#8b5cf6) 85%,#fff),0 0 14px color-mix(in srgb,var(--tc,#8b5cf6) 60%,transparent)}
+.sbx.trail .sbn{color:#ffffffa8;text-shadow:none}.sbx.lead{background:color-mix(in srgb,var(--tc,#8b5cf6) 22%,#ffffff08)}
+.sbn.bump{animation:sbBump 1.2s ease-out}@keyframes sbBump{0%{transform:scale(1.5);color:#fde047}40%{transform:scale(1.15)}100%{transform:scale(1)}}
+.sbmid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 4px;min-width:30px}
+.sbdot{width:7px;height:7px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 8px #ff3b5c;animation:sbPulse 1.4s infinite}.sbdot.off{background:#8b8fa8;box-shadow:none;animation:none}
+@keyframes sbPulse{50%{opacity:.35}}.sbclk{font-size:9px;font-weight:800;letter-spacing:.06em;color:#ffb3c1;white-space:nowrap;text-transform:uppercase}.sbug.fin .sbclk{color:var(--muted)}
+.mini>.sbug{width:100%;box-sizing:border-box;margin:2px 0 4px}.mini>.sbug .sbx{flex:1}.mface.scored .mvs{visibility:hidden}
+.sbug.big{padding:5px;gap:4px;border-radius:14px;margin:0 4px;flex:none}.sbug.big .sbx{min-width:44px;padding:3px 6px}.sbug.big .sbn{font-size:30px}.sbug.big .sbn.d3{font-size:24px}
+.sbn.d3{font-size:19px}.mini>.sbug .sbx{min-width:0}.sbug.big .sbclk{font-size:11px}.sbug.big .sbdot{width:9px;height:9px}
+@media (prefers-reduced-motion:reduce){.sbn.bump,.sbdot{animation:none}}
 .mvs{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 .mvs.live{font-size:15px;color:var(--text);text-transform:none;letter-spacing:0;white-space:nowrap}
 .mbet{border:1px solid var(--pink);border-radius:10px;padding:6px 8px;background:linear-gradient(135deg,#3a1450,#1b0f2b)}
@@ -1976,15 +1990,24 @@ function betStatus(r){return r.result==='OPEN'?'Open · pays '+usd(Math.max(0,(r
 function betBlock(g,big){const r=g.bet;const k=r.result==='WON'?' won':r.result==='LOST'?' lost':'';
   const b=el('div',null,(big?'betbig':'mbet')+k);b.append(el('span','💵 HER BET','lbl'),el('b',big?r.team:shortTeam(r.team)),
     el(big?'div':'small',(big?(r.count?r.count+' contracts at ':'At ')+Math.round(r.price*100)+'¢ · ':Math.round(r.price*100)+'¢ · ')+betStatus(r),big?'small':''));return b;}
+// fix379 (owner: score display "boring and stock"): a scoreboard bug: LED digits on a dark panel, each score in its team's
+// color, the leader lit and the trailing team dimmed, a pulsing live dot with the period / clock, and a flash when a score goes up.
+const SCOREPREV={};
+function scoreBug(g,big){const ts=g.teams||[];const a=ts[0]||{},h=ts[1]||{};const sa=Number(a.score??0),sh=Number(h.score??0);const fin=g.state==='FINAL';
+  const w=el('div',null,'sbug'+(big?' big':'')+(fin?' fin':''));
+  const box=(t,v,o)=>{const d=el('div',null,'sbx'+(v>o?' lead':v<o?' trail':''));let c=null;try{c=simColor(t.name);}catch(e){}if(c)d.style.setProperty('--tc',c);
+    const k=(g.id||g.name)+'|'+t.name,prev=SCOREPREV[k];SCOREPREV[k]=v;d.append(el('b',String(v),'sbn'+(String(v).length>2?' d3':'')+(prev!=null&&v>prev?' bump':'')));return d;};
+  const mid=el('div',null,'sbmid');mid.append(el('i',null,fin?'sbdot off':'sbdot'),el('small',fin?'FINAL':String(g.detail||'LIVE').replace(/^●\s*/,'').slice(0,14),'sbclk'));
+  w.append(box(a,sa,sh),mid,box(h,sh,sa));return w;}
 function miniCard(g){const c=el('article',null,'card tap mini');c.tabIndex=0;c.setAttribute('role','button');c.setAttribute('aria-label',(g.name||'Game')+': open the full breakdown');
   c.onclick=()=>openGame(g.id||g.name);c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openGame(g.id||g.name);}};
   const top=el('div',null,'mtop');top.append(el('span',sportIcon(g.league)+' '+sname(g.league).toUpperCase(),'league'));
-  top.append(g.state==='LIVE'?el('span','● LIVE'+(g.detail?' '+g.detail:''),'lv'):el('span',when(g.start),'when'));c.append(top);
+  top.append(g.state==='LIVE'?el('span','● LIVE','lv'):el('span',when(g.start),'when'));c.append(top);
   {const ts=g.teams||[];const face=el('div',null,'mface');   // fix367 (owner): big logos, one each side; name under one, over the other
     ts.slice(0,2).forEach((t,i)=>{const sd=el('div',null,'mside '+(i?'mright':'mleft')+(g.pick&&g.pick.team===t.name?' mine':''));const nm=el('span',shortTeam(t.name),'mnm');
       if(i){sd.append(nm,teamBadge(t.name));}else sd.append(teamBadge(t.name),nm);face.append(sd);
-      if(!i)face.append(g.state==='LIVE'?el('b',(ts[0].score??0)+'–'+((ts[1]||{}).score??0),'mvs live'):el('span','vs','mvs'));});
-    c.append(face);}
+      if(!i)face.append(el('span','vs','mvs'));});
+    c.append(face);if(g.state==='LIVE'||(g.state==='FINAL'&&ts[0]&&ts[0].score!=null)){face.classList.add('scored');c.append(scoreBug(g,false));}}
   if(g.bet){c.append(betBlock(g,false));if(g.pick&&(g.state==='LIVE'||flipped(g)))c.append(el('div',(flipped(g)?'⇄ ':'')+'Her read now: '+shortTeam(g.pick.team)+' '+pct(g.pick.chance),'mread'));}
   else if(g.pick){const p=el('div',null,'mpick');p.append(el('span',laneOf(g).t==='PRACTICE'?'🧪 HER PICK':'HER PICK','lbl'),el('b',shortTeam(g.pick.team)),el('span',pct(g.pick.chance),'mpct'));c.append(p);}
   else c.append(el('div','Pick coming soon','hint small'));
@@ -2046,8 +2069,8 @@ function section(title,node){const c=el('div',null,'card');c.append(el('h4',titl
 function gameView(g){const b=el('div');const ln=laneOf(g);
   const head=el('div',null,'row');head.append(el('span',sname(g.league).toUpperCase(),'league'),el('span',null,'sp'),el('span',ln.t,'pill '+ln.c));b.append(head);
   const hero=el('div',null,'hero');const vs=el('div',null,'vs');
-  g.teams.forEach((t,i)=>{const sd=el('div',null,'side tside');sd.setAttribute('role','button');sd.tabIndex=0;sd.title='Team schedule and synopsis';sd.onclick=()=>openTeam(t.name,g.league);sd.append(teamBadge(t.name),teamPlate(t.name,true),el('span',g.state==='LIVE'?String(t.score??0):(t.record||''),g.state==='LIVE'?'sc':'hint small'),el('small','📅 Team page','tsidehint'));vs.append(sd);if(i===0)vs.append(el('span',g.state==='LIVE'?'–':'vs','hint'));});
-  hero.append(vs,el('div',g.state==='LIVE'?'● LIVE '+(g.detail||''):when(g.start),g.state==='LIVE'?'down':'hint'));if(g.tv&&g.tv.length)hero.append(el('div','TV: '+g.tv.join(' · '),'hint small'));b.append(hero);
+  g.teams.forEach((t,i)=>{const sd=el('div',null,'side tside');sd.setAttribute('role','button');sd.tabIndex=0;sd.title='Team schedule and synopsis';sd.onclick=()=>openTeam(t.name,g.league);const sc=g.state==='LIVE'||(g.state==='FINAL'&&t.score!=null);sd.append(teamBadge(t.name),teamPlate(t.name,!sc),el('span',t.record||'','hint small'));if(!sc)sd.append(el('small','📅 Team page','tsidehint'));vs.append(sd);if(i===0)vs.append(sc?scoreBug(g,true):el('span','vs','hint'));});
+  hero.append(vs);if(g.state!=='LIVE'&&g.state!=='FINAL')hero.append(el('div',when(g.start),'hint'));if(g.tv&&g.tv.length)hero.append(el('div','TV: '+g.tv.join(' · '),'hint small'));b.append(hero);
   if(g.pick&&ln.t==='PRACTICE')b.append(el('div',PRACTICE_NOTE,'notice'));
   if(g.bet){const r=g.bet;const c=el('div',null,'card');c.append(betBlock(g,true));
     c.append(el('p','Placed '+when(r.opened)+'. Bets are never switched during a game.','hint small'));
