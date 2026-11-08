@@ -218,6 +218,12 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 .tog.sits{color:var(--red);border-color:#ff5c7866;background:#ff5c7814}
 .simin{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}.simin label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 .simin input{width:110px;background:var(--card2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:8px 10px;font:inherit}
+/* fix356 (owner: screen blank/black on iPhone, Simulate): animating a whole page (.panel / the sheet) with opacity+transform
+   makes Safari paint it as ONE layer; a long page (Simulate is ~4,000 px, x3 on iPhone) is past what it can hold, and the
+   page goes blank (only the fixed bottom bar survives). Pages and sheets now appear without a whole-page animation (the
+   cards inside still rise one by one), and the fixed background glow is screen-sized instead of 140%. */
+.panel.on{animation:none!important}.sheet.on{animation:none!important}
+body::before{inset:0!important}
 /* simulator v2 (fix355) */
 .simhero{position:relative;overflow:hidden;background:radial-gradient(120% 80% at 50% 0%,#3a1a5a,transparent 70%),var(--card)}
 .simeyebrow{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;color:#f5c542;text-align:center}
