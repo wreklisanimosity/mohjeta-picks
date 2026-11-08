@@ -463,6 +463,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .cmbcmp{display:flex;flex-direction:column;gap:6px}.cmbbar span{display:flex;justify-content:space-between;font-size:12px}.cmbtrack{height:8px;border-radius:6px;background:#ffffff14;overflow:hidden;margin-top:2px}
 .cmbtrack i{display:block;height:100%;border-radius:6px}.cmbtrack .fher{background:linear-gradient(90deg,#22c55e,#86efac)}.cmbtrack .fkal{background:#8b8fa8}
 .cmb>.btn{align-self:flex-start}.cmbempty{display:flex;flex-direction:column;gap:4px}
+.cmbtabs{margin:6px 0 12px;flex-wrap:wrap}.cmblink{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;margin:10px 0}.cmblink>div{flex:1;display:flex;flex-direction:column;gap:2px}
+.cmbli{font-size:24px}.cmbgo{font-size:22px;color:var(--muted)}
 .board .brow{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.board .bk{width:26px;text-align:center}
 .rest{margin:8px 0}.rest .anyn{display:flex;gap:6px;align-items:center;margin:4px 0}.rest summary{cursor:pointer;font-weight:600}.rest b{display:block;margin-top:6px}
 .cmp{width:min(520px,calc(100vw - 32px));box-sizing:border-box;max-height:88vh;overflow:auto}.cmp select{min-width:0;width:100%}.cmprow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:10px}.cmpcol{display:flex;flex-direction:column;gap:6px}
@@ -726,7 +728,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <div class="menu">
       <button type="button" data-go="news"><span>🆕 What's new & how-to<small>Latest updates and how to use every part of the site</small></span>›</button>
       <button type="button" data-go="feed"><span>📰 Live feed<small>Injuries, lineups, foul trouble and price moves as they happen</small></span>›</button>
-      <button type="button" data-go="combos"><span>Combo ideas<small>Her best multi-game combos right now</small></span>›</button>
+      <button type="button" data-go="combos"><span>Combos &amp; parlays<small>Team combos, prop parlays, heavy favorites, your builder</small></span>›</button>
       <button type="button" data-go="score"><span>Scorecard<small>Every source she uses, graded against real results</small></span>›</button>
       <button type="button" data-go="games"><span>📅 All games<small>Every game she's watching, by sport</small></span>›</button>
       <button type="button" data-go="ratings"><span>🏆 Team & player ratings<small>Who's strongest right now</small></span>›</button>
@@ -743,7 +745,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     </div>
     <div class="notice">Entertainment and information only. Mohjeta's numbers are model estimates, not betting, financial or investment advice, and her bets use paper money. 21+ only. If you bet, follow the law where you live and never bet more than you can afford to lose. Gambling problem? Call 1-800-GAMBLER.</div>
   </section>
-  <section class="panel" id="combos" role="tabpanel" aria-label="Combo ideas"><button class="back" data-go="more">‹ More</button><h2>🧩 Combo ideas</h2><p class="hint">Her best multi-game combos right now, one leg per game. Every leg has to win, so combos lose most of the time. For fun, not betting advice.</p><p class="hint small" id="comboUpd"></p><div class="grid" id="comboList"></div></section>
+  <section class="panel" id="combos" role="tabpanel" aria-label="Combo ideas"><button class="back" data-go="more">‹ More</button><h2>🎲 Combos &amp; parlays</h2><p class="hint">Every multi-leg idea in one place: her team combos, her prop parlays, heavy-favorite legs and your own builder. Every leg has to win, so these lose most of the time. For fun, not betting advice.</p><p class="hint small" id="comboUpd"></p><div class="chips cmbtabs" id="cmbTabs"></div><div class="grid" id="comboList"></div></section>
   <section class="panel" id="score" role="tabpanel" aria-label="Scorecard"><button class="back" data-go="more">‹ More</button><h2>Scorecard</h2><p class="hint">Every finished pick is graded against the official result. Hit = picked side won. Accuracy (Brier): 0 is perfect, 0.25 is a coin flip, lower is better.</p><div id="scoreBox"></div></section>
   <section class="panel how" id="how" role="tabpanel" aria-label="How she picks">
     <button class="back" data-go="more">‹ More</button>
@@ -2111,9 +2113,11 @@ function withSkipped(d,w,l){const S=d&&d.skipped&&d.skipped.record;if(!S||!S.n)r
 function legGames(d){const now=Date.now();return (d.games||[]).filter(g=>g.state==='UPCOMING'&&g.pick&&Date.parse(g.start)>now&&
   ((typeof g.kalshi==='number'&&g.kalshi>0.95)||g.no_bet||(g.pick.chance>=0.95&&!(typeof g.kalshi==='number'))))
   .sort((a,b)=>Math.max(b.pick.chance,b.kalshi||0)-Math.max(a.pick.chance,a.kalshi||0));}
-function renderLegs(d){const box=$('legsBox');if(!box)return;box.replaceChildren();const gs=legGames(d);const S=d.skipped&&d.skipped.record;
-  if(!gs.length&&!(S&&S.n))return;
-  box.append(iel('h3','🔗 Parlay legs'),el('p','Her picks on heavy favorites: games where the market prices the favorite above 95%. Her pick is tracked on each. Use them as legs on any betting site.','hint small'));
+function renderLegs(d){const box=$('legsBox');if(!box)return;box.replaceChildren();const gs=legGames(d);if(!gs.length)return;   // fix377: lives in Combos & parlays now
+  const b=el('button',null,'card cmblink');b.type='button';b.append(el('span','🔗','cmbli'),(()=>{const t=el('div');t.append(el('b','Parlay legs: '+gs.length+' heavy favorite'+(gs.length===1?'':'s')+' tonight'),el('small','Her picks on 95%+ favorites, in Combos & parlays','hint'));return t;})(),el('span','›','cmbgo'));
+  b.onclick=()=>openCombos('legs');box.append(b);}
+function legsCard(d){const gs=legGames(d);const S=d.skipped&&d.skipped.record;const box=el('div');
+  box.append(el('p','Her picks on heavy favorites: games where the market prices the favorite above 95%. Her pick is tracked on each. Use them as legs on any betting site.','hint small'));
   const c=el('div',null,'card legs');
   if(S&&S.n)c.append(el('div','Her record on these legs: '+S.won+'-'+(S.n-S.won)+' ('+pct(S.won/S.n)+')','legrec'));
   let all=1;
@@ -2124,7 +2128,7 @@ function renderLegs(d){const box=$('legsBox');if(!box)return;box.replaceChildren
   if(!gs.length)c.append(el('p','No heavy favorites on the schedule right now. They show up here before their games.','hint small'));
   if(gs.length>=2){const n=Math.min(gs.length,12);c.append(el('div','All '+n+' legs together: about '+pct(all)+' to hit','legall'));}
   c.append(el('p','Each leg can still lose, and the risk adds up: five 97% legs together hit only about 86% of the time. Chances shown are the lower of her number and the market\'s.','hint small'));
-  box.append(c);}
+  box.append(c);return box;}
 // ---------------- every open bet in one place (on the Tonight page), whatever kind it is or wherever its game is shown
 function renderOpenBets(d){const box=$('openBets');if(!box)return;box.replaceChildren();const rows=((d.bets&&d.bets.rows)||[]).filter(r=>r.result==='OPEN');if(!rows.length)return;
   const key=v=>String(v||'').slice(0,16);const games=(d.games||[]).filter(g=>g.bet);
@@ -2304,7 +2308,21 @@ function comboCard(c,i){const a=el('article',null,'card cmb');const n=c.legs.len
   a.append(cmp);
   const sh=el('button','📤 Share combo','btn ghost small');sh.type='button';sh.onclick=e=>{e.stopPropagation();shareIt({title:'Mohjeta combo',text:'Mohjeta’s '+n+'-leg combo ('+c.pays_x+'x): '+c.legs.map(l=>shortTeam(l.team)).join(' + ')+'. She gives every leg hitting '+pct(her)+'.',url:siteLink('#combos')});};
   a.append(sh);return a;}
-function renderMore(d){const cl=$('comboList');cl.replaceChildren(...(d.combos&&d.combos.length?d.combos.map(comboCard):[(()=>{const e=el('div',null,'card cmbempty');e.append(el('b','No strong combos right now'),el('p','She only builds combos from legs she trusts (55%+ and better than Kalshi’s price). New ones show up as tonight’s picks come in; this page refreshes every few minutes.','hint small'));return e;})()]));
+// fix377 (owner: "combine them"): Combo ideas + her prop parlays + parlay legs + the prop builder on one page, in tabs.
+const CMB_TABS=[['teams','🧩 Teams'],['props','🎲 Props'],['legs','🔗 Heavy favorites'],['build','🧱 Build your own']];
+let cmbTab=(()=>{try{return localStorage.getItem('mohjeta.cmbTab')||'teams';}catch(e){return 'teams';}})();
+function openCombos(tab){if(tab){cmbTab=tab;try{localStorage.setItem('mohjeta.cmbTab',tab);}catch(e){}}show('combos');try{renderCombos(D);}catch(e){}window.scrollTo(0,0);}
+function renderCombos(d){const cl=$('comboList');if(!cl||!d)return;const bar=$('cmbTabs');
+  if(bar){bar.replaceChildren(...CMB_TABS.map(([k,l])=>{const b=el('button',l,'chip'+(cmbTab===k?' on':''));b.type='button';b.setAttribute('aria-pressed',String(cmbTab===k));
+    b.onclick=()=>{cmbTab=k;try{localStorage.setItem('mohjeta.cmbTab',k);}catch(e){}renderCombos(D);};return b;}));}
+  const empty=(t,m)=>{const e=el('div',null,'card cmbempty');e.append(el('b',t),el('p',m,'hint small'));return e;};
+  if(cmbTab==='props'){const pp=(()=>{try{return propParlaysCard(d);}catch(e){return null;}})();
+    cl.replaceChildren(pp||empty('No prop parlays yet today','She puts up to 3 two-leg prop parlays together about an hour before the first game, from her best threes and assists picks.'));return;}
+  if(cmbTab==='legs'){cl.replaceChildren(legsCard(d));return;}
+  if(cmbTab==='build'){const w=el('div');const pb=el('div',null,'card');pb.id='propBuilder';
+    const go=el('button','➕ Add props from the Props page','btn ghost small');go.type='button';go.onclick=()=>show('props');w.append(pb,go);cl.replaceChildren(w);try{drawBuilder();}catch(e){}needDet();return;}
+  cl.replaceChildren(...(d.combos&&d.combos.length?d.combos.map(comboCard):[empty('No strong combos right now','She only builds combos from legs she trusts (55%+ and better than Kalshi’s price). New ones show up as tonight’s picks come in; this page refreshes every few minutes.')]));}
+function renderMore(d){renderCombos(d);
   {const u=$('comboUpd');if(u)u.textContent=d.updated?'Updated '+new Date(d.updated).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+' · refreshes every 3 minutes (every minute during live games)':'';}
   const sc=d.scorecard,sb=$('scoreBox');sb.replaceChildren();
   if(!sc.graded){sb.append(el('p','No finished games graded yet.','empty'));return;}
@@ -2324,7 +2342,7 @@ const PAGES=[['picks','⭐','Tonight','Her bets and best picks','#5a3a12','bets 
  ['fantasy','🏀','Fantasy','Draft and battle','#4a2a10','fantasy league draft'],['weekly','🏈','Weekly fantasy','Real stats, every week','#123a4a','weekly fantasy nfl nba college football lineup salary cap'],['guess','🔮','Guess her number','Quick game','#2e1650','guess game'],
  ['feed','📰','Live feed','News as it happens','#3a1a3a','news feed injuries lineups live updates foul'],['ratings','🏆','Ratings','Teams and players','#4a3a08','ratings players teams grades'],['games','📅','All games','Every game she watches','#4a1a20','schedule games all'],
  ['chat','💬','Chat','Talk with fans','#142a50','chat community fans'],['news','🆕',"What's new",'Latest updates','#4a1238','news updates'],
- ['combos','🎲','Combos','Multi-game ideas','#4a1218','combos parlay'],['score','📊','Scorecard','Her sources, graded','#103a30','scorecard sources accuracy'],
+ ['combos','🎲','Combos & parlays','Teams, props, favorites','#4a1218','combos parlay props legs builder'],['score','📊','Scorecard','Her sources, graded','#103a30','scorecard sources accuracy'],
  ['trophies','🏆','Trophy case','Your badges and titles','#4a3a08','badges trophies medals titles champions'],['tester','🛠️','Tester challenge','Earn the Beta tester medal','#4a3010','beta tester challenge testflight'],['how','🤖','How she picks','Her method','#14304a','method how explanation'],['odds','⚖️','Use her picks','Fair odds anywhere','#2a2a40','odds sportsbook value'],
  ['safe','⚠️','Play responsibly','21+ and help','#4a3208','responsible help limits'],['terms','📋','Terms','What this is','#2a2236','terms legal'],['privacy','🔒','Privacy','Your information','#232a36','privacy data']];
 function goPage(k){closeQJ();if(k==='trophies'){openTrophies();return;}if(k==='tester'){openTester();return;}if(k==='live'){show('picks');setTimeout(()=>{const l=$('liveBox');if(l&&l.childElementCount)l.scrollIntoView({behavior:'smooth',block:'start'});},60);return;}
@@ -2380,9 +2398,9 @@ function mergeDet(d){if(!DET||!d||!d.games)return;const G=DET.games||{};for(cons
 function refreshSheet(){if(!sheetGame||!D)return;const g=D.games.find(x=>String(x.id||x.name)===String(sheetGame.id||sheetGame.name));if(g){sheetGame=g;const s=$('sheet');const y=s.scrollTop;$('sheetBody').replaceChildren(gameView(g));s.scrollTop=y;}}
 function needDet(){if(!D||!(D.games||[]).some(g=>g.has_more)||detBusy||(DET&&Date.now()-detAt<120000))return;
   const on=id=>{const p=document.getElementById(id);return !!(p&&p.classList.contains('on'));};
-  if(!(sheetGame&&sheetGame.has_more)&&!on('sim')&&!on('props'))return;
+  if(!(sheetGame&&sheetGame.has_more)&&!on('sim')&&!on('props')&&!on('combos'))return;
   detBusy=fetchPublicSnapshot('details.json').then(r=>r.ok?r.json():null).then(x=>{if(!x||!x.games)return;DET=x;detAt=Date.now();if(!D)return;mergeDet(D);
-    try{renderSim();}catch(e){}try{renderProps(D);}catch(e){}refreshSheet();}).catch(()=>{}).finally(()=>{detBusy=null;});}
+    try{renderSim();}catch(e){}try{renderProps(D);}catch(e){}try{if(on('combos'))renderCombos(D);}catch(e){}refreshSheet();}).catch(()=>{}).finally(()=>{detBusy=null;});}
 function render(d){D=d;try{drawTicker();}catch(e){}notePeople(d);applyMembers(d);mergeDet(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
   $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderSkipped(d),()=>renderMore(d),()=>renderSimIfChanged(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
@@ -2591,7 +2609,9 @@ function propParlaysCard(d){const P=d.prop_parlays;if(!P||!P.rows||!P.rows.lengt
   c.append(el('p',P.rule||'','hint small'));return c;}
 function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(d);box.replaceChildren();
   if(!P){box.append(el('p','Her props will show here within a few minutes of the next update.','hint'));return;}
-  try{const pp=propParlaysCard(d);if(pp)box.append(pp);}catch(e){}
+  if(d.prop_parlays&&(d.prop_parlays.rows||[]).length){const b=el('button',null,'card cmblink');b.type='button';const R0=d.prop_parlays.record||{};
+    b.append(el('span','🎲','cmbli'),(()=>{const t=el('div');t.append(el('b','Her prop parlays · '+(R0.won||0)+'-'+(R0.lost||0)),el('small','Now in Combos & parlays, with her team combos and the builder','hint'));return t;})(),el('span','›','cmbgo'));
+    b.onclick=()=>openCombos('props');box.append(b);}   // fix377
   const R=P.record||{},n=(R.won||0)+(R.lost||0);
   // report card (separate from her game bets)
   const card=el('div',null,'card');card.append(iel('h4','🎯 Her props report card'));
