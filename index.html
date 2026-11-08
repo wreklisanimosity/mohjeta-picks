@@ -397,12 +397,8 @@ svg.badge.person{background:none;padding:0;overflow:visible;flex:none;border-rad
   text-shadow:0 1px 1px #000a;box-shadow:0 1px 4px #0006;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hero .side .tplate{white-space:normal;text-align:center;font-size:12px}
 .fighter .tplate{font-size:11px;margin-top:2px}
-/* fix366: framed team portraits (team color, zoomed on the face) */
-.badge.team-portrait{position:relative;overflow:hidden;padding:0;border-radius:50%;border:2px solid color-mix(in srgb,var(--tc,#8a6bd0) 75%,#fff);
-  background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--tc,#6b4bb0) 70%,#fff),var(--tc,#6b4bb0) 55%,color-mix(in srgb,var(--tc,#6b4bb0) 60%,#000));
-  box-shadow:0 2px 6px #0008,inset 0 0 0 1px #ffffff40}
-.badge.team-portrait>.tp-img{position:absolute;left:-19%;top:-3%;width:138%;height:138%;max-width:none;margin:0;display:block;border-radius:0;box-shadow:none;object-fit:contain;filter:drop-shadow(0 1px 2px #0009)}
-.fighter.win .badge.big.team-portrait{box-shadow:0 0 24px var(--green)}
+img.badge.team-portrait,.fighter.win img.badge.big.team-portrait{
+  object-fit:contain;background:transparent;border:0;border-radius:0;box-shadow:none}
 .fighter.left .badge{animation:lungeR 1.5s ease-in-out both}.fighter.right .badge{animation:lungeL 1.5s ease-in-out both}
 @keyframes lungeR{0%,100%{transform:none}15%,45%,75%{transform:translateX(28px) rotate(8deg) scale(1.08)}30%,60%,90%{transform:translateX(-4px)}}
 @keyframes lungeL{0%,100%{transform:none}15%,45%,75%{transform:translateX(-28px) rotate(-8deg) scale(1.08)}30%,60%,90%{transform:translateX(4px)}}
@@ -550,8 +546,17 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .mini .mtop .lv{margin-left:auto;color:var(--red);font-weight:800;white-space:nowrap}
 .mini .mt{display:flex;align-items:center;gap:6px;font-size:13px;min-width:0}.mini .mt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mini .mt b{margin-left:auto;font-size:13px}.mini .mt.mine span{font-weight:800;color:var(--text)}
-.mini .badge{width:30px!important;height:30px!important;font-size:11px;animation:none;flex:none}.mini .mt .badge{width:40px!important;height:40px!important;font-size:13px}
-.mini .mt{gap:9px!important;font-size:14px!important}
+.mini .badge{width:30px!important;height:30px!important;font-size:11px;animation:none;flex:none}
+.mface{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px;margin:4px 0 2px}
+.mside{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;text-align:center}
+.mini .mside .badge{width:68px!important;height:68px!important;font-size:22px}
+.mini .mside span.badge{width:52px!important;height:52px!important;margin:8px;font-size:18px}
+.mnm{font-size:13px;font-weight:700;line-height:1.15;color:var(--muted);overflow-wrap:anywhere;max-width:100%}
+.mside.mine .mnm{color:var(--text);font-weight:800}
+.mright{justify-content:flex-start}.mleft .mnm{margin-top:2px}.mright .mnm{margin-bottom:2px}
+.mface{grid-template-rows:auto}.mleft{align-self:start}.mright{align-self:end}
+.mvs{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.mvs.live{font-size:15px;color:var(--text);text-transform:none;letter-spacing:0;white-space:nowrap}
 .mbet{border:1px solid var(--pink);border-radius:10px;padding:6px 8px;background:linear-gradient(135deg,#3a1450,#1b0f2b)}
 .mbet .lbl,.mpick .lbl{display:block;font-size:10px;font-weight:800;letter-spacing:.08em}
 .mbet .lbl{color:var(--pink)}.mpick .lbl{color:var(--dim)}
@@ -861,25 +866,13 @@ function teamBadge(name){
   {const p=PERSON.get(name);if(p)return personBadge(name,p);}
   const team=name==='Los Angeles Clippers'?'LA Clippers':name;
   if(!teamPortraits.has(team))return badge(name);
-  // fix366 (owner: logos "so small people can barely see and most of them are wearing the same clothing"): bigger, a round
-  // frame in the team's color (known colors, else sampled from the portrait), zoomed in on the face, not the outfit.
-  const wrap=document.createElement('span');wrap.className='badge team-portrait';wrap.dataset.team=team;wrap.setAttribute('aria-hidden','true');
-  if(nflPortraitTeams.has(team))wrap.dataset.nflTeam=team;
-  let known=null;try{known=TEAM_COLORS[teamNick(name)]||null;}catch(e){}
-  if(known)wrap.style.setProperty('--tc',known);else if(PCOL.has(team))wrap.style.setProperty('--tc',PCOL.get(team));
-  const image=document.createElement('img');image.className='tp-img';image.alt='';image.decoding='async';image.loading='lazy';
-  image.onload=()=>{if(!known&&!PCOL.has(team))portraitColor(image,team,wrap);};
-  image.onerror=()=>{image.onerror=null;const b=badge(name);b.className=wrap.className.replace('team-portrait','').trim();wrap.replaceWith(b);};
+  const image=document.createElement('img');
+  image.className='badge team-portrait';image.alt='';image.dataset.team=team;image.decoding='async';image.loading='lazy';
+  if(nflPortraitTeams.has(team))image.dataset.nflTeam=team;
+  image.onerror=()=>{image.onerror=null;const b=badge(name);b.className=image.className.replace('team-portrait','').trim();image.replaceWith(b);};
   image.src='portraits/'+teamPortraits.file(team)+'?v=2';
-  wrap.append(image);return wrap;
+  return image;
 }
-const PCOL=new Map();
-function portraitColor(img,team,wrap){try{const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d',{willReadFrequently:true});
-  x.drawImage(img,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let r=0,g=0,b=0,n=0;
-  for(let i=0;i<d.length;i+=4){if(d[i+3]<200)continue;const R=d[i],G=d[i+1],B=d[i+2],mx=Math.max(R,G,B),mn=Math.min(R,G,B),w=mx-mn;if(w<40||mx<60)continue;const q=w*w*w;r+=R*q;g+=G*q;b+=B*q;n+=q;}   // vivid colors (jersey, scarf) beat fur
-  if(!n)return;const col='rgb('+Math.round(r/n)+','+Math.round(g/n)+','+Math.round(b/n)+')';PCOL.set(team,col);
-  document.querySelectorAll('.team-portrait').forEach(e=>{if(e.dataset.team===team&&!e.style.getPropertyValue('--tc'))e.style.setProperty('--tc',col);});
-  wrap.style.setProperty('--tc',col);}catch(e){}}
 const TEAM_COLORS={Celtics:'#007A33',Nets:'#2b2b2b',Knicks:'#006BB6','76ers':'#006BB6',Raptors:'#CE1141',Bulls:'#CE1141',
   Cavaliers:'#860038',Pistons:'#C8102E',Pacers:'#002D62',Bucks:'#00471B',Nuggets:'#0E2240',Timberwolves:'#0C2340',Thunder:'#007AC1',
   'Trail Blazers':'#E03A3E',Jazz:'#002B5C',Hawks:'#E03A3E',Hornets:'#1D1160',Heat:'#98002E',Magic:'#0077C0',Wizards:'#002B5C',
@@ -1955,8 +1948,11 @@ function miniCard(g){const c=el('article',null,'card tap mini');c.tabIndex=0;c.s
   c.onclick=()=>openGame(g.id||g.name);c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openGame(g.id||g.name);}};
   const top=el('div',null,'mtop');top.append(el('span',sportIcon(g.league)+' '+sname(g.league).toUpperCase(),'league'));
   top.append(g.state==='LIVE'?el('span','● LIVE'+(g.detail?' '+g.detail:''),'lv'):el('span',when(g.start),'when'));c.append(top);
-  for(const t of g.teams||[]){const r=el('div',null,'mt'+(g.pick&&g.pick.team===t.name?' mine':''));r.append(teamBadge(t.name),el('span',shortTeam(t.name)));
-    if(g.state==='LIVE')r.append(el('b',String(t.score??0)));c.append(r);}
+  {const ts=g.teams||[];const face=el('div',null,'mface');   // fix367 (owner): big logos, one each side; name under one, over the other
+    ts.slice(0,2).forEach((t,i)=>{const sd=el('div',null,'mside '+(i?'mright':'mleft')+(g.pick&&g.pick.team===t.name?' mine':''));const nm=el('span',shortTeam(t.name),'mnm');
+      if(i){sd.append(nm,teamBadge(t.name));}else sd.append(teamBadge(t.name),nm);face.append(sd);
+      if(!i)face.append(g.state==='LIVE'?el('b',(ts[0].score??0)+'–'+((ts[1]||{}).score??0),'mvs live'):el('span','vs','mvs'));});
+    c.append(face);}
   if(g.bet){c.append(betBlock(g,false));if(g.pick&&(g.state==='LIVE'||flipped(g)))c.append(el('div',(flipped(g)?'⇄ ':'')+'Her read now: '+shortTeam(g.pick.team)+' '+pct(g.pick.chance),'mread'));}
   else if(g.pick){const p=el('div',null,'mpick');p.append(el('span',laneOf(g).t==='PRACTICE'?'🧪 HER PICK':'HER PICK','lbl'),el('b',shortTeam(g.pick.team)),el('span',pct(g.pick.chance),'mpct'));c.append(p);}
   else c.append(el('div','Pick coming soon','hint small'));
