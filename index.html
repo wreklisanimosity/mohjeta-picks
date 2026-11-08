@@ -218,6 +218,55 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 .tog.sits{color:var(--red);border-color:#ff5c7866;background:#ff5c7814}
 .simin{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}.simin label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 .simin input{width:110px;background:var(--card2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:8px 10px;font:inherit}
+/* simulator v2 (fix355) */
+.simhero{position:relative;overflow:hidden;background:radial-gradient(120% 80% at 50% 0%,#3a1a5a,transparent 70%),var(--card)}
+.simeyebrow{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;color:#f5c542;text-align:center}
+.simscore{display:flex;align-items:center;justify-content:center;gap:14px;margin:4px 0 6px}
+.simscore .ss{display:flex;flex-direction:column;align-items:center;min-width:86px;padding:8px 12px;border-radius:14px;background:linear-gradient(180deg,color-mix(in srgb,var(--tc,#6b3cff) 45%,#1a0f24),#140a1f);border:1px solid color-mix(in srgb,var(--tc,#6b3cff) 60%,transparent)}
+.simscore .ss small{font-size:12px;font-weight:800;letter-spacing:.06em;color:#e9d6ff;text-transform:uppercase}.simscore .ss b{font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
+.simscore .ss.win{box-shadow:0 0 22px color-mix(in srgb,var(--tc,#ff4fd8) 55%,transparent)}.simscore .ssmid{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
+.simverdict{font-size:17px;font-weight:700;text-align:center;margin:8px 4px 10px;line-height:1.35}
+.simchips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 0 10px}
+.simchip{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:#1b1229;border:1px solid var(--line);font-size:13px}
+.simchip b{font-size:15px}.simchip.yes{border-color:#39d98a88}.simchip.yes b{color:var(--green)}.simchip.no{border-color:#ff5c7866}.simchip.no b{color:var(--red)}
+.simsub{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:6px 0 2px}.simhist .hint{display:none}
+.simacts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.simwatchbtn{font-size:16px;padding:12px 20px;flex:1 1 100%;background:linear-gradient(135deg,#f5c542,#ff7a1c)!important;color:#1a0f00!important;box-shadow:0 6px 20px #ff9a1c55}
+.simshift{text-align:center;color:#f5c542}.simherpick{margin:4px 2px 10px}
+.simhow{margin:10px 2px}.simhow p{margin:6px 0}
+.simlines{margin:4px 0 0}
+.simbox .btab{margin-top:10px;border:1px solid color-mix(in srgb,var(--tc,#6b3cff) 45%,var(--line));border-radius:12px;overflow:hidden}
+.simbox .bteam{padding:7px 10px;font-weight:800;background:linear-gradient(90deg,color-mix(in srgb,var(--tc,#6b3cff) 55%,#1a0f24),transparent)}
+.simbox .brow{display:grid;grid-template-columns:1fr 38px 38px 38px 38px;gap:4px;padding:6px 10px;border-top:1px solid var(--line);font-size:13px;align-items:center;font-variant-numeric:tabular-nums}
+.simbox .brow>*:not(:first-child){text-align:right}.simbox .brow.bh{color:var(--dim);font-size:11px;font-weight:700;border-top:0}.simbox .brow.bench{color:var(--muted)}
+.simbox .brow .bn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.simbox .brow.star b{color:#f5c542}.simbox .brow b{font-size:14px}
+.lutabs{display:flex;gap:6px;margin:6px 0 4px}.lutab{flex:1;position:relative;border:1px solid var(--line);border-radius:12px;padding:9px 8px;background:#1b1229;color:var(--text);font:inherit;font-weight:700;cursor:pointer}
+.lutab.on{border-color:color-mix(in srgb,var(--tc,#ff4fd8) 80%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--tc,#ff4fd8) 35%,#1b1229),#1b1229)}
+.luct{position:absolute;top:-6px;right:-4px;background:#f5c542;color:#1a0f00;border-radius:999px;font-size:11px;font-style:normal;padding:1px 6px}
+.lugrp{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin:12px 0 6px}
+.luchips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:620px){.luchips{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.luchip{position:relative;display:flex;align-items:stretch;border:1px solid var(--line);border-radius:12px;background:var(--card2);overflow:hidden}
+.luchip .lumain{flex:1;min-width:0;text-align:left;background:none;border:0;color:var(--text);font:inherit;padding:8px 10px 18px;cursor:pointer}
+.luchip .lumain b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.luchip .lumain small{display:block;color:var(--dim);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.luchip .lustate{position:absolute;left:10px;bottom:4px;font-size:10px;font-weight:800;letter-spacing:.04em;color:var(--green)}
+.luchip.sits{opacity:.7;border-style:dashed}.luchip.sits .lustate{color:var(--red)}.luchip.unsure .lustate{color:#f5c542}
+.luchip.changed{border-color:#f5c542aa;box-shadow:0 0 0 1px #f5c54233}.luchip.moved{border-color:#8fd3ff99}
+.luchip .lutr{flex:none;width:34px;border:0;border-left:1px solid var(--line);background:#ffffff08;color:#8fd3ff;font-size:15px;cursor:pointer}.luchip .lutr:disabled{opacity:.3}
+.simwatch h2{margin:4px 0 10px}.simwatch .simeyebrow{text-align:left}
+.wboard{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:12px;border-radius:16px;background:linear-gradient(180deg,#24173a,#140a1f);border:1px solid #3a2858;box-shadow:inset 0 0 30px #0008}
+.wteam{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px;border-radius:12px;transition:background .3s}.wteam .wbadge{width:46px;height:46px}
+.wteam span{font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.05em}.wteam .wpts{font-size:46px;line-height:1;font-variant-numeric:tabular-nums}
+.wteam.lead{background:color-mix(in srgb,var(--tc,#ff4fd8) 22%,transparent)}.wteam.lead .wpts{color:#fff;text-shadow:0 0 14px color-mix(in srgb,var(--tc,#ff4fd8) 80%,transparent)}
+.wclock{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;border-radius:10px;background:#07050b;border:1px solid #3a2858;font-variant-numeric:tabular-nums;min-width:74px}
+.wclock b{color:#f5c542;font-size:13px;letter-spacing:.06em}.wclock span{font-size:18px;font-weight:800;color:#ff5c5c;font-family:ui-monospace,monospace}
+.wgrid{display:grid;gap:2px 6px;margin:10px 0;padding:8px 10px;border-radius:12px;background:#1b1229;font-size:13px;font-variant-numeric:tabular-nums;text-align:center}
+.wgrid>span:nth-child(n){color:var(--muted)}.wgrid>*:nth-child(n){text-align:center}.wgrid b{color:var(--text)}
+.wfeed{display:flex;flex-direction:column;gap:6px;min-height:150px}
+.wplay{display:grid;grid-template-columns:64px 1fr auto;grid-template-rows:auto auto;gap:0 8px;align-items:center;padding:8px 10px;border-radius:12px;background:#1b1229;border-left:4px solid var(--tc,#ff4fd8);animation:rise .3s ease both}
+.wplay .wt{grid-row:1/3;font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}.wplay .wx{font-weight:700;font-size:14px}.wplay .wv{grid-row:1/3;grid-column:3;color:#f5c542;font-size:18px}
+.wplay .ws{font-size:11px;color:var(--dim)}
+.wctl{display:flex;gap:8px;margin:10px 0}.wend{margin-top:8px;padding:12px;border-radius:14px;background:linear-gradient(135deg,#2a1838,#1a0f24);border:1px solid #f5c54266}.wend b{font-size:20px}
+@media (prefers-reduced-motion:reduce){.wplay{animation:none}}
+
 .hist{width:100%;height:120px;display:block}
 .hist .bar{transform-box:fill-box;transform-origin:50% 100%}.panel.enter .hist .bar,.sheet-enter .hist .bar{animation:grow .55s cubic-bezier(.2,.9,.3,1.2) both}
 @keyframes grow{from{transform:scaleY(0);opacity:.2}to{transform:scaleY(1);opacity:1}}
@@ -924,6 +973,124 @@ function simulationScorecard(box){
   }
   card.append(el('p',ev.graded<100?'Still gathering evidence. A small sample cannot establish reliable accuracy.':'Evaluate the sample size and calibration before relying on these probabilities.','hint small'));box.append(card);
 }
+// ---------------- Simulator v2 (fix355, owner: "simulator is bland too": looks plain, nothing happens, hard to read ->
+// watch a sim game, projected box score, easier lineup editor). Same math as before; this is how it is shown.
+const SIM_SPORT={NBA:{per:4,len:12,lab:'Q',kind:'hoops',tot:225},WNBA:{per:4,len:10,lab:'Q',kind:'hoops',tot:162},NCAAB:{per:2,len:20,lab:'H',kind:'hoops',tot:145},
+  NFL:{per:4,len:15,lab:'Q',kind:'gridiron',tot:44},NCAAF:{per:4,len:15,lab:'Q',kind:'gridiron',tot:55},NHL:{per:3,len:20,lab:'P',kind:'puck',tot:6},
+  MLB:{per:9,len:0,lab:'',kind:'diamond',tot:8.5}};
+const simNick=n=>{try{return teamNick(n);}catch(e){return String(n).split(' ').pop();}};
+const simColor=n=>{try{return TEAM_COLORS[teamNick(n)]||null;}catch(e){return null;}};
+function simVerdict(s,r){const fav=r.pH>=0.5?s.home:s.away,p=Math.max(r.pH,1-r.pH),n=Math.round(p*100),by=Math.abs(r.margin),u=s.unit==='pts'?'points':s.unit;
+  if(n<=54)return 'A coin flip. '+simNick(fav)+' win '+n+' of every 100, by '+(by<1?'a hair':'about '+Math.round(by)+' '+u)+' on average.';
+  return simNick(fav)+' win '+n+' of every 100 games'+(by>=0.5?', usually by about '+(s.unit==='pts'?Math.round(by):by.toFixed(1))+' '+u:'')+'.';}
+// the big result card: fighters, projected score, one plain sentence, the lines, then the margin chart
+function simHero(s,r,title){const c=el('div',null,'card simhero');c.append(el('span',title,'simeyebrow'));c.append(arena(s.home,s.away,r.pH));
+  if(r.hs!=null){const sb=el('div',null,'simscore');const side=(n,v,win)=>{const d=el('div',null,'ss'+(win?' win':''));const cl=simColor(n);if(cl)d.style.setProperty('--tc',cl);d.append(el('small',simNick(n)),el('b',String(v)));return d;};
+    const hv=s.unit==='pts'?Math.round(r.hs):r.hs.toFixed(1),av=s.unit==='pts'?Math.round(r.as):r.as.toFixed(1);
+    sb.append(side(s.away,av,r.pH<0.5),el('span','projected','ssmid'),side(s.home,hv,r.pH>=0.5));c.append(sb);}
+  c.append(el('p',simVerdict(s,r),'simverdict'));
+  const chips=el('div',null,'simchips');const chip=(t,p)=>{const k=el('span',null,'simchip'+(p>=0.55?' yes':p<=0.45?' no':''));k.append(el('b',Math.round(p*100)+'%'),el('span',t));chips.append(k);};
+  if(r.spread!=null)chip(simNick(s.home)+' '+(r.spread>0?'+':'')+r.spread+' covers',r.cover);
+  if(r.line!=null)chip('Over '+r.line,r.over);
+  if(chips.childElementCount)c.append(chips);
+  if(r.ms){const h=el('div',null,'simhist');h.append(el('span','How the 10,000 games ended','simsub'),marginChart(r.ms,r.margin,r.sd,s.home,s.away));c.append(h);}
+  return c;}
+function simHow(lines){const d=el('details',null,'simhow');d.append(el('summary','How this works'));for(const t of lines)if(t)d.append(el('p',t,'hint small'));return d;}
+// ---- watch one game: one of the 10,000 results, played out with a scoreboard and play-by-play (for fun; the
+// scoring order and who scored are invented to fit that final score)
+function simPickFinal(s,r){const sp=SIM_SPORT[s.league]||{tot:s.total||40};const tot0=s.total!=null?s.total:(r.total||sp.tot);const tsd=s.total_sd||Math.max(1,tot0*0.12);
+  for(let k=0;k<50;k++){let m,t;if(r.margins&&r.totals){const i=Math.floor(Math.random()*r.margins.length);m=r.margins[i];t=r.totals[i];}
+    else{m=r.ms?r.ms[Math.floor(Math.random()*r.ms.length)]:r.margin+s.sd*gauss();t=tot0+tsd*gauss();}
+    let h=Math.round((t+m)/2),a=Math.round(t-((t+m)/2));if(h<0||a<0)continue;if(h===a){if(m>=0)h++;else a++;}
+    if(sp.kind==='gridiron'&&(h===1||a===1))continue;return {h,a};}
+  return {h:Math.max(1,Math.round(r.hs||1)),a:Math.max(0,Math.round(r.as||0))};}
+function simScorers(s,team,model){const out=[];if(model&&model.teams[team]){for(const p of model.teams[team])if(p.minutes>4)out.push({name:p.name,pos:p.role||'',w:p.minutes});}
+  else for(const p of ((s.players||{})[team]||[]))if(!p.out)out.push({name:p.name,pos:p.pos||'',w:Math.max(0.5,Math.abs(p.worth||1))});return out;}
+function simWeighted(list,f){const xs=list.filter(f||(()=>true));const L=xs.length?xs:list;if(!L.length)return null;const tot=L.reduce((a,b)=>a+b.w,0);let r=Math.random()*tot;for(const x of L){r-=x.w;if(r<=0)return x;}return L[L.length-1];}
+function simSplit(total,kind){const ev=[];let left=total;
+  if(kind==='hoops'){while(left>0){const r=Math.random();let v=r<0.1?1:r<0.37?3:2;if(v>left)v=left>=2?2:1;ev.push(v);left-=v;}}
+  else if(kind==='gridiron'){const ways=[7,3,7,6,3,8,2];while(left>0){const ok=ways.filter(v=>v<=left&&(left-v===0||left-v>=2));let v=ok.length?ok[Math.floor(Math.random()*ok.length)]:left;ev.push(v);left-=v;}}
+  else if(kind==='diamond'){while(left>0){const r=Math.random();let v=r<0.6?1:r<0.85?2:r<0.96?3:4;v=Math.min(v,left);ev.push(v);left-=v;}}
+  else for(let i=0;i<total;i++)ev.push(1);
+  return ev;}
+function simPlayText(kind,v,who,team){const n=who?who.name:simNick(team),pos=who?who.pos:'';
+  if(kind==='hoops')return v===3?n+[' drills a 3',' hits from deep',' splashes a 3',' corner 3'][Math.floor(Math.random()*4)]:v===1?n+' free throw':[n+' layup',n+' jumper',n+' dunk',n+' floater'][Math.floor(Math.random()*4)];
+  if(kind==='gridiron')return v===3?(pos==='K'?n:simNick(team))+' field goal':v===2?simNick(team)+' safety':n+' touchdown'+(v===8?' + 2-pt try':v===6?' (kick missed)':'');
+  if(kind==='puck')return 'GOAL: '+n;
+  if(kind==='diamond')return v===4?n+' grand slam':v>1?n+' '+v+'-run hit':n+' RBI';
+  return simNick(team)+' scores';}
+function simGamePlan(s,fin,model){const sp=SIM_SPORT[s.league]||{per:4,len:15,lab:'Q',kind:'other'};const plays=[];
+  for(const [team,side,pts] of [[s.home,'h',fin.h],[s.away,'a',fin.a]]){const who=simScorers(s,team,model);
+    for(const v of simSplit(pts,sp.kind)){let p=null;if(sp.kind==='gridiron')p=v===3?simWeighted(who,x=>x.pos==='K'):v===2?null:simWeighted(who,x=>/QB|RB|WR|TE/.test(x.pos));
+      else if(sp.kind==='hoops'&&v===3)p=simWeighted(who,x=>/G|F/.test(x.pos));else p=simWeighted(who);
+      plays.push({t:Math.random(),side,v,txt:simPlayText(sp.kind,v,p,team)});}}
+  if(sp.kind==='diamond'){for(const p of plays)p.t=(Math.floor(p.t*9)+(p.side==='a'?0.05:0.55)+Math.random()*0.4)/9;}
+  plays.sort((a,b)=>a.t-b.t);return {sp,plays};}
+function simWatch(s,r,model){const fin=simPickFinal(s,r),plan=simGamePlan(s,fin,model),sp=plan.sp;award('sim_watch');
+  openSheet(()=>{const w=el('div',null,'simwatch');w.append(el('span','ONE OF THE 10,000 GAMES','simeyebrow'),el('h2',simNick(s.away)+' @ '+simNick(s.home)));
+    const board=el('div',null,'wboard');const team=(n)=>{const d=el('div',null,'wteam');const cl=simColor(n);if(cl)d.style.setProperty('--tc',cl);const b=teamBadge(n);b.classList.add('wbadge');d.append(b,el('span',simNick(n)),el('b','0','wpts'));return d;};
+    const A=team(s.away),H=team(s.home);const clock=el('div',null,'wclock');const per=el('b','',''),tm=el('span','','');clock.append(per,tm);board.append(A,clock,H);w.append(board);
+    const P=sp.per;const grid=el('div',null,'wgrid');grid.style.setProperty('--n',String(P+1));const hd=[el('span','')];for(let i=1;i<=P;i++)hd.push(el('span',sp.lab?sp.lab+i:String(i)));hd.push(el('b','T'));
+    const rowA=[el('span',simNick(s.away))],rowH=[el('span',simNick(s.home))];const cellA=[],cellH=[];for(let i=0;i<P;i++){const x=el('span','–'),y=el('span','–');cellA.push(x);cellH.push(y);rowA.push(x);rowH.push(y);}
+    const tA=el('b','0'),tH=el('b','0');rowA.push(tA);rowH.push(tH);grid.append(...hd,...rowA,...rowH);grid.style.gridTemplateColumns='minmax(44px,auto) repeat('+P+',1fr) auto';w.append(grid);
+    const feed=el('div',null,'wfeed');w.append(feed);
+    const ctl=el('div',null,'wctl');const fast=el('button','⏩ Faster','btn ghost small');fast.type='button';const skip=el('button','⏭ Skip to final','btn ghost small');skip.type='button';ctl.append(fast,skip);w.append(ctl);
+    const end=el('div',null,'wend');end.hidden=true;w.append(end);
+    let i=0,h=0,a=0,ph=new Array(P).fill(0),pa=new Array(P).fill(0),speed=calm()?50:1,done=false,timer=0;const DUR=sp.kind==='hoops'?30000:20000;
+    const setClock=t=>{if(t>=1){per.textContent='FINAL';tm.textContent='';return;}const k=Math.min(P-1,Math.floor(t*P));per.textContent=sp.kind==='diamond'?(t*9%1<0.5?'Top ':'Bot ')+(k+1):(sp.lab==='Q'?'Q'+(k+1):sp.lab==='H'?(k===0?'1st half':'2nd half'):'P'+(k+1));
+      if(sp.len){const rem=(1-(t*P-k))*sp.len;const mm=Math.floor(rem),ss=Math.floor((rem-mm)*60);tm.textContent=mm+':'+String(ss).padStart(2,'0');}else tm.textContent='';};
+    const clockAt=t=>{const k=Math.min(P-1,Math.floor(t*P));if(sp.kind==='diamond')return (t*9%1<0.5?'Top ':'Bot ')+(k+1);const pl=sp.lab==='H'?(k===0?'1H':'2H'):(sp.lab+(k+1));
+      if(!sp.len)return pl;const rem=(1-(t*P-k))*sp.len;const mm=Math.floor(rem),ss=Math.floor((rem-mm)*60);return pl+' '+mm+':'+String(ss).padStart(2,'0');};
+    const draw=()=>{A.querySelector('.wpts').textContent=a;H.querySelector('.wpts').textContent=h;tA.textContent=a;tH.textContent=h;
+      for(let k=0;k<P;k++){cellA[k].textContent=pa[k]||(k<curP?'0':'–');cellH[k].textContent=ph[k]||(k<curP?'0':'–');}A.classList.toggle('lead',a>h);H.classList.toggle('lead',h>a);};
+    let curP=0,t0=performance.now(),tv=0;
+    const finish=()=>{done=true;clearInterval(timer);while(i<plan.plays.length)apply(plan.plays[i++],true);curP=P;setClock(1);draw();
+      const win=h>a?s.home:s.away;end.hidden=false;end.replaceChildren(el('b','Final: '+simNick(win)+' win '+Math.max(h,a)+'–'+Math.min(h,a)),
+        el('p','In all 10,000 simulated games, '+simNick(r.pH>=0.5?s.home:s.away)+' won '+pct(Math.max(r.pH,1-r.pH))+'. This was one of them; the order of the plays and who scored are made up to fit its final score.','hint small'));
+      const again=el('button','🎲 Watch another','btn');again.type='button';again.onclick=()=>simWatch(s,r,model);end.append(again);ctl.hidden=true;};
+    const apply=(p,quiet)=>{const k=Math.min(P-1,Math.floor(p.t*P));if(p.side==='h'){h+=p.v;ph[k]+=p.v;}else{a+=p.v;pa[k]+=p.v;}
+      if(!quiet){const row=el('div',null,'wplay '+(p.side==='h'?'home':'away'));const cl=simColor(p.side==='h'?s.home:s.away);if(cl)row.style.setProperty('--tc',cl);
+        row.append(el('span',clockAt(p.t),'wt'),el('span',p.txt,'wx'),el('b','+'+p.v,'wv'),el('span',simNick(s.away)+' '+a+' – '+h+' '+simNick(s.home),'ws'));
+        feed.prepend(row);while(feed.childElementCount>7)feed.lastChild.remove();}};
+    const tick=()=>{if(done)return;const now=performance.now();tv+=(now-t0)*speed/DUR;t0=now;if(tv>=1){finish();return;}curP=Math.min(P,Math.floor(tv*P));setClock(tv);
+      while(i<plan.plays.length&&plan.plays[i].t<=tv)apply(plan.plays[i++],false);draw();};
+    fast.onclick=()=>{speed=speed>=4?1:speed*2;fast.textContent=speed>=4?'▶ Normal speed':'⏩ Faster';};skip.onclick=finish;
+    setClock(0);draw();timer=setInterval(()=>{if(!w.isConnected){clearInterval(timer);return;}tick();},120);if(calm())setTimeout(finish,50);
+    return w;},'Sim game');}
+// ---- projected box score (NBA): tonight's simulated minutes x each player's season per-minute stats (ratings.json),
+// points scaled so each team adds up to its projected score
+function simStatLine(name){const L=rt&&rt.leagues&&rt.leagues.NBA;const ps=L&&L.roster&&L.roster.players;if(!ps)return null;const p=ps.find(x=>x.name===name);if(!p||!p.stats)return null;
+  const g=k=>{const m=String(p.stats).match(new RegExp('([\\d.]+) '+k));return m?parseFloat(m[1]):0;};return {pts:g('pts'),reb:g('reb'),ast:g('ast')};}
+function simBoxScore(s,model,sits,result){const ctr=NbaSim.project(model,sits);if(!ctr||!rt)return null;const c=el('div',null,'card simbox');
+  c.append(el('h4','📋 Projected box score'),el('p','Tonight’s simulated minutes × each player’s season averages, scaled to the projected score.','hint small'));
+  let any=false;
+  for(const [team,mins,proj] of [[s.away,ctr.away_minutes,result.away],[s.home,ctr.home_minutes,result.home]]){const ps=model.teams[team]||[];const rows=[];
+    for(const p of ps){const m=mins[p.id]||0;if(m<1)continue;const st=simStatLine(p.name);const usual=Math.max(1,p.minutes);
+      rows.push({name:p.name,pos:p.role,m,est:!st,pts:st?st.pts/usual*m:null,reb:st?st.reb/usual*m:null,ast:st?st.ast/usual*m:null});}
+    const known=rows.filter(x=>x.pts!=null);if(!known.length)continue;any=true;
+    const kp=known.reduce((a,x)=>a+x.pts,0),km=known.reduce((a,x)=>a+x.m,0);const rate=km?kp/km:0.45;for(const x of rows)if(x.pts==null)x.pts=rate*x.m*0.8;
+    const sum=rows.reduce((a,x)=>a+x.pts,0);const k=sum>0?Math.max(0.75,Math.min(1.3,proj/sum)):1;for(const x of rows)x.pts*=k;
+    rows.sort((x,y)=>y.m-x.m);const t=el('div',null,'btab');const cl=simColor(team);if(cl)t.style.setProperty('--tc',cl);
+    t.append(el('div',simNick(team)+' · '+Math.round(proj),'bteam'));const hd=el('div',null,'brow bh');hd.append(el('span','Player'),el('span','MIN'),el('span','PTS'),el('span','REB'),el('span','AST'));t.append(hd);
+    const top=Math.max(...rows.map(x=>x.pts));
+    rows.forEach((x,i)=>{const r=el('div',null,'brow'+(i>=5?' bench':'')+(x.pts===top?' star':''));r.append(el('span',x.name+(x.est?' *':''),'bn'),el('span',String(Math.round(x.m))),el('b',String(Math.round(x.pts))),el('span',x.reb==null?'–':String(Math.round(x.reb))),el('span',x.ast==null?'–':String(Math.round(x.ast))));t.append(r);});
+    c.append(t);}
+  if(any)c.append(el('p','* no season stats yet: points estimated from his team’s scoring rate.','hint small'));return any?c:null;}
+// ---- lineup editor: each team its own tab, starters and bench as tappable chips (tap = plays / sits / back to the
+// injury report; ⇄ = trade him to the other team)
+function simLineup(s,teams,mk,note){const c=el('div',null,'card simlu');c.append(el('h4','🧢 Who plays?'),el('p',note,'hint small'));
+  const tabs=el('div',null,'lutabs');const body=el('div');const st=simState[simId]||{};let cur=st.luTeam&&teams.includes(st.luTeam)?st.luTeam:teams[0];
+  const draw=()=>{tabs.replaceChildren();for(const t of teams){const b=el('button',null,'lutab'+(t===cur?' on':''));b.type='button';const cl=simColor(t);if(cl)b.style.setProperty('--tc',cl);
+      const ch=mk(t).filter(x=>x.changed).length;b.append(el('span',simNick(t)+(t===s.home&&!s.neutral?' (home)':'')),ch?el('i',String(ch),'luct'):'');b.onclick=()=>{cur=t;st.luTeam=t;draw();};tabs.append(b);}
+    body.replaceChildren();const ps=mk(cur);const on=ps.filter(x=>x.state!=='sits'),off=ps.filter(x=>x.state==='sits');
+    const grp=(label,list)=>{if(!list.length)return;body.append(el('div',label,'lugrp'));const g=el('div',null,'luchips');for(const x of list)g.append(chip(x));body.append(g);};
+    grp(on.length>5?'Starters':'Playing',on.slice(0,5));grp('Bench',on.slice(5));grp('Sitting',off);};
+  const chip=x=>{const b=el('div',null,'luchip '+x.state+(x.changed?' changed':'')+(x.moved?' moved':''));const main=el('button',null,'lumain');main.type='button';
+    main.append(el('b',x.name),el('small',x.sub));main.setAttribute('aria-label',x.name+': '+x.label+'. Tap to change');main.onclick=x.onTap;b.append(main);
+    const dot=el('span',x.label,'lustate');b.append(dot);
+    if(x.onTrade){const tr=el('button',x.moved?'↩':'⇄','lutr');tr.type='button';tr.title=x.moved?'Undo trade':'Trade him to the other team';tr.disabled=!!x.tradeOff;tr.onclick=x.onTrade;b.append(tr);}
+    return b;};
+  draw();c.append(tabs,body);return c;}
 function drawNbaSim(g,box,rerun){
   const s=g.sim;let model=s.nba_model;
   const st=simState[simId]||(simState[simId]={sits:{},spread:s.market_spread!=null?String(s.market_spread):'',total:s.market_total!=null?String(s.market_total):'',seed:20261030});
@@ -933,44 +1100,35 @@ function drawNbaSim(g,box,rerun){
   for(const k of Object.keys(st.sits))if(!keys.has(k))delete st.sits[k];
   st.trades=st.trades||{};const base=model;model=tradedModel(base,st.trades);
   const result=NbaSim.simulate(model,st.sits,{seed:st.seed||20261030,spread:parseFloat(st.spread),total:parseFloat(st.total)});
-  const card=el('div',null,'card');card.append(el('h4','10,000 simulated NBA final scores'));if(!result.error)card.append(arena(s.home,s.away,result.p_home));
-  if(result.error)card.append(el('p',result.error,'hint'));
-  else{
-    const tiles=el('div',null,'tiles');const tile=(label,value)=>{const t=el('div',null,'tile');t.append(label,el('b',value));tiles.append(t);};
-    tile(s.home+' win',pct(result.p_home));tile(s.away+' win',pct(1-result.p_home));
-    tile('Projected score',s.home+' '+result.home.toFixed(1)+' – '+result.away.toFixed(1)+' '+s.away);
-    tile('Expected total',result.total.toFixed(1));
-    tile('Average margin',(result.margin>=0?s.home:s.away)+' by '+Math.abs(result.margin).toFixed(1));
-    if(Number.isFinite(parseFloat(st.spread)))tile(s.home+' '+st.spread+' covers',pct(result.cover)+' · push '+pct(result.push));
-    if(Number.isFinite(parseFloat(st.total)))tile('Over '+st.total,pct(result.over)+' · push '+pct(result.total_push));
-    card.append(tiles,marginChart(result.margins,result.margin,model.sd,s.home,s.away),el('p','Middle 80% of outcomes: home margin '+result.margin80.join(' to ')+'; total '+result.total80.join(' to ')+'. These ranges are provisional until validated.','hint small'));
-  }
-  card.append(el('p','Lineup inputs updated '+new Date(model.built_at*1000).toLocaleString()+'. Questionable and doubtful players are sampled as plays/sits using estimated availability. Choose Plays or Sits to test a specific lineup.','hint small'));
-  if(Date.now()/1000-model.built_at>3600)card.append(el('p','These lineup inputs are over an hour old. Check the latest injury report before interpreting this projection.','hint'));
-  const again=el('button','Run again','btn');again.type='button';rollButton(again,()=>drawSim('resample'));
-  const reset=el('button','Reset to injury report','btn');reset.type='button';reset.onclick=()=>{st.sits={};st.trades={};st.seed=20261030;drawSim();};card.append(again,reset);
-  if(!result.error)card.append(shareBtn(()=>simShareLines(s,result.p_home,result.margin,result.home,result.away,Object.keys(st.trades).length)));box.append(card);award('sim');
-  const inputs=el('div',null,'simin');for(const [label,key,placeholder] of [[s.home+' spread','spread','e.g. -3.5'],['Total (over/under)','total','Enter a total']]){
-    const l=el('label',label),i=el('input');i.type='number';i.step='0.5';i.inputMode='decimal';i.value=st[key];i.placeholder=placeholder;i.onchange=()=>{st[key]=i.value;drawSim();};l.append(i);inputs.append(l);
-  }box.append(inputs);
-  const lineup=el('div',null,'card');lineup.append(el('h4','Who plays?'),el('p','Changes recalculate replacement minutes and both teams’ offense and defense. Each team shares 240 minutes; no player receives more than 48. Players with no recent model data cannot be added here.','hint small'));
-  for(const [team,players] of Object.entries(model.teams)){
-    lineup.append(el('b',team+(team===s.home&&!s.neutral?' (home)':'')));
-    for(const p of players){const key=team+'|'+p.name,manual=key in st.sits;
-      const row=el('div',null,'simrow'),nm=el('div',null,'nm');nm.append(el('span',p.name+(p.role?' · '+p.role:'')),el('small',p.minutes.toFixed(1)+' usual minutes'+(p.status?' · '+p.status:'')+(!manual&&p.sit>0&&p.sit<1?' · estimated '+pct(1-p.sit)+' chance to play':'')));
-      const label=manual?(st.sits[key]?'Sits':'Plays'):'Report: '+(p.sit===1?'out':p.sit===0?'plays':'uncertain');
-      const b=el('button',label,'tog'+(manual&&st.sits[key]?' sits':''));b.type='button';b.setAttribute('aria-label',p.name+': '+label+'. Change availability');
-      b.onclick=()=>{if(!manual)st.sits[key]=false;else if(!st.sits[key])st.sits[key]=true;else delete st.sits[key];drawSim();};
-      const orig=Object.keys(base.teams).find(t=>base.teams[t].some(q=>q.name===p.name));const moved=orig!==team;
-      const tr=el('button',moved?'↩ Undo trade':'⇄ Trade','tog trade'+(moved?' sits':''));tr.type='button';tr.title=moved?'Send him back':'Move him to the other team';
-      tr.onclick=()=>{if(moved)delete st.trades[orig+'|'+p.name];else st.trades[orig+'|'+p.name]=true;delete st.sits[key];award('trade');drawSim();};
-      if(moved)nm.querySelector('small').textContent='⇄ traded from '+orig+' · '+nm.querySelector('small').textContent;
-      row.append(nm,tr,b);lineup.append(row);
-    }
-  }box.append(lineup);
-  box.append(el('p','This is a model of final scores, not a possession-by-possession game. Score variability and injury probabilities remain estimates. Lineup effects do not include every matchup or coaching interaction. Entertainment only.','hint small'));
-  countUp(box);
-  simulationScorecard(box);
+  if(result.error){const c=el('div',null,'card');c.append(el('h4','10,000 simulated games'),el('p',result.error,'hint'));box.append(c);}
+  else{const sp=parseFloat(st.spread),tl=parseFloat(st.total);
+    const r={pH:result.p_home,hs:result.home,as:result.away,margin:result.margin,total:result.total,ms:result.margins,margins:result.margins,totals:result.totals,sd:model.sd,
+      spread:Number.isFinite(sp)?sp:null,cover:result.cover,line:Number.isFinite(tl)?tl:null,over:result.over};
+    const hero=simHero(s,r,'10,000 SIMULATED GAMES');
+    const acts=el('div',null,'simacts');const watch=el('button','▶ Watch a game','btn simwatchbtn');watch.type='button';watch.onclick=()=>simWatch(s,r,model);
+    const again=el('button','Run again','btn ghost');again.type='button';rollButton(again,()=>drawSim('resample'));
+    acts.append(watch,again,shareBtn(()=>simShareLines(s,result.p_home,result.margin,result.home,result.away,Object.keys(st.trades).length)));
+    if(Object.keys(st.sits).length||Object.keys(st.trades).length){const reset=el('button','↺ Reset lineups','btn ghost');reset.type='button';reset.onclick=()=>{st.sits={};st.trades={};st.seed=20261030;drawSim();};acts.append(reset);}
+    hero.append(acts);box.append(hero);award('sim');
+    const bx=simBoxScore(s,model,st.sits,result);if(bx)box.append(bx);}
+  const mk=team=>(model.teams[team]||[]).slice().sort((a,b)=>b.minutes-a.minutes).map(p=>{const key=team+'|'+p.name,manual=key in st.sits;
+    const sits=manual?st.sits[key]:p.sit===1;const unsure=!manual&&p.sit>0&&p.sit<1;
+    const orig=Object.keys(base.teams).find(t=>base.teams[t].some(q=>q.name===p.name));const moved=orig!==team;
+    return {name:p.name,state:unsure?'unsure':sits?'sits':'plays',changed:manual||moved,moved,
+      label:manual?(sits?'Sits':'Plays'):unsure?Math.round((1-p.sit)*100)+'% to play':sits?'Out':'Plays',
+      sub:(p.role?p.role+' · ':'')+Math.round(p.minutes)+' min'+(moved?' · ⇄ from '+simNick(orig):p.status?' · '+p.status:''),
+      onTap:()=>{const u0=p.sit>0&&p.sit<1;if(!manual)st.sits[key]=p.sit!==1;else if(u0&&st.sits[key]===true)st.sits[key]=false;else delete st.sits[key];drawSim();},
+      onTrade:()=>{if(moved)delete st.trades[orig+'|'+p.name];else st.trades[orig+'|'+p.name]=true;delete st.sits[key];award('trade');drawSim();}};});
+  box.append(simLineup(s,[s.away,s.home],mk,'Tap a player to sit him or bring him back; his minutes go to his teammates. ⇄ sends him to the other team.'));
+  const ins=el('div',null,'simin simlines');for(const [label,key,placeholder] of [[simNick(s.home)+' spread','spread','e.g. -3.5'],['Total (over/under)','total','Enter a total']]){
+    const l=el('label',label),i=el('input');i.type='number';i.step='0.5';i.inputMode='decimal';i.value=st[key];i.placeholder=placeholder;i.onchange=()=>{st[key]=i.value;drawSim();};l.append(i);ins.append(l);
+  }const lc=el('div',null,'card');lc.append(el('h4','🎯 Test a line'),el('p','Type a spread or total to see how often it hits.','hint small'),ins);box.append(lc);
+  const how=simHow(['Each run draws a final score from the player ratings behind her picks: who plays, their minutes (each team shares 240; nobody gets more than 48), and both teams’ offense and defense.',
+    !result.error?'Middle 80% of outcomes: home margin '+result.margin80.join(' to ')+', total '+result.total80.join(' to ')+'. These ranges are provisional until validated.':'',
+    'Questionable and doubtful players are randomly in or out each run using their estimated chance to play. Lineup inputs updated '+new Date(model.built_at*1000).toLocaleString()+'.',
+    Date.now()/1000-model.built_at>3600?'⚠️ These lineup inputs are over an hour old. Check the latest injury report.':'',
+    '“Watch a game” plays out one of the 10,000 results; the play order and who scored are invented to fit its score. The box score uses season averages. This is a model of final scores, not every matchup or coaching choice. Entertainment only.']);
+  box.append(how);simulationScorecard(box);
 }
 
 // END EMBEDDED NBA SIMULATOR
@@ -1538,45 +1696,38 @@ function renderSim(){if(simLocked()){drawSimLock();return;}drawModeChips();if(si
   if(!gs.some(g=>(g.id||g.name)===simId))simId=gs[0].id||gs[0].name;sel.value=simId;sel.onchange=()=>{simId=sel.value;drawSim();};drawSim();}
 function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
 function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId)||(customG&&customG.id===simId?customG:null);const box=$('simBox');box.replaceChildren();if(!g)return;if(!g.sim){box.append(el('p','Loading the simulation…','hint'));needDet();return;}const s=g.sim;if(s.nba_model){drawNbaSim(g,box,run);return;}
-  const st=simState[simId]||(simState[simId]={sits:{},spread:'',total:s.total!=null?String(s.total):''});
-  // players
-  let shift=0;const teamsCard=el('div',null,'card');teamsCard.append(el('h4','Who plays?'));
-  teamsCard.append(el('p','Every simulated game already uses each team’s full lineup: every player expected to play, with his minutes. This list is the whole team, so you can change any of them. Tap to sit a player or bring one back. Worth = how many '+s.unit+' his team’s margin moves with him, from the player rating. “About even” means the rating sees his backup as just as good, so sitting him barely changes the game.','hint small'));
-  for(const [team,sign] of [[s.home,1],[s.away,-1]]){const rows=(s.players||{})[team]||[];teamsCard.append(el('b',team+(team===s.home&&!s.neutral?' (home)':'')));
-    if(!rows.length)teamsCard.append(el('p',s.custom?'Starter: '+((s.starters||{})[team===s.home?'home':'away']||'usual')+'. Sit-or-play choices for each player are on tonight\u2019s games.':'No player numbers for this team yet.','hint small'));
-    for(const r of rows){const key=team+'|'+r.name;const sits=key in st.sits?st.sits[key]:r.out;st.trades=st.trades||{};const traded=!!st.trades[key]&&!sits;
-      if(sits!==r.out)shift+=sign*(sits?-r.worth:r.worth);
-      if(traded)shift-=2*sign*r.worth;   // his team loses him and the other team gains him
-      const row=el('div',null,'simrow');const nm=el('div',null,'nm');nm.append(el('span',r.name+(r.pos?' · '+r.pos:'')),el('small',[r.role,r.status?('injury report: '+r.status):'',r.even?'about even with his backup':(r.out?'adds ':'worth ')+(r.worth>=0?'+':'')+r.worth.toFixed(1)+' '+s.unit].filter(Boolean).join(' · ')));
-      const b=el('button',sits?'Sits':'Plays','tog'+(sits?' sits':''));b.type='button';b.setAttribute('aria-pressed',String(!sits));b.onclick=()=>{st.sits[key]=!sits;drawSim(true);};
-      const tr=el('button',traded?'↩ Undo':'⇄ Trade','tog trade'+(traded?' sits':''));tr.type='button';tr.title='Move him to the other team';tr.disabled=sits||r.even;
-      tr.onclick=()=>{if(traded)delete st.trades[key];else st.trades[key]=true;award('trade');drawSim(true);};
-      if(traded)nm.querySelector('small').textContent='⇄ now playing for '+(team===s.home?s.away:s.home);
-      row.append(nm,tr,b);teamsCard.append(row);}}
-  // lines
-  const ins=el('div',null,'simin');const mk=(lab,val,ph,set)=>{const l=el('label',lab);const i=el('input');i.type='number';i.step='0.5';i.inputMode='decimal';i.value=val;i.placeholder=ph;i.onchange=()=>{set(i.value);drawSim(true);};l.append(i);ins.append(l);};
-  mk(s.home+' spread','' + st.spread,'e.g. -3.5',v=>st.spread=v);if(s.total!=null)mk('Total (over/under)',st.total,String(s.total),v=>st.total=v);
+  const st=simState[simId]||(simState[simId]={sits:{},spread:'',total:s.total!=null?String(s.total):''});st.trades=st.trades||{};
+  // lineup changes move the margin by each player's worth (same as before)
+  let shift=0;for(const [team,sign] of [[s.home,1],[s.away,-1]])for(const r of ((s.players||{})[team]||[])){const key=team+'|'+r.name;const sits=key in st.sits?st.sits[key]:r.out;const traded=!!st.trades[key]&&!sits;
+    if(sits!==r.out)shift+=sign*(sits?-r.worth:r.worth);if(traded)shift-=2*sign*r.worth;}
   // run
   const N=10000,m0=s.margin+shift,sd=s.sd,T0=s.total;
   let hw=0,cover=0,over=0,push=0;const ms=new Float64Array(N);const sp=parseFloat(st.spread);const tl=s.total!=null?parseFloat(st.total):NaN;const discrete=s.unit!=='pts';
   for(let i=0;i<N;i++){let m=m0+sd*gauss();if(discrete){m=Math.round(m);if(m===0)m=Math.random()<0.5?1:-1;}ms[i]=m;if(m>0)hw++;
     if(!isNaN(sp)){const x=m+sp;if(x>0)cover++;else if(x===0)push++;}
     if(T0!=null&&!isNaN(tl)){let t=T0+s.total_sd*gauss();if(discrete)t=Math.max(0,Math.round(t));if(t>tl)over++;}}
-  const pH=hw/N;const res=el('div',null,'card');res.append(el('h4','10,000 games played'),arena(s.home,s.away,pH));
-  const tiles=el('div',null,'tiles');const tile=(l,v)=>{const t=el('div',null,'tile');t.append(l,el('b',v));tiles.append(t);};
-  tile(s.home+' win',pct(pH));tile(s.away+' win',pct(1-pH));
-  tile('Average margin',(m0>=0?s.home+' by ':s.away+' by ')+Math.abs(m0).toFixed(1));
-  if(T0!=null){const h=(T0+m0)/2,a=(T0-m0)/2;tile('Projected score',s.home.split(' ').pop()+' '+h.toFixed(s.unit==='pts'?0:1)+' – '+a.toFixed(s.unit==='pts'?0:1)+' '+s.away.split(' ').pop());}
-  if(!isNaN(sp))tile(s.home+' '+(sp>0?'+':'')+sp+' covers',pct(cover/N)+(push?' (push '+pct(push/N)+')':''));
-  if(T0!=null&&!isNaN(tl))tile('Over '+tl,pct(over/N));res.append(tiles);
-  if(shift)res.append(el('p','Your lineup changes moved the margin '+Math.abs(shift).toFixed(1)+' '+s.unit+' toward '+(shift>0?s.home:s.away)+'.','small'));
-  // histogram of margins (animated)
-  res.append(marginChart(ms,m0,sd,s.home,s.away));
-  const again=el('button','Run again','btn');again.type='button';rollButton(again,()=>drawSim(true));res.append(again,shareBtn(()=>simShareLines(s,pH,m0,null,null,Object.keys(st.trades||{}).length)));award('sim');
-  const pk=g.pick?el('p','Her pick tonight: '+g.pick.team+' '+pct(g.pick.chance)+(g.kalshi!=null?' · Kalshi '+Math.round(g.kalshi*100)+'¢':'')+'. Her pick also weighs the markets, Elo and more, so it can differ from this player-only simulation.','hint small'):null;
-  box.append(res);box.append(ins);box.append(teamsCard);if(pk)box.append(pk);
-  countUp(box);
-  box.append(el('p','A what-if tool, not a promise. Spread: '+sd+' '+s.unit+' (how much games like this usually vary).'+(s.total_from==='sportsbook'?' Total starts from the sportsbook over/under.':'')+' Player worth comes from the player rating and can be wrong. Entertainment only.','hint small'));}
+  const pH=hw/N;const r={pH,margin:m0,total:T0,sd,ms,hs:T0!=null?(T0+m0)/2:null,as:T0!=null?(T0-m0)/2:null,spread:!isNaN(sp)?sp:null,cover:cover/N,line:T0!=null&&!isNaN(tl)?tl:null,over:over/N};
+  const hero=simHero(s,r,'10,000 SIMULATED GAMES');
+  if(shift)hero.append(el('p','Your lineup changes moved it '+Math.abs(shift).toFixed(1)+' '+s.unit+' toward '+simNick(shift>0?s.home:s.away)+'.','small simshift'));
+  const acts=el('div',null,'simacts');const watch=el('button','▶ Watch a game','btn simwatchbtn');watch.type='button';watch.onclick=()=>simWatch(s,r,null);
+  const again=el('button','Run again','btn ghost');again.type='button';rollButton(again,()=>drawSim(true));acts.append(watch,again,shareBtn(()=>simShareLines(s,pH,m0,null,null,Object.keys(st.trades).length)));
+  if(Object.keys(st.sits).length||Object.keys(st.trades).length){const reset=el('button','↺ Reset lineups','btn ghost');reset.type='button';reset.onclick=()=>{st.sits={};st.trades={};drawSim(true);};acts.append(reset);}
+  hero.append(acts);box.append(hero);award('sim');
+  if(g.pick)box.append(el('p','Her pick tonight: '+g.pick.team+' '+pct(g.pick.chance)+(g.kalshi!=null?' · Kalshi '+Math.round(g.kalshi*100)+'¢':'')+'. Her pick also weighs the markets, Elo and more, so it can differ from this player-only simulation.','hint small simherpick'));
+  const anyPlayers=[s.home,s.away].some(t=>((s.players||{})[t]||[]).length);
+  if(anyPlayers){const mk=team=>((s.players||{})[team]||[]).map(r0=>{const key=team+'|'+r0.name;const sits=key in st.sits?st.sits[key]:r0.out;const traded=!!st.trades[key]&&!sits;
+      return {name:r0.name,state:sits?'sits':'plays',changed:(key in st.sits&&st.sits[key]!==r0.out)||traded,moved:traded,label:sits?'Sits':traded?'Traded':'Plays',
+        sub:[r0.pos,r0.status?'injury: '+r0.status:'',r0.even?'≈ his backup':(r0.worth>=0?'+':'')+r0.worth.toFixed(1)+' '+s.unit,traded?'⇄ to '+simNick(team===s.home?s.away:s.home):''].filter(Boolean).join(' · '),
+        onTap:()=>{st.sits[key]=!sits;drawSim(true);},tradeOff:sits||r0.even,onTrade:()=>{if(traded)delete st.trades[key];else st.trades[key]=true;award('trade');drawSim(true);}};});
+    box.append(simLineup(s,[s.away,s.home],mk,'Tap a player to sit him or bring him back. The number is how much his team’s margin moves with him. ⇄ sends him to the other team.'));}
+  else if(s.custom)box.append(el('p','Starters: '+((s.starters||{}).away||'usual')+' vs '+((s.starters||{}).home||'usual')+'. Sit-or-play choices for each player are on tonight’s games.','hint small'));
+  const ins=el('div',null,'simin simlines');const mkI=(lab,val,ph,set)=>{const l=el('label',lab);const i=el('input');i.type='number';i.step='0.5';i.inputMode='decimal';i.value=val;i.placeholder=ph;i.onchange=()=>{set(i.value);drawSim(true);};l.append(i);ins.append(l);};
+  mkI(simNick(s.home)+' spread',''+st.spread,'e.g. -3.5',v=>st.spread=v);if(s.total!=null)mkI('Total (over/under)',st.total,String(s.total),v=>st.total=v);
+  const lc=el('div',null,'card');lc.append(el('h4','🎯 Test a line'),el('p','Type a spread or total to see how often it hits.','hint small'),ins);box.append(lc);
+  box.append(simHow(['Every run uses each team’s full expected lineup and the player rating. Games like this usually vary by about '+sd+' '+s.unit+'.',
+    s.total_from==='sportsbook'?'The total starts from the sportsbook over/under.':'',
+    '“About even” means the rating sees his backup as just as good, so sitting him barely changes the game. Player worth comes from the player rating and can be wrong.',
+    '“Watch a game” plays out one of the 10,000 results; the play order and who scored are invented to fit its score. A what-if tool, not a promise. Entertainment only.']));}
 function amer(p){if(!(p>0&&p<1))return null;const v=p>=0.5?-100*p/(1-p):100*(1-p)/p;const r=Math.round(v);return (r>0?'+':'')+r;}
 // the price where a pick has value: her chance minus a 3-point cushion for fees and her own errors
 function valueAt(p){const q=p-0.03;return q>0.02&&q<0.98?{odds:amer(q),cents:Math.floor(q*100)}:null;}
@@ -2128,7 +2279,7 @@ function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').va
   if(cats.length&&rtView==='leaders'){const g=el('div',null,'cats');g.append(...cats);parts.push(el('h3','Player leaders'+(L.players.season?' · '+L.players.season:'')),g);}
   box.replaceChildren(...parts);}
 $('rtFind').oninput=drawRatings;$('rtPick').onchange=drawRatings;
-async function loadRatings(){try{const r=await fetchPublicSnapshot('ratings.json');if(!r.ok)throw Error();rt=await r.json();drawRatings();}
+async function loadRatings(){try{const r=await fetchPublicSnapshot('ratings.json');if(!r.ok)throw Error();rt=await r.json();drawRatings();try{if(document.querySelector('#sim.panel.on')&&!document.querySelector('.simbox')&&simMode!=='any'&&simMode!=='fantasy')drawSim();}catch(e){}}
   catch(e){$('rtBox').replaceChildren(el('p','Ratings will appear after her next update.','hint'));}}
 load();setInterval(()=>{if(!document.hidden)load();},20000);initLive();loadRatings();let rtAt=Date.now();setInterval(()=>{if(!document.hidden){rtAt=Date.now();loadRatings();}},600000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){load();if(Date.now()-rtAt>600000){rtAt=Date.now();loadRatings();}}});
