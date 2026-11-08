@@ -452,6 +452,17 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .ppbtns{display:flex;gap:6px}.ppbtns .pk{min-width:58px}.pphint{width:100%;color:var(--muted)}
 .ppres{display:flex;flex-direction:column;align-items:flex-end;gap:1px;text-align:right}.pppast summary{cursor:pointer;padding:8px 0;color:var(--muted);font-weight:700}
 .ppboard{margin-top:6px}
+.cmb{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;border-color:#6b3fa0;background:linear-gradient(160deg,#2a1240cc,var(--card) 55%)}
+.cmbtop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.cmbtop>div{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;text-align:left}.cmbcmp .simeyebrow{align-self:flex-start}.cmbtop b{font-size:22px;color:var(--green)}
+.cmbrisk{font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;white-space:nowrap;letter-spacing:.03em}.cr-lo{background:#14532d;color:#86efac}.cr-mid{background:#4a3a10;color:#fcd34d}.cr-hi{background:#4c1530;color:#f9a8d4}
+.cmblegs{display:flex;flex-direction:column;border:1px dashed #ffffff26;border-radius:12px;overflow:hidden}
+.cmbleg{display:flex;align-items:center;gap:9px;padding:9px 10px;border-top:1px dashed #ffffff1f}.cmbleg:first-child{border-top:0}.cmbleg.tap{cursor:pointer}.cmbleg.tap:active{background:#ffffff0d}
+.cmbleg .badge{width:40px;height:40px;flex:none}.cmbn{width:18px;height:18px;border-radius:50%;background:#ffffff1a;font-size:11px;font-weight:800;display:grid;place-items:center;flex:none}
+.cmbtx{flex:1;min-width:0;display:flex;flex-direction:column}.cmbtx b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cmbtx small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmbnum{display:flex;flex-direction:column;align-items:flex-end}.cmbher{color:var(--green);font-size:16px}
+.cmbcmp{display:flex;flex-direction:column;gap:6px}.cmbbar span{display:flex;justify-content:space-between;font-size:12px}.cmbtrack{height:8px;border-radius:6px;background:#ffffff14;overflow:hidden;margin-top:2px}
+.cmbtrack i{display:block;height:100%;border-radius:6px}.cmbtrack .fher{background:linear-gradient(90deg,#22c55e,#86efac)}.cmbtrack .fkal{background:#8b8fa8}
+.cmb>.btn{align-self:flex-start}.cmbempty{display:flex;flex-direction:column;gap:4px}
 .board .brow{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.board .bk{width:26px;text-align:center}
 .rest{margin:8px 0}.rest .anyn{display:flex;gap:6px;align-items:center;margin:4px 0}.rest summary{cursor:pointer;font-weight:600}.rest b{display:block;margin-top:6px}
 .cmp{width:min(520px,calc(100vw - 32px));box-sizing:border-box;max-height:88vh;overflow:auto}.cmp select{min-width:0;width:100%}.cmprow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:10px}.cmpcol{display:flex;flex-direction:column;gap:6px}
@@ -732,7 +743,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     </div>
     <div class="notice">Entertainment and information only. Mohjeta's numbers are model estimates, not betting, financial or investment advice, and her bets use paper money. 21+ only. If you bet, follow the law where you live and never bet more than you can afford to lose. Gambling problem? Call 1-800-GAMBLER.</div>
   </section>
-  <section class="panel" id="combos" role="tabpanel" aria-label="Combo ideas"><button class="back" data-go="more">‹ More</button><h2>Combo ideas</h2><p class="hint">Her best multi-game combos right now. Every leg has to win, so combos lose most of the time.</p><div class="grid" id="comboList"></div></section>
+  <section class="panel" id="combos" role="tabpanel" aria-label="Combo ideas"><button class="back" data-go="more">‹ More</button><h2>🧩 Combo ideas</h2><p class="hint">Her best multi-game combos right now, one leg per game. Every leg has to win, so combos lose most of the time. For fun, not betting advice.</p><p class="hint small" id="comboUpd"></p><div class="grid" id="comboList"></div></section>
   <section class="panel" id="score" role="tabpanel" aria-label="Scorecard"><button class="back" data-go="more">‹ More</button><h2>Scorecard</h2><p class="hint">Every finished pick is graded against the official result. Hit = picked side won. Accuracy (Brier): 0 is perfect, 0.25 is a coin flip, lower is better.</p><div id="scoreBox"></div></section>
   <section class="panel how" id="how" role="tabpanel" aria-label="How she picks">
     <button class="back" data-go="more">‹ More</button>
@@ -2271,8 +2282,30 @@ async function proof(){if(Date.now()-proofAt<600000)return;proofAt=Date.now();co
   catch(e){}}
 
 // ---------------- More: combos, scorecard
-function renderMore(d){$('comboList').replaceChildren(...(d.combos.length?d.combos.map(c=>{const a=el('article',null,'card');a.append(el('div',c.legs.length+'-leg combo · pays about '+c.pays_x+'x','pickline'));
-    const ul=el('ul',null,'plain');for(const l of c.legs)ul.append(el('li',l.team+' ('+sname(l.league)+'): she says '+pct(l.chance)+', Kalshi '+pct(l.kalshi)));a.append(ul,el('p','All legs hit: she says '+pct(c.all_hit)+' · Kalshi '+pct(c.kalshi),'hint small'));return a;}):[el('p','No strong combos right now.','empty')]));
+// fix376 (owner: combo ideas "looks out of date"): ticket-style cards: payout up top, a risk tag, each leg with its team
+// logo, game and time (tap to open the game), her chance vs Kalshi's per leg, and an "all legs hit" comparison bar.
+function comboGame(team){const gs=(D&&D.games||[]).filter(g=>g.state!=='FINAL');return gs.find(g=>(g.teams||[]).some(t=>t.name===team))||gs.find(g=>(g.teams||[]).some(t=>sameTeam(t.name,team)))||null;}
+function comboCard(c,i){const a=el('article',null,'card cmb');const n=c.legs.length,her=c.all_hit,kal=c.kalshi;
+  const risk=her>=0.35?['Steadier','cr-lo']:her>=0.2?['Swing','cr-mid']:['Long shot','cr-hi'];
+  const top=el('div',null,'cmbtop');const tl=el('div');tl.append(el('span',(i===0?'⭐ BEST · ':'')+n+'-LEG COMBO','simeyebrow'),el('b','Pays about '+c.pays_x+'x'),el('small','$10 → about $'+Math.round(10*c.pays_x)+' if every leg wins','hint'));
+  top.append(tl,el('span',risk[0],'cmbrisk '+risk[1]));a.append(top);
+  const legs=el('div',null,'cmblegs');
+  c.legs.forEach((l,j)=>{const g=comboGame(l.team);const row=el('div',null,'cmbleg'+(g?' tap':''));
+    row.append(el('span',String(j+1),'cmbn'),teamBadge(l.team));const tx=el('div',null,'cmbtx');
+    const opp=g?(g.teams||[]).find(t=>t.name!==l.team&&!(sameTeam(t.name,l.team)&&!(g.teams||[]).some(x=>x.name===l.team))):null;
+    tx.append(el('b',teamNick(l.team)+' to win'),el('small',sportIcon(l.league)+' '+sname(l.league)+(opp?' · '+(opp.home?'@ ':'vs ')+shortTeam(opp.name):'')+(g?' · '+(g.state==='LIVE'?'LIVE':when(g.start)):''),'hint'));
+    const nums=el('div',null,'cmbnum');nums.append(el('b',pct(l.chance),'cmbher'),el('small','Kalshi '+Math.round(l.kalshi*100)+'¢','hint'));
+    row.append(tx,nums);if(g){row.onclick=()=>openGame(g.id||g.name);row.title='Open this game';}legs.append(row);});
+  a.append(legs);
+  const cmp=el('div',null,'cmbcmp');const edge=Math.round((her-kal)*100);
+  const bar=(lab,v,cls)=>{const r=el('div',null,'cmbbar');const f=el('i',null,cls);f.style.width=Math.max(3,Math.min(100,v*100))+'%';const t=el('span');t.append(el('small',lab),el('b',pct(v)));const tr=el('div',null,'cmbtrack');tr.append(f);r.append(t,tr);return r;};
+  cmp.append(el('small','CHANCE EVERY LEG WINS','simeyebrow'),bar('She says',her,'fher'),bar('Kalshi’s prices',kal,'fkal'),
+    el('p',edge>0?'She likes it '+edge+' point'+(edge===1?'':'s')+' more than Kalshi’s prices do.':'Kalshi’s prices like it about as much as she does.','hint small'));
+  a.append(cmp);
+  const sh=el('button','📤 Share combo','btn ghost small');sh.type='button';sh.onclick=e=>{e.stopPropagation();shareIt({title:'Mohjeta combo',text:'Mohjeta’s '+n+'-leg combo ('+c.pays_x+'x): '+c.legs.map(l=>shortTeam(l.team)).join(' + ')+'. She gives every leg hitting '+pct(her)+'.',url:siteLink('#combos')});};
+  a.append(sh);return a;}
+function renderMore(d){const cl=$('comboList');cl.replaceChildren(...(d.combos&&d.combos.length?d.combos.map(comboCard):[(()=>{const e=el('div',null,'card cmbempty');e.append(el('b','No strong combos right now'),el('p','She only builds combos from legs she trusts (55%+ and better than Kalshi’s price). New ones show up as tonight’s picks come in; this page refreshes every few minutes.','hint small'));return e;})()]));
+  {const u=$('comboUpd');if(u)u.textContent=d.updated?'Updated '+new Date(d.updated).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+' · refreshes every 3 minutes (every minute during live games)':'';}
   const sc=d.scorecard,sb=$('scoreBox');sb.replaceChildren();
   if(!sc.graded){sb.append(el('p','No finished games graded yet.','empty'));return;}
   sb.append(el('p',sc.graded+' picks graded.'+(d.bets&&d.bets.dropped?' Soccer is left out (she stopped betting it in '+d.bets.dropped.when+').':''),'hint'));
