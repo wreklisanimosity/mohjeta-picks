@@ -463,7 +463,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .cmbcmp{display:flex;flex-direction:column;gap:6px}.cmbbar span{display:flex;justify-content:space-between;font-size:12px}.cmbtrack{height:8px;border-radius:6px;background:#ffffff14;overflow:hidden;margin-top:2px}
 .cmbtrack i{display:block;height:100%;border-radius:6px}.cmbtrack .fher{background:linear-gradient(90deg,#22c55e,#86efac)}.cmbtrack .fkal{background:#8b8fa8}
 .cmb>.btn{align-self:flex-start}.cmbempty{display:flex;flex-direction:column;gap:4px}
-.cmbtabs{margin:6px 0 12px;flex-wrap:wrap}.cmblink{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;margin:10px 0}.cmblink>div{flex:1;display:flex;flex-direction:column;gap:2px}
+.cmbtabs{margin:6px 0 12px;flex-wrap:wrap}.cmbrec{min-width:0}.cmbkind{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:13px}
+.cmbhist{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}.cmbhist>div{flex:1;min-width:0;display:flex;flex-direction:column}.cmbhist b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cmbst{white-space:nowrap;font-weight:800}.cmblink{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;margin:10px 0}.cmblink>div{flex:1;display:flex;flex-direction:column;gap:2px}
 .cmbli{font-size:24px}.cmbgo{font-size:22px;color:var(--muted)}
 .board .brow{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.board .bk{width:26px;text-align:center}
 .rest{margin:8px 0}.rest .anyn{display:flex;gap:6px;align-items:center;margin:4px 0}.rest summary{cursor:pointer;font-weight:600}.rest b{display:block;margin-top:6px}
@@ -2321,7 +2322,21 @@ function renderCombos(d){const cl=$('comboList');if(!cl||!d)return;const bar=$('
   if(cmbTab==='legs'){cl.replaceChildren(legsCard(d));return;}
   if(cmbTab==='build'){const w=el('div');const pb=el('div',null,'card');pb.id='propBuilder';
     const go=el('button','➕ Add props from the Props page','btn ghost small');go.type='button';go.onclick=()=>show('props');w.append(pb,go);cl.replaceChildren(w);try{drawBuilder();}catch(e){}needDet();return;}
-  cl.replaceChildren(...(d.combos&&d.combos.length?d.combos.map(comboCard):[empty('No strong combos right now','She only builds combos from legs she trusts (55%+ and better than Kalshi’s price). New ones show up as tonight’s picks come in; this page refreshes every few minutes.')]));}
+  const rc=(()=>{try{return comboRecordCard(d);}catch(e){return null;}})();
+  cl.replaceChildren(...(rc?[rc]:[]),...(d.combos&&d.combos.length?d.combos.map(comboCard):[empty('No strong combos right now','She only builds combos from legs she trusts (55%+ and better than Kalshi’s price). New ones show up as tonight’s picks come in; this page refreshes every few minutes.')]));}
+// fix378 (owner: "add it to the combo page"): her paper combo record on the Teams tab (combos.site_view via site_extras)
+function comboRecordCard(d){const C=d.combo_record;if(!C||!C.overall)return null;const O=C.overall,n=O.won+O.lost;
+  const c=el('div',null,'card cmbrec');c.append(iel('h4','📒 Her combo record (paper money)'));
+  if(!n&&!O.open){c.append(el('p','No combos settled yet. She paper-bets her top suggestions as they change (up to 6 a day, about $5 each).','hint small'));return c;}
+  const st=el('div',null,'stats');const stat=(l,v,cl)=>{const x=el('div',null,'stat');x.append(el('small',l),el('strong',v,cl||''));st.append(x);};
+  stat('Record',O.won+'-'+O.lost);stat('Profit',signed(O.pl||0),'pl '+cls(O.pl||0));stat('Return',O.roi==null?'—':(O.roi>0?'+':'')+Math.round(O.roi*100)+'%',cls(O.roi||0));if(O.open)stat('Open',String(O.open));c.append(st);
+  if(n&&O.her_said!=null)c.append(el('p','She gave these combos '+pct(O.her_said)+' on average to hit; '+pct(O.hit)+' did.','hint small'));
+  for(const k of C.kinds||[]){if(C.kinds.length<2)break;const r=el('div',null,'cmbkind');r.append(el('span',k.label),el('span',null,'sp'),el('b',k.won+'-'+k.lost),el('span',signed(k.pl||0),'pl '+cls(k.pl||0)));c.append(r);}
+  if((C.recent||[]).length){const det=el('details',null,'pppast');det.append(el('summary','Her latest combos ('+C.recent.length+')'));
+    for(const x of C.recent){const r=el('div',null,'cmbhist');const t=el('div');t.append(el('b',x.legs.map(l=>teamNick(l.team)).join(' + ')),el('small',x.legs.length+' legs · $'+Number(x.stake).toFixed(0)+' · she said '+pct(x.her_p)+' · '+new Date(x.at).toLocaleDateString([],{month:'short',day:'numeric'}),'hint'));
+      r.append(t,el('span',x.status==='OPEN'?'⏳ Open':(x.status==='WON'?'✅ ':'❌ ')+signed(x.pnl||0),'cmbst '+(x.status==='WON'?'up':x.status==='LOST'?'down':'')));det.append(r);}
+    c.append(det);}
+  c.append(el('p','Paper money only: she never places real combos. Graded from Kalshi’s official results.','hint small'));return c;}
 function renderMore(d){renderCombos(d);
   {const u=$('comboUpd');if(u)u.textContent=d.updated?'Updated '+new Date(d.updated).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+' · refreshes every 3 minutes (every minute during live games)':'';}
   const sc=d.scorecard,sb=$('scoreBox');sb.replaceChildren();
