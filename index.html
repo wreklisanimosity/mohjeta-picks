@@ -351,7 +351,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .feedrow{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.feedrow:first-of-type{border-top:0}.feed .fic{font-size:18px;line-height:1.3;flex:none}.feed .fbody{min-width:0}.feed .ftext{font-size:14px;line-height:1.35}.feedrow.hot .ftext{font-weight:700}.feed a{color:var(--pink)}.hfeed .row{margin-bottom:2px}#feedChips{flex-wrap:wrap}
 .brow.parlay{display:block;padding:8px 0;border-top:1px solid var(--line)}
 .legs .legrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:8px 0;color:var(--text);font:inherit;cursor:pointer}.legs .fn{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.legs .legodds{display:flex;flex-direction:column;align-items:flex-end;white-space:nowrap}.legs .legrec{font-weight:800;color:var(--green);margin-bottom:4px}.legs .legall{font-weight:700;margin:8px 0 2px}
-.openbets h4{margin:0 0 2px}.obrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:9px 0;color:var(--text);font:inherit;cursor:pointer}.obrow .obl{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.obrow .obr{font-weight:800;white-space:nowrap}
+.openbets h4{margin:0 0 2px}.openbets>summary{list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer}.openbets>summary::-webkit-details-marker{display:none}.obst{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.obst b{font-size:16px}.obchev{flex:none;width:28px;height:28px;border-radius:50%;background:#ffffff10;position:relative;transition:transform .2s}.obchev::after{content:'';position:absolute;left:10px;top:8px;width:7px;height:7px;border-right:2px solid var(--pink);border-bottom:2px solid var(--pink);transform:rotate(45deg)}.openbets[open] .obchev{transform:rotate(180deg)}.openbets[open]>summary{margin-bottom:6px}.obrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:9px 0;color:var(--text);font:inherit;cursor:pointer}.obrow .obl{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.obrow .obr{font-weight:800;white-space:nowrap}
 .board .brow{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.board .bk{width:26px;text-align:center}
 .rest{margin:8px 0}.rest .anyn{display:flex;gap:6px;align-items:center;margin:4px 0}.rest summary{cursor:pointer;font-weight:600}.rest b{display:block;margin-top:6px}
 .cmp{width:min(520px,calc(100vw - 32px));box-sizing:border-box;max-height:88vh;overflow:auto}.cmp select{min-width:0;width:100%}.cmprow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:10px}.cmpcol{display:flex;flex-direction:column;gap:6px}
@@ -1775,8 +1775,15 @@ function renderLegs(d){const box=$('legsBox');if(!box)return;box.replaceChildren
 // ---------------- every open bet in one place (on the Tonight page), whatever kind it is or wherever its game is shown
 function renderOpenBets(d){const box=$('openBets');if(!box)return;box.replaceChildren();const rows=((d.bets&&d.bets.rows)||[]).filter(r=>r.result==='OPEN');if(!rows.length)return;
   const key=v=>String(v||'').slice(0,16);const games=(d.games||[]).filter(g=>g.bet);
-  const c=el('div',null,'card openbets');const paid=rows.reduce((a,r)=>a+(r.paid||0),0);
-  c.append(iel('h4','💵 Her open bets ('+rows.length+')'),el('div',usd(paid)+' riding · every bet that has not finished yet, in one list','hint small'));
+  // owner, Nov 7 2026: a drop-down. Closed it is one line (how many, money riding, how many live, what they pay);
+  // tap to see every bet. Open/closed is remembered on this phone and kept through the 20-second refreshes.
+  const c=el('details',null,'card openbets');let open=false;try{open=localStorage.getItem('mohjeta.obOpen')==='1';}catch(e){}c.open=open;
+  c.addEventListener('toggle',()=>{try{localStorage.setItem('mohjeta.obOpen',c.open?'1':'0');}catch(e){}});
+  const paid=rows.reduce((a,r)=>a+(r.paid||0),0),pays=rows.reduce((a,r)=>a+Math.max(0,(r.count||0)-(r.paid||0)),0);
+  const liveN=rows.filter(r=>{const g=games.find(x=>key(x.bet.opened)===key(r.opened));return g&&g.state==='LIVE';}).length;
+  const sm=el('summary',null,'obsum');const tx=el('span',null,'obst');tx.append(iel('b','💵 Her open bets ('+rows.length+')'),
+    el('span',usd(paid)+' riding'+(liveN?' · 🟢 '+liveN+' live':'')+' · pays up to +'+usd(pays),'hint small'));
+  sm.append(tx,el('span',null,'obchev'));c.append(sm);
   rows.slice().sort((a,b)=>String(b.opened).localeCompare(String(a.opened))).forEach(r=>{
     const g=games.find(x=>key(x.bet.opened)===key(r.opened));const row=el('button',null,'obrow');row.type='button';
     const kn=r.now!=null?' · Kalshi now '+Math.round(r.now*100)+'¢'+(r.now<=0.03?' (likely lost)':r.now>=0.97?' (likely won)':''):'';
