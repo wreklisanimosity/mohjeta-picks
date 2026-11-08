@@ -446,6 +446,12 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .brow.parlay{display:block;padding:8px 0;border-top:1px solid var(--line)}
 .legs .legrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:8px 0;color:var(--text);font:inherit;cursor:pointer}.legs .fn{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.legs .legodds{display:flex;flex-direction:column;align-items:flex-end;white-space:nowrap}.legs .legrec{font-weight:800;color:var(--green);margin-bottom:4px}.legs .legall{font-weight:700;margin:8px 0 2px}
 .openbets h4{margin:0 0 2px}.openbets>summary{list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer}.openbets>summary::-webkit-details-marker{display:none}.obst{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.obst b{font-size:16px}.obchev{flex:none;width:28px;height:28px;border-radius:50%;background:#ffffff10;position:relative;transition:transform .2s}.obchev::after{content:'';position:absolute;left:10px;top:8px;width:7px;height:7px;border-right:2px solid var(--pink);border-bottom:2px solid var(--pink);transform:rotate(45deg)}.openbets[open] .obchev{transform:rotate(180deg)}.openbets[open]>summary{margin-bottom:6px}.obrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:9px 0;color:var(--text);font:inherit;cursor:pointer}.obrow .obl{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.obrow .obr{font-weight:800;white-space:nowrap}
+.ppcard .pphead{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.ppcard .pphead h4{margin:0}
+.pprow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--line)}.pprow.picked .pptx b{color:var(--text)}
+.pptx{flex:1;min-width:150px;display:flex;flex-direction:column;gap:2px}.pptx small{color:var(--muted)}
+.ppbtns{display:flex;gap:6px}.ppbtns .pk{min-width:58px}.pphint{width:100%;color:var(--muted)}
+.ppres{display:flex;flex-direction:column;align-items:flex-end;gap:1px;text-align:right}.pppast summary{cursor:pointer;padding:8px 0;color:var(--muted);font-weight:700}
+.ppboard{margin-top:6px}
 .board .brow{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.board .bk{width:26px;text-align:center}
 .rest{margin:8px 0}.rest .anyn{display:flex;gap:6px;align-items:center;margin:4px 0}.rest summary{cursor:pointer;font-weight:600}.rest b{display:block;margin-top:6px}
 .cmp{width:min(520px,calc(100vw - 32px));box-sizing:border-box;max-height:88vh;overflow:auto}.cmp select{min-width:0;width:100%}.cmprow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:10px}.cmpcol{display:flex;flex-direction:column;gap:6px}
@@ -1235,7 +1241,7 @@ function pickemCard(){const sc=pickemScore();const c=el('div',null,'banner pkcar
   const r=el('div',null,'row');r.append(iel('b','🎯 Pick\'em'),el('span',null,'sp'),el('span','You '+sc.me[0]+'-'+sc.me[1],'pks me'),el('span','vs','hint small'),el('span','Her '+sc.her[0]+'-'+sc.her[1],'pks'));c.append(r);
   const lead=sc.me[0]-sc.her[0];c.append(el('div',(sc.me[0]+sc.me[1]===0?'Tap a team on any game below to make your pick. Can you beat her?':lead>0?'You’re beating her by '+lead+'. 🔥':lead<0?'She leads by '+(-lead)+'. Pick again tonight.':'Dead even.')+(sc.open?' · '+sc.open+' pick'+(sc.open>1?'s':'')+' waiting on results':'')+(me?' · your picks count on the leaderboard':' · sign in (Chat) to get on the leaderboard'),'hint small'));
   if(sc.me[0]+sc.me[1]>=5&&sc.me[0]>sc.her[0])award('beat_her');
-  const acts=el('div',null,'row');const gb=iel('button','🔮 Guess her number','btn ghost');gb.type='button';gb.onclick=()=>{show('guess');drawGuess();};acts.append(gb);
+  const acts=el('div',null,'row');{const pb=iel('button','🎯 Prop Pick’em','btn ghost');pb.type='button';pb.onclick=()=>{show('play');setTimeout(()=>{const x=document.querySelector('#playBadges .ppcard');if(x)x.scrollIntoView({behavior:'smooth',block:'start'});},300);};acts.append(pb);}const gb=iel('button','🔮 Guess her number','btn ghost');gb.type='button';gb.onclick=()=>{show('guess');drawGuess();};acts.append(gb);
   if(sc.me[0]+sc.me[1])acts.append(shareBtn(()=>({title:'Me vs the Mohjeta AI',big:sc.me[0]+'-'+sc.me[1],lines:['Mohjeta: '+sc.her[0]+'-'+sc.her[1],lead>0?'I’m beating the AI 😤':lead<0?'The AI is ahead… for now':'Dead even','Think you can beat her?']})));
   c.append(acts,badgeShelf());return c;}
 function winMeter(g){if(g.state!=='LIVE'||!g.pick||g.teams.length!==2)return null;
@@ -1805,9 +1811,9 @@ let simId=null;const simState={};
 let CHAMPS=null,champsAt=0;const TITLES={};
 async function loadChamps(force){if(!force&&CHAMPS&&Date.now()-champsAt<300000)return CHAMPS;try{await supa();const {data,error}=await sb.from('champions').select('kind,period,label,user_id,name,stat,created_at').order('created_at',{ascending:false}).limit(60);
   if(error)throw error;CHAMPS=data||[];champsAt=Date.now();champCheer();try{drawTicker();}catch(e){}document.querySelectorAll('.hof').forEach(x=>x.replaceWith(hofCard()));}catch(e){CHAMPS=CHAMPS||[];}return CHAMPS;}
-const CHAMP_IC={pickem_week:'👑',pickem_month:'🏆',fantasy_week:'🏈'};
+const CHAMP_IC={pickem_week:'👑',pickem_month:'🏆',fantasy_week:'🏈',props_week:'🎯'};
 function champIcon(c){return c.kind==='fantasy_week'&&/NBA/.test(c.label)?'🏀':CHAMP_IC[c.kind]||'🏆';}
-function hofCard(){const c=el('div',null,'card hof');c.append(iel('h4','🏛️ Hall of Fame'),el('p','Weekly and monthly champions. Win Pick’em for the week (3+ finished picks) or the month (8+), or top a weekly fantasy slate, to get your name up here and a title next to it in chat.','hint small'));
+function hofCard(){const c=el('div',null,'card hof');c.append(iel('h4','🏛️ Hall of Fame'),el('p','Weekly and monthly champions. Win Pick’em for the week (3+ finished picks) or the month (8+), top Prop Pick’em for the week (5+), or top a weekly fantasy slate, to get your name up here and a title next to it in chat.','hint small'));
   const rows=(CHAMPS||[]);if(!rows.length){c.append(el('p',CHAMPS?'No champions yet. The first weekly Pick’em champion is crowned Monday.':'Loading…','hint small'));if(!CHAMPS)loadChamps();return c;}
   const seen=new Set();for(const r of rows.slice(0,12)){const k=r.kind+r.period;const row=el('div',null,'hofrow'+(seen.has(k)?' tie':'')+(me&&r.user_id===me.id?' mine':''));seen.add(k);
     row.append(el('span',champIcon(r),'hofic'),chatPic({user_id:r.user_id,name:r.name}),el('div',null,'hofn'));row.lastChild.append(el('b',r.name),el('small',r.label+' · '+r.stat));c.append(row);}
@@ -2147,7 +2153,7 @@ function drawBetting(d){const box=$('betting');box.replaceChildren();
   const cr=el('div',null,'crumb');if(sports.length>1){const back=el('button','‹ All sports');back.type='button';back.onclick=()=>{tonSport=null;drawBetting(D);};cr.append(back);}
   {const h=el('h4',' '+sname(tonSport)+' · '+by[tonSport].length);if(window.SportArt)h.prepend(SportArt.el(tonSport));else h.prepend(sportIcon(tonSport));cr.append(h);}box.append(cr);
   const gr=el('div',null,'mgrid');for(const g of by[tonSport])gr.append(miniCard(g));box.append(gr);}
-function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();try{renderOpenBets(d);}catch(e){}try{renderLegs(d);}catch(e){}try{if(document.querySelector('#feed.on'))renderFeed(d);}catch(e){}setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(pickemCard(),boardCard(),hofCard(),myPicks());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
+function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();try{renderOpenBets(d);}catch(e){}try{renderLegs(d);}catch(e){}try{if(document.querySelector('#feed.on'))renderFeed(d);}catch(e){}setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(pickemCard(),propPickemCard(),boardCard(),hofCard(),myPicks());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
     const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));{const ws=withSkipped(d,t.wins,t.losses);if(ws)box.append(el('div',ws.w+'-'+ws.l+' counting the '+(ws.sw+ws.sl)+' picks she skipped at 95¢+ (no bet on those)','hint small'));}
@@ -3344,6 +3350,48 @@ async function h2hOpen(lid,fresh){openSheet(()=>{const w=el('div');w.id='h2hView
   if(L.owner){const t=el('button',L.her?'Remove Mohjeta':'🤖 Add Mohjeta','btn ghost small');t.type='button';t.onclick=async()=>{const {error}=await sb.rpc('set_league_her',{lid,on_off:!L.her});toast(error?error.message:(L.her?'She’s out from next week':'She joins from next week 🤖'));h2hOpen(lid);};acts.append(t);}
   const lv=el('button',L.owner?'Delete league':'Leave league','btn ghost small');lv.type='button';lv.onclick=async()=>{if(!confirmBox(L.owner?'Delete "'+L.name+'" for everyone?':'Leave "'+L.name+'"?'))return;
     const q=L.owner?sb.from('fantasy_leagues').delete().eq('id',lid):sb.from('fantasy_members').delete().eq('league_id',lid).eq('user_id',me.id);const {error}=await q;toast(error?error.message:'Done');closeSheet();renderWeekly();};acts.append(lv);w.append(acts);}
+// ---------------- Prop Pick'em (fix372, owner: "can we add props to pickem" -> a daily featured 10 on its own record and
+// leaderboard). prop_pickem.py features the props and grades them from Kalshi; picks lock at tip-off (database rule).
+const PPK='mohjeta.propPicks';let PPROPS=null,ppAt=0,PPBOARD=null,ppBoardAt=0;
+function ppLoad(){try{return JSON.parse(localStorage.getItem(PPK)||'{}')||{};}catch(e){return {};}}
+function ppSave(x){try{localStorage.setItem(PPK,JSON.stringify(x));}catch(e){}}
+async function ppFetch(force){if(!force&&PPROPS&&Date.now()-ppAt<120000)return PPROPS;
+  try{await supa();const since=new Date(Date.now()-3*864e5).toISOString();
+    const {data,error}=await sb.from('prop_pickem').select('id,day,game,start,player,stat,line,label,her_pick,her_chance,result').gte('start',since).order('start').limit(120);
+    if(error)throw error;PPROPS=data||[];ppAt=Date.now();
+    if(me){const ids=PPROPS.map(p=>p.id);if(ids.length){const r=await sb.from('prop_picks').select('prop_id,side').eq('user_id',me.id).in('prop_id',ids);
+      if(!r.error){const x=ppLoad();for(const k of r.data||[])x[k.prop_id]=k.side;ppSave(x);}}}}
+  catch(e){PPROPS=PPROPS||[];}
+  document.querySelectorAll('.ppcard').forEach(c=>c.replaceWith(propPickemCard()));return PPROPS;}
+async function ppPick(p,side){const x=ppLoad();x[p.id]=side;ppSave(x);award('first_pick');
+  if(me&&sb){try{const {error}=await sb.from('prop_picks').upsert({prop_id:p.id,side},{onConflict:'user_id,prop_id'});
+    if(error)toast(/profiles|foreign/i.test(error.message)?'Pick a chat name in Chat to join the props leaderboard':'Saved on this phone (leaderboard save failed)');}catch(e){}}
+  document.querySelectorAll('.ppcard').forEach(c=>c.replaceWith(propPickemCard()));}
+function ppScore(rows){const x=ppLoad();let me_=[0,0],her=[0,0];for(const p of rows){const m=x[p.id];if(!m||!/^(Yes|No)$/.test(p.result||''))continue;me_[m===p.result?0:1]++;if(p.her_pick)her[p.her_pick===p.result?0:1]++;}return {me:me_,her};}
+function propPickemCard(){const c=el('div',null,'card ppcard');const rows=PPROPS;
+  const hd=el('div',null,'pphead');hd.append(iel('h4','🎯 Prop Pick’em'),el('span','Yes or No: does he hit it?','hint small'));c.append(hd);
+  if(!rows){c.append(el('p','Loading today’s props…','hint small'));ppFetch();return c;}
+  const now=Date.now(),open=rows.filter(p=>Date.parse(p.start)>now),past=rows.filter(p=>Date.parse(p.start)<=now).reverse();
+  const sc=ppScore(rows);if(sc.me[0]+sc.me[1]){const r=el('div',null,'row');r.append(el('span','You '+sc.me[0]+'-'+sc.me[1],'pks me'),el('span','vs','hint small'),el('span','Her '+sc.her[0]+'-'+sc.her[1],'pks'),el('span',' on the same props','hint small'));c.append(r);}
+  const x=ppLoad();
+  const line=(p,live)=>{const d=el('div',null,'pprow'+(x[p.id]?' picked':''));const t=el('div',null,'pptx');t.append(el('b',p.label),el('small',p.game+' · '+(live?when(p.start):(p.result?'final':'locked'))));d.append(t);
+    const mine=x[p.id];
+    if(live){const bs=el('div',null,'ppbtns');for(const side of ['Yes','No']){const b=el('button',side,'pk'+(mine===side?' on':''));b.type='button';b.setAttribute('aria-pressed',String(mine===side));
+        b.onclick=e=>{e.stopPropagation();b.classList.add('burst');ppPick(p,side);};bs.append(b);}d.append(bs);
+      if(mine)d.append(el('small','Her pick: '+p.her_pick+(p.her_chance?' ('+pct(p.her_chance)+')':''),'pphint'));}
+    else{const r=el('div',null,'ppres');const res=p.result;
+      r.append(el('span',mine?('You: '+mine+(res&&res!=='Void'?(mine===res?' ✅':' ❌'):'')):'No pick','small'),el('span','Her: '+(p.her_pick||'?')+(res&&res!=='Void'?(p.her_pick===res?' ✅':' ❌'):''),'hint small'),
+        el('span',res==='Void'?'Void (didn’t count)':res?('Result: '+res):'Waiting on the result','hint small'));d.append(r);}
+    return d;};
+  if(open.length){c.append(el('div','Today · locks at tip-off'+(me?'':' · sign in (Chat) to count on the leaderboard'),'lugrp'));open.forEach(p=>c.append(line(p,true)));}
+  else c.append(el('p',rows.length?'Today’s props are locked. New ones post each day once the lines are up.':'No props posted yet. She posts 10 each day once Kalshi’s player lines are up (NBA for now).','hint small'));
+  if(past.length){const det=el('details',null,'pppast');det.append(el('summary','Recent props ('+past.length+')'));past.slice(0,20).forEach(p=>det.append(line(p,false)));c.append(det);}
+  const bd=el('div',null,'board ppboard');bd.append(el('div','🏆 Props leaderboard · last 30 days','lugrp'));
+  const fill=()=>{bd.querySelectorAll('.brow,.bnote').forEach(e=>e.remove());const B=PPBOARD||[];
+    if(!B.length){bd.append(el('p','No one is ranked yet: 5 finished prop picks gets you on the board. Top the week for the 🎯 Props champ title.','hint small bnote'));return;}
+    B.forEach((r,i)=>{const row=el('div',null,'brow');row.append(el('span',['🥇','🥈','🥉'][i]||String(i+1),'bk'),chatPic({user_id:null,name:r.name,profiles:{avatar_url:r.avatar}}),el('b',r.name),el('span',null,'sp'),el('span',r.wins+'-'+r.losses,'up'),el('span',r.beat_her?' · beat her '+r.beat_her+'×':'','hint small'));bd.append(row);});};
+  fill();if(Date.now()-ppBoardAt>60000){ppBoardAt=Date.now();(async()=>{try{await supa();const {data,error}=await sb.from('prop_board').select('*').order('wins',{ascending:false}).order('losses').limit(15);if(!error){PPBOARD=data||[];fill();}}catch(e){}})();}
+  c.append(bd);if(Date.now()-ppAt>120000)ppFetch();return c;}
 // ---------------- Pick'em leaderboard (Supabase; picks lock at the start time, graded by Mohjeta)
 async function pkCloud(event,team){try{if(!me||!sb)return;const {error}=await sb.from('pickem').upsert({event,team},{onConflict:'user_id,event'});
   if(error&&/profiles|foreign/i.test(error.message))toast('Pick a chat name in Chat to join the leaderboard');}catch(e){}}
