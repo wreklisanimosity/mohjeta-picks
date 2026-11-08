@@ -1694,6 +1694,13 @@ function myPicks(){const all=pkLoad(),F=(D&&D.finals)||{};const rows=Object.entr
     r.append(el('span',res[0],'ti'),mid,el('span',null,'sp'),el('span',res[1],res[2]));c.append(r);}
   return c;}
 let simId=null;const simState={};
+// fix357 (owner: "happens when I don't touch the page for a while"): every data refresh (several a minute while games are on)
+// rebuilt the whole Simulator, and a game whose simulation inputs had not arrived yet collapsed to one "Loading…" line,
+// leaving the phone looking at an empty page below it. Now the Simulator is rebuilt only when its games or inputs change,
+// and the last inputs for a game are kept until new ones arrive.
+let simKey=null;const SIMLAST={};
+function renderSimIfChanged(){let k=null;try{k=JSON.stringify([simMode,simGames().map(g=>[g.id||g.name,g.sim?(g.sim.nba_model?g.sim.nba_model.model_hash||g.sim.nba_model.built_at:g.sim.margin+'/'+g.sim.total):0])]);}catch(e){}
+  const on=document.querySelector('#sim.panel.on');if(on&&k&&k===simKey)return;simKey=k;renderSim();}
 function simGames(){return (D&&D.games||[]).filter(g=>(g.sim||g.has_sim)&&g.state==='UPCOMING');}
 function renderSim(){if(simLocked()){drawSimLock();return;}drawModeChips();if(simMode==='fantasy'){$('simPick').hidden=true;if(!$('anyBox').childElementCount)renderFantasyEasy();return;}if(simMode==='any'){$('simPick').hidden=true;if(!$('anyBox').childElementCount)renderAny();return;}$('anyBox').replaceChildren();
   const gs=simGames();const sel=$('simPick');sel.replaceChildren();
@@ -1701,7 +1708,7 @@ function renderSim(){if(simLocked()){drawSimLock();return;}drawModeChips();if(si
   sel.hidden=false;for(const g of gs){const o=el('option',sname(g.league)+' · '+g.name+' · '+when(g.start));o.value=g.id||g.name;sel.append(o);}
   if(!gs.some(g=>(g.id||g.name)===simId))simId=gs[0].id||gs[0].name;sel.value=simId;sel.onchange=()=>{simId=sel.value;drawSim();};drawSim();}
 function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
-function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId)||(customG&&customG.id===simId?customG:null);const box=$('simBox');box.replaceChildren();if(!g)return;if(!g.sim){box.append(el('p','Loading the simulation…','hint'));needDet();return;}const s=g.sim;if(s.nba_model){drawNbaSim(g,box,run);return;}
+function drawSim(run){const g=simGames().find(x=>(x.id||x.name)===simId)||(customG&&customG.id===simId?customG:null);const box=$('simBox');box.replaceChildren();if(!g)return;if(g.sim)SIMLAST[simId]=g.sim;else if(SIMLAST[simId])g.sim=SIMLAST[simId];if(!g.sim){box.append(el('p','Loading the simulation…','hint'));needDet();return;}const s=g.sim;if(s.nba_model){drawNbaSim(g,box,run);return;}
   const st=simState[simId]||(simState[simId]={sits:{},spread:'',total:s.total!=null?String(s.total):''});st.trades=st.trades||{};
   // lineup changes move the margin by each player's worth (same as before)
   let shift=0;for(const [team,sign] of [[s.home,1],[s.away,-1]])for(const r of ((s.players||{})[team]||[])){const key=team+'|'+r.name;const sits=key in st.sits?st.sits[key]:r.out;const traded=!!st.trades[key]&&!sits;
@@ -2166,7 +2173,7 @@ function needDet(){if(!D||!(D.games||[]).some(g=>g.has_more)||detBusy||(DET&&Dat
     try{renderSim();}catch(e){}try{renderProps(D);}catch(e){}refreshSheet();}).catch(()=>{}).finally(()=>{detBusy=null;});}
 function render(d){D=d;try{drawTicker();}catch(e){}notePeople(d);applyMembers(d);mergeDet(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
-  $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderSkipped(d),()=>renderMore(d),()=>renderSim(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
+  $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderSkipped(d),()=>renderMore(d),()=>renderSimIfChanged(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
   if(lastLive&&Date.parse(lastLive.updated)>Date.parse(d.updated))applyLive(lastLive);
   navBtns.find(b=>b.dataset.tab==='record').hidden=!d.bets;
   refreshSheet();setTimeout(needDet,0);}
@@ -2520,6 +2527,7 @@ function drawTicker(){const bar=$('ticker'),tr=$('tkTrack');if(!bar||!tr)return;
 function loadNews(){fetch('news.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(n=>{if(!n)return;NEWS=n;drawNewsBar();try{drawTicker();}catch(e){}if(document.querySelector('#news.on'))drawNews();}).catch(()=>{});}
 loadNews();setInterval(loadNews,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadNews();});
 // new version of the page: it reloads itself at a quiet moment (never while someone is typing, chatting or building props)
+try{if('scrollRestoration' in history)history.scrollRestoration='manual';}catch(e){}   // fix357: after a reload start at the top, not deep in a page that has not loaded yet
 let pageTag=null,newPage=false,lastTouch=Date.now();
 ['touchstart','keydown','scroll','pointerdown'].forEach(ev=>addEventListener(ev,()=>{lastTouch=Date.now();},{passive:true}));
 function quiet(){const a=document.activeElement;return Date.now()-lastTouch>45000&&!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))&&
