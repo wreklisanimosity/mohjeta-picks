@@ -1810,7 +1810,7 @@ function findTeam(T,name,league){const L=(T.leagues||{});const lgs=league&&L[lea
 function teamLink(name,league,content){const b=el('button',null,'tlink');b.type='button';b.append(content==null?String(name):content);b.title='Schedule and synopsis';b.onclick=e=>{e.stopPropagation();openTeam(name,league);};return b;}
 function teamRating(name,lg){const L=rt&&rt.leagues&&rt.leagues[lg];if(!L||!L.teams)return null;return L.teams.find(t=>t.team===name)||L.teams.find(t=>sameTeam(t.team,name))||null;}
 function teamStars(name,lg,abbr){const L=rt&&rt.leagues&&rt.leagues[lg];const ps=L&&L.roster&&L.roster.players;if(!ps)return [];
-  return ps.filter(p=>p.team===abbr||sameTeam(p.team_name||'',name)&&String(name).toLowerCase().endsWith(String(p.team_name||'').toLowerCase())).filter(p=>!/^(OL|P|K)$/.test(p.group)).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,5);}
+  return ps.filter(p=>p.team===abbr||sameTeam(p.team_name||'',name)&&String(name).toLowerCase().endsWith(String(p.team_name||'').toLowerCase())).filter(p=>!/^(OL|P|K)$/.test(p.group)&&!p.status&&p.est!=='new').sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,5);}
 function teamSynopsis(name,lg,t,r,nextG){const done=t.g.filter(x=>x[4]),todo=t.g.filter(x=>!x[4]);const nick=t.s||simNick(name);const out=[];
   let streak=0,sk=null;for(let i=done.length-1;i>=0;i--){if(sk===null)sk=done[i][4];if(done[i][4]!==sk)break;streak++;}
   const recent=done.slice(-5),rw=recent.filter(x=>x[4]==='W').length;
@@ -1841,7 +1841,7 @@ async function openTeam(name,league){openSheet(()=>{const w=el('div',null,'teamp
   if(done.length){sched.append(el('div','Recent results','lugrp'));done.slice().reverse().forEach(x=>sched.append(line(x)));}
   w.append(sched);
   const stars=teamStars(t.n,lg,f.abbr);if(stars.length){const k=el('div',null,'card tpstars');k.append(el('h4','⭐ Key players'));
-    for(const p of stars){const row=el('div',null,'tpp');row.append(el('b',p.name),el('span',(p.pos||p.group||'')+(p.stats?' · '+p.stats:''),'hint small'),el('span',String(p.rating),'tprate'));k.append(row);}
+    for(const p of stars){const row=el('div',null,'tpp');row.append(el('b',p.name),el('span',(p.pos||p.group||'')+(pnote(p)?' · '+pnote(p):''),'hint small'),el('span',String(p.rating),'tprate'));k.append(row);}
     k.append(el('p','Rating 0-99 = rank against players at the same position this season.','hint small'));w.append(k);}
   w.append(el('p','Schedule and results from ESPN; synopsis written by Mohjeta from her ratings and their results. Updated every few hours.','hint small'));}
 let simKey=null;const SIMLAST={};
@@ -2377,7 +2377,8 @@ async function ensureRoster(lg){const L=rt&&rt.leagues[lg];if(!L||!ROSTER_FILE[l
   try{const r=await fetch(ROSTER_FILE[lg]+'?t='+Math.floor(Date.now()/600000),{cache:'no-cache'});if(!r.ok)throw Error();const j=await r.json();
     L.roster={ready:!!(j.players||[]).length,note:j.note||(L.roster||{}).note,players:j.players||[]};rosterLoaded[lg]='ok';}catch(e){rosterLoaded[lg]=null;}
   if(rtLeague===lg)drawRatings();}
-function teamGrades(L,lg){const slots=GRADE_SLOTS[SPORT_OF[lg]];const P=((L.roster||{}).players||[]).filter(p=>p.team&&p.rating!=null);if(!slots||!P.length)return null;
+function pnote(p){return [p.status,p.est==='last season'?'est. from last season':p.est==='line grade'?'est. line grade':p.est==='new'?'est. (hasn’t played enough yet)':null,p.est==='last season'?String(p.stats||'').replace(/^last season: /,''):p.stats].filter(Boolean).join(' · ');}
+function teamGrades(L,lg){const slots=GRADE_SLOTS[SPORT_OF[lg]];const P=((L.roster||{}).players||[]).filter(p=>p.team&&p.rating!=null&&!p.status&&p.est!=='new');if(!slots||!P.length)return null;
   const by={};for(const p of P)((by[p.team]=by[p.team]||{name:p.team_name,g:{}}).g[p.group]=by[p.team].g[p.group]||[]).push(p);
   const teams=Object.keys(by).filter(t=>Object.values(by[t].g).flat().length>=4);const out={};
   for(const t of teams){out[t]={name:by[t].name,slots:{}};let sum=0,w=0;
@@ -2411,8 +2412,8 @@ function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').va
     if(h&&a&&h!==a){const ph=M.average_points+M.home_edge/2+h.offense-a.defense,pa=M.average_points-M.home_edge/2+a.offense-h.defense,mg=ph-pa,w=phi(mg/Math.max(M.margin_sd,.5));
       const c=el('article',null,'card');c.append(el('div',h.team+' '+ph.toFixed(1)+' – '+pa.toFixed(1)+' '+a.team,'pickline'),el('p',(mg>=0?h.team:a.team)+' by '+Math.abs(mg).toFixed(1)+' · total '+(ph+pa).toFixed(1)+' · '+h.team+' win chance '+Math.round(w*100)+'%','hint'),
         tableOf(['Team','Offense','Defense','Net'],[h,a].map(t=>[ratingTeamName(t.team),sg(t.offense),sg(t.defense),sg(t.net)])));parts.push(c);
-      const R=L.roster||{};if(R.ready)for(const t of [h,a]){const s=(R.players||[]).find(p=>p.team_name&&(p.team_name===t.team||t.team.endsWith(' '+p.team_name)));const best=s?R.players.filter(p=>p.team===s.team&&p.rating!=null).sort((x,y)=>y.rating-x.rating).slice(0,6):[];
-        if(best.length)parts.push(el('h4','Key players · '+t.team),tableOf(['Player','Pos','Rating','Season'],best.map(p=>[p.name,p.pos,rcell(p.rating),p.stats])));}
+      const R=L.roster||{};if(R.ready)for(const t of [h,a]){const s=(R.players||[]).find(p=>p.team_name&&(p.team_name===t.team||t.team.endsWith(' '+p.team_name)));const best=s?R.players.filter(p=>p.team===s.team&&p.rating!=null&&!p.status).sort((x,y)=>y.rating-x.rating).slice(0,6):[];
+        if(best.length)parts.push(el('h4','Key players · '+t.team),tableOf(['Player','Pos','Rating','Season'],best.map(p=>[p.name,p.pos,rcell(p.rating),pnote(p)])));}
       const DV=L.dvp||{};if(DV.ready)for(const [t,o] of [[h,a],[a,h]]){const A=(DV.allowed||{})[o.team]||{};const fs=(DV.form||{})[t.team]||[];
         if(fs.length)parts.push(el('h4',t.team+' players vs '+o.team+' defense'),tableOf(['Player','Group','Recent avg','Defense allows','Projected'],fs.map(f=>{const x=A[f[1]];return [f[0],f[1],f[2],pcell(x),x?(f[2]*(1+x.pct)).toFixed(1):f[2]];})));}}
     const bt=M.backtest;parts.push(el('p',M.note+(bt?' Backtest (last '+bt.days+' days): misses the margin by '+bt.avg_margin_miss+' pts on average; win-chance Brier '+bt.brier_matchup+' vs Elo '+bt.brier_elo+'.':''),'hint small'));
@@ -2428,8 +2429,8 @@ function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').va
     const cur=pick.value&&keys.includes(pick.value)?pick.value:keys[0];pick.replaceChildren(...keys.map(k=>{const o=el('option',k);o.value=k;return o;}));pick.value=cur;pick.hidden=false;
     const list=R.players.filter(p=>(byTeam?p.team===cur:p.group===cur)&&(hit(p.name)||hit(p.team))).sort((a,b)=>(b.rating??-1)-(a.rating??-1));
     const parts=[el('p',R.note,'hint small')];
-    if(byTeam){for(const g of [...new Set(list.map(p=>p.group))]){const sub=list.filter(p=>p.group===g);parts.push(el('h4',g+' · '+sub.length),tableOf(['Player','Pos','Rating','Season'],sub.map(p=>[p.name,p.pos,rcell(p.rating),p.stats])));}}
-    else parts.push(tableOf(['#','Player','Team','Pos','Rating','Season'],list.map((p,i)=>[p.rating==null?'—':i+1,p.name,p.team,p.pos,rcell(p.rating),p.stats])));
+    if(byTeam){for(const g of [...new Set(list.map(p=>p.group))]){const sub=list.filter(p=>p.group===g);parts.push(el('h4',g+' · '+sub.length),tableOf(['Player','Pos','Rating','Season'],sub.map(p=>[p.name,p.pos,rcell(p.rating),pnote(p)])));}}
+    else parts.push(tableOf(['#','Player','Team','Pos','Rating','Season'],list.map((p,i)=>[p.rating==null?'—':i+1,p.name,p.team,p.pos,rcell(p.rating),pnote(p)])));
     box.replaceChildren(el('h3',byTeam?cur+' roster':'Best at '+cur),...parts);return;}
   if(L.tennis){box.replaceChildren(el('h3','Player Elo'),tableOf(['Rank','Player','Elo','Hard','Clay','Grass'],L.tennis.filter(p=>hit(p.name)).map(p=>[p.rank,p.name,p.elo,p.surface.hard,p.surface.clay,p.surface.grass])));return;}
   const parts=rtView==='leaders'?[]:[el('h3','Team ratings')];
