@@ -1,6 +1,6 @@
 // Mohjeta Picks offline helper: the app shell is cached; picks data is always fetched fresh and
 // falls back to the last copy only when the phone is offline.
-const SHELL = 'mohjeta-shell-legs-v35';
+const SHELL = 'mohjeta-shell-legs-v36';
 const FILES = ['./languages.js?v=12', './languages.css?v=4', './game-matchups.js?v=3', './game-matchups.css?v=2', './live-data.js?v=3', './community.css?v=1', './mohjeta-icons.js?v=8', './mohjeta-icons.css?v=8', './sounds.js?v=2', './intro.js?v=3', './intro.css?v=3', './sport-art.js?v=2', './logo-cut.webp?v=2', './notification-badge.png', './nba-sim.js?v=nba-lineups-v1', './nba-sim-ui.js?v=nba-lineups-v1', './', './index.html', './manifest.webmanifest', './icon-192.png?v=mohjeta-black-v1', './icon-512.png?v=mohjeta-black-v1', './apple-touch-icon.png?v=mohjeta-black-v1'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
