@@ -2889,10 +2889,37 @@ function pushPrefs(){try{return JSON.parse(localStorage.getItem('mohjeta.pushpre
 function u8(b64){const p='='.repeat((4-b64.length%4)%4);const raw=atob((b64+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));}
 async function pushSub(){try{const reg=await navigator.serviceWorker.getRegistration();return reg?await reg.pushManager.getSubscription():null;}catch(e){return null;}}
 async function savePush(sub){const j=sub.toJSON();const {error}=await sb.rpc('set_push',{endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,prefs:pushPrefs()});return error;}
+// fix374: alerts inside the iPhone app (no Web Push there): Apple push through Capacitor's PushNotifications plugin; the token
+// is saved with set_apns (supabase_apns.sql) and Mohjeta sends through the apns-send Edge Function.
+function capPush(){return isIOSApp()&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.PushNotifications||null;}
+function apnsSaved(){try{return localStorage.getItem('mohjeta.apns')||null;}catch(e){return null;}}
+async function apnsRegister(){const P=capPush();if(!P)return null;
+  let perm=await P.checkPermissions();if(perm.receive==='prompt'||perm.receive==='prompt-with-rationale')perm=await P.requestPermissions();
+  if(perm.receive!=='granted')return 'denied';
+  return await new Promise(res=>{let done=false;const fin=v=>{if(!done){done=true;res(v);}};setTimeout(()=>fin(null),15000);
+    P.addListener('registration',t=>fin(t&&t.value));P.addListener('registrationError',()=>fin(null));P.register();});}
+async function apnsSave(token){await supa();const {error}=await sb.rpc('set_apns',{token,prefs:pushPrefs()});return error;}
+(function apnsTaps(){try{const P=capPush();if(!P)return;
+  P.addListener('pushNotificationActionPerformed',a=>{const u=((a&&a.notification&&a.notification.data)||{}).url;if(u){const h=String(u).replace(/^\.\//,'');location.hash=h.startsWith('#')?h:'#'+h;}});
+  const t=apnsSaved();if(t)P.checkPermissions().then(p=>{if(p.receive==='granted')P.register();}).catch(()=>{});}catch(e){}})();
+async function drawAppPush(box,c){const P=capPush();const tok=apnsSaved();
+  if(!tok){c.append(el('p','Get a heads-up when her bets win or lose, her pick changes, your games start and results come in.','hint small'));
+    const b=iel('button','🔔 Turn on alerts','btn');b.type='button';b.onclick=async()=>{b.disabled=true;
+      try{const t=await apnsRegister();if(t==='denied'){toast('Alerts are off for Mohjeta in iPhone Settings → Notifications');b.disabled=false;return;}
+        if(!t){toast('Could not turn on alerts. Try again in a minute.');b.disabled=false;return;}
+        const err=await apnsSave(t);if(err){toast(/function|not find/i.test(err.message)?'Alerts are being set up. Try again later.':'Could not save: '+err.message);b.disabled=false;return;}
+        try{localStorage.setItem('mohjeta.apns',t);}catch(e){}toast('Alerts on 🔔');award('alerts');}
+      catch(e){toast('Could not turn on alerts');}drawPush(box);};c.append(b);box.append(c);return;}
+  const prefs=pushPrefs();for(const [k,label] of PUSH_KINDS){const l=el('label',null,'anyn');const cb=el('input');cb.type='checkbox';cb.checked=prefs[k]!==false;
+    cb.onchange=async()=>{const p=pushPrefs();p[k]=cb.checked;try{localStorage.setItem('mohjeta.pushprefs',JSON.stringify(p));}catch(e){}await apnsSave(tok);toast('Saved');};l.append(cb,iel('span',' '+label));c.append(l);}
+  if(!me)c.append(el('p','Sign in so the Pick’em and fantasy alerts know which games are yours.','hint small'));
+  const off=el('button','Turn off alerts','mlink');off.type='button';off.onclick=async()=>{try{await supa();await sb.rpc('remove_apns',{token:tok});}catch(e){}try{localStorage.removeItem('mohjeta.apns');}catch(e){}
+    try{await P.unregister();}catch(e){}toast('Alerts off');drawPush(box);};c.append(off);box.append(c);}
 async function drawPush(box){if(!box)return;box.replaceChildren();const c=el('div',null,'card pushcard');
   const ios=/iPhone|iPad|iPod/.test(navigator.userAgent),standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
   const vapid=window._cfg&&window._cfg.vapid_public;
   c.append(iel('b','🔔 Phone alerts'));
+  if(capPush()){await drawAppPush(box,c);return;}
   if(isIOSApp()&&!('PushManager' in window)){c.append(el('p','Alerts aren’t in the iPhone app yet (they come with the next app update). For now: open mohjeta.com in Safari, tap Share → Add to Home Screen, open Mohjeta from that icon and turn alerts on there.','hint small'));box.append(c);return;}   // fix373
   if(!('serviceWorker' in navigator)||!('PushManager' in window)){c.append(el('p',ios&&!standalone?'On iPhone: tap Share → Add to Home Screen, open Mohjeta from that icon, then turn alerts on here.':'This browser can’t show alerts.','hint small'));box.append(c);return;}
   if(!vapid||!sb){c.append(el('p','Alerts are being set up. Check back soon.','hint small'));box.append(c);return;}
