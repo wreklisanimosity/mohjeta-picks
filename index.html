@@ -1257,6 +1257,17 @@ function simShareLines(s,pH,margin,hp,ap,trades){const fav=pH>=0.5?s.home:s.away
   return {title:'I simulated '+s.away+' @ '+s.home,big:fav.split(' ').pop()+' '+Math.round(Math.max(pH,1-pH)*100)+'%',
     lines:[(hp!=null?s.home.split(' ').pop()+' '+hp.toFixed(0)+' – '+ap.toFixed(0)+' '+s.away.split(' ').pop():fav+' by '+Math.abs(margin).toFixed(1)),'10,000 games played'+(trades?' · with my trade':''),'Run your own on Mohjeta']};}
 function shareBtn(get){const b=iel('button','📤 Share','btn ghost');b.type='button';b.onclick=()=>{shareCard(get());award('share');};return b;}
+// fix371 (owner: "Share button doesn't work"): one share path for every button. The iPhone app (Capacitor web view) has no
+// Web Share and often no clipboard: use its native share sheet; else Web Share; else copy (with an old-style fallback).
+function siteLink(hash){return 'https://mohjeta.com/'+(hash==null?location.hash:hash);}
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true;}catch(e){}
+  try{const a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.cssText='position:fixed;left:-9999px;top:0';document.body.append(a);a.select();a.setSelectionRange(0,t.length);const ok=document.execCommand('copy');a.remove();return ok;}catch(e){return false;}}
+async function shareIt(o){const title=o.title||'Mohjeta',text=o.text||'',url=o.url||'';
+  const cap=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.Share;
+  if(cap){try{await cap.share({title,text,url:url||undefined,dialogTitle:'Share'});return true;}catch(e){if(/cancel/i.test(String(e&&(e.message||e))))return false;}}
+  if(navigator.share){try{await navigator.share(url?{title,text,url}:{title,text});return true;}catch(e){if(e&&e.name==='AbortError')return false;}}
+  const all=(text+(url?' '+url:'')).trim();if(await copyText(all)){toast('Link copied. Paste it anywhere to share.');return true;}
+  toast(all);return false;}
 function shareCard(c){const W=1080,H=1350,cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');
   const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,'#14061f');g.addColorStop(1,'#07050b');x.fillStyle=g;x.fillRect(0,0,W,H);
   const glow=(cx,cy,r,col)=>{const rg=x.createRadialGradient(cx,cy,0,cx,cy,r);rg.addColorStop(0,col);rg.addColorStop(1,'transparent');x.fillStyle=rg;x.fillRect(0,0,W,H);};
@@ -1268,6 +1279,7 @@ function shareCard(c){const W=1080,H=1350,cv=document.createElement('canvas');cv
   x.fillStyle='#9d8fb5';x.font='500 34px system-ui,Segoe UI,Arial';x.fillText('Model estimates for entertainment · not betting advice · 21+',W/2,H-80);
   cv.toBlob(async blob=>{const file=new File([blob],'mohjeta.png',{type:'image/png'});
     try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Mohjeta',text:c.title});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+    if(isIOSApp()||window.Capacitor){shareIt({title:'Mohjeta',text:c.title+(c.big?' · '+c.big:''),url:siteLink('')});return;}   // the app can't save a download: share the words and link
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mohjeta.png';document.body.append(a);a.click();a.remove();},'image/png');}
 function wrapText(x,t,cx,y,maxW,lh){const words=String(t).split(' ');let line='';for(const w of words){const test=line?line+' '+w:w;if(x.measureText(test).width>maxW&&line){x.fillText(line,cx,y);y+=lh;line=w;}else line=test;}x.fillText(line,cx,y);}
 // each badge is its own struck medal: icon, metal tier, enamel colour, shape (mohjeta-icons.js medal())
@@ -1504,8 +1516,8 @@ function partnerDash(m){const {box,x}=sheetGate('🤝 Partner dashboard');
   const link='https://mohjeta.com/?ref='+m.code;const owed=(Number(m.earned)||0)-(Number(m.paid)||0);
   box.append(el('p',(m.tier==='team'?'Team':'Partner')+' · you get '+Math.round(m.rate*100)+'% of what Mohjeta receives from every subscriber you bring in, for as long as they stay subscribed.'+(m.active?'':' (paused)'),'hint small'));
   const lk=el('div',null,'card');lk.append(el('b','Your link'),el('div',link,'mono small'));const cp=el('button','Copy link','btn small');cp.type='button';
-  cp.onclick=async()=>{try{await navigator.clipboard.writeText(link);toast('Link copied');}catch(e){toast(link);}};lk.append(cp);
-  if(navigator.share){const sh=el('button','Share','btn ghost small');sh.type='button';sh.onclick=()=>navigator.share({title:'Mohjeta',text:'Her picks, her record, all public. Join me on Mohjeta:',url:link}).catch(()=>{});lk.append(sh);}
+  cp.onclick=async()=>{if(await copyText(link))toast('Link copied');else toast(link);};lk.append(cp);
+  {const sh=el('button','Share','btn ghost small');sh.type='button';sh.onclick=()=>shareIt({title:'Mohjeta',text:'Her picks, her record, all public. Join me on Mohjeta:',url:link});lk.append(sh);}
   lk.append(el('div','App users can type your code instead: '+m.code,'hint small'));box.append(lk);
   const st=el('div',null,'stats');for(const [l,v] of [['Sign-ups',m.referrals],['Paying now',m.paying],['Earned',money(m.earned)],['Paid to you',money(m.paid)],['Owed',money(owed)]]){const c=el('div',null,'stat');c.append(el('small',l),el('b',String(v)));st.append(c);}box.append(st);
   if((m.recent||[]).length){const ul=el('ul',null,'plain');for(const r of m.recent)ul.append(el('li',new Date(r.at).toLocaleDateString()+' · '+r.name+' · '+r.source+' · +'+money(r.commission)));box.append(el('h4','Latest earnings'),ul);}
@@ -1997,8 +2009,9 @@ function closeSheet(silent){const s=$('sheet');if(!s.classList.contains('on'))re
   if(!silent&&location.hash.startsWith('#game/'))history.back();}
 $('sheetBack').onclick=()=>{if(location.hash.startsWith('#game/'))history.back();else closeSheet(true);};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')$('sheetBack').click();});
-$('sheetShare').onclick=async()=>{const g=sheetGame;if(!g)return;const text=(g.pick?'Mohjeta picks '+g.pick.team+' ('+pct(g.pick.chance)+') in '+(g.name||''):g.name)+'.';
-  try{if(navigator.share)await navigator.share({title:'Mohjeta Picks',text,url:location.href});else{await navigator.clipboard.writeText(text+' '+location.href);$('sheetShare').textContent='Link copied';setTimeout(()=>$('sheetShare').textContent='Share',1500);}}catch(e){}};
+$('sheetShare').onclick=async()=>{const g=sheetGame;   // a game: her pick + its link; any other sheet: the page link
+  const text=g?(g.pick?'Mohjeta picks '+g.pick.team+' ('+pct(g.pick.chance)+') in '+(g.name||''):(g.name||'Mohjeta'))+'.':'Mohjeta: her picks, her record, all public.';
+  shareIt({title:'Mohjeta Picks',text,url:g?siteLink('#game/'+encodeURIComponent(g.id||g.name)):siteLink('')});};
 function chart(prices,mine){// Kalshi's price for her side over the day, with her chance as a dashed line
   const W=360,H=170,P=34;const ys=prices.map(p=>p[1]).concat(typeof mine==='number'?[mine]:[]);let lo=Math.min(...ys),hi=Math.max(...ys);lo=Math.max(0,Math.floor((lo-.05)*20)/20);hi=Math.min(1,Math.ceil((hi+.05)*20)/20);
   const t0=Date.parse(prices[0][0]),t1=Date.parse(prices[prices.length-1][0])||t0+1;const X=t=>P+(W-2*P)*((Date.parse(t)-t0)/Math.max(1,t1-t0));const Y=v=>H-P+-(H-2*P)*((v-lo)/Math.max(.01,hi-lo));
@@ -3098,8 +3111,8 @@ async function leaguesCard(){const c=el('div',null,'card');c.append(iel('h4','�
   const jn=el('button','Join','btn ghost');jn.type='button';jn.onclick=()=>joinLeague(jc.value);
   c.append(ln,mk,el('div',null,'row'));c.lastChild.append(jc,jn);
   for(const l of mine){const b=el('div',null,'card');b.append(el('h4',l.name),el('div','Code: '+l.code+' · '+l.members+' team'+(l.members===1?'':'s'),'hint small'));
-    const share=iel('button','📤 Invite friends','btn ghost small');share.type='button';share.onclick=async()=>{const url=location.origin+location.pathname+'#join/'+l.code;
-      const text='Join my Mohjeta fantasy league "'+l.name+'": '+url+' (code '+l.code+')';try{if(navigator.share)await navigator.share({text});else{await navigator.clipboard.writeText(text);toast('Invite link copied');}}catch(e){}};
+    const share=iel('button','📤 Invite friends','btn ghost small');share.type='button';share.onclick=async()=>{const url=siteLink('#join/'+l.code);
+      const text='Join my Mohjeta fantasy league "'+l.name+'": '+url+' (code '+l.code+')';shareIt({text});};
     const leave=el('button',l.owner?'Delete league':'Leave','btn ghost small');leave.type='button';leave.onclick=async()=>{if(!confirmBox(l.owner?'Delete "'+l.name+'" for everyone?':'Leave "'+l.name+'"?'))return;
       const q=l.owner?sb.from('fantasy_leagues').delete().eq('id',l.id):sb.from('fantasy_members').delete().eq('league_id',l.id).eq('user_id',me.id);const {error}=await q;toast(error?error.message:'Done');refreshLeagues();};
     const r=el('div',null,'row');r.append(share,leave);b.append(r);
@@ -3310,8 +3323,8 @@ async function h2hOpen(lid,fresh){openSheet(()=>{const w=el('div');w.id='h2hView
   const L=d.league,sp=WK_SPORTS.find(x=>x[0]===L.sport)||['','🏆',''];w.replaceChildren();
   w.append(el('h2',sp[1]+' '+L.name),el('div',L.members+' member'+(L.members===1?'':'s')+(L.her?' + 🤖 Mohjeta':'')+' · '+L.weeks+'-week season'+(L.weeks>=5?' (last 2 weeks playoffs)':''),'hint small'));
   const inv=el('div',null,'h2hinv');inv.append(el('span','Invite code','hint small'),el('b',L.code,'mono'));const sh=el('button','📤 Invite friends','btn small');sh.type='button';
-  sh.onclick=async()=>{const url=location.origin+location.pathname+'#join/'+L.code;const text='Join my Mohjeta '+sp[2]+' league "'+L.name+'": '+url+' (code '+L.code+'). Free, just bragging rights.';
-    try{if(navigator.share)await navigator.share({text});else{await navigator.clipboard.writeText(text);toast('Invite copied');}}catch(e){}};inv.append(sh);w.append(inv);
+  sh.onclick=async()=>{const url=siteLink('#join/'+L.code);const text='Join my Mohjeta '+sp[2]+' league "'+L.name+'": '+url+' (code '+L.code+'). Free, just bragging rights.';
+    shareIt({text});};inv.append(sh);w.append(inv);
   if(fresh)w.append(el('p','✅ League made. Send the code to your friends. The season starts with the next '+sp[2]+' week that locks; make sure everyone saves a weekly lineup.','wkroom'));
   const ms=d.matchups||[];const wk=ms.length?ms[0].week:null;
   if(wk){const cur=ms.filter(m=>m.week===wk);const my=cur.find(h2hMine);w.append(el('h3','This week'));if(my)w.append(h2hCard(my,true));
