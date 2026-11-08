@@ -2893,6 +2893,7 @@ async function drawPush(box){if(!box)return;box.replaceChildren();const c=el('di
   const ios=/iPhone|iPad|iPod/.test(navigator.userAgent),standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
   const vapid=window._cfg&&window._cfg.vapid_public;
   c.append(iel('b','🔔 Phone alerts'));
+  if(isIOSApp()&&!('PushManager' in window)){c.append(el('p','Alerts aren’t in the iPhone app yet (they come with the next app update). For now: open mohjeta.com in Safari, tap Share → Add to Home Screen, open Mohjeta from that icon and turn alerts on there.','hint small'));box.append(c);return;}   // fix373
   if(!('serviceWorker' in navigator)||!('PushManager' in window)){c.append(el('p',ios&&!standalone?'On iPhone: tap Share → Add to Home Screen, open Mohjeta from that icon, then turn alerts on here.':'This browser can’t show alerts.','hint small'));box.append(c);return;}
   if(!vapid||!sb){c.append(el('p','Alerts are being set up. Check back soon.','hint small'));box.append(c);return;}
   const sub=await pushSub();const on=!!sub&&Notification.permission==='granted';
