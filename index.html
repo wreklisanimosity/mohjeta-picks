@@ -224,6 +224,21 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
    cards inside still rise one by one), and the fixed background glow is screen-sized instead of 140%. */
 .panel.on{animation:none!important}.sheet.on{animation:none!important}
 body::before{inset:0!important}
+
+/* champions + team pages (fix360) */
+.mtitle{font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;background:linear-gradient(135deg,#f5c54233,#ff9a1c22);color:#ffd36e;border:1px solid #f5c54266;white-space:nowrap}
+.hof .hofrow,.tchamps .hofrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.hofrow .hofic{font-size:22px;width:28px;text-align:center}
+.hofrow .hofn{display:flex;flex-direction:column;min-width:0}.hofrow .hofn small{color:var(--dim);font-size:12px}.hofrow.mine b{color:#ffd36e}.hofrow.tie{padding-top:2px;border-top:0}
+.hof{background:linear-gradient(160deg,#2a1f0a,#1a0f24 60%)}.tchamps{background:#1b1229;border:1px solid #f5c54255;border-radius:14px;padding:10px 12px;margin:10px 0}
+.tlink{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;text-align:left;text-decoration:underline dotted #ffffff44;text-underline-offset:3px}
+.tside{cursor:pointer;border-radius:12px;padding:4px}.tside:active{background:#ffffff0d}.tsidehint{font-size:10px;color:var(--pink);opacity:.85}
+.tphead{display:flex;align-items:center;gap:14px;padding:14px;border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--tc,#6b3cff) 45%,#1a0f24),#140a1f);margin-bottom:10px}
+.tphead h2{margin:2px 0}.tphead .simeyebrow{text-align:left}.tprec{color:#e9d6ff;font-size:13px}
+.tpsyntext{font-size:16px;line-height:1.5;margin:6px 0 10px}.tpform{display:flex;gap:4px}.tpf{width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:#ff5c7833;color:var(--red)}.tpf.W{background:#39d98a33;color:var(--green)}.tpf.T{background:#ffffff22;color:var(--muted)}
+.tpnext{width:100%;margin:2px 0 10px}
+.tpg{display:grid;grid-template-columns:56px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:14px}.tpg .tpd{color:var(--dim);font-size:12px}
+.tpg .tpo{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tpg .tpt{color:var(--muted);font-size:12px}.tpr.W{color:var(--green)}.tpr.L{color:var(--red)}
+.tpp{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:7px 0;border-top:1px solid var(--line)}.tpp .hint{grid-column:1}.tpp .tprate{grid-row:1/3;grid-column:2;align-self:center;font-weight:800;color:#f5c542;font-size:18px}
 /* simulator v2 (fix355) */
 .simhero{position:relative;overflow:hidden;background:radial-gradient(120% 80% at 50% 0%,#3a1a5a,transparent 70%),var(--card)}
 .simeyebrow{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;color:#f5c542;text-align:center}
@@ -1310,7 +1325,7 @@ function setShow(k){const b=badgeData();if(!b[k])return;let show=badgeShowList()
   if(me&&myProfile)syncBadges();else toast('Sign in (Fan Lounge) to show them next to your name');openTrophies();}
 // the trophy case: every badge, how to earn it, and the 3 you show off
 function openTrophies(){openSheet(()=>{const w=el('div',null,'trophies');const b=badgeData();const keys=Object.keys(BADGES);const got=keys.filter(k=>b[k]);const show=badgeShowList();
-  w.append(el('h2','🏆 Trophy case'));
+  w.append(el('h2','🏆 Trophy case'));{const ch=myChampionships();if(ch.length){const cc=el('div',null,'tchamps');cc.append(el('span','CHAMPIONSHIPS','community-eyebrow'));for(const r of ch){const row=el('div',null,'hofrow mine');row.append(el('span',champIcon(r),'hofic'),el('div',null,'hofn'));row.lastChild.append(el('b',r.label),el('small',r.stat+' · '+new Date(r.created_at).toLocaleDateString([],{month:'short',day:'numeric'})));cc.append(row);}w.append(cc);}}
   const bar=el('div',null,'tbar');const fill=el('i');fill.style.width=Math.round(got.length/keys.length*100)+'%';bar.append(fill);
   w.append(el('b',got.length+' of '+keys.length+' earned'),bar);
   const pin=el('div',null,'tpinned');pin.append(el('span','Next to your name','community-eyebrow'));const row=el('div',null,'row tprow');
@@ -1482,9 +1497,9 @@ async function openChat(){chatRoom='lobby';const box=$('chatBox');box.replaceChi
   // fix351 (owner: "@ people in chat ... the chat is kinda bland"): bubbles grouped by person, day lines, @mentions
   // (highlighted; the person gets a ping), quick reactions, who's here now, emoji bar. supabase_chat2.sql adds
   // messages.mentions (set by the server from the text) and message_reactions; without it chat works as before.
-  const tries=['id,user_id,name,body,hidden,created_at,mentions,profiles(avatar_url,role,badge_show)','id,user_id,name,body,hidden,created_at,profiles(avatar_url,role)','id,user_id,name,body,hidden,created_at,profiles(avatar_url)','id,user_id,name,body,hidden,created_at'];
+  const tries=['id,user_id,name,body,hidden,created_at,mentions,profiles(avatar_url,role,badge_show,title)','id,user_id,name,body,hidden,created_at,mentions,profiles(avatar_url,role,badge_show)','id,user_id,name,body,hidden,created_at,profiles(avatar_url,role)','id,user_id,name,body,hidden,created_at,profiles(avatar_url)','id,user_id,name,body,hidden,created_at'];
   let msgs=null,error=null;for(const cols of tries){({data:msgs,error}=await sb.from('messages').select(cols).eq('room',chatRoom).order('created_at',{ascending:false}).limit(80));if(!error)break;}
-  for(const m of msgs||[]){if(m.profiles&&m.profiles.avatar_url)PICS[m.user_id]=m.profiles.avatar_url;if(m.profiles&&m.profiles.role)ROLES[m.user_id]=m.profiles.role;if(m.profiles&&Array.isArray(m.profiles.badge_show))BADGE_SHOW[m.user_id]=m.profiles.badge_show;chatName(m.name);}
+  for(const m of msgs||[]){if(m.profiles&&m.profiles.avatar_url)PICS[m.user_id]=m.profiles.avatar_url;if(m.profiles&&m.profiles.role)ROLES[m.user_id]=m.profiles.role;if(m.profiles&&Array.isArray(m.profiles.badge_show))BADGE_SHOW[m.user_id]=m.profiles.badge_show;if(m.profiles&&m.profiles.title)TITLES[m.user_id]=m.profiles.title;chatName(m.name);}
   if(myProfile)chatName(myProfile.display_name);
   if(error){list.append(el('p','Chat could not load right now.','hint'));}
   const rows=(msgs||[]).reverse();if(!error&&!rows.length)list.append(el('div','👋 Quiet in here. Say hi, or @ someone to get them in.','mempty'));
@@ -1501,7 +1516,7 @@ async function openChat(){chatRoom='lobby';const box=$('chatBox');box.replaceChi
     .on('postgres_changes',{event:'*',schema:'public',table:'message_reactions'},p=>{const r=p.new&&p.new.message_id?p.new:p.old;if(!r||!r.message_id)return;
       const set=((RX[r.message_id]=RX[r.message_id]||{})[r.emoji]=RX[r.message_id][r.emoji]||new Set());if(p.eventType==='DELETE')set.delete(r.user_id);else set.add(r.user_id);drawReacts(r.message_id);})
     .subscribe();
-  lounge();box.append(composer());unread=0;badgeCount();drawChallenges();}
+  lounge();box.append(composer());unread=0;badgeCount();drawChallenges();loadChamps();}
 let ROLES={},RX={},CHAT_NAMES=new Set(),loungeCh=null;
 const REACTS=['🔥','💯','😂','👀','🎯','🙌'];
 function chatName(n){if(n&&String(n).length>=2)CHAT_NAMES.add(String(n));}
@@ -1524,7 +1539,7 @@ function msgRow(m,prev){const mine=me&&m.user_id===me.id;
   const r=el('div',null,'msg'+(m.hidden?' hid':'')+(mine?' mine':'')+(cont?' cont':'')+(!mine&&mentionsMe(m)?' tagme':''));r.dataset.id=m.id;r._m=m;
   const person=el('button',null,'chatperson mav');person.type='button';person.append(chatPic(m));person.setAttribute('aria-label','Options for '+(m.name||'fan'));person.onclick=()=>chatPersonMenu(m,person);
   const col=el('div',null,'mcol');
-  if(!cont&&!mine){const head=el('div',null,'mh');const nm=el('button',m.name||'fan','mname');nm.type='button';nm.onclick=()=>chatPersonMenu(m,person);head.append(nm,myBadges({id:m.user_id},'sm'));
+  if(!cont&&!mine){const head=el('div',null,'mh');const nm=el('button',m.name||'fan','mname');nm.type='button';nm.onclick=()=>chatPersonMenu(m,person);head.append(nm,myBadges({id:m.user_id},'sm'));if(TITLES[m.user_id])head.append(el('span',TITLES[m.user_id],'mtitle'));
     const role=ROLES[m.user_id];if(role==='admin'||role==='mod')head.append(el('span',role==='admin'?'ADMIN':'MOD','mrole'));
     head.append(el('span',new Date(m.created_at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}),'mtime'));col.append(head);}
   const bub=el('div',null,'mbub');bub.append(mbody(m.body));
@@ -1705,6 +1720,72 @@ let simId=null;const simState={};
 // rebuilt the whole Simulator, and a game whose simulation inputs had not arrived yet collapsed to one "Loading…" line,
 // leaving the phone looking at an empty page below it. Now the Simulator is rebuilt only when its games or inputs change,
 // and the last inputs for a game are kept until new ones arrive.
+// ---------------- champions (fix360, owner: in-app recognition, no money): weekly / monthly Pick'em and weekly fantasy
+// champions (champions.py writes them), titles next to names, a Hall of Fame, the champion on the headline banner.
+let CHAMPS=null,champsAt=0;const TITLES={};
+async function loadChamps(force){if(!force&&CHAMPS&&Date.now()-champsAt<300000)return CHAMPS;try{await supa();const {data,error}=await sb.from('champions').select('kind,period,label,user_id,name,stat,created_at').order('created_at',{ascending:false}).limit(60);
+  if(error)throw error;CHAMPS=data||[];champsAt=Date.now();champCheer();try{drawTicker();}catch(e){}document.querySelectorAll('.hof').forEach(x=>x.replaceWith(hofCard()));}catch(e){CHAMPS=CHAMPS||[];}return CHAMPS;}
+const CHAMP_IC={pickem_week:'👑',pickem_month:'🏆',fantasy_week:'🏈'};
+function champIcon(c){return c.kind==='fantasy_week'&&/NBA/.test(c.label)?'🏀':CHAMP_IC[c.kind]||'🏆';}
+function hofCard(){const c=el('div',null,'card hof');c.append(iel('h4','🏛️ Hall of Fame'),el('p','Weekly and monthly champions. Win Pick’em for the week (3+ finished picks) or the month (8+), or top a weekly fantasy slate, to get your name up here and a title next to it in chat.','hint small'));
+  const rows=(CHAMPS||[]);if(!rows.length){c.append(el('p',CHAMPS?'No champions yet. The first weekly Pick’em champion is crowned Monday.':'Loading…','hint small'));if(!CHAMPS)loadChamps();return c;}
+  const seen=new Set();for(const r of rows.slice(0,12)){const k=r.kind+r.period;const row=el('div',null,'hofrow'+(seen.has(k)?' tie':'')+(me&&r.user_id===me.id?' mine':''));seen.add(k);
+    row.append(el('span',champIcon(r),'hofic'),chatPic({user_id:r.user_id,name:r.name}),el('div',null,'hofn'));row.lastChild.append(el('b',r.name),el('small',r.label+' · '+r.stat));c.append(row);}
+  return c;}
+function champCheer(){if(!me||!CHAMPS)return;let seen={};try{seen=JSON.parse(localStorage.getItem('mohjeta.champSeen')||'{}')||{};}catch(e){}
+  for(const r of CHAMPS){if(r.user_id!==me.id||seen[r.kind+r.period])continue;seen[r.kind+r.period]=1;if(Date.now()-Date.parse(r.created_at)>7*864e5)continue;
+    setTimeout(()=>{const t=toast(champIcon(r)+' You’re the champion! '+r.label+' · '+r.stat);try{MJSound&&MJSound.play('badge');}catch(e){}},1200);}
+  try{localStorage.setItem('mohjeta.champSeen',JSON.stringify(seen));}catch(e){}}
+function champTicker(){return (CHAMPS||[]).filter(r=>Date.now()-Date.parse(r.created_at)<6*864e5).slice(0,3).map(r=>({site:true,label:'CHAMPION',text:champIcon(r)+' '+r.name+' won '+r.label+' ('+r.stat+')',go:'play'}));}
+function myChampionships(){return (CHAMPS||[]).filter(r=>me&&r.user_id===me.id);}
+// ---------------- team pages (fix360, owner: "add team schedules and synopsis" -> team page): record, a short synopsis
+// written from her ratings and their results, last results and next games, key players. teams.json from team_pages.py.
+let TEAMPG=null,teamsAt=0;
+async function loadTeams2(){if(TEAMPG&&Date.now()-teamsAt<1800000)return TEAMPG;try{const r=await fetch('teams.json?v='+Math.floor(Date.now()/600000),{cache:'no-cache'});if(!r.ok)throw Error();TEAMPG=await r.json();teamsAt=Date.now();}catch(e){TEAMPG=TEAMPG||{leagues:{}};}return TEAMPG;}
+const TEAM_LG={NCAAB:null,CBB:null};
+function findTeam(T,name,league){const L=(T.leagues||{});const lgs=league&&L[league]?[league]:Object.keys(L);const n=String(name||'').toLowerCase();
+  for(const lg of lgs){const all=Object.entries(L[lg]||{});let hit=all.find(([a,t])=>String(t.n||'').toLowerCase()===n)||all.find(([a,t])=>a.toLowerCase()===n);
+    if(!hit)hit=all.find(([a,t])=>sameTeam(t.n,name)&&String(t.s||'').toLowerCase()===String(name).toLowerCase().split(' ').pop());
+    if(!hit){const c=all.filter(([a,t])=>sameTeam(t.n,name));if(c.length===1)hit=c[0];}
+    if(hit)return {lg,abbr:hit[0],t:hit[1]};}
+  return null;}
+function teamLink(name,league,content){const b=el('button',null,'tlink');b.type='button';b.append(content==null?String(name):content);b.title='Schedule and synopsis';b.onclick=e=>{e.stopPropagation();openTeam(name,league);};return b;}
+function teamRating(name,lg){const L=rt&&rt.leagues&&rt.leagues[lg];if(!L||!L.teams)return null;return L.teams.find(t=>t.team===name)||L.teams.find(t=>sameTeam(t.team,name))||null;}
+function teamStars(name,lg,abbr){const L=rt&&rt.leagues&&rt.leagues[lg];const ps=L&&L.roster&&L.roster.players;if(!ps)return [];
+  return ps.filter(p=>p.team===abbr||sameTeam(p.team_name||'',name)&&String(name).toLowerCase().endsWith(String(p.team_name||'').toLowerCase())).filter(p=>!/^(OL|P|K)$/.test(p.group)).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,5);}
+function teamSynopsis(name,lg,t,r,nextG){const done=t.g.filter(x=>x[4]),todo=t.g.filter(x=>!x[4]);const nick=t.s||simNick(name);const out=[];
+  let streak=0,sk=null;for(let i=done.length-1;i>=0;i--){if(sk===null)sk=done[i][4];if(done[i][4]!==sk)break;streak++;}
+  const recent=done.slice(-5),rw=recent.filter(x=>x[4]==='W').length;
+  out.push(nick+(t.rec?' are '+t.rec:'')+(t.st?', '+t.st.replace(/^(\d+)(st|nd|rd|th) in /,'$1$2 in the ')+'.':'.'));
+  if(streak>=2)out.push(sk==='W'?'They’ve won '+streak+' straight.':sk==='L'?'They’ve lost '+streak+' in a row.':'');
+  else if(recent.length>=3)out.push('They’re '+rw+'-'+(recent.length-rw)+' in their last '+recent.length+'.');
+  if(t.gp>=2){const pf=t.pf/t.gp,pa=t.pa/t.gp,d=pf-pa,u=lg==='NHL'?'goals':'points';out.push('They score '+(lg==='NHL'?pf.toFixed(1):Math.round(pf))+' '+u+' a game and allow '+(lg==='NHL'?pa.toFixed(1):Math.round(pa))+(Math.abs(d)>=(lg==='NHL'?0.5:4)?(d>0?', winning by '+(lg==='NHL'?d.toFixed(1):Math.round(d))+' on average.':', losing by '+(lg==='NHL'?(-d).toFixed(1):Math.round(-d))+' on average.'):', about even.'));}
+  if(r){const tr=r.trend_30d;out.push('Her ratings have them '+ordinal(r.rank)+' of '+((rt.leagues[lg].teams||[]).length||'')+(tr?(tr>0?', rising (+'+tr+' in 30 days)':', slipping ('+tr+' in 30 days)'):'')+'.');}
+  if(t.home&&t.road&&t.gp>=4)out.push('Home '+t.home+', on the road '+t.road+'.');
+  if(nextG&&nextG.pick){const mine=sameTeam(nextG.pick.team,name);out.push('Next up she '+(mine?'likes them':'picks against them')+' at '+pct(mine?nextG.pick.chance:1-nextG.pick.chance)+'.');}
+  else if(todo[0])out.push('Next: '+(todo[0][3]?'vs ':'at ')+(todo[0][2]||todo[0][1])+' '+when(todo[0][0])+'.');
+  return out.filter(Boolean).join(' ');}
+function ordinal(n){n=Number(n);const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
+async function openTeam(name,league){openSheet(()=>{const w=el('div',null,'teampage');w.id='teamView';w.append(el('p','Loading '+name+'…','hint'));return w;},'Team');
+  const T=await loadTeams2();const w=$('teamView');if(!w)return;const f=findTeam(T,name,league);w.replaceChildren();
+  const head=el('div',null,'tphead');const cl=simColor(name)||(f&&f.t.c?'#'+f.t.c:null);if(cl)head.style.setProperty('--tc',cl);const b=teamBadge(name);b.classList.add('big');
+  const tx=el('div');tx.append(el('span',(f?sname(f.lg):sname(league||'')).toUpperCase(),'simeyebrow'),el('h2',f?f.t.n:name),el('b',f?(f.t.rec||'')+(f.t.st?' · '+f.t.st:''):'','tprec'));head.append(b,tx);w.append(head);
+  if(!f){w.append(el('p','Schedule for this team isn’t available yet (pro football, basketball and hockey, and top college football teams are covered). Check back after her next update.','hint'));return;}
+  const lg=f.lg,t=f.t,r=teamRating(t.n,lg);const nextG=(D&&D.games||[]).filter(g=>g.state!=='FINAL'&&(g.teams||[]).some(x=>sameTeam(x.name,t.n))).sort((a,b)=>String(a.start).localeCompare(String(b.start)))[0];
+  const syn=el('div',null,'card tpsyn');syn.append(el('span','THE SYNOPSIS','simeyebrow'),el('p',teamSynopsis(t.n,lg,t,r,nextG),'tpsyntext'));w.append(syn);
+  const done=t.g.filter(x=>x[4]),todo=t.g.filter(x=>!x[4]);
+  if(done.length){const form=el('div',null,'tpform');for(const x of done.slice(-8))form.append(el('span',x[4],'tpf '+x[4]));syn.append(form);}
+  if(nextG){const nb=el('button',null,'btn tpnext');nb.type='button';nb.append(el('span','Next: '+nextG.name+' · '+when(nextG.start)+' ›'));nb.onclick=()=>{closeSheet(true);openGame(nextG.id||nextG.name);};w.append(nb);}
+  const sched=el('div',null,'card tpsched');sched.append(el('h4','📅 Schedule'));
+  const line=x=>{const row=el('div',null,'tpg'+(x[4]?' done':''));const d=new Date(x[0]);row.append(el('span',d.toLocaleDateString([],{month:'short',day:'numeric'}),'tpd'),el('span',(x[3]?'vs ':'@ ')+(x[2]||x[1]),'tpo'));
+    if(x[4])row.append(el('b',x[4]+' '+x[5]+'-'+x[6],'tpr '+x[4]));else row.append(el('span',d.toLocaleTimeString([],{weekday:'short',hour:'numeric',minute:'2-digit'}),'tpt'));return row;};
+  if(todo.length){sched.append(el('div','Coming up','lugrp'));todo.forEach(x=>sched.append(line(x)));}
+  if(done.length){sched.append(el('div','Recent results','lugrp'));done.slice().reverse().forEach(x=>sched.append(line(x)));}
+  w.append(sched);
+  const stars=teamStars(t.n,lg,f.abbr);if(stars.length){const k=el('div',null,'card tpstars');k.append(el('h4','⭐ Key players'));
+    for(const p of stars){const row=el('div',null,'tpp');row.append(el('b',p.name),el('span',(p.pos||p.group||'')+(p.stats?' · '+p.stats:''),'hint small'),el('span',String(p.rating),'tprate'));k.append(row);}
+    k.append(el('p','Rating 0-99 = rank against players at the same position this season.','hint small'));w.append(k);}
+  w.append(el('p','Schedule and results from ESPN; synopsis written by Mohjeta from her ratings and their results. Updated every few hours.','hint small'));}
 let simKey=null;const SIMLAST={};
 function renderSimIfChanged(){let k=null;try{k=JSON.stringify([simMode,simGames().map(g=>[g.id||g.name,g.sim?(g.sim.nba_model?g.sim.nba_model.model_hash||g.sim.nba_model.built_at:g.sim.margin+'/'+g.sim.total):0])]);}catch(e){}
   const on=document.querySelector('#sim.panel.on');if(on&&k&&k===simKey)return;simKey=k;renderSim();}
@@ -1861,7 +1942,7 @@ function section(title,node){const c=el('div',null,'card');c.append(el('h4',titl
 function gameView(g){const b=el('div');const ln=laneOf(g);
   const head=el('div',null,'row');head.append(el('span',sname(g.league).toUpperCase(),'league'),el('span',null,'sp'),el('span',ln.t,'pill '+ln.c));b.append(head);
   const hero=el('div',null,'hero');const vs=el('div',null,'vs');
-  g.teams.forEach((t,i)=>{const sd=el('div',null,'side');sd.append(teamBadge(t.name),teamPlate(t.name,true),el('span',g.state==='LIVE'?String(t.score??0):(t.record||''),g.state==='LIVE'?'sc':'hint small'));vs.append(sd);if(i===0)vs.append(el('span',g.state==='LIVE'?'–':'vs','hint'));});
+  g.teams.forEach((t,i)=>{const sd=el('div',null,'side tside');sd.setAttribute('role','button');sd.tabIndex=0;sd.title='Team schedule and synopsis';sd.onclick=()=>openTeam(t.name,g.league);sd.append(teamBadge(t.name),teamPlate(t.name,true),el('span',g.state==='LIVE'?String(t.score??0):(t.record||''),g.state==='LIVE'?'sc':'hint small'),el('small','📅 Team page','tsidehint'));vs.append(sd);if(i===0)vs.append(el('span',g.state==='LIVE'?'–':'vs','hint'));});
   hero.append(vs,el('div',g.state==='LIVE'?'● LIVE '+(g.detail||''):when(g.start),g.state==='LIVE'?'down':'hint'));if(g.tv&&g.tv.length)hero.append(el('div','TV: '+g.tv.join(' · '),'hint small'));b.append(hero);
   if(g.pick&&ln.t==='PRACTICE')b.append(el('div',PRACTICE_NOTE,'notice'));
   if(g.bet){const r=g.bet;const c=el('div',null,'card');c.append(betBlock(g,true));
@@ -1982,7 +2063,7 @@ function drawBetting(d){const box=$('betting');box.replaceChildren();
   const cr=el('div',null,'crumb');if(sports.length>1){const back=el('button','‹ All sports');back.type='button';back.onclick=()=>{tonSport=null;drawBetting(D);};cr.append(back);}
   {const h=el('h4',' '+sname(tonSport)+' · '+by[tonSport].length);if(window.SportArt)h.prepend(SportArt.el(tonSport));else h.prepend(sportIcon(tonSport));cr.append(h);}box.append(cr);
   const gr=el('div',null,'mgrid');for(const g of by[tonSport])gr.append(miniCard(g));box.append(gr);}
-function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();try{renderOpenBets(d);}catch(e){}try{renderLegs(d);}catch(e){}try{if(document.querySelector('#feed.on'))renderFeed(d);}catch(e){}setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(pickemCard(),boardCard(),myPicks());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
+function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();try{renderOpenBets(d);}catch(e){}try{renderLegs(d);}catch(e){}try{if(document.querySelector('#feed.on'))renderFeed(d);}catch(e){}setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(pickemCard(),boardCard(),hofCard(),myPicks());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
     const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));{const ws=withSkipped(d,t.wins,t.losses);if(ws)box.append(el('div',ws.w+'-'+ws.l+' counting the '+(ws.sw+ws.sl)+' picks she skipped at 95¢+ (no bet on those)','hint small'));}
@@ -2294,14 +2375,14 @@ function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').va
   if(L.tennis){box.replaceChildren(el('h3','Player Elo'),tableOf(['Rank','Player','Elo','Hard','Clay','Grass'],L.tennis.filter(p=>hit(p.name)).map(p=>[p.rank,p.name,p.elo,p.surface.hard,p.surface.clay,p.surface.grass])));return;}
   const parts=rtView==='leaders'?[]:[el('h3','Team ratings')];
   if(rtView==='leaders'){}else if(!L.ready)parts.push(el('p',L.note||'Ratings are still being built.','hint'));
-  else {const MT=Object.fromEntries((((L.matchups||{}).teams)||[]).map(x=>[x.team,x]));parts.push(tableOf(['#','Team','Rating','vs avg team','30 days','Record','Off','Def'],L.teams.filter(t=>hit(t.team)).map(t=>{const mt=MT[t.team]||{};const tr=el('span',t.trend_30d==null?'—':(t.trend_30d>0?'+':'')+t.trend_30d,t.trend_30d>0?'up':t.trend_30d<0?'down':'');return [t.rank,ratingTeamName(t.team),t.rating,pct(t.vs_average),tr,t.record,sg(mt.offense),sg(mt.defense)];})));}
+  else {const MT=Object.fromEntries((((L.matchups||{}).teams)||[]).map(x=>[x.team,x]));parts.push(tableOf(['#','Team','Rating','vs avg team','30 days','Record','Off','Def'],L.teams.filter(t=>hit(t.team)).map(t=>{const mt=MT[t.team]||{};const tr=el('span',t.trend_30d==null?'—':(t.trend_30d>0?'+':'')+t.trend_30d,t.trend_30d>0?'up':t.trend_30d<0?'down':'');return [t.rank,teamLink(t.team,rtLeague,ratingTeamName(t.team)),t.rating,pct(t.vs_average),tr,t.record,sg(mt.offense),sg(mt.defense)];})));}
   const cats=((L.players||{}).categories||[]).map(c=>{const rs=c.leaders.filter(l=>hit(l.name)||hit(l.team));if(!rs.length)return null;const dv=el('div');dv.append(el('h4',c.category),tableOf(['Player','Team','Pos','Value'],rs.map(l=>[l.name,l.team,l.position,l.value])));return dv;}).filter(Boolean);
   if(cats.length&&rtView==='leaders'){const g=el('div',null,'cats');g.append(...cats);parts.push(el('h3','Player leaders'+(L.players.season?' · '+L.players.season:'')),g);}
   box.replaceChildren(...parts);}
 $('rtFind').oninput=drawRatings;$('rtPick').onchange=drawRatings;
 async function loadRatings(){try{const r=await fetchPublicSnapshot('ratings.json');if(!r.ok)throw Error();rt=await r.json();drawRatings();try{if(document.querySelector('#sim.panel.on')&&!document.querySelector('.simbox')&&simMode!=='any'&&simMode!=='fantasy')drawSim();}catch(e){}}
   catch(e){$('rtBox').replaceChildren(el('p','Ratings will appear after her next update.','hint'));}}
-load();setInterval(()=>{if(!document.hidden)load();},20000);initLive();loadRatings();let rtAt=Date.now();setInterval(()=>{if(!document.hidden){rtAt=Date.now();loadRatings();}},600000);
+load();setInterval(()=>{if(!document.hidden)load();},20000);setTimeout(()=>{loadChamps().catch(()=>{});},5000);initLive();loadRatings();let rtAt=Date.now();setInterval(()=>{if(!document.hidden){rtAt=Date.now();loadRatings();}},600000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){load();if(Date.now()-rtAt>600000){rtAt=Date.now();loadRatings();}}});
 // ---------------- Google one-tap sign-in (a small Google pop-up on the page: tap your account, done; no page change)
 const GOOGLE_CLIENT_ID='883955987231-l1v1fltv25f3hbavnrf3pe1ut8gb5u2u.apps.googleusercontent.com';     // public ID (not a secret); also read from live-config.json (google_client_id)
@@ -2517,7 +2598,7 @@ function drawNews(){const box=$('newsBox');if(!box||!NEWS)return;box.replaceChil
 let tkKey='';
 const TK_MAX=10;   // fix349: the banner is one long sliding strip (twice over); dozens of headlines made it tens of thousands of
                    // pixels wide, past what an iPhone can keep on screen, and the page could flash black. Newest 10 only.
-function tickerItems(){const out=[];const cut=Date.now()-14*864e5;
+function tickerItems(){const out=[];const cut=Date.now()-14*864e5;try{out.push(...champTicker());}catch(e){}
   for(const u of ((NEWS&&NEWS.updates)||[]).slice(0,3)){if(Date.parse(u.date)>=cut)out.push({site:true,label:'MOHJETA',text:u.title,go:'news'});}   // tap: the full update on What's new
   for(const h of ((D&&D.headlines)||[]).slice(0,TK_MAX))out.push({label:(SPORT_ICON[h.league]||'')+' '+sname(h.league).toUpperCase(),text:h.text,link:h.link});
   return out;}
