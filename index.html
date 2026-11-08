@@ -463,7 +463,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .cmbcmp{display:flex;flex-direction:column;gap:6px}.cmbbar span{display:flex;justify-content:space-between;font-size:12px}.cmbtrack{height:8px;border-radius:6px;background:#ffffff14;overflow:hidden;margin-top:2px}
 .cmbtrack i{display:block;height:100%;border-radius:6px}.cmbtrack .fher{background:linear-gradient(90deg,#22c55e,#86efac)}.cmbtrack .fkal{background:#8b8fa8}
 .cmb>.btn{align-self:flex-start}.cmbempty{display:flex;flex-direction:column;gap:4px}
-.cmbtabs{margin:6px 0 12px;flex-wrap:wrap}.cmbrec{min-width:0}.cmbkind{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:13px}
+.cmbtabs{margin:6px 0 12px;flex-wrap:wrap}.cpacts{display:flex;gap:8px;flex-wrap:wrap}.cpall{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}.parlay .cpbtn{margin-top:6px}.cmbrec{min-width:0}.cmbkind{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:13px}
 .cmbhist{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}.cmbhist>div{flex:1;min-width:0;display:flex;flex-direction:column}.cmbhist b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cmbst{white-space:nowrap;font-weight:800}.cmblink{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;margin:10px 0}.cmblink>div{flex:1;display:flex;flex-direction:column;gap:2px}
 .cmbli{font-size:24px}.cmbgo{font-size:22px;color:var(--muted)}
 .board .brow{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.board .bk{width:26px;text-align:center}
@@ -681,7 +681,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
     <div id="record"></div><div id="openBets"></div><div id="installBox"></div><div id="alertsBox"></div>
     <div id="liveBox"></div>
     <h3>Tonight she's betting</h3><p class="hint small xp">Games where she puts $5 of paper money on her pick at Kalshi's real price. Tap a sport to see them.</p><div id="betting"></div>
-    <div id="legsBox"></div>
+    <div id="legsBox"></div><div id="copyBox"></div>
     <h3>Her most confident picks</h3><p class="hint small xp">Her most confident calls in every sport. 🧪 Practice picks are sports she is still learning and does not bet yet: less information behind them, so use them with caution. Their results are in Results. Tap any pick for the full breakdown.</p><div class="mgrid" id="best"></div>
     <h3>Latest results</h3><div class="strip" id="recent"></div>
     <button type="button" class="hero" id="heroSim"><span class="hi">⚔️</span><span><b>Simulate any matchup</b><small>Pick two teams and watch them battle 10,000 times</small></span><span class="go">›</span></button>
@@ -2137,7 +2137,13 @@ function withSkipped(d,w,l){const S=d&&d.skipped&&d.skipped.record;if(!S||!S.n)r
 function legGames(d){const now=Date.now();return (d.games||[]).filter(g=>g.state==='UPCOMING'&&g.pick&&Date.parse(g.start)>now&&
   ((typeof g.kalshi==='number'&&g.kalshi>0.95)||g.no_bet||(g.pick.chance>=0.95&&!(typeof g.kalshi==='number'))))
   .sort((a,b)=>Math.max(b.pick.chance,b.kalshi||0)-Math.max(a.pick.chance,a.kalshi||0));}
-function renderLegs(d){const box=$('legsBox');if(!box)return;box.replaceChildren();const gs=legGames(d);if(!gs.length)return;   // fix377: lives in Combos & parlays now
+function renderCopyAll(d){const box=$('copyBox');if(!box)return;box.replaceChildren();const now=Date.now();
+  const gs=(d.games||[]).filter(g=>g.state==='UPCOMING'&&g.pick&&g.pick.team&&Date.parse(g.start)>now&&Date.parse(g.start)-now<36*3600e3).sort((a,b)=>Date.parse(a.start)-Date.parse(b.start));
+  if(!gs.length)return;const bet=gs.filter(isBetLane);
+  const w=el('div',null,'cpall');w.append(copyBtn('📋 Copy her bets ('+bet.length+')',()=>copySlip('Mohjeta: her bets',bet.map(g=>teamSlip(g.pick.team,g)+' — she says '+pct(g.pick.chance)))),
+    copyBtn('📋 Copy all her picks ('+gs.length+')',()=>copySlip('Mohjeta: all her picks',gs.map(g=>teamSlip(g.pick.team,g)+' — she says '+pct(g.pick.chance)))));
+  if(!bet.length)w.firstChild.remove();box.append(w);}
+function renderLegs(d){try{renderCopyAll(d);}catch(e){}const box=$('legsBox');if(!box)return;box.replaceChildren();const gs=legGames(d);if(!gs.length)return;   // fix377: lives in Combos & parlays now
   const b=el('button',null,'card cmblink');b.type='button';b.append(el('span','🔗','cmbli'),(()=>{const t=el('div');t.append(el('b','Parlay legs: '+gs.length+' heavy favorite'+(gs.length===1?'':'s')+' tonight'),el('small','Her picks on 95%+ favorites, in Combos & parlays','hint'));return t;})(),el('span','›','cmbgo'));
   b.onclick=()=>openCombos('legs');box.append(b);}
 function legsCard(d){const gs=legGames(d);const S=d.skipped&&d.skipped.record;const box=el('div');
@@ -2151,6 +2157,7 @@ function legsCard(d){const gs=legGames(d);const S=d.skipped&&d.skipped.record;co
     const rt=el('span',null,'legodds');rt.append(el('b',pct(p)),el('span','fair '+(amer(p)||'—'),'hint small'));r.append(l,rt);c.append(r);}
   if(!gs.length)c.append(el('p','No heavy favorites on the schedule right now. They show up here before their games.','hint small'));
   if(gs.length>=2){const n=Math.min(gs.length,12);c.append(el('div','All '+n+' legs together: about '+pct(all)+' to hit','legall'));}
+  if(gs.length)c.append(copyBtn('📋 Copy all legs',()=>copySlip('Mohjeta heavy-favorite legs',gs.slice(0,12).map(g=>teamSlip(g.pick.team,g)))));
   c.append(el('p','Each leg can still lose, and the risk adds up: five 97% legs together hit only about 86% of the time. Chances shown are the lower of her number and the market\'s.','hint small'));
   box.append(c);return box;}
 // ---------------- every open bet in one place (on the Tonight page), whatever kind it is or wherever its game is shown
@@ -2310,6 +2317,14 @@ async function proof(){if(Date.now()-proofAt<600000)return;proofAt=Date.now();co
   catch(e){}}
 
 // ---------------- More: combos, scorecard
+// fix380 (owner: "copy picks and parlays and place them on another site effortlessly"): one tap copies a clean bet slip
+// (sportsbook wording: moneyline / over-under lines) for pasting into any betting app. Nothing is placed for anyone.
+function propSlip(player,stat,line,side){const nm=STATNAME[stat]||stat;return player+' '+(side==='NO'?'Under ':'Over ')+(Number(line)-0.5)+' '+nm+' ('+(side==='NO'?'under ':'')+line+(side==='NO'?'':'+')+')';}
+function teamSlip(team,g){if(/^(tie|draw)$/i.test(String(team)))return 'Draw: '+((g&&g.name)||'')+(g?' · '+sname(g.league)+' · '+when(g.start):'');const opp=g?(g.teams||[]).find(t=>t.name!==team):null;return team+((g&&_SOC(g))?' to win (3-way)':' moneyline')+(opp?' ('+(opp.home?'@ ':'vs ')+opp.name+')':'')+(g?' · '+sname(g.league)+' · '+when(g.start):'');}
+async function copySlip(title,lines){const t=title+'\n'+lines.map((l,i)=>(i+1)+') '+l).join('\n')+'\n(Mohjeta · mohjeta.com · for fun, not betting advice)';
+  if(await copyText(t)){toast('📋 Copied '+lines.length+' leg'+(lines.length===1?'':'s')+'. Paste it into any betting app.');try{award('share');}catch(e){}}else shareIt({title,text:t});}
+const _SOC=g=>/^(EPL|MLS|UCL|LA LIGA|SERIE A|BUNDESLIGA|LIGUE 1|UEL|UECL|EFL CHAMP)$/.test(g.league||'');
+function copyBtn(label,fn){const b=el('button',label,'btn ghost small cpbtn');b.type='button';b.onclick=e=>{e.stopPropagation();fn();};return b;}
 // fix376 (owner: combo ideas "looks out of date"): ticket-style cards: payout up top, a risk tag, each leg with its team
 // logo, game and time (tap to open the game), her chance vs Kalshi's per leg, and an "all legs hit" comparison bar.
 function comboGame(team){const gs=(D&&D.games||[]).filter(g=>g.state!=='FINAL');return gs.find(g=>(g.teams||[]).some(t=>t.name===team))||gs.find(g=>(g.teams||[]).some(t=>sameTeam(t.name,team)))||null;}
@@ -2331,7 +2346,8 @@ function comboCard(c,i){const a=el('article',null,'card cmb');const n=c.legs.len
     el('p',edge>0?'She likes it '+edge+' point'+(edge===1?'':'s')+' more than Kalshi’s prices do.':'Kalshi’s prices like it about as much as she does.','hint small'));
   a.append(cmp);
   const sh=el('button','📤 Share combo','btn ghost small');sh.type='button';sh.onclick=e=>{e.stopPropagation();shareIt({title:'Mohjeta combo',text:'Mohjeta’s '+n+'-leg combo ('+c.pays_x+'x): '+c.legs.map(l=>shortTeam(l.team)).join(' + ')+'. She gives every leg hitting '+pct(her)+'.',url:siteLink('#combos')});};
-  a.append(sh);return a;}
+  const cp=copyBtn('📋 Copy parlay',()=>copySlip('Mohjeta '+n+'-leg parlay (pays about '+c.pays_x+'x)',c.legs.map(l=>teamSlip(l.team,comboGame(l.team))+' — she says '+pct(l.chance))));
+  const ac=el('div',null,'cpacts');ac.append(cp,sh);a.append(ac);return a;}
 // fix377 (owner: "combine them"): Combo ideas + her prop parlays + parlay legs + the prop builder on one page, in tabs.
 const CMB_TABS=[['teams','🧩 Teams'],['props','🎲 Props'],['legs','🔗 Heavy favorites'],['build','🧱 Build your own']];
 let cmbTab=(()=>{try{return localStorage.getItem('mohjeta.cmbTab')||'teams';}catch(e){return 'teams';}})();
@@ -2643,6 +2659,7 @@ function propParlaysCard(d){const P=d.prop_parlays;if(!P||!P.rows||!P.rows.lengt
   for(const x of P.rows.slice(0,6)){const r=el('div',null,'brow parlay');const legs=el('div',null,'fn');
     x.legs.forEach(l=>legs.append(el('div',(STATICON[l.stat]||'')+' '+l.player+' '+(l.side==='YES'?'over ':'under ')+l.line+' '+(STATNAME[l.stat]||l.stat)+' · '+Math.round(l.price*100)+'¢','small')));
     legs.append(el('div',x.result==='OPEN'?'$'+x.stake.toFixed(0)+' to win $'+(x.pays-x.stake).toFixed(2)+' · her '+Math.round(x.her*100)+'%':(x.result==='WON'?'✅ Won ':'❌ Lost ')+signed(x.pnl),'hint small'));
+    if(x.result==='OPEN')legs.append(copyBtn('📋 Copy',()=>copySlip('Mohjeta prop parlay',x.legs.map(l=>propSlip(l.player,l.stat,l.line,l.side)))));
     r.append(legs);c.append(r);}
   c.append(el('p',P.rule||'','hint small'));return c;}
 function renderProps(d){const box=$('propsBox');if(!box)return;const P=propData(d);box.replaceChildren();
@@ -2705,6 +2722,7 @@ function drawBuilder(){const pb=$('propBuilder');if(!pb)return;const P=propData(
       x.onclick=()=>{propLegs=propLegs.filter(y=>y!==g);drawBuilder();};
       r.append(el('span',propName(g)+' · '+g.side,'ln'),el('span',null,'sp'),el('span',pct(g.her)+' · '+Math.round(g.price*100)+'¢','hint small'),x);ul.append(r);}
     pb.append(ul);
+    pb.append(copyBtn('📋 Copy my parlay',()=>copySlip('My Mohjeta prop parlay',propLegs.map(g=>propSlip(g.player,g.stat,g.line,g.side)))));
     const herP=propLegs.reduce((a,g)=>a*g.her,1),kp=propLegs.reduce((a,g)=>a*g.price,1);
     const sr=el('div',null,'row');const lab=el('label','Stake $','hint small');const inp=el('input');inp.type='number';inp.min='1';inp.step='1';inp.value=String(propStake);inp.className='stake';
     inp.oninput=()=>{const v=parseFloat(inp.value);if(v>0){propStake=v;drawOut();}};lab.append(inp);sr.append(lab);pb.append(sr);
