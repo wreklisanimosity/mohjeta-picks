@@ -225,6 +225,30 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--pink);font-weight:700}
 .panel.on{animation:none!important}.sheet.on{animation:none!important}
 body::before{inset:0!important}
 
+
+/* tester challenge v2 + trophy entry (fix362) */
+.thero{position:relative;margin:10px 0 12px;padding:14px 40px 12px 14px;border-radius:18px;background:radial-gradient(120% 120% at 0% 0%,#5a3a0a,#2a1430 55%,#1a0f24);border:1px solid #f5c54288;box-shadow:0 6px 24px #f5c54222}
+.therotop{display:flex;align-items:center;gap:12px}.theromedal .mj-medal{width:46px;height:53px}.therotx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.therotx .simeyebrow{text-align:left}
+.therotx b{font-size:17px}.therotx small{color:#e9d6ff;font-size:12px}
+.theronext{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px;border-radius:14px;background:#0008;border:1px solid #ffffff14}.theronext .mj-icon{width:30px;height:30px}
+.theronext>div{flex:1;min-width:0}.theronext small{display:block;font-size:10px;letter-spacing:.12em;color:#f5c542;font-weight:800}.theronext b{display:block;font-size:14px}
+.therolink{display:block;margin-top:8px}
+.htrophy{display:flex;align-items:center;gap:10px;width:100%;margin:10px 0;padding:12px 14px;border-radius:14px;border:1px solid #f5c54255;background:linear-gradient(135deg,#2a1f0a,#1a0f24);color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.htrophy .hti{font-size:24px}.htrophy b{font-size:15px}.htrophy small{flex:1;color:var(--dim);font-size:12px;text-align:right}.htrophy .go{color:#f5c542;font-size:20px}
+.pring{flex:none}
+.tshead{display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;background:radial-gradient(120% 120% at 0% 0%,#5a3a0a,#2a1430 60%,#1a0f24);border:1px solid #f5c54277;margin-bottom:12px}
+.tshead>div:nth-child(2){flex:1;min-width:0}.tshead h2{margin:2px 0}.tshead .simeyebrow{text-align:left}.tsmedal .mj-medal{width:54px;height:62px}.tshead.won{box-shadow:0 0 30px #f5c54255}
+.tslist{display:flex;flex-direction:column;gap:8px}
+.tscard{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden;margin:0}.tscard[open]{border-color:#ff4fd866;background:linear-gradient(180deg,#24173a,var(--card))}
+.tscard>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer;color:var(--text)}.tscard>summary::-webkit-details-marker{display:none}
+.tsic{flex:none;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#ffffff0d}.tsic .mj-icon{width:30px;height:30px}
+.tsnm{flex:1;min-width:0}.tsnm small{display:block;font-size:10px;letter-spacing:.12em;color:var(--dim);font-weight:800}.tsnm b{font-size:15px}
+.tsok{width:28px;height:28px;border-radius:50%;background:#39d98a;color:#05220f;font-weight:900;display:flex;align-items:center;justify-content:center}
+.tsopen{width:22px;height:22px;border-radius:50%;border:2px solid #ffffff33}
+.tscard.done{opacity:.72}.tscard.done .tsic{background:#39d98a22}
+.tssteps{margin:0 14px 8px 54px;padding:0;display:flex;flex-direction:column;gap:6px;counter-reset:st}.tssteps li{list-style:none;position:relative;padding-left:30px;font-size:14px;line-height:1.4;counter-increment:st}
+.tssteps li::before{content:counter(st);position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;background:#ff4fd833;color:#ff9be6;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.tstip{margin:0 14px 8px 54px;font-size:12px;color:#f5c542}.tsacts{display:flex;gap:8px;margin:4px 14px 12px 54px}
 /* champions + team pages (fix360) */
 .mtitle{font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;background:linear-gradient(135deg,#f5c54233,#ff9a1c22);color:#ffd36e;border:1px solid #f5c54266;white-space:nowrap}
 .hof .hofrow,.tchamps .hofrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.hofrow .hofic{font-size:22px;width:28px;text-align:center}
@@ -1275,16 +1299,49 @@ function testerPanel(){let hide=false;try{hide=localStorage.getItem('mohjeta.tes
   b.append(tx,el('span','›','go'),x);b.onclick=openTester;b.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openTester();}};return b;}
 function testerState(){const b=badgeData();const n=b._n||{};return TESTS().map(t=>({t,done:!!n[t[0]]}));}
 function testerCheck(){const st=testerState();const done=st.filter(x=>x.done).length;const pg=$('testerProg');
-  {const hp=$('homeTester');if(hp){const n=testerPanel();if(n)hp.replaceWith(n);else hp.remove();}}
+  {const hp=$('homeTester');if(hp){const n=testerHero();if(n)hp.replaceWith(n);else hp.remove();}}
   if(pg)pg.textContent=done===st.length?'✅ All '+st.length+' done: you earned the Beta tester badge!':done+' of '+st.length+' done · tap to see what’s left';
   if(done===st.length&&!badgeData().tester)award('tester');}
-function openTester(){openSheet(()=>{const w=el('div');w.append(el('h2','🛠️ Beta tester challenge'),el('p','Try each of these. They tick themselves off when you do them. Finish them all to earn the Beta tester badge.','hint small'));
-  const st=testerState();const done=st.filter(x=>x.done).length;const bar=el('div',null,'tbar');const fill=el('i');fill.style.width=Math.round(done/st.length*100)+'%';bar.append(fill);w.append(el('b',done+' of '+st.length+' done'),bar);
-  const list=el('div',null,'tlist');st.forEach(({t,done},i)=>{const row=el('div',null,'card trow'+(done?' done':''));const top=el('div',null,'row');
-    top.append(el('span',done?'✅':'⬜','tchk'),el('b',(i+1)+'. '+t[1]));const steps=el('div',null,'tsteps');for(const line of t[2].split(/\s{2}(?=\d\)|\()/)){if(line.trim())steps.append(el('p',line.trim(),'hint small'));}row.append(top,steps);
-    if(!done&&t[4]){const m=el('button','Mark done','btn ghost small');m.type='button';m.onclick=()=>{award(t[0]);testerCheck();openTester();};row.append(m);}
-    else if(!done&&t[3]){const g=el('button','Go ›','btn ghost small');g.type='button';g.onclick=()=>{closeSheet();setTimeout(t[3],120);};row.append(g);}
-    list.append(row);});w.append(list,badgeShelf());return w;},'Tester');}
+// ---------------- tester challenge v2 + trophy case everywhere (fix362, owner: "beta tester challenge needs to be more
+// visible and its contents are a little boring looking and we need a trophy case for the badges")
+const TEST_IC={signin:'key',breakdown:'clipboard',voice:'sound',first_pick:'target',guess:'forecast',sim:'simulate',prop_builder:'props',
+  chat:'chat',alerts:'alerts',share:'share',language:'globe',refresh:'refresh',feedback:'mail'};
+function ring(frac,size,label){const NS='http://www.w3.org/2000/svg',s=document.createElementNS(NS,'svg');s.setAttribute('viewBox','0 0 44 44');s.setAttribute('class','pring');s.style.width=s.style.height=size+'px';
+  s.innerHTML='<circle cx="22" cy="22" r="18" fill="none" stroke="#ffffff1a" stroke-width="5"/><circle cx="22" cy="22" r="18" fill="none" stroke="#f5c542" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+(113.1*frac).toFixed(1)+' 113.1" transform="rotate(-90 22 22)"/>'+
+   '<text x="22" y="26" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">'+label+'</text>';
+  return s;}
+function testerMedal(locked){const m=medalOf('tester',locked);if(m)return m;return iel('span','🛠️','tem');}
+function testerHero(){let hide=false;try{hide=localStorage.getItem('mohjeta.testerPanel')==='0';}catch(e){}if(hide)return null;
+  const st=testerState(),done=st.filter(x=>x.done).length;if(done===st.length)return null;const next=st.find(x=>!x.done);
+  const c=el('div',null,'thero');c.id='homeTester';
+  const top=el('div',null,'therotop');const md=el('div',null,'theromedal');md.append(testerMedal(true));
+  const tx=el('div',null,'therotx');tx.append(el('span','BETA TESTER CHALLENGE','simeyebrow'),el('b','Test Mohjeta, earn the medal'),el('small',done+' of '+st.length+' done · finish all to unlock the Beta tester medal'));
+  top.append(md,tx,ring(done/st.length,52,done+'/'+st.length));c.append(top);
+  if(next){const nx=el('div',null,'theronext');const ic=window.MohjetaIcons?MohjetaIcons.icon(TEST_IC[next.t[0]]||'star'):el('span','▶');
+    const nt=el('div');nt.append(el('small','NEXT UP'),el('b',next.t[1]));const go=el('button',next.t[4]?'How ›':'Go ›','btn small');go.type='button';
+    go.onclick=e=>{e.stopPropagation();if(next.t[3]&&!next.t[4]){next.t[3]();setTimeout(()=>toast('🛠️ '+next.t[1]+': '+String(next.t[2]).split(/\s{2}/)[0].replace(/^1\)\s*/,'')),500);}else openTester();};
+    nx.append(ic,nt,go);c.append(nx);}
+  const all=el('button','See all '+st.length+' tasks','mlink therolink');all.type='button';all.onclick=openTester;
+  const x=el('button','✕','htx-x');x.type='button';x.setAttribute('aria-label','Hide the tester challenge (it stays in All pages and Play)');
+  x.onclick=e=>{e.stopPropagation();try{localStorage.setItem('mohjeta.testerPanel','0');}catch(err){}c.remove();toast('Hidden. It’s still in All pages and on Play.');};
+  c.append(all,x);return c;}
+function openTester(){openSheet(()=>{const w=el('div',null,'tsheet');const st=testerState();const done=st.filter(x=>x.done).length,all=done===st.length;
+  const hd=el('div',null,'tshead'+(all?' won':''));const md=el('div',null,'tsmedal');md.append(testerMedal(!all));
+  const tx=el('div');tx.append(el('span','BETA TESTER CHALLENGE','simeyebrow'),el('h2',all?'You did it! 🎉':'Help test Mohjeta'),
+    el('p',all?'Every task done. The Beta tester medal is in your Trophy case.':'Each task ticks itself off when you do it. Finish all '+st.length+' for the Beta tester medal.','hint small'));
+  hd.append(md,tx,ring(done/st.length,64,done+'/'+st.length));w.append(hd);
+  if(all){const tc=el('button','🏆 Open my Trophy case','btn');tc.type='button';tc.onclick=openTrophies;w.append(tc);}
+  const list=el('div',null,'tslist');
+  st.forEach(({t,done},i)=>{const card=el('details',null,'tscard'+(done?' done':''));if(!done&&st.findIndex(x=>!x.done)===i)card.open=true;
+    const sum=el('summary');const ic=el('span',null,'tsic');ic.append(window.MohjetaIcons?MohjetaIcons.icon(TEST_IC[t[0]]||'star'):el('span',String(i+1)));
+    const nm=el('div',null,'tsnm');nm.append(el('small','TASK '+(i+1)),el('b',t[1]));sum.append(ic,nm,el('span',done?'✓':'',done?'tsok':'tsopen'));card.append(sum);
+    const steps=el('ol',null,'tssteps');for(const line of t[2].split(/\s{2}(?=\d\)|\()/)){const L=line.trim();if(!L)continue;
+      if(/^\(/.test(L)){card.append(el('p',L.replace(/^\(|\)$/g,''),'tstip'));continue;}steps.append(el('li',L.replace(/^\d\)\s*/,'')));}
+    card.insertBefore(steps,card.querySelector('.tstip'));
+    if(!done){const acts=el('div',null,'tsacts');if(t[3]&&!t[4]){const g=el('button','Go there ›','btn small');g.type='button';g.onclick=()=>{closeSheet();setTimeout(t[3],120);};acts.append(g);}
+      if(t[4]){const m=el('button','✓ Mark done','btn small');m.type='button';m.onclick=()=>{award(t[0]);testerCheck();openTester();};acts.append(m);}card.append(acts);}
+    list.append(card);});
+  w.append(list,el('p','Found a bug or have an idea? That’s the most helpful thing a tester can do. See task '+st.length+'.','hint small'));return w;},'Tester');}
 setTimeout(()=>addEventListener('mohjeta:language',()=>award('language')),3000);   // a change the visitor makes, not the first load
 function drawPlayBadges(){const pb=$('playBadges');if(pb)pb.replaceChildren(badgeShelf());testerCheck();}
 function badgeData(){try{return JSON.parse(localStorage.getItem('mohjeta.badges')||'{}')||{};}catch(e){return {};}}
@@ -1411,7 +1468,8 @@ function updateAcct(){const b=$('acct');if(!b||!sb)return;b.hidden=false;b.repla
     const x=el('button','Close','mlink');x.type='button';x.onclick=()=>ov.remove();
     const del=el('button','Delete account','mlink');del.type='button';del.onclick=()=>deleteMyAccount(ov);
     const refBox=el('div');drawRefTools(refBox,ov);
-    const plan=planBox();const pb=el('div');drawPush(pb);box.append(head,el('p','You\u2019re signed in. Your chat name and messages show to other fans; your email stays private.','hint small'));if(plan)box.append(plan);box.append(pb,refBox,chat,out,del,x);document.body.append(ov);};}
+    const plan=planBox();const pb=el('div');drawPush(pb);box.append(head,el('p','You\u2019re signed in. Your chat name and messages show to other fans; your email stays private.','hint small'));if(plan)box.append(plan);const tro=el('button','🏆 My trophy case','btn ghost');tro.type='button';tro.onclick=()=>{ov.remove();openTrophies();};const tst=el('button','🛠️ Tester challenge','btn ghost');tst.type='button';tst.onclick=()=>{ov.remove();openTester();};
+    box.append(pb,refBox,chat,tro,tst,out,del,x);document.body.append(ov);};}
 // ---------------- referral program (supabase_affiliates.sql): team 50% / partners 25% of what Mohjeta receives, for as long
 // as the subscriber stays. A link ?ref=CODE is remembered for 60 days and claimed when that person signs in.
 (function(){try{const r=new URLSearchParams(location.search).get('ref');if(r&&/^[A-Za-z0-9]{3,20}$/.test(r))localStorage.setItem('mohjeta.ref',JSON.stringify({c:r.toUpperCase(),t:Date.now()}));}catch(e){}})();
@@ -2202,9 +2260,9 @@ const PAGES=[['picks','⭐','Tonight','Her bets and best picks','#5a3a12','bets 
  ['feed','📰','Live feed','News as it happens','#3a1a3a','news feed injuries lineups live updates foul'],['ratings','🏆','Ratings','Teams and players','#4a3a08','ratings players teams grades'],['games','📅','All games','Every game she watches','#4a1a20','schedule games all'],
  ['chat','💬','Chat','Talk with fans','#142a50','chat community fans'],['news','🆕',"What's new",'Latest updates','#4a1238','news updates'],
  ['combos','🎲','Combos','Multi-game ideas','#4a1218','combos parlay'],['score','📊','Scorecard','Her sources, graded','#103a30','scorecard sources accuracy'],
- ['how','🤖','How she picks','Her method','#14304a','method how explanation'],['odds','⚖️','Use her picks','Fair odds anywhere','#2a2a40','odds sportsbook value'],
+ ['trophies','🏆','Trophy case','Your badges and titles','#4a3a08','badges trophies medals titles champions'],['tester','🛠️','Tester challenge','Earn the Beta tester medal','#4a3010','beta tester challenge testflight'],['how','🤖','How she picks','Her method','#14304a','method how explanation'],['odds','⚖️','Use her picks','Fair odds anywhere','#2a2a40','odds sportsbook value'],
  ['safe','⚠️','Play responsibly','21+ and help','#4a3208','responsible help limits'],['terms','📋','Terms','What this is','#2a2236','terms legal'],['privacy','🔒','Privacy','Your information','#232a36','privacy data']];
-function goPage(k){closeQJ();if(k==='live'){show('picks');setTimeout(()=>{const l=$('liveBox');if(l&&l.childElementCount)l.scrollIntoView({behavior:'smooth',block:'start'});},60);return;}
+function goPage(k){closeQJ();if(k==='trophies'){openTrophies();return;}if(k==='tester'){openTester();return;}if(k==='live'){show('picks');setTimeout(()=>{const l=$('liveBox');if(l&&l.childElementCount)l.scrollIntoView({behavior:'smooth',block:'start'});},60);return;}
   if(k==='fantasy'){show('fantasy');return;}if(k==='guess'){show('guess');if(typeof drawGuess==='function')drawGuess();return;}show(k);}
 function pageCount(k,d){d=d||D;if(!d)return '';const gs=d.games||[];const t=d.bets&&d.bets.totals;
   if(k==='picks'){const n=gs.filter(g=>g.state==='UPCOMING'&&g.pick&&isBetLane(g)).length;return n?n+' bet'+(n===1?'':'s')+' tonight':'';}
@@ -2219,6 +2277,7 @@ function pageTile(p,d){const [k,ic,t,sub,tc]=p;const b=el('button',null,'htile')
   const c=pageCount(k,d);b.append(iel('span',ic),el('b',t),el('small',c||sub));b.onclick=()=>goPage(k);return b;}
 function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren();const hr=new Date().getHours();
   const hh=el('div',null,'hhead');hh.append(el('h2',hr<5?'Late night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening'),el('p','Everything happening with her picks, one tap away.','hint small'));box.append(hh);
+  {const th=testerHero();if(th)box.append(th);}
   {const dv=d.voice&&d.voice.daily;if(dv){const b=el('button',null,'hvoice');b.type='button';const im=el('img');im.src='logo-cut.webp?v=2';im.alt='';
     const tx=el('span');tx.append(el('b','Hear her rundown'),el('small','Her top picks in her own voice'+(dv.seconds?' · '+Math.round(dv.seconds)+' seconds':'')));const pl=el('span','▶','play');
     b._label=on=>{pl.textContent=on?'■':'▶';};b.append(im,tx,pl);b.title=dv.text||'';b.onclick=()=>voicePlay(dv.src,b);box.append(b);}}
@@ -2230,7 +2289,7 @@ function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren
     stat('Profit',t?signed(t.net):'—','paper money','money','#103a1c',()=>show('record'),'pl '+(t?cls(t.net):'')),
     stat('Live now',String(live.length),live.filter(g=>g.pick&&isBetLane(g)).length+' with her bet','live','#123a28',()=>goPage('live')),
     stat('Tonight',String(up.length),'games she bets','picks','#4a3010',()=>show('picks')));}box.append(st);
-  {const tp=testerPanel();if(tp)box.append(tp);}
+  {const n=Object.keys(BADGES).filter(k=>badgeData()[k]).length;const tc=el('button',null,'htrophy');tc.type='button';tc.append(el('span','🏆','hti'),el('b','Trophy case'),el('small',n+' of '+Object.keys(BADGES).length+' badges'+(typeof myChampionships==='function'&&myChampionships().length?' · '+myChampionships().length+' championship'+(myChampionships().length>1?'s':''):'')),el('span','›','go'));tc.onclick=openTrophies;box.append(tc);}
   // (no feed card here: the headline banner at the top carries the news, so Home stays uncluttered)
   const nx=up[0];if(nx){const b=el('button',null,'hnext');b.type='button';if(window.SportArt)b.append(SportArt.el(nx.league));
     const info=el('div',null,'nx');const team=(nx.pick&&(nx.pick.team||nx.pick.name))||'';info.append(el('small','Next up · '+sname(nx.league)),el('b',nx.name||''));
