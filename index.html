@@ -1170,14 +1170,21 @@ function pickemRow(g){const all=pkLoad(),k=pkKey(g),mine=all[k];
     b.onclick=e=>{e.stopPropagation();const x=pkLoad();x[k]={team:t.name,her:g.pick?g.pick.team:null,name:g.name,league:g.league,start:g.start};pkSave(x);pkCloud(k,t.name);award('first_pick');if(Object.keys(x).length>=5)award('five_picks');
       b.classList.add('burst');setTimeout(()=>{renderPicks(D);renderGames(D);},350);};row.append(b);}
   return row;}
-function pickemScore(){const all=pkLoad(),F=(D&&D.finals)||{};let me=[0,0],her=[0,0],open=0;const now=Date.now();
+// fix358: D.finals is keyed by Kalshi's full event ('KXNHLGAME-26NOV03DALWSH'), picks by the game's event ('26NOV03DALWSH');
+// they never matched, so every pick stayed "waiting" and then vanished (owner: "no leaderboard or recognition")
+function pkFinals(){const F=(D&&D.finals)||{},out={};for(const [k,v] of Object.entries(F)){out[k]=v;const i=k.indexOf('-');if(i>0)out[k.slice(i+1)]=v;}return out;}
+function pkCheer(all,F){let seen={};try{seen=JSON.parse(localStorage.getItem('mohjeta.pkSeen')||'{}')||{};}catch(e){}let n=0;
+  for(const [k,v] of Object.entries(all)){const w=F[k];if(!w||seen[k])continue;seen[k]=1;const hit=sameTeam(v.team,w);
+    if(n++<2)setTimeout(()=>toast((hit?'✅ Your pick ':'❌ Your pick ')+String(v.team).split(' ').pop()+(hit?' won':' lost')+(v.her&&!sameTeam(v.her,w)&&hit?' and she missed it 😤':'')),600+n*900);}
+  try{localStorage.setItem('mohjeta.pkSeen',JSON.stringify(seen));}catch(e){}}
+function pickemScore(){const all=pkLoad(),F=pkFinals();pkCheer(all,F);let me=[0,0],her=[0,0],open=0;const now=Date.now();
   for(const [k,v] of Object.entries(all)){const w=F[k];
     if(!w){if(now-new Date(v.start)>5*86400000)delete all[k];else open++;continue;}
     const hit=t=>t&&sameTeam(t,w);me[hit(v.team)?0:1]++;if(v.her)her[hit(v.her)?0:1]++;}
   pkSave(all);return {me,her,open};}
 function pickemCard(){const sc=pickemScore();const c=el('div',null,'banner pkcard');
   const r=el('div',null,'row');r.append(iel('b','🎯 Pick\'em'),el('span',null,'sp'),el('span','You '+sc.me[0]+'-'+sc.me[1],'pks me'),el('span','vs','hint small'),el('span','Her '+sc.her[0]+'-'+sc.her[1],'pks'));c.append(r);
-  const lead=sc.me[0]-sc.her[0];c.append(el('div',(sc.me[0]+sc.me[1]===0?'Tap a team on any game below to make your pick. Can you beat her?':lead>0?'You’re beating her by '+lead+'. 🔥':lead<0?'She leads by '+(-lead)+'. Pick again tonight.':'Dead even.')+(sc.open?' · '+sc.open+' pick'+(sc.open>1?'s':'')+' waiting on results':'')+' · saved on this phone only','hint small'));
+  const lead=sc.me[0]-sc.her[0];c.append(el('div',(sc.me[0]+sc.me[1]===0?'Tap a team on any game below to make your pick. Can you beat her?':lead>0?'You’re beating her by '+lead+'. 🔥':lead<0?'She leads by '+(-lead)+'. Pick again tonight.':'Dead even.')+(sc.open?' · '+sc.open+' pick'+(sc.open>1?'s':'')+' waiting on results':'')+(me?' · your picks count on the leaderboard':' · sign in (Chat) to get on the leaderboard'),'hint small'));
   if(sc.me[0]+sc.me[1]>=5&&sc.me[0]>sc.her[0])award('beat_her');
   const acts=el('div',null,'row');const gb=iel('button','🔮 Guess her number','btn ghost');gb.type='button';gb.onclick=()=>{show('guess');drawGuess();};acts.append(gb);
   if(sc.me[0]+sc.me[1])acts.append(shareBtn(()=>({title:'Me vs the Mohjeta AI',big:sc.me[0]+'-'+sc.me[1],lines:['Mohjeta: '+sc.her[0]+'-'+sc.her[1],lead>0?'I’m beating the AI 😤':lead<0?'The AI is ahead… for now':'Dead even','Think you can beat her?']})));
@@ -1683,7 +1690,7 @@ function arena(home,away,pH){const a=el('div',null,'arena'+(calm()?' still':''))
     const bar=el('div',null,'hp');const fill=el('i');fill.style.setProperty('--hp',Math.max(6,Math.round(hp*100))+'%');bar.append(fill);
     f.append(iel('span','👑','crown'),b,teamPlate(name),bar,el('small',pct(hp)));return f;};
   a.append(side(away,'left',1-pH,!hw),el('div',null,'clash'),side(home,'right',pH,hw));a.querySelector('.clash').append(el('span','💥','boom'),el('span','VS','vs'));return a;}
-function myPicks(){const all=pkLoad(),F=(D&&D.finals)||{};const rows=Object.entries(all).sort((a,b)=>String(b[1].start).localeCompare(String(a[1].start)));
+function myPicks(){const all=pkLoad(),F=pkFinals();const rows=Object.entries(all).sort((a,b)=>String(b[1].start).localeCompare(String(a[1].start)));
   const c=el('div',null,'card mp');c.append(iel('h4','🎯 My picks'));
   if(!rows.length){c.append(el('p','No picks yet. Tap a team under “Your pick” on any game in Tonight.','hint small'));return c;}
   for(const [k,v] of rows){const w=F[k];const st=new Date(v.start);const started=st<new Date();
@@ -2957,8 +2964,8 @@ function refreshLeagues(){if(simMode==='fantasy'&&document.querySelector('#sim.o
 const WK={sport:'NFL',list:null,at:0,pools:{},her:{},lineup:{},name:'',pos:'ALL',q:'',sort:'proj',err:''};
 const WK_SPORTS=[['NFL','🏈','NFL'],['NBA','🏀','NBA'],['NCAAF','🎓','College']];
 const WK_FLEX={FLEX:['RB','WR','TE'],UTIL:['G','F','C']};
-const WK_POSC={QB:'#ff6b6b',RB:'#4cd97b',WR:'#58a6ff',TE:'#f5c542',FLEX:'#b98cff',G:'#58a6ff',F:'#4cd97b',C:'#ff9f43',UTIL:'#b98cff'};
-const WK_POSN={QB:'Quarterback',RB:'Running back',WR:'Wide receiver',TE:'Tight end',FLEX:'Flex (RB, WR or TE)',G:'Guard',F:'Forward',C:'Center',UTIL:'Utility (any player)'};
+const WK_POSC={QB:'#ff6b6b',RB:'#4cd97b',WR:'#58a6ff',TE:'#f5c542',FLEX:'#b98cff',K:'#9aa3c7',DST:'#ff9f43',G:'#58a6ff',F:'#4cd97b',C:'#ff9f43',UTIL:'#b98cff'};
+const WK_POSN={QB:'Quarterback',RB:'Running back',WR:'Wide receiver',TE:'Tight end',FLEX:'Flex (RB, WR or TE)',K:'Kicker',DST:'Team defense',G:'Guard',F:'Forward',C:'Center',UTIL:'Utility (any player)'};
 const wkFits=(slot,pos)=>slot===pos||(WK_FLEX[slot]||[]).includes(pos);
 function wkWhen(t){const d=new Date(t);return d.toLocaleString(undefined,{weekday:'short',hour:'numeric',minute:'2-digit'});}
 function wkLeft(t){let s=Math.max(0,(new Date(t)-Date.now())/1000);const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+'d '+h+'h':h?h+'h '+m+'m':m+'m';}
@@ -2982,7 +2989,10 @@ function wkHow(sport){const d=el('details',null,'card wkhow');const sm=el('summa
     const s=el('div',null,'wkstep');s.append(el('span',ic,'wkic'),el('b',t),el('span',x,'hint small'));steps.append(s);}
   d.append(steps,el('p','Lineups lock when the week’s first game starts. You can change yours as often as you like until then.','hint small'));
   const sc=sport==='NBA'?[['Point','1'],['Three made','+0.5'],['Rebound','1.25'],['Assist','1.5'],['Steal or block','2'],['Turnover','−0.5'],['Double-double','+1.5'],['Triple-double','+3']]
-    :[['Catch','1'],['10 rushing or receiving yards','1'],['Rushing or receiving TD','6'],['25 passing yards','1'],['Passing TD','4'],['Interception or lost fumble','−2']];
+    :[['Catch','1'],['10 rushing or receiving yards','1'],['Rushing or receiving TD','6'],['25 passing yards','1'],['Passing TD','4'],['Interception or lost fumble','−2'],
+      ...(sport==='NFL'?[['Kicker: field goal (under 40 / 40-49 / 50+ yds)','3 / 4 / 5'],['Kicker: extra point','1'],['Kicker: missed field goal','−1'],
+        ['Defense: sack','1'],['Defense: interception or fumble recovery','2'],['Defense: safety','2'],['Defense: return or defensive TD','6'],
+        ['Defense: points allowed 0 / 1-6 / 7-13 / 14-20','10 / 7 / 4 / 1'],['Defense: points allowed 21-27 / 28-34 / 35+','0 / −1 / −4']]:[])];
   const t=el('div',null,'wkscore');t.append(el('b','Scoring'+(sport==='NBA'?' (every game he plays that week counts)':' (PPR)')));for(const [a,b] of sc){const r=el('div',null,'row');r.append(el('span',a),el('b',b));t.append(r);}
   d.append(t,el('p','Free to play · no entry fees · no prizes. Just bragging rights.','hint small'));return d;}
 async function renderWeekly(){const box=$('weeklyBox');if(!box)return;
