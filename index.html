@@ -1838,7 +1838,7 @@ async function openTeam(name,league){openSheet(()=>{const w=el('div',null,'teamp
   const T=await loadTeams2();const w=$('teamView');if(!w)return;const f=findTeam(T,name,league);w.replaceChildren();
   const head=el('div',null,'tphead');const cl=simColor(name)||(f&&f.t.c?'#'+f.t.c:null);if(cl)head.style.setProperty('--tc',cl);const b=teamBadge(name);b.classList.add('big');
   const tx=el('div');tx.append(el('span',(f?sname(f.lg):sname(league||'')).toUpperCase(),'simeyebrow'),el('h2',f?f.t.n:name),el('b',f?(f.t.rec||'')+(f.t.st?' · '+f.t.st:''):'','tprec'));head.append(b,tx);w.append(head);
-  if(!f){w.append(el('p','Schedule for this team isn’t available yet (pro football, basketball and hockey, and top college football teams are covered). Check back after her next update.','hint'));return;}
+  if(!f){w.append(el('p','Schedule for this team isn’t available yet (NFL, NBA, WNBA, NHL, MLB, FBS college football and Division I college basketball are covered). Check back after her next update.','hint'));return;}
   const lg=f.lg,t=f.t,r=teamRating(t.n,lg);const nextG=(D&&D.games||[]).filter(g=>g.state!=='FINAL'&&(g.teams||[]).some(x=>sameTeam(x.name,t.n))).sort((a,b)=>String(a.start).localeCompare(String(b.start)))[0];
   const syn=el('div',null,'card tpsyn');syn.append(el('span','THE SYNOPSIS','simeyebrow'),el('p',teamSynopsis(t.n,lg,t,r,nextG),'tpsyntext'));w.append(syn);
   const done=t.g.filter(x=>x[4]),todo=t.g.filter(x=>!x[4]);
