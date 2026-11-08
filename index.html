@@ -463,7 +463,10 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .cmbcmp{display:flex;flex-direction:column;gap:6px}.cmbbar span{display:flex;justify-content:space-between;font-size:12px}.cmbtrack{height:8px;border-radius:6px;background:#ffffff14;overflow:hidden;margin-top:2px}
 .cmbtrack i{display:block;height:100%;border-radius:6px}.cmbtrack .fher{background:linear-gradient(90deg,#22c55e,#86efac)}.cmbtrack .fkal{background:#8b8fa8}
 .cmb>.btn{align-self:flex-start}.cmbempty{display:flex;flex-direction:column;gap:4px}
-.cmbtabs{margin:6px 0 12px;flex-wrap:wrap}.cpacts{display:flex;gap:8px;flex-wrap:wrap}.cpall{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}.parlay .cpbtn{margin-top:6px}.cmbrec{min-width:0}.cmbkind{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:13px}
+.cmbtabs{margin:6px 0 12px;flex-wrap:wrap}
+.booklinks{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0}.booklinks .bk,.cmbk{font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;text-decoration:none;border:1px solid #ffffff26;color:#fff;white-space:nowrap}
+.bk-k{background:#0d3b2e;border-color:#1f8a66!important;color:#7cf5c7!important}.bk-dk{background:#1d2a12;border-color:#53a318!important;color:#b9f08a!important}.bk-fd{background:#0b2447;border-color:#1493ff!important;color:#8cc8ff!important}
+.bkgame{margin:8px 0 2px}.cmbk{align-self:flex-start;margin-top:3px;display:inline-block}.cpacts{display:flex;gap:8px;flex-wrap:wrap}.cpall{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}.parlay .cpbtn{margin-top:6px}.cmbrec{min-width:0}.cmbkind{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:13px}
 .cmbhist{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}.cmbhist>div{flex:1;min-width:0;display:flex;flex-direction:column}.cmbhist b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cmbst{white-space:nowrap;font-weight:800}.cmblink{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;margin:10px 0}.cmblink>div{flex:1;display:flex;flex-direction:column;gap:2px}
 .cmbli{font-size:24px}.cmbgo{font-size:22px;color:var(--muted)}
 .board .brow{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.board .bk{width:26px;text-align:center}
@@ -1250,7 +1253,9 @@ function pickemRow(g){const all=pkLoad(),k=pkKey(g),mine=all[k];
   for(const t of g.teams){const b=el('button',t.name.split(' ').pop(),'pk'+(mine&&mine.team===t.name?' on':''));b.type='button';
     if(g.league==='NFL'){b.classList.add('nfl-pick');b.prepend(teamBadge(t.name));}
     b.disabled=g.state!=='UPCOMING';b.setAttribute('aria-pressed',String(!!(mine&&mine.team===t.name)));
-    b.onclick=e=>{e.stopPropagation();const x=pkLoad();x[k]={team:t.name,her:g.pick?g.pick.team:null,name:g.name,league:g.league,start:g.start};pkSave(x);pkCloud(k,t.name);award('first_pick');if(Object.keys(x).length>=5)award('five_picks');
+    b.onclick=e=>{e.stopPropagation();const x=pkLoad();
+      if(x[k]&&x[k].team===t.name){delete x[k];pkSave(x);pkUncloud(k);toast('Pick removed');b.classList.remove('on');setTimeout(()=>{renderPicks(D);renderGames(D);},150);return;}   // fix382: tap again to take it back
+      x[k]={team:t.name,her:g.pick?g.pick.team:null,name:g.name,league:g.league,start:g.start};pkSave(x);pkCloud(k,t.name);award('first_pick');if(Object.keys(x).length>=5)award('five_picks');
       b.classList.add('burst');setTimeout(()=>{renderPicks(D);renderGames(D);},350);};row.append(b);}
   return row;}
 // fix358: D.finals is keyed by Kalshi's full event ('KXNHLGAME-26NOV03DALWSH'), picks by the game's event ('26NOV03DALWSH');
@@ -2071,6 +2076,7 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
   const hero=el('div',null,'hero');const vs=el('div',null,'vs');
   g.teams.forEach((t,i)=>{const sd=el('div',null,'side tside');sd.setAttribute('role','button');sd.tabIndex=0;sd.title='Team schedule and synopsis';sd.onclick=()=>openTeam(t.name,g.league);const sc=g.state==='LIVE'||(g.state==='FINAL'&&t.score!=null);sd.append(teamBadge(t.name),teamPlate(t.name,!sc),el('span',t.record||'','hint small'));if(!sc)sd.append(el('small','📅 Team page','tsidehint'));vs.append(sd);if(i===0)vs.append(sc?scoreBug(g,true):el('span','vs','hint'));});
   hero.append(vs);if(g.state!=='LIVE'&&g.state!=='FINAL')hero.append(el('div',when(g.start),'hint'));if(g.tv&&g.tv.length)hero.append(el('div','TV: '+g.tv.join(' · '),'hint small'));b.append(hero);
+  {const bl=g.state!=='FINAL'?bookLinks(g.league,g.kalshi_url):null;if(bl){bl.classList.add('bkgame');b.append(bl);}}
   if(g.pick&&ln.t==='PRACTICE')b.append(el('div',PRACTICE_NOTE,'notice'));
   if(g.bet){const r=g.bet;const c=el('div',null,'card');c.append(betBlock(g,true));
     c.append(el('p','Placed '+when(r.opened)+'. Bets are never switched during a game.','hint small'));
@@ -2324,6 +2330,17 @@ function teamSlip(team,g){if(/^(tie|draw)$/i.test(String(team)))return 'Draw: '+
 async function copySlip(title,lines){const t=title+'\n'+lines.map((l,i)=>(i+1)+') '+l).join('\n')+'\n(Mohjeta · mohjeta.com · for fun, not betting advice)';
   if(await copyText(t)){toast('📋 Copied '+lines.length+' leg'+(lines.length===1?'':'s')+'. Paste it into any betting app.');try{award('share');}catch(e){}}else shareIt({title,text:t});}
 const _SOC=g=>/^(EPL|MLS|UCL|LA LIGA|SERIE A|BUNDESLIGA|LIGUE 1|UEL|UECL|EFL CHAMP)$/.test(g.league||'');
+// fix381 (owner: "Open on Kalshi" + "do it for DraftKings and FanDuel too"): website only (hidden in the iPhone app, Apple's
+// rules on gambling links). Kalshi: the exact event page (kalshi_url from site_extras / a prop's ticker). DraftKings and
+// FanDuel use their own private game ids, so their links open that league's page, where the game is listed.
+const DK_LG={NFL:'football/nfl',NCAAF:'football/ncaaf',NBA:'basketball/nba',NCAAB:'basketball/ncaab',WNBA:'basketball/wnba',NHL:'hockey/nhl',MLB:'baseball/mlb',UFC:'mma/ufc'};
+const FD_LG={NFL:'nfl',NCAAF:'ncaaf',NBA:'nba',NCAAB:'ncaab',WNBA:'wnba',NHL:'nhl',MLB:'mlb',UFC:'ufc'};
+function kalshiFromTicker(t){const p=String(t||'').toLowerCase().split('-');return p.length>=2&&/^kx[a-z0-9]+$/.test(p[0])&&/^[a-z0-9.]+$/.test(p[1])?'https://kalshi.com/markets/'+p[0]+'/game/'+p[0]+'-'+p[1]:null;}
+function bookLinks(lg,kurl,opts){if(isIOSApp())return null;opts=opts||{};const w=el('div',null,'booklinks');w.append(el('small',opts.label||'Open on','hint'));
+  const a=(txt,href,cls)=>{const x=el('a',txt,'bk '+cls);x.href=href;x.target='_blank';x.rel='noopener noreferrer';x.onclick=e=>e.stopPropagation();w.append(x);};
+  if(kurl&&/^https:\/\/kalshi\.com\//.test(kurl))a('Kalshi ↗',kurl,'bk-k');
+  if(!opts.kalshiOnly){a('DraftKings ↗','https://sportsbook.draftkings.com/'+(DK_LG[lg]?'leagues/'+DK_LG[lg]:''),'bk-dk');a('FanDuel ↗','https://sportsbook.fanduel.com/'+(FD_LG[lg]?'navigation/'+FD_LG[lg]:''),'bk-fd');}
+  if(w.querySelectorAll('a').length===0)return null;return w;}
 function copyBtn(label,fn){const b=el('button',label,'btn ghost small cpbtn');b.type='button';b.onclick=e=>{e.stopPropagation();fn();};return b;}
 // fix376 (owner: combo ideas "looks out of date"): ticket-style cards: payout up top, a risk tag, each leg with its team
 // logo, game and time (tap to open the game), her chance vs Kalshi's per leg, and an "all legs hit" comparison bar.
@@ -2338,7 +2355,8 @@ function comboCard(c,i){const a=el('article',null,'card cmb');const n=c.legs.len
     const opp=g?(g.teams||[]).find(t=>t.name!==l.team&&!(sameTeam(t.name,l.team)&&!(g.teams||[]).some(x=>x.name===l.team))):null;
     tx.append(el('b',teamNick(l.team)+' to win'),el('small',sportIcon(l.league)+' '+sname(l.league)+(opp?' · '+(opp.home?'@ ':'vs ')+shortTeam(opp.name):'')+(g?' · '+(g.state==='LIVE'?'LIVE':when(g.start)):''),'hint'));
     const nums=el('div',null,'cmbnum');nums.append(el('b',pct(l.chance),'cmbher'),el('small','Kalshi '+Math.round(l.kalshi*100)+'¢','hint'));
-    row.append(tx,nums);if(g){row.onclick=()=>openGame(g.id||g.name);row.title='Open this game';}legs.append(row);});
+    row.append(tx,nums);if(g){row.onclick=()=>openGame(g.id||g.name);row.title='Open this game';}legs.append(row);
+    if(g&&g.kalshi_url&&!isIOSApp()){const k=el('a','Kalshi ↗','bk bk-k cmbk');k.href=g.kalshi_url;k.target='_blank';k.rel='noopener noreferrer';k.onclick=e=>e.stopPropagation();tx.append(k);}});
   a.append(legs);
   const cmp=el('div',null,'cmbcmp');const edge=Math.round((her-kal)*100);
   const bar=(lab,v,cls)=>{const r=el('div',null,'cmbbar');const f=el('i',null,cls);f.style.width=Math.max(3,Math.min(100,v*100))+'%';const t=el('span');t.append(el('small',lab),el('b',pct(v)));const tr=el('div',null,'cmbtrack');tr.append(f);r.append(t,tr);return r;};
@@ -3504,6 +3522,9 @@ async function ppPick(p,side){const x=ppLoad();x[p.id]=side;ppSave(x);award('fir
   if(me&&sb){try{const {error}=await sb.from('prop_picks').upsert({prop_id:p.id,side},{onConflict:'user_id,prop_id'});
     if(error)toast(/profiles|foreign/i.test(error.message)?'Pick a chat name in Chat to join the props leaderboard':'Saved on this phone (leaderboard save failed)');}catch(e){}}
   document.querySelectorAll('.ppcard').forEach(c=>c.replaceWith(propPickemCard()));}
+async function ppUnpick(p){const x=ppLoad();delete x[p.id];ppSave(x);toast('Pick removed');   // fix382: tap your side again to take it back
+  if(me&&sb){try{const {error}=await sb.from('prop_picks').delete().eq('user_id',me.id).eq('prop_id',p.id);if(error)toast('Removed on this phone (the leaderboard copy could not be removed)');}catch(e){}}
+  document.querySelectorAll('.ppcard').forEach(c=>c.replaceWith(propPickemCard()));}
 function ppScore(rows){const x=ppLoad();let me_=[0,0],her=[0,0];for(const p of rows){const m=x[p.id];if(!m||!/^(Yes|No)$/.test(p.result||''))continue;me_[m===p.result?0:1]++;if(p.her_pick)her[p.her_pick===p.result?0:1]++;}return {me:me_,her};}
 function propPickemCard(){const c=el('div',null,'card ppcard');const rows=PPROPS;
   const hd=el('div',null,'pphead');hd.append(iel('h4','🎯 Prop Pick’em'),el('span','Yes or No: does he hit it?','hint small'));c.append(hd);
@@ -3512,9 +3533,10 @@ function propPickemCard(){const c=el('div',null,'card ppcard');const rows=PPROPS
   const sc=ppScore(rows);if(sc.me[0]+sc.me[1]){const r=el('div',null,'row');r.append(el('span','You '+sc.me[0]+'-'+sc.me[1],'pks me'),el('span','vs','hint small'),el('span','Her '+sc.her[0]+'-'+sc.her[1],'pks'),el('span',' on the same props','hint small'));c.append(r);}
   const x=ppLoad();
   const line=(p,live)=>{const d=el('div',null,'pprow'+(x[p.id]?' picked':''));const t=el('div',null,'pptx');t.append(el('b',p.label),el('small',p.game+' · '+(live?when(p.start):(p.result?'final':'locked'))));d.append(t);
+    if(live){const bl=bookLinks('NBA',kalshiFromTicker(p.id),{label:'Bet it on'});if(bl)t.append(bl);}
     const mine=x[p.id];
     if(live){const bs=el('div',null,'ppbtns');for(const side of ['Yes','No']){const b=el('button',side,'pk'+(mine===side?' on':''));b.type='button';b.setAttribute('aria-pressed',String(mine===side));
-        b.onclick=e=>{e.stopPropagation();b.classList.add('burst');ppPick(p,side);};bs.append(b);}d.append(bs);
+        b.onclick=e=>{e.stopPropagation();if(mine===side){ppUnpick(p);return;}b.classList.add('burst');ppPick(p,side);};bs.append(b);}d.append(bs);
       if(mine)d.append(el('small','Her pick: '+p.her_pick+(p.her_chance?' ('+pct(p.her_chance)+')':''),'pphint'));}
     else{const r=el('div',null,'ppres');const res=p.result;
       r.append(el('span',mine?('You: '+mine+(res&&res!=='Void'?(mine===res?' ✅':' ❌'):'')):'No pick','small'),el('span','Her: '+(p.her_pick||'?')+(res&&res!=='Void'?(p.her_pick===res?' ✅':' ❌'):''),'hint small'),
@@ -3530,6 +3552,7 @@ function propPickemCard(){const c=el('div',null,'card ppcard');const rows=PPROPS
   fill();if(Date.now()-ppBoardAt>60000){ppBoardAt=Date.now();(async()=>{try{await supa();const {data,error}=await sb.from('prop_board').select('*').order('wins',{ascending:false}).order('losses').limit(15);if(!error){PPBOARD=data||[];fill();}}catch(e){}})();}
   c.append(bd);if(Date.now()-ppAt>120000)ppFetch();return c;}
 // ---------------- Pick'em leaderboard (Supabase; picks lock at the start time, graded by Mohjeta)
+async function pkUncloud(event){try{if(!me||!sb)return;const {error}=await sb.from('pickem').delete().eq('user_id',me.id).eq('event',event);if(error)toast('Removed on this phone (the leaderboard copy could not be removed)');}catch(e){}}
 async function pkCloud(event,team){try{if(!me||!sb)return;const {error}=await sb.from('pickem').upsert({event,team},{onConflict:'user_id,event'});
   if(error&&/profiles|foreign/i.test(error.message))toast('Pick a chat name in Chat to join the leaderboard');}catch(e){}}
 let BOARD=null,boardAt=0;
