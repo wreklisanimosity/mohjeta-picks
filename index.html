@@ -63,6 +63,7 @@ header{position:sticky;top:0;z-index:20;background:#0b0712f2;backdrop-filter:blu
 .radiorow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0}.radiorow .rlbl{font-size:12px;font-weight:800;color:var(--muted);width:100%}.radiorow>small{width:100%}
 .rlink{display:inline-flex;flex-direction:column;gap:1px;padding:6px 10px;border-radius:10px;background:#ffffff0d;border:1px solid #ff4fd844;text-decoration:none;color:var(--text);min-width:0;max-width:100%}.rlink b{font-size:12px}.rlink span{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .radiorow.sm{margin:2px 0 4px;gap:4px;flex-wrap:nowrap}.radiorow.sm .rlink{flex:1 1 0;padding:4px 6px}.radiorow.sm .rlink b{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.radiorow.sm .rlink span{font-size:9.5px}
+.radiolist{display:flex;flex-direction:column;gap:8px;margin:10px 0}.rstation{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 10px;padding:12px 14px;border-radius:14px;background:#ffffff0a;border:1px solid #ff4fd833;color:var(--text);text-decoration:none}.rstation b{font-size:15px}.rstation span{grid-column:1;font-size:12px;color:var(--muted)}.rstation i{grid-row:1/3;grid-column:2;font-style:normal;color:#ff4fd8;font-size:20px}
 .ticker[hidden]{display:none}.tk-view{flex:1;overflow:hidden;position:relative}.tk-view::before,.tk-view::after{content:"";position:absolute;top:0;bottom:0;width:18px;z-index:1;pointer-events:none}.tk-view::before{left:0;background:linear-gradient(90deg,#0b0712,#0b071200)}.tk-view::after{right:0;background:linear-gradient(270deg,#0b0712,#0b071200)}
 .tk-track{display:inline-flex;white-space:nowrap;animation:tk var(--tkdur,60s) linear infinite}.ticker:hover .tk-track,.ticker.paused .tk-track{animation-play-state:paused}
 @keyframes tk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -758,10 +759,21 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
   </section>
   <section class="panel" id="feed" role="tabpanel" aria-label="Live feed"><button class="back" data-go="more">‹ More</button>
     <h2>📰 Live feed</h2><p class="hint small">News as it happens for today's games: injuries and lineups, foul trouble, big Kalshi price moves, her pick changes and her bets. Updates by itself.</p><div class="chips" id="feedChips"></div><div id="feedBox"></div></section>
+  <section class="panel" id="radio" role="tabpanel" aria-label="Sports radio"><button class="back" data-go="more">‹ More</button>
+    <h2>🎧 Sports radio</h2><p class="hint small">Free live sports talk, news and scores around the clock. Tap a station to listen (opens TuneIn or iHeartRadio, free).</p>
+    <div class="radiolist">
+      <a class="rstation" href="https://tunein.com/search/?query=ESPN%20Radio" target="_blank" rel="noopener noreferrer"><b>ESPN Radio</b><span>National sports talk, big games and breaking news · TuneIn</span><i>›</i></a>
+      <a class="rstation" href="https://www.iheart.com/live/fox-sports-radio-4732/" target="_blank" rel="noopener noreferrer"><b>Fox Sports Radio</b><span>National sports talk all day and night · iHeartRadio</span><i>›</i></a>
+      <a class="rstation" href="https://tunein.com/search/?query=NBC%20Sports%20Radio" target="_blank" rel="noopener noreferrer"><b>NBC Sports Radio</b><span>Football talk (PFT Live) and more · TuneIn</span><i>›</i></a>
+      <a class="rstation" href="https://tunein.com/search/?query=ESPN%20Deportes" target="_blank" rel="noopener noreferrer"><b>ESPN Deportes</b><span>Deportes en español · TuneIn</span><i>›</i></a>
+    </div>
+    <p class="hint small">🏟️ Want a game itself? Open any game: the teams’ own free radio is under the score.</p>
+  </section>
   <section class="panel" id="more" role="tabpanel" aria-label="More">
     <h2>More</h2><div id="pushBox"></div>
     <div class="menu">
       <button type="button" data-go="news"><span>🆕 What's new & how-to<small>Latest updates and how to use every part of the site</small></span>›</button>
+      <button type="button" data-go="radio"><span>🎧 Sports radio<small>Free live sports talk: ESPN Radio, Fox Sports Radio and more</small></span>›</button>
       <button type="button" data-go="feed"><span>📰 Live feed<small>Injuries, lineups, foul trouble and price moves as they happen</small></span>›</button>
       <button type="button" data-go="combos"><span>Combos &amp; parlays<small>Team combos, prop parlays, heavy favorites, your builder</small></span>›</button>
       <button type="button" data-go="score"><span>Scorecard<small>Every source she uses, graded against real results</small></span>›</button>
@@ -965,7 +977,7 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['home','picks','props','sim','record','play','chat','more'];const SUB={games:'more',ratings:'more',guess:'play',fantasy:'play',weekly:'play',feed:'more',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
+const TABS=['home','picks','props','sim','record','play','chat','more'];const SUB={radio:'more',games:'more',ratings:'more',guess:'play',fantasy:'play',weekly:'play',feed:'more',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button[data-tab]')];
 function show(name,push){name=LEGACY[name]||name;
