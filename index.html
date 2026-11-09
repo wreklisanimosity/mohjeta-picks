@@ -738,6 +738,10 @@ html,body{overscroll-behavior-y:none}
 .tmcard{padding:14px;margin:14px 0}.tmcard h4{margin:0 0 2px}.tmsel{width:100%;margin:6px 0;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:#ffffff0d;color:inherit;font:inherit}.tmcols{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tmp{display:flex;align-items:center;gap:6px;padding:6px 4px;border-top:1px solid var(--line);font-size:12px}.tmp span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tmp small{color:var(--muted)}.tmp.on{color:#ff8be6}
 .tmresult{margin-top:10px}.tmrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0;border-top:1px solid var(--line)}.tmrow .badge,.tmrow img{width:26px;height:26px}.tmrow small{width:100%;padding-left:34px}.tmv.up{color:#3ddc84;font-weight:800}.tmv.down{color:#ff6b6b;font-weight:800}.tmverdict{font-weight:800;margin:8px 0 2px}
+.trpop{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:95;display:flex;align-items:center;gap:6px;padding:10px 8px 10px 12px;border-radius:18px;border:1px solid #ff4fd866;background:linear-gradient(135deg,#2a1240f7,#140c22f7);box-shadow:0 14px 34px #000a,inset 0 1px 0 #ffffff26;transform:translateY(-140%);transition:transform .35s cubic-bezier(.2,.9,.3,1.2),opacity .3s;max-width:560px;margin:0 auto}
+.trpop.in{transform:translateY(0)}.trpop.out{transform:translateY(-140%);opacity:0}.trpop.mine{border-color:#f5c542}.trpopb{display:flex;align-items:center;gap:10px;flex:1;min-width:0;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:0}
+.trpopb .badge,.trpopb img{width:34px;height:34px;flex:none}.trpopt{display:flex;flex-direction:column;min-width:0}.trpopt small{font-size:10px;letter-spacing:.1em;font-weight:800;color:#ff8be6}.trpopt b{font-size:14px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.trpopr{font-size:12px;color:var(--muted)}
+.trpopx{flex:none;background:none;border:0;color:var(--muted);font-size:16px;padding:6px 8px}
 </style>
 <script src="languages.js?v=13" defer></script>
 </head>
@@ -2954,7 +2958,7 @@ function needDet(){if(!D||!(D.games||[]).some(g=>g.has_more)||detBusy||(DET&&Dat
   if(!(sheetGame&&sheetGame.has_more)&&!on('sim')&&!on('props')&&!on('combos'))return;
   detBusy=fetchPublicSnapshot('details.json').then(r=>r.ok?r.json():null).then(x=>{if(!x||!x.games)return;DET=x;detAt=Date.now();if(!D)return;mergeDet(D);
     try{renderSim();}catch(e){}try{renderProps(D);}catch(e){}try{if(on('combos'))renderCombos(D);}catch(e){}refreshSheet();}).catch(()=>{}).finally(()=>{detBusy=null;});}
-function render(d){D=d;try{drawTicker();}catch(e){}try{if(document.querySelector('#more.on'))renderMine();}catch(e){}try{drawRadioTeaser(d);if(document.querySelector('#radio.on'))drawRadioPage();}catch(e){}notePeople(d);applyMembers(d);mergeDet(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
+function render(d){D=d;try{drawTicker();}catch(e){}try{setTimeout(tradePopup,1500);}catch(e){}try{if(document.querySelector('#more.on'))renderMine();}catch(e){}try{drawRadioTeaser(d);if(document.querySelector('#radio.on'))drawRadioPage();}catch(e){}notePeople(d);applyMembers(d);mergeDet(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
   $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderSkipped(d),()=>renderMore(d),()=>renderSimIfChanged(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
   if(lastLive&&Date.parse(lastLive.updated)>Date.parse(d.updated))applyLive(lastLive);
@@ -3302,6 +3306,7 @@ const TK_MAX=10;   // fix349: the banner is one long sliding strip (twice over);
 let PUSH_ON=null;function alertsNudge(){try{if(capPush())return !apnsSaved();if(isIOSApp()||!('PushManager' in window)||!('serviceWorker' in navigator))return false;return PUSH_ON===false;}catch(e){return false;}}
 function goAlerts(){show('more');setTimeout(()=>{const b=$('pushBox');if(b){const f=b.closest('details');if(f)f.open=true;b.scrollIntoView({behavior:'smooth',block:'center'});b.classList.remove('flash');void b.offsetWidth;b.classList.add('flash');}},350);}
 function tickerItems(){const out=[];const cut=Date.now()-14*864e5;if(alertsNudge())out.push({site:true,label:'🔔 ALERTS',text:'Turn on phone alerts: her bets, your picks and when someone @’s you. Tap here',act:goAlerts});try{out.push(...champTicker());}catch(e){}
+  try{out.push(...tradeTicker());}catch(e){}   // fix416: new trades ride the banner for a day
   for(const u of ((NEWS&&NEWS.updates)||[]).slice(0,3)){if(Date.parse(u.date)>=cut)out.push({site:true,label:'MOHJETA',text:u.title,go:'news'});}   // tap: the full update on What's new
   for(const h of ((D&&D.headlines)||[]).slice(0,TK_MAX))out.push({label:(SPORT_ICON[h.league]||'')+' '+sname(h.league).toUpperCase(),text:h.text,link:h.link});
   return out;}
@@ -4166,6 +4171,21 @@ function tradeMachine(box,d){box.replaceChildren();const T=d.trades||{},M=T.mach
     out.append(el('p',Math.abs(va-vb)<0.5?'Her read: a fair trade.':(vb>va?teamNick(S.a):teamNick(S.b))+' win this trade by her numbers.','tmverdict'));}
   else out.append(el('p','Tick players on each side to build a trade.','hint small'));c.append(out);
   c.append(el('small','A rough estimate from her player values (points of margin a game). Picks, salaries and fit are not counted.','hint small'));box.append(c);}
+// ---- fix416 (owner: "I don't want trade hidden, maybe something that pops up with updates but doesn't stay"): a new trade
+// slides in at the top for a few seconds (tap: the trade center), then goes away; it also rides the headline banner for a day.
+function tradeKey(m){return m.league+'|'+m.team+'|'+String(m.text).slice(0,80);}
+function freshTrades(hours){const cut=Date.now()-(hours||24)*36e5;return ((D&&D.trades&&D.trades.moves)||[]).filter(m=>m.kind==='trade'&&Date.parse(m.date)>=cut);}
+function tradeShort(m){return teamNick(m.team)+': '+String(m.text).replace(/^(Acquired|Traded)\s+/,(x,w)=>w==='Acquired'?'got ':'traded ').replace(/\.$/,'').replace(/\b(PG|SG|SF|PF|QB|RB|WR|TE|LB|CB|DE|DT|OT|OG|LW|RW|RHP|LHP|OF|SS|1B|2B|3B|G|F|C|D|S|K|P)\s(?=[A-Z])/g,'');}
+function tradeRead(m){const n=m.impact&&m.impact.net_pts;return typeof n==='number'&&n?' · her read '+(n>0?'+':'')+n.toFixed(1)+' pts/game':'';}
+function tradeTicker(){const mine=myTeamSet();return freshTrades(24).sort((a,b)=>(mine.has(b.team)-mine.has(a.team))).slice(0,3).map(m=>({site:true,label:'🔁 TRADE',text:tradeShort(m)+tradeRead(m),act:()=>openHub('trades')}));}
+function tradePopup(){if(document.querySelector('.trpop'))return;let seen=[];try{seen=JSON.parse(localStorage.getItem('mohjeta.tradeSeen')||'[]')||[];}catch(e){}
+  const mine=myTeamSet();const fresh=freshTrades(24).filter(m=>!seen.includes(tradeKey(m))).sort((a,b)=>(mine.has(b.team)-mine.has(a.team))||String(b.date).localeCompare(String(a.date)));if(!fresh.length)return;
+  const keep=seen.concat(fresh.map(tradeKey)).slice(-80);try{localStorage.setItem('mohjeta.tradeSeen',JSON.stringify(keep));}catch(e){}
+  const m=fresh[0];const p=el('div',null,'trpop'+(mine.has(m.team)?' mine':''));p.setAttribute('role','status');const body=el('button',null,'trpopb');body.type='button';
+  const tx=el('span',null,'trpopt');tx.append(el('small','🔁 NEW TRADE · '+sname(m.league)+(fresh.length>1?' · +'+(fresh.length-1)+' more':'')),el('b',tradeShort(m)),el('span',tradeRead(m).replace(/^ · /,''),'trpopr'));
+  body.append(logoOf(m.team),tx);body.onclick=()=>{p.remove();openHub('trades');};const x=el('button','✕','trpopx');x.type='button';x.setAttribute('aria-label','Dismiss');x.onclick=()=>{p.classList.add('out');setTimeout(()=>p.remove(),300);};
+  p.append(body,x);document.body.append(p);requestAnimationFrame(()=>p.classList.add('in'));try{MJSound&&MJSound.play('tick');}catch(e){}
+  setTimeout(()=>{p.classList.add('out');setTimeout(()=>p.remove(),400);},9000);}
 // ---------------- fix410 (owner: "display the winner on the Home screen and the free version for some extra incentive to subscribe")
 // The Pick'em leaderboard lives on Home now. It is public (free version too); free users see a members nudge when the paywall is on.
 function homeBoard(){const c=el('div',null,'card hboard');c.id='homeBoard';
