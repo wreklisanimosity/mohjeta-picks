@@ -742,6 +742,11 @@ html,body{overscroll-behavior-y:none}
 .trpop.in{transform:translateY(0)}.trpop.out{transform:translateY(-140%);opacity:0}.trpop.mine{border-color:#f5c542}.trpopb{display:flex;align-items:center;gap:10px;flex:1;min-width:0;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:0}
 .trpopb .badge,.trpopb img{width:34px;height:34px;flex:none}.trpopt{display:flex;flex-direction:column;min-width:0}.trpopt small{font-size:10px;letter-spacing:.1em;font-weight:800;color:#ff8be6}.trpopt b{font-size:14px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.trpopr{font-size:12px;color:var(--muted)}
 .trpopx{flex:none;background:none;border:0;color:var(--muted);font-size:16px;padding:6px 8px}
+.obets{margin:4px 0 14px}.obhead h3{margin:4px 0 2px}.obcard{padding:12px;margin:8px 0;border-color:#3ddc8455;background:linear-gradient(135deg,#10261a,#0d0a18)}.obcard.dead{opacity:.6;border-color:#ff6b6b44;background:linear-gradient(135deg,#2a1014,#0d0a18)}
+.obtop{display:flex;align-items:center;gap:8px}.obtop b{font-size:18px;color:#3ddc84}.obcard.dead .obtop b{color:var(--muted)}.obst{font-size:12px;font-weight:800;color:var(--muted)}
+.oleg{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.oleg .badge,.oleg img{width:32px;height:32px;flex:none}.olegt{flex:1;min-width:0;display:flex;flex-direction:column}.olegt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.olegs{font-size:12px;font-weight:800;white-space:nowrap;padding:3px 8px;border-radius:99px;background:#ffffff12}.oleg.s-won .olegs{background:#3ddc8426}.oleg.s-lost .olegs{background:#ff6b6b26}.oleg.s-ahead .olegs{background:#3ddc8426;color:#3ddc84}.oleg.s-behind .olegs{background:#ff9f4326;color:#ffb36b}.oleg.tap{cursor:pointer}
+.obsic{font-size:10px;font-weight:800;padding:3px 6px;border-radius:99px}.obsic.w{background:#3ddc8426;color:#3ddc84}.obsic.l{background:#ff6b6b26;color:#ff8a8a}.oleg.s-won .olegs{color:#3ddc84}.oleg.s-lost .olegs{color:#ff8a8a}.obsettled{margin-top:10px}.obsettled summary{cursor:pointer;font-weight:700;padding:8px 0}.obsrow{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}.obsrow div{display:flex;flex-direction:column;min-width:0}.obsrow div b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 <script src="languages.js?v=13" defer></script>
 </head>
@@ -2842,6 +2847,29 @@ function comboCard(c,i){const a=el('article',null,'card cmb');const n=c.legs.len
 // fix377 (owner: "combine them"): Combo ideas + her prop parlays + parlay legs + the prop builder on one page, in tabs.
 const CMB_TABS=[['teams','🧩 Teams'],['props','🎲 Props'],['legs','🔗 Heavy favorites'],['build','🧱 Build your own']];
 let cmbTab=(()=>{try{return localStorage.getItem('mohjeta.cmbTab')||'teams';}catch(e){return 'teams';}})();
+// ---- fix418 (owner: "does she show which combos she bets" -> "make it so"): every combo she has a (paper) bet on, at the top
+// of the Combos page, with each leg's live status from tonight's games; settled ones underneath.
+function legGameOf(l){const nm=l.name||String(l.team||'').replace(/^Not /,'');const gs=(D&&D.games)||[];
+  const cand=gs.filter(g=>(!l.league||g.league===l.league)&&(g.teams||[]).some(t=>t.name===nm||sameTeam(t.name,nm)));if(!cand.length)return null;
+  if(l.start)cand.sort((a,b)=>Math.abs(Date.parse(a.start)-Date.parse(l.start))-Math.abs(Date.parse(b.start)-Date.parse(l.start)));return cand[0];}
+function legStatus(l){const g=legGameOf(l);if(!g)return {s:'wait',t:'⏳'};const nm=l.name||String(l.team||'').replace(/^Not /,'');const me=(g.teams||[]).find(t=>t.name===nm||sameTeam(t.name,nm));const op=(g.teams||[]).find(t=>t!==me);
+  const against=l.against||/^Not /.test(l.team||'');if(!me||!op||me.score==null||op.score==null)return {s:'wait',t:g.state==='LIVE'?'LIVE':'⏳',g};
+  const lead=+me.score-+op.score,good=against?lead<=0:lead>0;if(g.state==='FINAL')return {s:good?'won':'lost',t:good?'WON':'LOST',g};
+  if(g.state==='LIVE')return {s:good?'ahead':'behind',t:'LIVE '+me.score+'-'+op.score,g};return {s:'wait',t:'⏳',g};}
+function betLegRow(l){const nm=l.name||String(l.team||'').replace(/^Not /,'');const st=legStatus(l);const r=el('div',null,'oleg s-'+st.s);const against=l.against||/^Not /.test(l.team||'');
+  r.append(teamBadge(nm));const tx=el('div',null,'olegt');tx.append(el('b',(/^(NBA|NFL|NHL|MLB|WNBA|NCAAF|NCAAB)$/.test(l.league||'')?teamNick(nm):nm)+(against?' not to win':' to win')),
+    el('small',sname(l.league||'')+(st.g?' · '+(st.g.state==='LIVE'?'live now':st.g.state==='FINAL'?'final':when(st.g.start)):(l.start?' · '+when(l.start):'')),'hint'));r.append(tx,el('span',st.t,'olegs'));
+  if(st.g){r.classList.add('tap');r.onclick=()=>openGame(st.g.id||st.g.name);}return r;}
+function openBetsCard(d){const C=d.combo_record;if(!C||!C.open)return null;const O=C.open,S=C.settled||[];const w=el('div',null,'obets');
+  const staked=O.reduce((a,x)=>a+(x.stake||0),0),pays=O.reduce((a,x)=>a+(x.pays||0),0);const hd=el('div',null,'obhead');
+  hd.append(el('h3','🎟 Her open combos'+(O.length?' ('+O.length+')':'')),el('small',O.length?'$'+staked.toFixed(2)+' riding · pays up to $'+pays.toFixed(2)+' if they all hit · paper money':'Nothing riding right now. She bets new combos as tonight’s picks come in.','hint small'));w.append(hd);
+  for(const x of O){const c=el('div',null,'card obcard');const sts=x.legs.map(legStatus);const dead=sts.some(s=>s.s==='lost'),alive=sts.filter(s=>s.s==='won').length;
+    if(dead)c.classList.add('dead');const top=el('div',null,'obtop');top.append(el('b','$'+Number(x.stake).toFixed(2)+(x.pays?' → $'+x.pays.toFixed(2):'')),el('span',null,'sp'),el('span',dead?'a leg lost':alive?alive+' of '+x.legs.length+' won':x.legs.length+' legs','obst'));
+    c.append(top,el('small',(x.label||'')+' · she said '+pct(x.her_p)+' all hit · Kalshi '+pct(x.kalshi_p)+' · '+when(x.at),'hint small'));for(const l of x.legs)c.append(betLegRow(l));w.append(c);}
+  if(S.length){const f=el('details',null,'obsettled');const won=S.filter(x=>x.status==='WON').length,pl=S.reduce((a,x)=>a+(x.pnl||0),0);f.append(el('summary','Settled · last '+S.length+' · '+won+'-'+(S.length-won)+' · '+signed(pl)));
+    for(const x of S){const r=el('div',null,'obsrow');const t=el('div');t.append(el('b',x.legs.map(l=>teamNick(l.name||String(l.team||'').replace(/^Not /,''))).join(' + ')),el('small',x.legs.length+' legs · $'+Number(x.stake).toFixed(2)+' · '+when(x.at),'hint small'));
+      r.append(el('span',x.status==='WON'?'WON':'LOST','obsic '+(x.status==='WON'?'w':'l')),t,el('span',null,'sp'),el('b',signed(x.pnl||0),'pl '+cls(x.pnl||0)));f.append(r);}w.append(f);}
+  return w;}
 function openCombos(tab){if(tab){cmbTab=tab;try{localStorage.setItem('mohjeta.cmbTab',tab);}catch(e){}}show('combos');try{renderCombos(D);}catch(e){}window.scrollTo(0,0);}
 function renderCombos(d){const cl=$('comboList');if(!cl||!d)return;const bar=$('cmbTabs');
   if(bar){bar.replaceChildren(...CMB_TABS.map(([k,l])=>{const b=el('button',l,'chip'+(cmbTab===k?' on':''));b.type='button';b.setAttribute('aria-pressed',String(cmbTab===k));
@@ -2852,8 +2880,8 @@ function renderCombos(d){const cl=$('comboList');if(!cl||!d)return;const bar=$('
   if(cmbTab==='legs'){cl.replaceChildren(legsCard(d));return;}
   if(cmbTab==='build'){const w=el('div');const pb=el('div',null,'card');pb.id='propBuilder';
     const go=el('button','➕ Add props from the Props page','btn ghost small');go.type='button';go.onclick=()=>show('props');w.append(pb,go);cl.replaceChildren(w);try{drawBuilder();}catch(e){}needDet();return;}
-  const rc=(()=>{try{return comboRecordCard(d);}catch(e){return null;}})();
-  cl.replaceChildren(...(rc?[rc]:[]),...(d.combos&&d.combos.length?d.combos.map(comboCard):[empty('No strong combos right now','She only builds combos from legs she trusts (55%+ and better than Kalshi’s price). New ones show up as tonight’s picks come in; this page refreshes every few minutes.')]));}
+  const rc=(()=>{try{return comboRecordCard(d);}catch(e){return null;}})();const ob=(()=>{try{return openBetsCard(d);}catch(e){return null;}})();
+  cl.replaceChildren(...(ob?[ob]:[]),...(rc?[rc]:[]),...(d.combos&&d.combos.length?d.combos.map(comboCard):[empty('No strong combos right now','She only builds combos from legs she trusts (55%+ and better than Kalshi’s price). New ones show up as tonight’s picks come in; this page refreshes every few minutes.')]));}
 // fix378 (owner: "add it to the combo page"): her paper combo record on the Teams tab (combos.site_view via site_extras)
 function comboRecordCard(d){const C=d.combo_record;if(!C||!C.overall)return null;const O=C.overall,n=O.won+O.lost;
   const c=el('div',null,'card cmbrec');c.append(iel('h4','💰 Her combo profit (paper money)'));   // fix406 (owner): profit is the focus
