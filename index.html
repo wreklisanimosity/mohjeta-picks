@@ -697,6 +697,13 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .tcard.shown{box-shadow:inset 0 1px 0 #ffffff24,inset 0 -18px 24px -16px #0000008c,0 0 16px #f5c54244,0 12px 24px -8px #000000c4}
 .acctsheet{padding:4px 2px 24px}.acctsheet h2{margin:4px 0 12px}.acctsheet .acctacts{display:flex;flex-direction:column;gap:10px;margin-top:14px}.acctsheet .acctacts .btn{width:100%;margin:0;box-sizing:border-box}
 .gate{overflow-y:auto;align-items:flex-start;-webkit-overflow-scrolling:touch}.gate>.gatebox{margin:auto;max-height:none}
+.hboard{padding:14px}.hboard .hbhead{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.hboard h4{margin:0}
+.hbwin{display:flex;align-items:center;gap:10px;margin:10px 0 6px;padding:10px 12px;border-radius:14px;background:linear-gradient(135deg,#f5c54233,#b8860b22 60%,#ffffff08);border:1px solid #f5c54266;box-shadow:inset 0 1px 0 #ffffff22,0 6px 18px #0006}
+.hbwin.mine{border-color:#f5c542}.hbwin .hbcrown{font-size:26px;filter:drop-shadow(0 2px 4px #0008)}.hbwin .cpic{width:38px;height:38px;flex:none}
+.hbwt{display:flex;flex-direction:column;min-width:0}.hbwt small:first-child{font-size:10px;letter-spacing:.12em;color:#f5c542;font-weight:800}.hbwt b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hbwt small:last-child{color:var(--muted);font-size:12px}
+.hbrow{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line);flex-wrap:wrap}.hbrow .bk{width:24px;text-align:center}.hbrow .sp{flex:1}.hbrow .cpic{width:28px;height:28px}
+.hbrow b{max-width:46vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hbrow.top b{font-size:15px}.hbrow.mine b{color:#f5c542}.hbrow .up{font-variant-numeric:tabular-nums;font-weight:700}.hbbeat{width:100%;padding-left:62px;margin-top:-4px}
+.hbmore summary{cursor:pointer;padding:8px 0;color:var(--accent,#ff4fd8);font-weight:700;font-size:13px}.hbfoot{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.hbnudge{margin:8px 0 0}
 </style>
 <script src="languages.js?v=13" defer></script>
 </head>
@@ -2086,7 +2093,7 @@ let simId=null;const simState={};
 // champions (champions.py writes them), titles next to names, a Hall of Fame, the champion on the headline banner.
 let CHAMPS=null,champsAt=0;const TITLES={};
 async function loadChamps(force){if(!force&&CHAMPS&&Date.now()-champsAt<300000)return CHAMPS;try{await supa();const {data,error}=await sb.from('champions').select('kind,period,label,user_id,name,stat,created_at').order('created_at',{ascending:false}).limit(60);
-  if(error)throw error;CHAMPS=data||[];champsAt=Date.now();champCheer();try{drawTicker();}catch(e){}document.querySelectorAll('.hof').forEach(x=>x.replaceWith(hofCard()));}catch(e){CHAMPS=CHAMPS||[];}return CHAMPS;}
+  if(error)throw error;CHAMPS=data||[];champsAt=Date.now();champCheer();try{drawTicker();}catch(e){}document.querySelectorAll('.hof').forEach(x=>x.replaceWith(hofCard()));{const hb=$('homeBoard');if(hb)hb.replaceWith(homeBoard());}}catch(e){CHAMPS=CHAMPS||[];}return CHAMPS;}
 const CHAMP_IC={pickem_week:'👑',pickem_month:'🏆',fantasy_week:'🏈',props_week:'🎯'};
 function champIcon(c){return c.kind==='fantasy_week'&&/NBA/.test(c.label)?'🏀':CHAMP_IC[c.kind]||'🏆';}
 function hofCard(){const c=el('div',null,'card hof');c.append(iel('h4','🏛️ Hall of Fame'),el('p','Weekly and monthly champions. Win Pick’em for the week (3+ finished picks) or the month (8+), top Prop Pick’em for the week (5+), or top a weekly fantasy slate, to get your name up here and a title next to it in chat.','hint small'));
@@ -2614,7 +2621,7 @@ function drawBetting(d){const box=$('betting');box.replaceChildren();
   const cr=el('div',null,'crumb');if(sports.length>1){const back=el('button','‹ All sports');back.type='button';back.onclick=()=>{tonSport=null;drawBetting(D);};cr.append(back);}
   {const h=el('h4',' '+sname(tonSport)+' · '+by[tonSport].length);if(window.SportArt)h.prepend(SportArt.el(tonSport));else h.prepend(sportIcon(tonSport));cr.append(h);}box.append(cr);
   const gr=el('div',null,'mgrid');for(const g of by[tonSport])gr.append(miniCard(g));box.append(gr);}
-function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();try{renderOpenBets(d);}catch(e){}try{renderLegs(d);}catch(e){}try{if(document.querySelector('#feed.on'))renderFeed(d);}catch(e){}setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(propPickemCard(),boardCard(),hofCard());}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
+function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();try{renderOpenBets(d);}catch(e){}try{renderLegs(d);}catch(e){}try{if(document.querySelector('#feed.on'))renderFeed(d);}catch(e){}setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(propPickemCard(),hofCard());/* fix410: leaderboard moved to Home */}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
     const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));{const ws=withSkipped(d,t.wins,t.losses);if(ws)box.append(el('div',ws.w+'-'+ws.l+' counting the '+(ws.sw+ws.sl)+' picks she skipped at 95¢+ (no bet on those)','hint small'));}
@@ -2876,6 +2883,7 @@ function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren
     const info=el('div',null,'nx');const team=(nx.pick&&(nx.pick.team||nx.pick.name))||'';info.append(el('small','Next up · '+sname(nx.league)),el('b',nx.name||''));
     const line=el('small',(team?'Her pick: '+team+(typeof nx.pick.chance==='number'?' ('+pct(nx.pick.chance)+')':'')+' · ':''));const cd=countdown(nx);if(cd)line.append(cd);info.append(line);
     b.append(info,el('span','›','go'));b.onclick=()=>openGame(nx.id||nx.name);box.append(b);}
+  try{box.append(homeBoard());}catch(e){}   // fix410 (owner): leaderboard + winner on Home, free for everyone
   box.append(el('div','Go to','hsec'));const tiles=el('div',null,'htiles');for(const p of PAGES.slice(0,12))tiles.append(pageTile(p,d));box.append(tiles);
   const more=el('button','All pages ⌃','btn ghost small');more.type='button';more.onclick=openQJ;box.append(more);}
 function closeQJ(){const q=$('qj');if(q)q.classList.remove('on');document.body.style.overflow='';}
@@ -3986,6 +3994,30 @@ async function pkUncloud(event){try{if(!me||!sb)return;const {error}=await sb.fr
 async function pkCloud(event,team){try{if(!me||!sb)return;const {error}=await sb.from('pickem').upsert({event,team},{onConflict:'user_id,event'});
   if(error&&/profiles|foreign/i.test(error.message))toast('Pick a chat name in Chat to join the leaderboard');}catch(e){}}
 let BOARD=null,boardAt=0;
+// ---------------- fix410 (owner: "display the winner on the Home screen and the free version for some extra incentive to subscribe")
+// The Pick'em leaderboard lives on Home now. It is public (free version too); free users see a members nudge when the paywall is on.
+function homeBoard(){const c=el('div',null,'card hboard');c.id='homeBoard';
+  const hd=el('div',null,'hbhead');hd.append(iel('h4','🏆 Leaderboard'),el('small','Pick’em · last 30 days','hint small'));c.append(hd);
+  const win=el('div',null,'hbwin');const body=el('div',null,'hbrows');c.append(win,body);
+  const champ=()=>{win.replaceChildren();const r=(CHAMPS||[]).find(x=>x.kind==='pickem_week')||(CHAMPS||[])[0];if(!r){win.hidden=true;return;}win.hidden=false;
+    const crown=el('span',champIcon(r),'hbcrown');const t=el('div',null,'hbwt');t.append(el('small','REIGNING CHAMPION'),el('b',r.name),el('small',r.label+' · '+r.stat));
+    win.append(crown,chatPic({user_id:r.user_id,name:r.name}),t);if(me&&r.user_id===me.id)win.classList.add('mine');};
+  const row=(r,i)=>{const w=el('div',null,'hbrow'+(i<3?' top':'')+(me&&myProfile&&r.name===displayOf(me)?' mine':''));
+    w.append(el('span',['🥇','🥈','🥉'][i]||String(i+1),'bk'),chatPic({user_id:null,name:r.name,profiles:{avatar_url:r.avatar}}),el('b',r.name),el('span',null,'sp'),
+      el('span',r.wins+'-'+r.losses,'up'));if(r.beat_her)w.append(el('span','beat her '+r.beat_her+'×','hint small hbbeat'));return w;};
+  const fill=()=>{champ();body.replaceChildren();const rows=BOARD||[];
+    if(!rows.length){body.append(el('p',BOARD?'No one is ranked yet: 5 finished Pick’em picks gets you on the board.':'Loading…','hint small'));}
+    else{rows.slice(0,3).forEach((r,i)=>body.append(row(r,i)));
+      if(rows.length>3){const more=el('details',null,'hbmore');more.append(el('summary','See the top '+rows.length));rows.slice(3).forEach((r,i)=>more.append(row(r,i+3)));body.append(more);}}
+    const foot=el('div',null,'hbfoot');const go=el('button',me?'Make your picks ›':'Join Pick’em ›','btn small');go.type='button';go.onclick=()=>show(me?'play':'chat');foot.append(go);
+    if(pw().on&&!(ACCESS&&ACCESS.access)&&!isIOSApp()){const n=el('p','Members see every one of her picks and her reasoning: the edge to climb this board.','hint small hbnudge');
+      const sub=el('button','See plans','btn ghost small');sub.type='button';sub.onclick=()=>openPlans();foot.append(sub);c._nudge=n;}
+    body.append(foot);if(c._nudge)body.append(c._nudge);};
+  fill();
+  if(!CHAMPS)loadChamps().then(()=>{if(c.isConnected)fill();});
+  if(Date.now()-boardAt>60000||!BOARD){boardAt=Date.now();(async()=>{try{await supa();const {data,error}=await sb.from('pickem_board').select('*').order('wins',{ascending:false}).order('losses').limit(20);
+    if(!error){BOARD=data||[];}else BOARD=BOARD||[];}catch(e){BOARD=BOARD||[];}if(c.isConnected)fill();})();}
+  return c;}
 function boardCard(){const c=el('div',null,'card board');c.append(iel('h4','🏆 Pick\'em leaderboard · last 30 days'));
   const fill=()=>{const rows=BOARD||[];c.querySelectorAll('.brow,.bnote').forEach(x=>x.remove());
     if(!rows.length){c.append(el('p',me?'No one is ranked yet: 5 finished picks gets you on the board.':'Sign in (Chat) and your picks count here. 5 finished picks gets you on the board.','hint small bnote'));return;}
