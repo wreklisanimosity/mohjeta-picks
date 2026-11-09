@@ -2627,8 +2627,11 @@ function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();try
     const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));{const ws=withSkipped(d,t.wins,t.losses);if(ws)box.append(el('div',ws.w+'-'+ws.l+' counting the '+(ws.sw+ws.sl)+' picks she skipped at 95¢+ (no bet on those)','hint small'));}
     const go=el('button','See the full track record ›','more');go.style.cssText='background:none;border:0;padding:0;cursor:pointer';go.onclick=()=>show('record');box.append(go);rec.append(box);}
   const ab=$('alertsBox');ab.replaceChildren();if(d.alerts_url){const a=iel('a','🔔 Get her picks as they happen','btn');a.href=d.alerts_url;a.target='_blank';a.rel='noopener';ab.append(a);ab.style.margin='0 0 14px';}
-  const live=d.games.filter(g=>g.state==='LIVE'&&g.pick&&isBetLane(g));const lb=$('liveBox');lb.replaceChildren();
-  if(live.length){lb.append(el('h3','● Live now'));const gr=el('div',null,'mgrid');for(const g of live)gr.append(miniCard(g));lb.append(gr);}
+  // fix412 (owner: "it says two live games why can't I see them"): Home counts every live game, so Live now shows every
+  // live game too: her bets first, then the rest under "Also live".
+  const allLive=d.games.filter(g=>g.state==='LIVE'),live=allLive.filter(g=>g.pick&&isBetLane(g)),other=allLive.filter(g=>!live.includes(g));const lb=$('liveBox');lb.replaceChildren();
+  if(allLive.length){lb.append(el('h3','● Live now'));if(live.length){const gr=el('div',null,'mgrid');for(const g of live)gr.append(miniCard(g));lb.append(gr);}
+    if(other.length){if(live.length)lb.append(el('h4','Also live · games she isn\u2019t betting','hint small'));const gr=el('div',null,'mgrid');for(const g of other)gr.append(miniCard(g));lb.append(gr);}}
   else{   // fix398 (owner): no live games -> her next games first on Tonight
     const nxt=d.games.filter(g=>g.pick&&g.state!=='LIVE'&&g.state!=='FINAL'&&isBetLane(g)&&Date.parse(g.start)>Date.now()-6e5).sort((x,y)=>Date.parse(x.start)-Date.parse(y.start)).slice(0,4);
     if(nxt.length){lb.append(el('h3','⏰ Up next'));const gr=el('div',null,'mgrid');for(const g of nxt)gr.append(miniCard(g));lb.append(gr);}}
