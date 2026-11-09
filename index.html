@@ -464,6 +464,16 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .cmbtrack i{display:block;height:100%;border-radius:6px}.cmbtrack .fher{background:linear-gradient(90deg,#22c55e,#86efac)}.cmbtrack .fkal{background:#8b8fa8}
 .cmb>.btn{align-self:flex-start}.cmbempty{display:flex;flex-direction:column;gap:4px}
 .cmbtabs{margin:6px 0 12px;flex-wrap:wrap}
+.legsec{margin:14px 0}.leggrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.legcard{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:12px 8px;border-radius:16px;background:linear-gradient(180deg,#1d1030,#0d0816);border:1px solid #ffffff1a}
+.legcard.on{border-color:#d9a521;box-shadow:0 0 18px #d9a52155}.legcard b{font-size:14px}.legcard small{font-size:11px;line-height:1.3}
+.legart{display:inline-block;width:84px;height:98px;filter:drop-shadow(0 4px 10px #000a)}.legart svg{width:100%;height:100%}
+.legart.locked{filter:grayscale(1) brightness(.62) drop-shadow(0 4px 10px #000a)}.legcard.on .legart{animation:legGlow 3s ease-in-out infinite}
+@keyframes legGlow{50%{filter:drop-shadow(0 0 14px #ffd36e99)}}
+.legbar{width:90%;height:6px;border-radius:4px;background:#ffffff14;overflow:hidden;margin-top:4px}.legbar i{display:block;height:100%;background:linear-gradient(90deg,#d9a521,#ffd36e)}
+.legprog{color:#ffd36e;font-weight:700}
+.tslot .legart,.nbadges .legart{width:22px;height:26px;filter:none}.tslot .legart{width:30px;height:35px}
+@media (prefers-reduced-motion:reduce){.legcard.on .legart{animation:none}}
 .booklinks{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0}.booklinks .bk,.cmbk{font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;text-decoration:none;border:1px solid #ffffff26;color:#fff;white-space:nowrap}
 .bk-k{background:#0d3b2e;border-color:#1f8a66!important;color:#7cf5c7!important}.bk-dk{background:#1d2a12;border-color:#53a318!important;color:#b9f08a!important}.bk-fd{background:#0b2447;border-color:#1493ff!important;color:#8cc8ff!important}
 .bkgame{margin:8px 0 2px}.cmbk{align-self:flex-start;margin-top:3px;display:inline-block}.cpacts{display:flex;gap:8px;flex-wrap:wrap}.cpall{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}.parlay .cpbtn{margin-top:6px}.cmbrec{min-width:0}.cmbkind{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:13px}
@@ -1265,7 +1275,7 @@ function pkCheer(all,F){let seen={};try{seen=JSON.parse(localStorage.getItem('mo
   for(const [k,v] of Object.entries(all)){const w=F[k];if(!w||seen[k])continue;seen[k]=1;const hit=sameTeam(v.team,w);if(hit&&v.her&&!sameTeam(v.her,w))setTimeout(()=>award('upset'),2500);
     if(n++<2)setTimeout(()=>toast((hit?'✅ Your pick ':'❌ Your pick ')+String(v.team).split(' ').pop()+(hit?' won':' lost')+(v.her&&!sameTeam(v.her,w)&&hit?' and she missed it 😤':'')),600+n*900);}
   try{localStorage.setItem('mohjeta.pkSeen',JSON.stringify(seen));}catch(e){}}
-function pickemScore(){const all=pkLoad(),F=pkFinals();pkCheer(all,F);let me=[0,0],her=[0,0],open=0;const now=Date.now();
+function pickemScore(){const all=pkLoad(),F=pkFinals();try{achTrackPicks(all,F);}catch(e){}pkCheer(all,F);let me=[0,0],her=[0,0],open=0;const now=Date.now();
   for(const [k,v] of Object.entries(all)){const w=F[k];
     if(!w){if(now-new Date(v.start)>5*86400000)delete all[k];else open++;continue;}
     const hit=t=>t&&sameTeam(t,w);me[hit(v.team)?0:1]++;if(v.her)her[hit(v.her)?0:1]++;}
@@ -1334,7 +1344,7 @@ const MEDAL={first_pick:['target','bronze','#e0337a','hex'],five_picks:['hand','
   upset:['boom','gold','#b0129b','hex'],champion:['trophy','neon','#c99a16','star'],sim_watch:['play','bronze','#3c63e0','hex'],voice:['sound','bronze','#17a589','round'],
   film:['chart','silver','#6a3ad8','round'],scout:['eye','bronze','#2a9d8f','shield'],slip:['clipboard','bronze','#7b3fe4','hex'],regular:['calendar','silver','#c2378f','round'],night_owl:['sleep','bronze','#3a4fd8','star']};
 const MEDAL_ORDER=['first_pick','five_picks','beat_her','sim','sim25','trade','share','guess','sharp','chat','compare','fantasy','alerts'];
-function medalOf(k,locked){const i=MEDAL_ORDER.indexOf(k);if(i>=0){const s=el('span',null,'mj-medal mj-medal3d'+(locked?' locked':''));   // 3D-rendered medals (medals-3d.webp)
+function medalOf(k,locked){if(typeof LEG_ART!=='undefined'&&LEG_ART[k])return legendArt(k,locked);const i=MEDAL_ORDER.indexOf(k);if(i>=0){const s=el('span',null,'mj-medal mj-medal3d'+(locked?' locked':''));   // 3D-rendered medals (medals-3d.webp)
     s.style.backgroundPosition=(i/(MEDAL_ORDER.length-1)*100)+'% '+(locked?'100%':'0%');s.setAttribute('role','img');s.setAttribute('aria-label',BADGES[k][1]+(locked?' (locked)':''));return s;}
   const m=MEDAL[k];if(!m||!window.MohjetaIcons||!MohjetaIcons.medal)return null;return MohjetaIcons.medal(m[0],{tier:m[1],color:m[2],shape:m[3],locked,label:BADGES[k][1]+(locked?' (locked)':'')});}
 const BADGES={first_pick:['🎯','First pick'],five_picks:['🖐️','5 picks made'],beat_her:['👑','Beating the AI'],sim:['🎲','First simulation'],sim25:['🧪','25 simulations'],trade:['⇄','Trade machine'],share:['📤','Shared a card'],guess:['🔮','First guess'],sharp:['🏹','Guessed within 3 pts'],chat:['💬','First chat message'],compare:['⚖️','Compared players'],fantasy:['🏀','Drafted a fantasy team'],alerts:['🔔','Turned on alerts'],beat_her_fantasy:['🤖','Beat her at fantasy'],tester:['🛠️','Beta tester'],
@@ -1436,10 +1446,156 @@ const BADGE_HOW={first_pick:'Make your first Pick’em pick.',five_picks:'Make 5
   upset:'Win a Pick’em pick on a game where Mohjeta picked the other team.',champion:'Win a weekly Pick’em, Prop Pick’em or fantasy title.',sim_watch:'Watch a simulated game play out (Simulate → Watch).',
   voice:'Play her spoken rundown or a pick in her voice.',film:'Open 10 full game breakdowns.',scout:'Open 5 different team pages.',slip:'Copy a pick or parlay as a bet slip.',
   regular:'Open Mohjeta on 7 different days.',night_owl:'Check her picks between midnight and 4 a.m.'};
+// Legendary achievement art (fix384). Each: badge frame + character. viewBox 0 0 120 140.
+const LFRAME=(id,c1,c2,rim,inner)=>`<defs><radialGradient id="bg${id}" cx="50%" cy="38%" r="70%"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></radialGradient>
+<linearGradient id="rim${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c8"/><stop offset=".35" stop-color="${rim}"/><stop offset=".7" stop-color="#6b4a12"/><stop offset="1" stop-color="${rim}"/></linearGradient></defs>
+<path d="M60 4 L110 22 L110 70 Q110 110 60 134 Q10 110 10 70 L10 22 Z" fill="url(#rim${id})"/>
+<clipPath id="cl${id}"><path d="M60 11 L103 27 L103 70 Q103 105 60 126 Q17 105 17 70 L17 27 Z"/></clipPath>
+<path d="M60 11 L103 27 L103 70 Q103 105 60 126 Q17 105 17 70 L17 27 Z" fill="url(#bg${id})"/>
+<g clip-path="url(#cl${id})">${inner||''}</g>`;
+const LEG_ART={
+untouchable:()=>LFRAME('u','#3a1b4f','#0b0612','#d9a521',`<g transform="translate(-7 2)">
+<g opacity=".35" fill="none" stroke="#ff4fd8" stroke-width="1"><circle cx="60" cy="72" r="38"/><circle cx="60" cy="72" r="30"/></g>
+<!-- spikes -->
+<g fill="#4a2f1f" stroke="#2a180d" stroke-width="1.2" stroke-linejoin="round">
+<path d="M28 86 L22 66 L34 74 L30 52 L42 64 L44 42 L52 58 L60 36 L66 56 L76 42 L76 62 L88 52 L84 72 L96 66 L92 86 Z"/></g>
+<g fill="#6b4630"><path d="M32 84 L30 70 L38 76 L36 60 L45 70 L47 52 L54 64 L60 46 L65 62 L73 52 L73 66 L82 60 L80 74 L88 72 L86 84 Z"/></g>
+<!-- body + face -->
+<ellipse cx="60" cy="90" rx="30" ry="18" fill="#8a5a3a"/>
+<path d="M70 82 Q92 80 96 92 Q92 101 74 100 Z" fill="#e8c9a0"/>
+<circle cx="97" cy="92" r="4" fill="#1a0f0a"/><circle cx="96" cy="90.8" r="1.2" fill="#fff" opacity=".7"/>
+<ellipse cx="80" cy="87" rx="3.2" ry="3.6" fill="#120a06"/><circle cx="81" cy="86" r="1.1" fill="#fff"/>
+<path d="M75 81 L86 84" stroke="#120a06" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M84 97 Q88 99 92 97" stroke="#5a2a1a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+<ellipse cx="46" cy="106" rx="6" ry="3.5" fill="#5a3a24"/><ellipse cx="70" cy="106" rx="6" ry="3.5" fill="#5a3a24"/>
+<!-- barbed wire wrapped around -->
+<g fill="none" stroke="#c9ced6" stroke-width="2.2" stroke-linecap="round">
+<path d="M18 78 Q40 66 60 74 T104 70"/><path d="M18 98 Q40 88 62 96 T104 100"/></g>
+<g stroke="#e9edf2" stroke-width="1.8" stroke-linecap="round">
+<path d="M30 66 l4 6 M34 66 l-4 6"/><path d="M56 66 l4 6 M60 66 l-4 6"/><path d="M86 59 l4 6 M90 59 l-4 6"/>
+<path d="M32 89 l4 6 M36 89 l-4 6"/><path d="M60 92 l4 6 M64 92 l-4 6"/><path d="M88 95 l4 6 M92 95 l-4 6"/></g>
+<g fill="none" stroke="#7d848f" stroke-width=".8"><path d="M18 76 Q40 62 58 70 T104 62"/></g></g>`),
+oracle:()=>LFRAME('o','#14315a','#050913','#9fd3ff',`
+<g fill="#fff" opacity=".7"><circle cx="30" cy="34" r="1"/><circle cx="92" cy="40" r="1.3"/><circle cx="84" cy="28" r=".9"/><circle cx="36" cy="52" r=".8"/></g>
+<!-- owl -->
+<path d="M36 46 L42 30 L50 42 Q60 38 70 42 L78 30 L84 46 Q92 62 86 82 Q60 96 34 82 Q28 62 36 46 Z" fill="#5b4a7a" stroke="#2c2340" stroke-width="1.4"/>
+<path d="M42 70 Q60 64 78 70 Q76 86 60 90 Q44 86 42 70 Z" fill="#c9b8e8"/>
+<g stroke="#9a86c4" stroke-width="1.2" fill="none"><path d="M48 74 q3 3 6 0"/><path d="M57 77 q3 3 6 0"/><path d="M66 74 q3 3 6 0"/><path d="M52 81 q3 3 6 0"/><path d="M61 81 q3 3 6 0"/></g>
+<circle cx="50" cy="54" r="9" fill="#f5e6ff"/><circle cx="70" cy="54" r="9" fill="#f5e6ff"/>
+<circle cx="50" cy="54" r="5.5" fill="#ffcf3a"/><circle cx="70" cy="54" r="5.5" fill="#ffcf3a"/>
+<circle cx="50" cy="54" r="2.8" fill="#1a1030"/><circle cx="70" cy="54" r="2.8" fill="#1a1030"/>
+<circle cx="51" cy="53" r="1" fill="#fff"/><circle cx="71" cy="53" r="1" fill="#fff"/>
+<path d="M57 60 L60 66 L63 60 Z" fill="#f0a020"/>
+<path d="M41 46 L56 50" stroke="#2c2340" stroke-width="2" stroke-linecap="round"/><path d="M79 46 L64 50" stroke="#2c2340" stroke-width="2" stroke-linecap="round"/>
+<!-- crystal ball -->
+<defs><radialGradient id="ball" cx="40%" cy="35%" r="65%"><stop offset="0" stop-color="#e8fbff"/><stop offset=".45" stop-color="#5ad7ff"/><stop offset="1" stop-color="#1a3a8a"/></radialGradient></defs>
+<path d="M44 112 L76 112 L72 104 L48 104 Z" fill="#8a6a2a"/>
+<circle cx="60" cy="96" r="13" fill="url(#ball)" stroke="#bfefff" stroke-width="1"/>
+<path d="M53 92 a8 8 0 0 1 8 -6" stroke="#fff" stroke-width="2" fill="none" opacity=".8" stroke-linecap="round"/>
+<g fill="#fff"><circle cx="64" cy="99" r="1.2"/><circle cx="58" cy="101" r=".8"/></g>
+<path d="M38 88 Q42 96 48 98" stroke="#5b4a7a" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M82 88 Q78 96 72 98" stroke="#5b4a7a" stroke-width="5" stroke-linecap="round" fill="none"/>`),
+giant_slayer:()=>LFRAME('g','#4a1a12','#0d0503','#ff8a3a',`
+<!-- giant shadow -->
+<path d="M70 20 Q96 22 98 52 L98 110 L74 110 Q86 70 70 20 Z" fill="#000" opacity=".35"/>
+<path d="M78 28 l4 -6 l3 6 Z M88 32 l5 -5 l1 7 Z" fill="#000" opacity=".35"/>
+<!-- fox -->
+<path d="M30 112 Q24 92 34 80 L46 76 Q50 92 46 112 Z" fill="#e2701c"/>
+<path d="M22 108 Q12 96 20 86 Q26 98 34 100 Z" fill="#e2701c"/><path d="M14 92 Q16 86 20 86 Q18 92 22 96 Z" fill="#fff"/>
+<path d="M36 52 L32 34 L44 46 Z" fill="#e2701c"/><path d="M58 52 L62 34 L50 46 Z" fill="#e2701c"/>
+<path d="M36 50 L34 40 L41 47 Z" fill="#3a1408"/><path d="M58 50 L60 40 L53 47 Z" fill="#3a1408"/>
+<path d="M30 58 Q34 44 47 44 Q60 44 64 58 Q60 72 47 76 Q34 72 30 58 Z" fill="#f08a2c"/>
+<path d="M38 64 Q47 82 56 64 Q47 70 38 64 Z" fill="#fff"/>
+<circle cx="47" cy="68" r="2.2" fill="#1a0a04"/>
+<path d="M38 58 q3 -3 6 0" stroke="#1a0a04" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M50 58 q3 -3 6 0" stroke="#1a0a04" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+<path d="M36 54 L44 56" stroke="#1a0a04" stroke-width="2" stroke-linecap="round"/><path d="M58 54 L50 56" stroke="#1a0a04" stroke-width="2" stroke-linecap="round"/>
+<!-- slingshot -->
+<path d="M66 100 L66 78 M66 84 L58 70 M66 84 L76 70" stroke="#6b3a1a" stroke-width="4" stroke-linecap="round" fill="none"/>
+<path d="M58 70 Q50 82 46 86 M76 70 Q60 84 46 86" stroke="#d9d9d9" stroke-width="1.4" fill="none"/>
+<circle cx="46" cy="86" r="3.4" fill="#9aa3ad"/>
+<path d="M46 86 L40 90" stroke="#f08a2c" stroke-width="5" stroke-linecap="round"/>
+<g stroke="#ffd36e" stroke-width="2" stroke-linecap="round"><path d="M84 40 l8 -6"/><path d="M86 48 l10 -2"/><path d="M82 32 l4 -8"/></g>`),
+perfect10:()=>LFRAME('p','#0f3a3a','#020b0b','#3af0d0',`
+<!-- 10 juggling balls in an arc -->
+${[...Array(10)].map((_,i)=>{const a=Math.PI*(1.05+i*0.09);const x=60+40*Math.cos(a),y=70+40*Math.sin(a);const col=['#ff4fd8','#ffd36e','#39ff88','#5ad7ff','#ff7a3a','#b44dff','#ff4fd8','#ffd36e','#39ff88','#5ad7ff'][i];return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="${col}" stroke="#fff" stroke-width=".8"/>`}).join('')}
+<!-- octopus -->
+<g fill="#b44dff" stroke="#5a1a8a" stroke-width="1.2">
+<path d="M40 92 Q30 104 22 98 Q30 98 34 88 Z"/><path d="M46 96 Q40 112 30 112 Q38 106 40 94 Z"/><path d="M54 98 Q52 110 46 113 Q49 106 48 98 Z"/>
+<path d="M66 98 Q68 110 74 113 Q71 106 72 98 Z"/><path d="M74 96 Q80 112 90 112 Q82 106 80 94 Z"/><path d="M80 92 Q90 104 98 98 Q90 98 86 88 Z"/>
+<path d="M36 84 Q24 80 20 70 Q28 76 38 78 Z"/><path d="M84 84 Q96 80 100 70 Q92 76 82 78 Z"/></g>
+<path d="M38 80 Q36 56 60 54 Q84 56 82 80 Q78 98 60 98 Q42 98 38 80 Z" fill="#c46cff" stroke="#5a1a8a" stroke-width="1.4"/>
+<ellipse cx="50" cy="66" rx="6" ry="4" fill="#fff" opacity=".25"/>
+<circle cx="52" cy="78" r="5" fill="#fff"/><circle cx="68" cy="78" r="5" fill="#fff"/>
+<circle cx="53" cy="79" r="2.6" fill="#140622"/><circle cx="69" cy="79" r="2.6" fill="#140622"/>
+<path d="M54 88 Q60 93 66 88" stroke="#3a0a5a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+<circle cx="45" cy="86" r="2.5" fill="#ff7ac8" opacity=".6"/><circle cx="75" cy="86" r="2.5" fill="#ff7ac8" opacity=".6"/>`),
+ironclad:()=>LFRAME('i','#2a2f3a','#07080b','#c0c8d4',`<g transform="translate(9 4)">
+<g fill="none" stroke="#ffffff22" stroke-width="1"><path d="M20 40 H100 M20 60 H100 M20 80 H100 M20 100 H100"/></g>
+<!-- armadillo -->
+<path d="M26 92 Q24 58 58 54 Q92 54 96 88 Z" fill="#7d8796" stroke="#3a414c" stroke-width="1.6"/>
+<g fill="none" stroke="#3a414c" stroke-width="2"><path d="M40 90 Q38 64 50 58"/><path d="M54 90 Q54 62 62 56"/><path d="M68 90 Q70 62 74 58"/><path d="M82 90 Q86 70 86 66"/></g>
+<g fill="#c3ccd8"><circle cx="40" cy="74" r="2"/><circle cx="54" cy="70" r="2"/><circle cx="68" cy="70" r="2"/><circle cx="82" cy="76" r="2"/><circle cx="46" cy="84" r="1.6"/><circle cx="61" cy="82" r="1.6"/><circle cx="75" cy="84" r="1.6"/></g>
+<path d="M58 54 Q60 48 66 48" stroke="#e9edf2" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>
+<path d="M26 92 Q14 92 12 82 Q14 72 24 72 L30 80 Z" fill="#9aa3b0" stroke="#3a414c" stroke-width="1.4"/>
+<path d="M20 72 L18 62 L26 70 Z" fill="#9aa3b0" stroke="#3a414c" stroke-width="1.2"/>
+<circle cx="20" cy="79" r="2.2" fill="#111"/><circle cx="20.7" cy="78.3" r=".7" fill="#fff"/>
+<path d="M16 75 L24 77" stroke="#111" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="12" cy="84" r="1.6" fill="#111"/>
+<path d="M96 88 Q106 86 108 96 Q102 94 96 94 Z" fill="#9aa3b0" stroke="#3a414c" stroke-width="1.2"/>
+<g fill="#5a6270"><rect x="34" y="90" width="9" height="12" rx="3"/><rect x="78" y="90" width="9" height="12" rx="3"/></g>
+</g><text x="60" y="40" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="14" fill="#e9edf2">30 DAYS</text>`),
+dynasty:()=>LFRAME('d','#4a3a0a','#0d0a02','#ffd36e',`
+<g fill="#ffd36e" opacity=".18">${[...Array(12)].map((_,i)=>`<path d="M60 70 L${(60+60*Math.cos(i*Math.PI/6)).toFixed(1)} ${(70+60*Math.sin(i*Math.PI/6)).toFixed(1)} L${(60+60*Math.cos(i*Math.PI/6+.18)).toFixed(1)} ${(70+60*Math.sin(i*Math.PI/6+.18)).toFixed(1)} Z"/>`).join('')}</g>
+<!-- mane -->
+<g fill="#b8641a" stroke="#6b3408" stroke-width="1">${[...Array(14)].map((_,i)=>{const a=i*Math.PI*2/14;return `<ellipse cx="${(60+27*Math.cos(a)).toFixed(1)}" cy="${(76+27*Math.sin(a)).toFixed(1)}" rx="9" ry="13" transform="rotate(${(a*180/Math.PI+90).toFixed(0)} ${(60+27*Math.cos(a)).toFixed(1)} ${(76+27*Math.sin(a)).toFixed(1)})"/>`}).join('')}</g>
+<circle cx="60" cy="78" r="22" fill="#e8a64a" stroke="#8a5212" stroke-width="1.2"/>
+<path d="M50 90 Q60 100 70 90 Q66 96 60 96 Q54 96 50 90 Z" fill="#f6d9a8"/>
+<path d="M55 84 L65 84 L60 90 Z" fill="#3a1a08"/>
+<path d="M60 90 L60 93 M60 93 Q56 96 53 94 M60 93 Q64 96 67 94" stroke="#3a1a08" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+<ellipse cx="51" cy="74" rx="3" ry="2.6" fill="#1a0a02"/><ellipse cx="69" cy="74" rx="3" ry="2.6" fill="#1a0a02"/>
+<circle cx="52" cy="73" r=".9" fill="#fff"/><circle cx="70" cy="73" r=".9" fill="#fff"/>
+<path d="M45 69 L55 71" stroke="#3a1a08" stroke-width="2" stroke-linecap="round"/><path d="M75 69 L65 71" stroke="#3a1a08" stroke-width="2" stroke-linecap="round"/>
+<!-- crown -->
+<path d="M44 58 L46 40 L53 50 L60 36 L67 50 L74 40 L76 58 Z" fill="#ffd36e" stroke="#8a6212" stroke-width="1.4" stroke-linejoin="round"/>
+<rect x="44" y="55" width="32" height="6" rx="2" fill="#f0b830" stroke="#8a6212" stroke-width="1"/>
+<circle cx="60" cy="58" r="2" fill="#ff3b5c"/><circle cx="51" cy="58" r="1.6" fill="#3af0d0"/><circle cx="69" cy="58" r="1.6" fill="#3af0d0"/>
+<circle cx="46" cy="40" r="1.8" fill="#fff6c8"/><circle cx="60" cy="36" r="1.8" fill="#fff6c8"/><circle cx="74" cy="40" r="1.8" fill="#fff6c8"/>`)};
+
+// fix384 (owner: achievements "based on the achievement, like Untouchable for a 20 win streak, and the badge is something cool
+// like a hedgehog wearing barbed wire", "witty and clever"): legendary achievements, each with its own drawn badge.
+const LEGENDS=[
+  {k:'untouchable',name:'Untouchable',quip:'20 Pick’em wins in a row. Look, don’t touch.',goal:20,unit:'in a row',prog:a=>a.best||0},
+  {k:'oracle',name:'Saw It Coming',quip:'100 finished Pick’em picks at 60%+. The owl already knew.',goal:100,unit:'picks at 60%+',prog:a=>(a.graded&&a.wins/a.graded>=0.6)?a.graded:Math.min(a.graded||0,99),note:a=>a.graded?Math.round(100*a.wins/a.graded)+'% so far':''},
+  {k:'giant_slayer',name:'Small Fox, Big Rocks',quip:'Call 10 upsets Mohjeta didn’t see coming.',goal:10,unit:'upsets',prog:a=>a.upsets||0},
+  {k:'perfect10',name:'Eight Arms, Ten Wins',quip:'Go 10 for 10 on one day of Prop Pick’em.',goal:10,unit:'right in one day',prog:a=>a.ppBest||0},
+  {k:'ironclad',name:'Thick-Skinned',quip:'Show up 30 days in a row. Rain, losses, whatever.',goal:30,unit:'days in a row',prog:()=>dayRun()},
+  {k:'dynasty',name:'The Mane Event',quip:'Win 3 weekly titles. Wear the crown.',goal:3,unit:'titles',prog:()=>(typeof myChampionships==='function'?myChampionships().length:0)}];
+for(const L of LEGENDS){BADGES[L.k]=['🏅',L.name];BADGE_HOW[L.k]=L.quip;}
+function achLoad(){try{return JSON.parse(localStorage.getItem('mohjeta.ach')||'{}')||{};}catch(e){return {};}}
+function achSave(a){try{localStorage.setItem('mohjeta.ach',JSON.stringify(a));}catch(e){}}
+function dayRun(){let days=[];try{days=JSON.parse(localStorage.getItem('mohjeta.days')||'[]')||[];}catch(e){}const set=new Set(days);let n=0;const d=new Date();while(set.has(d.toDateString())){n++;d.setDate(d.getDate()-1);}return n;}
+function achTrackPicks(all,F){const a=achLoad();a.seen=a.seen||{};let ch=false;   // each finished Pick'em pick counted once, in game order
+  for(const [k,v] of Object.entries(all).filter(([k])=>F[k]&&!a.seen[k]).sort((x,y)=>Date.parse(x[1].start)-Date.parse(y[1].start))){
+    const hit=sameTeam(v.team,F[k]);a.seen[k]=1;a.graded=(a.graded||0)+1;if(hit){a.wins=(a.wins||0)+1;a.cur=(a.cur||0)+1;a.best=Math.max(a.best||0,a.cur);if(v.her&&!sameTeam(v.her,F[k]))a.upsets=(a.upsets||0)+1;}else a.cur=0;ch=true;}
+  const ks=Object.keys(a.seen);if(ks.length>600)for(const k of ks.slice(0,ks.length-500))delete a.seen[k];
+  if(ch){achSave(a);legendCheck();}}
+function achTrackProps(rows){const x=ppLoad(),a=achLoad(),by={};
+  for(const p of rows){if(!/^(Yes|No)$/.test(p.result||''))continue;const d=by[p.day]=by[p.day]||[0,0,0];d[0]++;if(x[p.id]){d[1]++;if(x[p.id]===p.result)d[2]++;}}
+  let best=a.ppBest||0;for(const [day,[n,picked,right]] of Object.entries(by))best=Math.max(best,right);if(best!==(a.ppBest||0)){a.ppBest=best;achSave(a);}legendCheck();}
+function legendCheck(){const a=achLoad(),b=badgeData();for(const L of LEGENDS)if(!b[L.k]&&L.prog(a)>=L.goal){award(L.k);try{MJSound&&MJSound.play('badge');}catch(e){}}}
+let LEG_N=0;
+function legendArt(k,locked){const s=el('span',null,'legart'+(locked?' locked':''));let h=LEG_ART[k]();const n='_'+(++LEG_N);   // unique ids: a copy in a hidden panel must not break this one's gradients
+  for(const id of new Set([...h.matchAll(/id="([^"]+)"/g)].map(m=>m[1])))h=h.split('id="'+id+'"').join('id="'+id+n+'"').split('#'+id+')').join('#'+id+n+')');
+  s.innerHTML='<svg viewBox="0 0 120 140" aria-hidden="true">'+h+'</svg>';s.setAttribute('role','img');s.setAttribute('aria-label',(BADGES[k]||[])[1]+(locked?' (locked)':''));return s;}
+function legendSection(){const a=achLoad(),b=badgeData();const w=el('div',null,'legsec');w.append(el('span','LEGENDARY ACHIEVEMENTS','community-eyebrow'),el('p','The hard ones. Each has its own badge you can wear next to your name.','hint small'));
+  const g=el('div',null,'leggrid');for(const L of LEGENDS){const on=!!b[L.k],v=Math.min(L.goal,L.prog(a));const c=el('div',null,'legcard'+(on?' on':''));
+    c.append(legendArt(L.k,!on),el('b',L.name),el('small',L.quip,'hint'));
+    const bar=el('div',null,'legbar');const f=el('i');f.style.width=Math.round(100*v/L.goal)+'%';bar.append(f);
+    c.append(bar,el('small',on?'🏅 Earned '+new Date(b[L.k]).toLocaleDateString([],{month:'short',day:'numeric'}):v+' / '+L.goal+' '+L.unit+(L.note&&L.note(a)?' · '+L.note(a):''),'legprog'));g.append(c);}
+  w.append(g);return w;}
 const BADGE_SHOW={};let badgeSyncing=false;
 setTimeout(()=>{try{const today=new Date().toDateString();let days=[];try{days=JSON.parse(localStorage.getItem('mohjeta.days')||'[]')||[];}catch(e){}   // fix383
-  if(!days.includes(today)){days.push(today);days=days.slice(-30);try{localStorage.setItem('mohjeta.days',JSON.stringify(days));}catch(e){}}
-  const b=badgeData();if(days.length>=7&&!b.regular)award('regular');const h=new Date().getHours();if(h<4&&!badgeData().night_owl)award('night_owl');}catch(e){}},5000);
+  if(!days.includes(today)){days.push(today);days=days.slice(-60);try{localStorage.setItem('mohjeta.days',JSON.stringify(days));}catch(e){}}
+  const b=badgeData();if(days.length>=7&&!b.regular)award('regular');try{legendCheck();}catch(e){}const h=new Date().getHours();if(h<4&&!badgeData().night_owl)award('night_owl');}catch(e){}},5000);
 function badgeShowList(){try{const v=JSON.parse(localStorage.getItem('mohjeta.badgeShow')||'[]');return Array.isArray(v)?v.filter(k=>BADGES[k]).slice(0,3):[];}catch(e){return [];}}
 function myBadges(p,size){const list=(p&&p.id&&BADGE_SHOW[p.id])||(p&&Array.isArray(p.badge_show)?p.badge_show:null)||(p&&me&&p.id===me.id?badgeShowList():[]);
   const s=el('span',null,'nbadges'+(size?' '+size:''));for(const k of (list||[]).slice(0,3)){if(!BADGES[k])continue;const md=medalOf(k,false);if(md){md.title=BADGES[k][1];s.append(md);}}return s;}
@@ -1469,8 +1625,9 @@ function openTrophies(){openSheet(()=>{const w=el('div',null,'trophies');const b
     else row.append(el('span','＋','tslot'));}
   pin.append(row,el('p',got.length?'Tap an earned badge below to show it (up to 3). Everyone sees them next to your name in the Fan Lounge.':'Earn a badge, then pick it here to show it next to your name.','hint small'));
   if(!me)pin.append(el('p','Sign in in the Fan Lounge so your badges follow your account.','hint small'));w.append(pin);
+  try{w.append(legendSection());}catch(e){}
   const grid=el('div',null,'tgrid');
-  for(const k of [...got.sort((x,y)=>b[y]-b[x]),...keys.filter(k=>!b[k])]){const on=!!b[k];const c=el('button',null,'tcard'+(on?' on':'')+(show.includes(k)?' shown':''));c.type='button';
+  for(const k of [...got.sort((x,y)=>b[y]-b[x]),...keys.filter(k=>!b[k])].filter(k=>!LEG_ART[k])){const on=!!b[k];const c=el('button',null,'tcard'+(on?' on':'')+(show.includes(k)?' shown':''));c.type='button';
     const md=medalOf(k,!on);if(md)c.append(md);else c.append(iel('span',BADGES[k][0],'tem'));
     c.append(el('b',BADGES[k][1]),el('small',on?'Earned '+new Date(b[k]).toLocaleDateString([],{month:'short',day:'numeric'})+(show.includes(k)?' · showing':' · tap to show'):(BADGE_HOW[k]||'Keep playing to unlock.')));
     if(on)c.onclick=()=>setShow(k);else c.onclick=()=>toast('🔒 '+(BADGE_HOW[k]||'Keep playing to unlock.'));grid.append(c);}
@@ -3543,7 +3700,7 @@ async function ppPick(p,side){const x=ppLoad();const was=x[p.id];x[p.id]=side;pp
 async function ppUnpick(p){const x=ppLoad();delete x[p.id];ppSave(x);toast('Pick removed');   // fix382: tap your side again to take it back
   if(me&&sb){try{const {error}=await sb.from('prop_picks').delete().eq('user_id',me.id).eq('prop_id',p.id);if(error)toast('Removed on this phone (the leaderboard copy could not be removed)');}catch(e){}}
   document.querySelectorAll('.ppcard').forEach(c=>c.replaceWith(propPickemCard()));}
-function ppScore(rows){const x=ppLoad();let me_=[0,0],her=[0,0];for(const p of rows){const m=x[p.id];if(!m||!/^(Yes|No)$/.test(p.result||''))continue;me_[m===p.result?0:1]++;if(p.her_pick)her[p.her_pick===p.result?0:1]++;}return {me:me_,her};}
+function ppScore(rows){try{achTrackProps(rows);}catch(e){}const x=ppLoad();let me_=[0,0],her=[0,0];for(const p of rows){const m=x[p.id];if(!m||!/^(Yes|No)$/.test(p.result||''))continue;me_[m===p.result?0:1]++;if(p.her_pick)her[p.her_pick===p.result?0:1]++;}return {me:me_,her};}
 function propPickemCard(){const c=el('div',null,'card ppcard');const rows=PPROPS;
   const hd=el('div',null,'pphead');hd.append(iel('h4','🎯 Prop Pick’em'),el('span','Yes or No: does he hit it?','hint small'));c.append(hd);
   if(!rows){c.append(el('p','Loading today’s props…','hint small'));ppFetch();return c;}
