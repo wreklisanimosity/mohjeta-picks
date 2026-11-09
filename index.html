@@ -2763,10 +2763,10 @@ function comboCard(c,i){const a=el('article',null,'card cmb');const n=c.legs.len
     if(c.bet){a.classList.add('cmbbet');tg.append(el('span','💵 She bet this · $'+Number(c.bet.stake||0).toFixed(2),'cmbtag bet'));}
     if(typeof c.ev==='number')tg.append(el('span',(c.ev>=0?'Expects +':'Expects ')+Math.round(c.ev*100)+'¢ per $1',(c.ev>=0.05?'cmbtag ev up':'cmbtag ev')));a.append(tg);}
   const legs=el('div',null,'cmblegs');
-  c.legs.forEach((l,j)=>{const g=comboGame(l.team);const row=el('div',null,'cmbleg'+(g?' tap':''));
-    row.append(el('span',String(j+1),'cmbn'),teamBadge(l.team));const tx=el('div',null,'cmbtx');
-    const opp=g?(g.teams||[]).find(t=>t.name!==l.team&&!(sameTeam(t.name,l.team)&&!(g.teams||[]).some(x=>x.name===l.team))):null;
-    tx.append(el('b',teamNick(l.team)+' to win'),el('small',sportIcon(l.league)+' '+sname(l.league)+(opp?' · '+(opp.home?'@ ':'vs ')+shortTeam(opp.name):'')+(g?' · '+(g.state==='LIVE'?'LIVE':when(g.start)):''),'hint'));
+  c.legs.forEach((l,j)=>{const nm=l.name||String(l.team||'').replace(/^Not /,'');const g=comboGame(nm)||comboGame(l.team);const row=el('div',null,'cmbleg'+(g?' tap':''));   // fix407: full name -> logo
+    row.append(el('span',String(j+1),'cmbn'),teamBadge(nm));const tx=el('div',null,'cmbtx');
+    const opp=g?(g.teams||[]).find(t=>t.name!==nm&&!(sameTeam(t.name,nm)&&!(g.teams||[]).some(x=>x.name===nm))):null;const against=l.against||/^Not /.test(l.team||'');
+    tx.append(el('b',(/^(NBA|NFL|NHL|MLB|WNBA|NCAAF|NCAAB)$/.test(l.league||'')?teamNick(nm):nm)+(against?' not to win':' to win')),el('small',sportIcon(l.league)+' '+sname(l.league)+(opp?' · '+(opp.home?'@ ':'vs ')+shortTeam(opp.name):'')+(g?' · '+(g.state==='LIVE'?'LIVE':when(g.start)):''),'hint'));
     const nums=el('div',null,'cmbnum');nums.append(el('b',pct(l.chance),'cmbher'),el('small','Kalshi '+Math.round(l.kalshi*100)+'¢','hint'));
     row.append(tx,nums);if(g){row.onclick=()=>openGame(g.id||g.name);row.title='Open this game';}legs.append(row);
     if(g&&g.kalshi_url&&!isIOSApp()){const k=el('a','Kalshi ↗','bk bk-k cmbk');k.href=g.kalshi_url;k.target='_blank';k.rel='noopener noreferrer';k.onclick=e=>e.stopPropagation();tx.append(k);}});
