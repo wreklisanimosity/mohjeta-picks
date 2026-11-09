@@ -2269,19 +2269,33 @@ const RADIO={
   islanders:['WRCN 103.9','New York Islanders'],rangers:['ESPN New York 880','New York Rangers'],senators:['TSN 1200','TSN 1200'],flyers:['93.3 WMMR','93.3 WMMR'],penguins:['105.9 The X','Pittsburgh Penguins'],
   kraken:['SportsRadio 93.3 KJR','SportsRadio 93.3 KJR'],blues:['101 ESPN','101 ESPN'],lightning:['102.5 The Bone','102.5 The Bone'],'maple leafs':['Sportsnet 590','CJCL'],mammoth:['KSL Sports Zone','KSL Sports Zone'],
   canucks:['Sportsnet 650','Vancouver Canucks'],'golden knights':['KKGK Fox Sports','KKGK Fox Sports'],capitals:['106.7 The Fan','106.7 The Fan'],jets:['680 CJOB','CJOB']},
+ MLB:{athletics:['Talk 650 KSTE','Talk 650 KSTE'],orioles:['98 Rock','98 Rock Baltimore'],'red sox':['WEEI 93.7','WEEI'],'white sox':['ESPN 1000','ESPN 1000 Chicago'],
+  guardians:['WTAM 1100','WTAM'],tigers:['97.1 The Ticket','WXYT'],astros:['SportsTalk 790','SportsTalk 790'],angels:['AM 830 KLAA','AM 830 KLAA'],twins:['830 WCCO','WCCO'],
+  yankees:['WFAN 660 / 101.9','WFAN'],mariners:['Seattle Sports 710','Seattle Sports 710'],rays:['95.7 WDAE','WDAE'],rangers:['105.3 The Fan','105.3 The Fan'],'blue jays':['Sportsnet 590','CJCL'],
+  diamondbacks:['Arizona Sports 98.7','KMVP'],braves:['680 The Fan','680 The Fan Atlanta'],reds:['700 WLW','700 WLW'],rockies:['KOA 850','KOA 850'],dodgers:['AM 570 LA Sports','AM 570 LA Sports'],
+  marlins:['WQAM','WQAM'],brewers:['WTMJ 620','WTMJ'],phillies:['94 WIP','SportsRadio 94WIP'],pirates:['93.7 The Fan','93.7 The Fan'],cardinals:['KMOX 1120','KMOX'],padres:['97.3 The Fan','97.3 The Fan'],
+  giants:['KNBR 680','KNBR 680'],nationals:['106.7 The Fan','106.7 The Fan']},
  NFL:{bills:['97 Rock','97 Rock Buffalo'],patriots:['98.5 The Sports Hub','WBZ-FM'],jets:['Q104.3','Q104.3'],ravens:['98 Rock','98 Rock Baltimore'],bengals:['700 WLW','700 WLW'],
   browns:['92.3 The Fan','92.3 The Fan Cleveland'],steelers:['102.5 WDVE','102.5 WDVE'],texans:['SportsRadio 610','SportsRadio 610 Houston'],colts:['107.5 The Fan','107.5 The Fan Indianapolis'],jaguars:['1010 XL','1010 XL'],
   titans:['104.5 The Zone','104.5 The Zone'],broncos:['KOA 850','KOA 850'],chiefs:['106.5 The Wolf','106.5 The Wolf'],raiders:['KOMP 92.3','KOMP 92.3'],chargers:['KFI 640','KFI 640'],cowboys:['105.3 The Fan','105.3 The Fan'],
   giants:['WFAN 660 / 101.9','WFAN'],eagles:['94 WIP','SportsRadio 94WIP'],commanders:['Big 100.3','BIG 100 Washington'],bears:['ESPN 1000','ESPN 1000 Chicago'],lions:['97.1 The Ticket','WXYT'],
   vikings:['KFAN 100.3','KFAN 100.3'],falcons:['92.9 The Game','92.9 The Game Atlanta'],panthers:['99.7 The Fox','99.7 The Fox'],saints:['WWL 870','WWL 870'],buccaneers:['98 Rock','98 Rock Tampa'],cardinals:['Arizona Sports 98.7','KMVP'],
   rams:['ESPN LA 710','ESPN LA 710'],'49ers':['KNBR 680','KNBR 680'],seahawks:['Seattle Sports 710','Seattle Sports 710']}};
-function radioFor(league,team){const m=RADIO[league];if(!m)return null;const n=String(team||'').toLowerCase().trim();let best=null;
+// fix390: college (NCAAF / NCAAB) from site/radio-college.json, loaded only when a college game is shown (TuneIn's own
+// "<School> Football" / "<School> Basketball" broadcast streams, exact names checked). Pro leagues stay in RADIO above.
+let RADIO_COLLEGE=null,radioCollegeP=null;
+function loadCollegeRadio(){if(RADIO_COLLEGE)return Promise.resolve(RADIO_COLLEGE);if(!radioCollegeP)radioCollegeP=fetch('radio-college.json?v=1').then(r=>r.ok?r.json():{}).catch(()=>({})).then(j=>(RADIO_COLLEGE=j||{}));return radioCollegeP;}
+function radioFor(league,team){if(league==='NCAAF'||league==='NCAAB'){const loc=RADIO_COLLEGE&&(RADIO_COLLEGE[league]||{})[team];if(!loc)return null;const q=loc+(league==='NCAAF'?' Football':' Basketball');
+    return {label:q,url:'https://tunein.com/search/?query='+encodeURIComponent(q)};}
+  const m=RADIO[league];if(!m)return null;const n=String(team||'').toLowerCase().trim();let best=null;
   for(const k in m)if((n===k||n.endsWith(' '+k))&&(!best||k.length>best.length))best=k;return best?{label:m[best][0],url:'https://tunein.com/search/?query='+encodeURIComponent(m[best][1])}:null;}
-function radioRow(g,small){const ts=(g.teams||[]).slice(0,2).map(t=>[t,radioFor(g.league,t.name)]).filter(x=>x[1]);if(!ts.length)return null;
-  const r=el('div',null,'radiorow'+(small?' sm':''));if(!small)r.append(el('span','🎧 Free local radio','rlbl'));
+function radioRow(g,small){if((g.league==='NCAAF'||g.league==='NCAAB')&&!RADIO_COLLEGE){const hold=el('div');hold.style.display='contents';
+    loadCollegeRadio().then(()=>{const r=radioRow(g,small);if(r)hold.replaceWith(r);else hold.remove();});return hold;}
+  const ts=(g.teams||[]).slice(0,2).map(t=>[t,radioFor(g.league,t.name)]).filter(x=>x[1]);if(!ts.length)return null;
+  const college=g.league==='NCAAF'||g.league==='NCAAB';const r=el('div',null,'radiorow'+(small?' sm':''));if(!small)r.append(el('span',college?'🎧 Free radio broadcast':'🎧 Free local radio','rlbl'));
   for(const [t,x] of ts){const a=el('a',null,'rlink');a.href=x.url;a.target='_blank';a.rel='noopener noreferrer';a.title='Listen free on TuneIn: '+x.label+' ('+shortTeam(t.name)+' radio). Game audio usually plays only in the team’s home area.';
     a.onclick=e=>e.stopPropagation();a.append(el('b',(small?'🎧 ':'')+shortTeam(t.name)),el('span',x.label));r.append(a);}
-  if(!small)r.append(el('small','Plays the game in each team’s home area; elsewhere the station may air other shows.','hint small'));return r;}
+  if(!small)r.append(el('small',college?'Opens the school’s radio broadcast on TuneIn (free). Some games may be limited by the school’s radio rights.':'Plays the game in each team’s home area; elsewhere the station may air other shows.','hint small'));return r;}
 function gameView(g){const b=el('div');const ln=laneOf(g);
   const head=el('div',null,'row');head.append(el('span',sname(g.league).toUpperCase(),'league'),el('span',null,'sp'),el('span',ln.t,'pill '+ln.c));b.append(head);
   const hero=el('div',null,'hero');const vs=el('div',null,'vs');
