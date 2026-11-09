@@ -757,6 +757,12 @@ html,body{overscroll-behavior-y:none}
 #chatBox .chatin::placeholder{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #chatBox textarea.chatin{min-height:44px;line-height:1.35;resize:none}
 #chatRoom[hidden]{display:none!important}
+.hedit{display:block;margin:14px auto 4px}.hedcard{padding:14px}.hedcard h3{margin:0 0 4px}.hpresets{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.hedrow{display:flex;align-items:center;gap:6px;padding:9px 0;border-top:1px solid var(--line)}.hedrow.off .hedt{opacity:.5}.hedt{flex:1;min-width:0;display:flex;flex-direction:column}.hedt b{font-size:14px}
+.hedeye{font:inherit;font-size:11px;font-weight:800;padding:6px 10px;border-radius:99px;border:1px solid #ffffff26;background:#ffffff0d;color:var(--muted);min-width:64px}.hedeye.on{background:#3ddc8426;border-color:#3ddc8466;color:#3ddc84}
+.hedmv{font:inherit;width:34px;height:34px;border-radius:10px;border:1px solid #ffffff22;background:linear-gradient(180deg,#ffffff14,#ffffff06);color:inherit}.hedmv:disabled{opacity:.25}
+.hedacts{display:flex;gap:8px;align-items:center;margin-top:12px}.hblock{margin:10px 0}.hbhd{display:flex;align-items:center;justify-content:space-between;margin:6px 2px}
+.htrade{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;margin:6px 0;border-radius:14px;border:1px solid #ffffff1f;background:linear-gradient(135deg,#221438,#100b1c);color:inherit;font:inherit}.htrade .badge,.htrade img{width:30px;height:30px;flex:none}.htrade span{display:flex;flex-direction:column;min-width:0}.htrade b{font-size:13px}
 </style>
 <script src="languages.js?v=13" defer></script>
 </head>
@@ -2947,10 +2953,10 @@ function pageTile(p,d){const [k,ic,t,sub,tc]=p;const b=el('button',null,'htile')
   const c=pageCount(k,d);b.append(iel('span',ic),el('b',t),el('small',c||sub));b.onclick=()=>goPage(k);return b;}
 function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren();const hr=new Date().getHours();
   const hh=el('div',null,'hhead');hh.append(el('h2',hr<5?'Late night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening'),el('p','Everything happening with her picks, one tap away.','hint small'));box.append(hh);
-  try{if(myTeams().length)box.append(myTeamsSection(d));}catch(e){}   // fix402: trophy row + tester panel moved to My Mohjeta
+  const B={};try{if(myTeams().length)B.teams=myTeamsSection(d);}catch(e){}   // fix402: trophy row + tester panel moved to My Mohjeta
   {const dv=d.voice&&d.voice.daily;if(dv){const b=el('button',null,'hvoice');b.type='button';const im=el('img');im.src='logo-cut.webp?v=2';im.alt='';
     const tx=el('span');tx.append(el('b','Hear her rundown'),el('small','Her top picks in her own voice'+(dv.seconds?' · '+Math.round(dv.seconds)+' seconds':'')));const pl=el('span','▶','play');
-    b._label=on=>{pl.textContent=on?'■':'▶';};b.append(im,tx,pl);b.title=dv.text||'';b.onclick=()=>voicePlay(dv.src,b);box.append(b);}}
+    b._label=on=>{pl.textContent=on?'■':'▶';};b.append(im,tx,pl);b.title=dv.text||'';b.onclick=()=>voicePlay(dv.src,b);B.voice=b;}}
   const gs=d.games||[],t=d.bets&&d.bets.totals,live=gs.filter(g=>g.state==='LIVE');
   const up=gs.filter(g=>g.state==='UPCOMING'&&g.pick&&isBetLane(g)).sort((a,b)=>String(a.start).localeCompare(String(b.start)));
   const st=el('div',null,'hstats');const stat=(lab,big,small,ic,tc,go,c)=>{const b=el('button',null,'hstat');b.type='button';b.style.setProperty('--tc',tc);
@@ -2965,17 +2971,19 @@ function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren
       if(live.length){const lb=el('span',null,'hlive');lb.setAttribute('role','button');lb.tabIndex=0;lb.title='Jump to the live games';lb.append(el('i'),document.createTextNode(live.length+' live'));
         const go=e=>{e.stopPropagation();goPage('live');};lb.onclick=go;lb.onkeydown=e=>{if(e.key==='Enter')go(e);};tn.append(lb);}return tn;})(),
     (()=>{const C=d.combo_record&&d.combo_record.overall;const n=C?C.won+C.lost:0;const ideas=(d.combos||[]).length;   // freed spot: her combos & parlays
-      return stat('Combos',n?signed(C.pl||0):String(ideas),n?'combo profit · '+C.won+'-'+C.lost+(C.open?' · '+C.open+' open':''):'combo idea'+(ideas===1?'':'s')+' tonight','dice','#4a1218',()=>openCombos('teams'),n?'pl '+cls(C.pl||0):'');})());}box.append(st);
+      return stat('Combos',n?signed(C.pl||0):String(ideas),n?'combo profit · '+C.won+'-'+C.lost+(C.open?' · '+C.open+' open':''):'combo idea'+(ideas===1?'':'s')+' tonight','dice','#4a1218',()=>openCombos('teams'),n?'pl '+cls(C.pl||0):'');})());}B.stats=st;
   // fix402: trophy case row moved to My Mohjeta
   // (no feed card here: the headline banner at the top carries the news, so Home stays uncluttered)
   const nx=up[0];if(nx){const b=el('button',null,'hnext');b.type='button';if(window.SportArt)b.append(SportArt.el(nx.league));
     const info=el('div',null,'nx');const team=(nx.pick&&(nx.pick.team||nx.pick.name))||'';info.append(el('small','Next up · '+sname(nx.league)),el('b',nx.name||''));
     const line=el('small',(team?'Her pick: '+team+(typeof nx.pick.chance==='number'?' ('+pct(nx.pick.chance)+')':'')+' · ':''));const cd=countdown(nx);if(cd)line.append(cd);info.append(line);
-    b.append(info,el('span','›','go'));b.onclick=()=>openGame(nx.id||nx.name);box.append(b);}
-  try{const tv=triviaHomeCard();if(tv)box.append(tv);box.append(hubHomeRow());}catch(e){}   // fix413
-  try{box.append(homeBoard());}catch(e){}   // fix410 (owner): leaderboard + winner on Home, free for everyone
-  box.append(el('div','Go to','hsec'));const tiles=el('div',null,'htiles');for(const p of PAGES.slice(0,12))tiles.append(pageTile(p,d));box.append(tiles);
-  const more=el('button','All pages ⌃','btn ghost small');more.type='button';more.onclick=openQJ;box.append(more);}
+    b.append(info,el('span','›','go'));b.onclick=()=>openGame(nx.id||nx.name);B.next=b;}
+  try{B.trivia=triviaHomeCard();B.hub=hubHomeRow();}catch(e){}   // fix413
+  try{B.board=homeBoard();}catch(e){}
+  try{B.live=homeLiveBlock(d,live);B.combos=homeCombosBlock(d);B.trades=homeTradesBlock(d);}catch(e){}   // fix420: extra blocks people can switch on   // fix410 (owner): leaderboard + winner on Home, free for everyone
+  {const w=el('div');w.append(el('div','Go to','hsec'));const tiles=el('div',null,'htiles');for(const p of PAGES.slice(0,12))tiles.append(pageTile(p,d));w.append(tiles);
+  const more=el('button','All pages ⌃','btn ghost small');more.type='button';more.onclick=openQJ;w.append(more);B.tiles=w;}
+  homeLayoutApply(box,B);}
 function closeQJ(){const q=$('qj');if(q)q.classList.remove('on');document.body.style.overflow='';}
 function openQJ(){let q=$('qj');if(!q){q=el('div');q.id='qj';q.setAttribute('role','dialog');q.setAttribute('aria-label','All pages');document.body.append(q);}
   q.replaceChildren();const bg=el('div',null,'qjbg');bg.onclick=closeQJ;const pn=el('div',null,'qjp');pn.append(el('div',null,'qjgrip'));
@@ -4225,6 +4233,39 @@ function tradePopup(){if(document.querySelector('.trpop'))return;let seen=[];try
   body.append(logoOf(m.team),tx);body.onclick=()=>{p.remove();openHub('trades');};const x=el('button','✕','trpopx');x.type='button';x.setAttribute('aria-label','Dismiss');x.onclick=()=>{p.classList.add('out');setTimeout(()=>p.remove(),300);};
   p.append(body,x);document.body.append(p);requestAnimationFrame(()=>p.classList.add('in'));try{MJSound&&MJSound.play('tick');}catch(e){}
   setTimeout(()=>{p.classList.add('out');setTimeout(()=>p.remove(),400);},9000);}
+// ---------------- fix420 (owner: "give customers the option to customize their own home page" -> yes): ✏️ Edit Home.
+// Every Home section is a block people can show / hide and move; three presets; reset. Saved on this phone.
+const HOME_BLOCKS=[['teams','⭐ My teams','Your followed teams tonight'],['voice','🎙 Her rundown','Her top picks in her own voice'],['stats','📊 Her numbers','Record, radio, tonight, combos'],
+  ['next','⏰ Next up','Her next pick and the countdown'],['live','● Live now','Every game being played right now'],['combos','🎟 Her open combos','What she has riding tonight'],
+  ['trades','🔁 Latest trades','New trades and her read'],['trivia','🧠 Daily trivia','5 quick questions a day'],['hub','🏟 Sports hub','Standings, trades, injuries, highlights'],
+  ['board','🏆 Leaderboard','Pick’em leaders and the champion'],['tiles','🧭 Go to','Shortcuts to every page']];
+const HOME_DEFAULT={order:['teams','voice','stats','next','live','combos','trades','trivia','hub','board','tiles'],hidden:['live','combos','trades']};
+const HOME_PRESETS={picks:['⚡ Picks first',['stats','next','combos','live','voice','tiles']],fan:['📺 Fan mode',['teams','live','stats','trades','hub','voice','tiles']],
+  comp:['🏆 Competitor',['board','trivia','stats','combos','hub','tiles']]};
+let homeEditing=false;
+function homeLayout(){let L=null;try{L=JSON.parse(localStorage.getItem('mohjeta.homeLayout')||'null');}catch(e){}if(!L||!Array.isArray(L.order))L=JSON.parse(JSON.stringify(HOME_DEFAULT));
+  const ids=HOME_BLOCKS.map(b=>b[0]);L.order=L.order.filter(k=>ids.includes(k));for(const k of ids)if(!L.order.includes(k)){L.order.push(k);if(HOME_DEFAULT.hidden.includes(k))(L.hidden=L.hidden||[]).push(k);}L.hidden=(L.hidden||[]).filter(k=>ids.includes(k));return L;}
+function homeLayoutSave(L){try{if(L)localStorage.setItem('mohjeta.homeLayout',JSON.stringify(L));else localStorage.removeItem('mohjeta.homeLayout');}catch(e){}}
+function homeLayoutApply(box,B){const L=homeLayout();if(homeEditing){box.append(homeEditor(L));return;}
+  for(const k of L.order){if(L.hidden.includes(k))continue;const n=B[k];if(n)box.append(n);}
+  const ed=el('button','✏️ Edit Home','btn ghost small hedit');ed.type='button';ed.onclick=()=>{homeEditing=true;renderHome(D);window.scrollTo(0,0);};box.append(ed);}
+function homeEditor(L){const w=el('div',null,'card hedcard');w.append(el('h3','✏️ Edit your Home'),el('p','Show or hide each section and move it up or down. Saved on this phone.','hint small'));
+  const pr=el('div',null,'chips hpresets');for(const [k,[label,list]] of Object.entries(HOME_PRESETS)){const b=el('button',label,'chip');b.type='button';b.onclick=()=>{const all=HOME_BLOCKS.map(x=>x[0]);homeLayoutSave({order:list.concat(all.filter(x=>!list.includes(x))),hidden:all.filter(x=>!list.includes(x))});renderHome(D);toast(label+' layout');};pr.append(b);}w.append(pr);
+  const names=Object.fromEntries(HOME_BLOCKS.map(b=>[b[0],b]));
+  L.order.forEach((k,i)=>{const on=!L.hidden.includes(k);const r=el('div',null,'hedrow'+(on?'':' off'));const t=el('div',null,'hedt');t.append(el('b',names[k][1]),el('small',names[k][2],'hint small'));
+    const eye=el('button',on?'Shown':'Hidden','hedeye'+(on?' on':''));eye.type='button';eye.setAttribute('aria-pressed',String(on));eye.setAttribute('aria-label',(on?'Hide ':'Show ')+names[k][1]);
+    eye.onclick=()=>{const M=homeLayout();M.hidden=on?M.hidden.concat(k):M.hidden.filter(x=>x!==k);homeLayoutSave(M);renderHome(D);};
+    const mv=(dir)=>{const b=el('button',dir<0?'▲':'▼','hedmv');b.type='button';b.setAttribute('aria-label','Move '+names[k][1]+(dir<0?' up':' down'));b.disabled=(dir<0&&i===0)||(dir>0&&i===L.order.length-1);
+      b.onclick=()=>{const M=homeLayout();const j=M.order.indexOf(k),n=j+dir;if(n<0||n>=M.order.length)return;[M.order[j],M.order[n]]=[M.order[n],M.order[j]];homeLayoutSave(M);renderHome(D);};return b;};
+    r.append(t,eye,mv(-1),mv(1));w.append(r);});
+  const acts=el('div',null,'hedacts');const done=el('button','Done','btn');done.type='button';done.onclick=()=>{homeEditing=false;renderHome(D);window.scrollTo(0,0);try{MJSound&&MJSound.play('tick');}catch(e){}};
+  const reset=el('button','Reset to default','btn ghost small');reset.type='button';reset.onclick=()=>{homeLayoutSave(null);renderHome(D);toast('Home reset');};acts.append(done,reset);w.append(acts);return w;}
+function homeLiveBlock(d,live){if(!live||!live.length)return null;const w=el('div',null,'hblock');const h=el('div',null,'hbhd');h.append(el('b','● Live now · '+live.length),el('button','See all ›','mlink'));h.lastChild.type='button';h.lastChild.onclick=()=>goPage('live');w.append(h);
+  const gr=el('div',null,'mgrid');for(const g of live.slice(0,4))gr.append(miniCard(g));w.append(gr);return w;}
+function homeCombosBlock(d){const O=(d.combo_record&&d.combo_record.open)||[];const b=el('button',null,'hubrow hcombos');b.type='button';b.onclick=()=>openCombos('teams');const t=el('span');
+  const staked=O.reduce((a,x)=>a+(x.stake||0),0),pays=O.reduce((a,x)=>a+(x.pays||0),0);t.append(el('b','🎟 Her open combos'+(O.length?' · '+O.length:'')),el('small',O.length?'$'+staked.toFixed(2)+' riding · pays up to $'+pays.toFixed(2):'Nothing riding right now'));b.append(t,el('span','›','go'));return b;}
+function homeTradesBlock(d){const M=((d.trades&&d.trades.moves)||[]).filter(m=>m.kind==='trade').slice(0,3);const w=el('div',null,'hblock');const h=el('div',null,'hbhd');h.append(el('b','🔁 Latest trades'),el('button','Trade center ›','mlink'));h.lastChild.type='button';h.lastChild.onclick=()=>openHub('trades');w.append(h);
+  if(!M.length){w.append(el('p','No trades lately.','hint small'));return w;}for(const m of M){const r=el('button',null,'htrade');r.type='button';r.onclick=()=>openHub('trades');const t=el('span');t.append(el('b',tradeShort(m)),el('small',when(m.date)+tradeRead(m),'hint small'));r.append(logoOf(m.team),t);w.append(r);}return w;}
 // ---------------- fix410 (owner: "display the winner on the Home screen and the free version for some extra incentive to subscribe")
 // The Pick'em leaderboard lives on Home now. It is public (free version too); free users see a members nudge when the paywall is on.
 function homeBoard(){const c=el('div',null,'card hboard');c.id='homeBoard';
