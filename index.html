@@ -2548,7 +2548,12 @@ function renderCopyAll(d){const box=$('copyBox');if(!box)return;box.replaceChild
   const w=el('div',null,'cpall');w.append(copyBtn('📋 Copy her bets ('+bet.length+')',()=>copySlip('Mohjeta: her bets',bet.map(g=>teamSlip(g.pick.team,g)+' — she says '+pct(g.pick.chance)))),
     copyBtn('📋 Copy all her picks ('+gs.length+')',()=>copySlip('Mohjeta: all her picks',gs.map(g=>teamSlip(g.pick.team,g)+' — she says '+pct(g.pick.chance)))));
   if(!bet.length)w.firstChild.remove();box.append(w);}
-function renderLegs(d){try{renderCopyAll(d);}catch(e){}const box=$('legsBox');if(!box)return;box.replaceChildren();const gs=legGames(d);if(!gs.length)return;   // fix377: lives in Combos & parlays now
+function renderLegs(d){try{renderCopyAll(d);}catch(e){}const box=$('legsBox');if(!box)return;box.replaceChildren();
+  {// fix403 (owner: "where did the [🧩] button go ... it showed the parlays she bet"): a fixed way in from Tonight
+    const C=d.combo_record&&d.combo_record.overall;const n=(d.combos||[]).length;const cb=el('button',null,'card cmblink');cb.type='button';
+    const t=el('div');t.append(el('b','🧩 Her combos & parlays'),el('small',(C&&(C.won+C.lost)?'Her combo record '+C.won+'-'+C.lost+(C.open?' · '+C.open+' open':'')+' · ':(C&&C.open?C.open+' open · ':''))+(n?n+' combo idea'+(n>1?'s':'')+' tonight':'Team combos, prop parlays and your own builder'),'hint'));
+    cb.append(el('span','🎲','cmbli'),t,el('span','›','cmbgo'));cb.onclick=()=>openCombos('teams');box.append(cb);}
+  const gs=legGames(d);if(!gs.length)return;   // fix377: lives in Combos & parlays now
   const b=el('button',null,'card cmblink');b.type='button';b.append(el('span','🔗','cmbli'),(()=>{const t=el('div');t.append(el('b','Parlay legs: '+gs.length+' heavy favorite'+(gs.length===1?'':'s')+' tonight'),el('small','Her picks on 95%+ favorites, in Combos & parlays','hint'));return t;})(),el('span','›','cmbgo'));
   b.onclick=()=>openCombos('legs');box.append(b);}
 function legsCard(d){const gs=legGames(d);const S=d.skipped&&d.skipped.record;const box=el('div');
