@@ -584,7 +584,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .mside{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;text-align:center}
 .mini .mside .badge{width:68px!important;height:68px!important;font-size:22px}
 .mini .mside span.badge{width:52px!important;height:52px!important;margin:8px;font-size:18px}
-.mnm{font-size:13px;font-weight:700;line-height:1.15;color:var(--muted);overflow-wrap:anywhere;max-width:100%}
+.mnm{font-size:13px;font-weight:700;line-height:1.15;color:var(--muted);overflow-wrap:break-word;max-width:100%}.mface.scored{grid-template-columns:1fr 1fr}.mface.scored .mvs{display:none}.mnm{overflow-wrap:normal;word-break:keep-all;width:max-content;max-width:calc(100% + 14px)}.mnm.lw{font-size:min(11.5px,3vw);letter-spacing:-.01em}.mnm.lw2{font-size:min(10px,2.7vw);letter-spacing:-.02em}
 .mside.mine .mnm{color:var(--text);font-weight:800}
 .mright{justify-content:flex-start}.mleft .mnm{margin-top:2px}.mright .mnm{margin-bottom:2px}
 .mface{grid-template-rows:auto}.mleft{align-self:start}.mright{align-self:end}
@@ -600,7 +600,10 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 @keyframes sbPulse{50%{opacity:.35}}.sbclk{font-size:9px;font-weight:800;letter-spacing:.06em;color:#ffb3c1;white-space:nowrap;text-transform:uppercase}.sbug.fin .sbclk{color:var(--muted)}
 .mini>.sbug{width:100%;box-sizing:border-box;margin:2px 0 4px}.mini>.sbug .sbx{flex:1}.mface.scored .mvs{visibility:hidden}
 .sbug.big{padding:5px;gap:4px;border-radius:14px;margin:0 4px;flex:none}.sbug.big .sbx{min-width:44px;padding:3px 6px}.sbug.big .sbn{font-size:30px}.sbug.big .sbn.d3{font-size:24px}
-.sbn.d3{font-size:19px}.mini>.sbug .sbx{min-width:0}.sbug.big .sbclk{font-size:11px}.sbug.big .sbdot{width:9px;height:9px}
+.sbn.d3{font-size:19px}.mini>.sbug .sbx{min-width:0;padding:2px 3px}
+/* fix385: small cards - scores always fit (3-digit NBA scores + 'END OF 4TH') */
+.mini>.sbug{gap:2px;padding:3px}.mini>.sbug .sbn{font-size:20px;letter-spacing:-.04em}.mini>.sbug .sbn.d3{font-size:16px;letter-spacing:-.06em}
+.mini>.sbug .sbmid{min-width:0;flex:0 1 46px;padding:0 1px}.mini>.sbug .sbclk{white-space:normal;text-align:center;line-height:1.1;font-size:8px;letter-spacing:.02em;word-break:keep-all}.sbug.big .sbclk{font-size:11px}.sbug.big .sbdot{width:9px;height:9px}
 @media (prefers-reduced-motion:reduce){.sbn.bump,.sbdot{animation:none}}
 .mvs{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 .mvs.live{font-size:15px;color:var(--text);text-transform:none;letter-spacing:0;white-space:nowrap}
@@ -2177,14 +2180,14 @@ function scoreBug(g,big){const ts=g.teams||[];const a=ts[0]||{},h=ts[1]||{};cons
   const w=el('div',null,'sbug'+(big?' big':'')+(fin?' fin':''));
   const box=(t,v,o)=>{const d=el('div',null,'sbx'+(v>o?' lead':v<o?' trail':''));let c=null;try{c=simColor(t.name);}catch(e){}if(c)d.style.setProperty('--tc',c);
     const k=(g.id||g.name)+'|'+t.name,prev=SCOREPREV[k];SCOREPREV[k]=v;d.append(el('b',String(v),'sbn'+(String(v).length>2?' d3':'')+(prev!=null&&v>prev?' bump':'')));return d;};
-  const mid=el('div',null,'sbmid');mid.append(el('i',null,fin?'sbdot off':'sbdot'),el('small',fin?'FINAL':String(g.detail||'LIVE').replace(/^●\s*/,'').slice(0,14),'sbclk'));
+  const mid=el('div',null,'sbmid');mid.append(el('i',null,fin?'sbdot off':'sbdot'),el('small',fin?'FINAL':String(g.detail||'LIVE').replace(/^●\s*/,'').replace(/^end of /i,'End ').replace(/\s+-\s+/,' ').slice(0,14),'sbclk'));
   w.append(box(a,sa,sh),mid,box(h,sh,sa));return w;}
 function miniCard(g){const c=el('article',null,'card tap mini');c.tabIndex=0;c.setAttribute('role','button');c.setAttribute('aria-label',(g.name||'Game')+': open the full breakdown');
   c.onclick=()=>openGame(g.id||g.name);c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openGame(g.id||g.name);}};
   const top=el('div',null,'mtop');top.append(el('span',sportIcon(g.league)+' '+sname(g.league).toUpperCase(),'league'));
   top.append(g.state==='LIVE'?el('span','● LIVE','lv'):el('span',when(g.start),'when'));c.append(top);
   {const ts=g.teams||[];const face=el('div',null,'mface');   // fix367 (owner): big logos, one each side; name under one, over the other
-    ts.slice(0,2).forEach((t,i)=>{const sd=el('div',null,'mside '+(i?'mright':'mleft')+(g.pick&&g.pick.team===t.name?' mine':''));const nm=el('span',shortTeam(t.name),'mnm');
+    ts.slice(0,2).forEach((t,i)=>{const sd=el('div',null,'mside '+(i?'mright':'mleft')+(g.pick&&g.pick.team===t.name?' mine':''));const nm=el('span',shortTeam(t.name),'mnm');{const lw=Math.max(0,...String(shortTeam(t.name)).split(/\s+/).map(x=>x.length));if(lw>=11)nm.classList.add('lw2');else if(lw>=8)nm.classList.add('lw');}   // fix385: long names shrink, never split mid-word
       if(i){sd.append(nm,teamBadge(t.name));}else sd.append(teamBadge(t.name),nm);face.append(sd);
       if(!i)face.append(el('span','vs','mvs'));});
     c.append(face);if(g.state==='LIVE'||(g.state==='FINAL'&&ts[0]&&ts[0].score!=null)){face.classList.add('scored');c.append(scoreBug(g,false));}}
