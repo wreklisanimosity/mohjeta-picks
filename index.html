@@ -695,6 +695,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .htrophy:active,.hnext:active,.menu button:active,.tcard:active,.rgame:active,.rstation:active,.rteaser:active,button.hero:active,.hstat:active,.rlink:active{transform:translateY(1px) scale(.995);
   box-shadow:inset 0 2px 6px #00000080,inset 0 -1px 0 #ffffff14,0 4px 10px -4px #000000b0}
 .tcard.shown{box-shadow:inset 0 1px 0 #ffffff24,inset 0 -18px 24px -16px #0000008c,0 0 16px #f5c54244,0 12px 24px -8px #000000c4}
+.acctsheet{padding:4px 2px 24px}.acctsheet h2{margin:4px 0 12px}.acctsheet .acctacts{display:flex;flex-direction:column;gap:10px;margin-top:14px}.acctsheet .acctacts .btn{width:100%;margin:0;box-sizing:border-box}
+.gate{overflow-y:auto;align-items:flex-start;-webkit-overflow-scrolling:touch}.gate>.gatebox{margin:auto;max-height:none}
 </style>
 <script src="languages.js?v=13" defer></script>
 </head>
@@ -1763,15 +1765,15 @@ function updateAcct(){const b=$('acct');if(!b||!sb)return;b.hidden=false;b.repla
   if(!me){b.append(el('span','Sign in','acctin'));b.onclick=()=>show('chat');return;}
   try{if(!((badgeData()._n||{}).signin))award('signin');}catch(e){}
   const pic=avatarOf(me);if(pic){const im=document.createElement('img');im.src=pic;im.alt='';im.referrerPolicy='no-referrer';im.onerror=()=>{im.replaceWith(badge(displayOf(me)));};b.append(im);}else b.append(badge(displayOf(me)));
-  b.onclick=()=>show('more');b._sheet=()=>{const ov=el('div',null,'gate');const box=el('div',null,'gatebox');ov.append(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  b.onclick=()=>show('more');b._sheet=()=>{/* fix409: real sheet (Back button, scrolls) instead of the centered gate that cut off */const ov={remove:()=>closeSheet(true)};const box=el('div',null,'acctsheet');
     const head=el('div',null,'row');const big=b.firstChild.cloneNode(true);big.classList.add('acctbig');head.append(big,el('div',null,''));head.lastChild.append(el('b',displayOf(me)),el('div',me.email||'','hint small'));
     const chat=iel('button','💬 Open chat','btn');chat.type='button';chat.onclick=()=>{ov.remove();show('chat');};
     const out=el('button','Sign out','btn ghost');out.type='button';out.onclick=async()=>{await sb.auth.signOut();me=null;myProfile=null;ov.remove();updateAcct();toast('Signed out');};
     const x=el('button','Close','mlink');x.type='button';x.onclick=()=>ov.remove();
     const del=el('button','Delete account','mlink');del.type='button';del.onclick=()=>deleteMyAccount(ov);
     const refBox=el('div');drawRefTools(refBox,ov);
-    const plan=planBox();const pb=el('div');drawPush(pb);box.append(head,el('p','You\u2019re signed in. Your chat name and messages show to other fans; your email stays private.','hint small'));if(plan)box.append(plan);const tro=el('button','🏆 My trophy case','btn ghost');tro.type='button';tro.onclick=()=>{ov.remove();openTrophies();};const tst=el('button','🛠️ Tester challenge','btn ghost');tst.type='button';tst.onclick=()=>{ov.remove();openTester();};
-    box.append(pb,refBox,chat,tro,tst,out,del,x);document.body.append(ov);};}
+    const plan=planBox();box.append(el('h2','Account'),head,el('p','You\u2019re signed in. Your chat name and messages show to other fans; your email stays private.','hint small'));if(plan)box.append(plan);
+    const acts=el('div',null,'acctacts');acts.append(chat,out,del,x);box.append(refBox,acts);openSheet(()=>box);};}
 // ---------------- referral program (supabase_affiliates.sql): team 50% / partners 25% of what Mohjeta receives, for as long
 // as the subscriber stays. A link ?ref=CODE is remembered for 60 days and claimed when that person signs in.
 (function(){try{const r=new URLSearchParams(location.search).get('ref');if(r&&/^[A-Za-z0-9]{3,20}$/.test(r))localStorage.setItem('mohjeta.ref',JSON.stringify({c:r.toUpperCase(),t:Date.now()}));}catch(e){}})();
