@@ -723,13 +723,21 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .boxline,.boxtab{margin:0 12px 8px;overflow-x:auto;font-variant-numeric:tabular-nums;font-size:12px}.blrow{display:grid;grid-template-columns:minmax(70px,1.4fr) repeat(var(--n),minmax(24px,1fr)) 34px;gap:4px;padding:5px 0;border-top:1px solid var(--line);text-align:center}.blrow>:first-child{text-align:left}
 .btrow{display:grid;grid-template-columns:minmax(92px,1.6fr) repeat(var(--n),minmax(34px,1fr));gap:4px;padding:5px 0;border-top:1px solid var(--line);text-align:right}.btrow>:first-child{text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bh{color:var(--dim);font-weight:800;font-size:11px;border-top:0}.boxteam{margin:10px 14px 4px;font-size:13px}
 .hlgame{margin:10px 0}
-#hubTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}#hubTabs .chip{padding:9px 4px;font-size:12px;text-align:center;white-space:nowrap;margin:0}
+#hubTabs{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}#hubTabs .chip{grid-column:span 2}#hubTabs .chip:nth-child(n+4){grid-column:span 3}#hubTabs .chip{padding:9px 4px;font-size:12px;text-align:center;white-space:nowrap;margin:0}
 .wtix{display:flex;flex-direction:column;align-items:flex-start;color:inherit;font:inherit;text-align:left;padding:8px 14px;border-radius:14px;border:1px solid #ffffff22;background:linear-gradient(135deg,#ffffff12,#ffffff05);box-shadow:inset 0 1px 0 #ffffff1a,0 4px 10px #0006;text-decoration:none}.wtix span{font-size:11px;color:var(--muted)}
 /* fix414 (owner photo: "the bottom bar shifts up when scrolling", iPhone): no GPU layer trick on the fixed bars (iOS WebKit can
    leave a transformed fixed bar behind mid-screen during fast / bounce scrolling) and no rubber-band bounce past the page ends. */
 header,nav.tabs{transform:none!important;-webkit-transform:none!important;will-change:auto}
 html,body{overscroll-behavior-y:none}
 @media(max-width:899px){nav.tabs{position:fixed!important;bottom:0!important;top:auto!important}}
+.dlrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:4px 0 10px}.dlcard{padding:10px;border-radius:14px;border:1px solid #f5c54255;background:linear-gradient(145deg,#2a2010,#120c08);box-shadow:inset 0 1px 0 #ffffff22,0 6px 14px #0007;display:flex;flex-direction:column;gap:2px}
+.dlcard small{font-size:9px;letter-spacing:.1em;color:#f5c542;font-weight:800}.dlcard b{font-size:16px}.dlcard.tbd{border-color:#ffffff22;background:linear-gradient(145deg,#1a1626,#0d0a18)}.dlcard.tbd small{color:var(--muted)}
+.mvcard{padding:12px;margin:8px 0}.mvcard.mine{border-color:#f5c54288}.mvcard.trade{background:linear-gradient(135deg,#221438,#100b1c)}.mvtop{display:flex;align-items:center;gap:8px}.mvtop .badge,.mvtop img{width:26px;height:26px}.mvtext{margin:8px 0 4px;font-size:14px;line-height:1.4}
+.mvkind{font-size:10px;font-weight:800;letter-spacing:.08em;padding:3px 8px;border-radius:99px;background:#ffffff14;color:var(--muted)}.mvkind.k-trade{background:#ff4fd833;color:#ff8be6}.mvkind.k-signing{background:#3ddc8426;color:#3ddc84}.mvkind.k-release{background:#ff6b6b22;color:#ff8a8a}
+.mvread{margin-top:8px;padding:8px 10px;border-radius:12px;background:#ffffff0a;display:flex;flex-direction:column;gap:2px}.mvread small:first-child{font-size:9px;letter-spacing:.12em;color:var(--muted);font-weight:800}.mvread .up{color:#3ddc84}.mvread .down{color:#ff6b6b}
+.tmcard{padding:14px;margin:14px 0}.tmcard h4{margin:0 0 2px}.tmsel{width:100%;margin:6px 0;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:#ffffff0d;color:inherit;font:inherit}.tmcols{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tmp{display:flex;align-items:center;gap:6px;padding:6px 4px;border-top:1px solid var(--line);font-size:12px}.tmp span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tmp small{color:var(--muted)}.tmp.on{color:#ff8be6}
+.tmresult{margin-top:10px}.tmrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0;border-top:1px solid var(--line)}.tmrow .badge,.tmrow img{width:26px;height:26px}.tmrow small{width:100%;padding-left:34px}.tmv.up{color:#3ddc84;font-weight:800}.tmv.down{color:#ff6b6b;font-weight:800}.tmverdict{font-weight:800;margin:8px 0 2px}
 </style>
 <script src="languages.js?v=13" defer></script>
 </head>
@@ -829,7 +837,7 @@ html,body{overscroll-behavior-y:none}
     <p class="hint small">Free for everyone, no subscription needed. Stations play in TuneIn’s free player; Fox Sports Radio opens iHeartRadio. Game audio plays in each team’s home area. Every game page also has the teams’ radio under the score.</p>
   </section>
   <section class="panel" id="hub" role="tabpanel" aria-label="Sports hub"><button class="back" data-go="more">‹ My Mohjeta</button>
-    <div class="hubhero"><h2>🏟 Sports hub</h2><p>Standings, the injury report, official highlights and daily trivia. Free for everyone.</p></div>
+    <div class="hubhero"><h2>🏟 Sports hub</h2><p>Standings, trades, the injury report, official highlights and daily trivia. Free for everyone.</p></div>
     <div class="chips" id="hubTabs"></div><div id="hubBox"></div>
   </section>
   <section class="panel" id="more" role="tabpanel" aria-label="My Mohjeta">
@@ -844,7 +852,7 @@ html,body{overscroll-behavior-y:none}
     </div></details>
     <details class="tfold mfold" open><summary><span>🧭 Explore Mohjeta</span></summary><div class="menu">
       <button type="button" data-go="news"><span>🆕 What's new & how-to<small>Latest updates and how to use every part of the site</small></span>›</button>
-      <button type="button" data-go="hub"><span>🏟 Sports hub<small>Standings, injury report, official highlights and daily trivia</small></span>›</button>
+      <button type="button" data-go="hub"><span>🏟 Sports hub<small>Standings, trade center, injury report, highlights and daily trivia</small></span>›</button>
       <button type="button" data-go="radio"><span>🎧 Sports radio<small>Free live sports talk: ESPN Radio, Fox Sports Radio and more</small></span>›</button>
       <button type="button" data-go="feed"><span>📰 Live feed<small>Injuries, lineups, foul trouble and price moves as they happen</small></span>›</button>
       <button type="button" data-go="combos"><span>Combos &amp; parlays<small>Team combos, prop parlays, heavy favorites, your builder</small></span>›</button>
@@ -3487,7 +3495,7 @@ function planBox(){if(isIOSApp()){const c=el('div',null,'card'),a=ACCESS||{};con
     a.access?'Free trial: '+daysLeft(a.trial_ends)+' days left':a.trial_used?'Free plan (trial used)':'Free plan';
   c.append(el('b','Your plan: '+line+(a.plan==='founding'?' ⭐ founding':'')));if(a.stripe)c.append(manageBtn());if(!a.access)c.append(trialBtn());if(!a.staff&&!(a.sub_until&&Date.parse(a.sub_until)>Date.now()))c.append(subBtn(true));return c;}
 // ---------------- phone alerts (Web Push): her pick changed, game starting, Pick'em and fantasy results
-const PUSH_KINDS=[['bets','💵 Her wins and losses'],['picks','🔄 Her pick changes'],['start','⏰ My Pick’em games starting'],['results','✅ My Pick’em results'],['fantasy','🏀 My fantasy results'],['mentions','💬 Someone @’s me in chat'],['myteams','⭐ My teams: starting soon and final scores']];
+const PUSH_KINDS=[['bets','💵 Her wins and losses'],['picks','🔄 Her pick changes'],['start','⏰ My Pick’em games starting'],['results','✅ My Pick’em results'],['fantasy','🏀 My fantasy results'],['mentions','💬 Someone @’s me in chat'],['myteams','⭐ My teams: starting soon, final scores and trades']];
 function pushPrefs(){let p;try{p=JSON.parse(localStorage.getItem('mohjeta.pushprefs')||'null');}catch(e){}p=p||{bets:true,picks:true,start:true,results:true,fantasy:true};try{p.teams=myTeams();}catch(e){}return p;}   // fix400: + teams for My teams alerts
 function u8(b64){const p='='.repeat((4-b64.length%4)%4);const raw=atob((b64+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));}
 async function pushSub(){try{const reg=await navigator.serviceWorker.getRegistration();return reg?await reg.pushManager.getSubscription():null;}catch(e){return null;}}
@@ -4035,7 +4043,7 @@ async function pkCloud(event,team){try{if(!me||!sb)return;const {error}=await sb
 let BOARD=null,boardAt=0;
 // ---------------- fix413 one-stop shop (owner: "anything else to add to our 1 stop shop" -> "do all"). All free for everyone.
 // Sports hub page: standings / injuries / highlights / daily trivia. Game hub: weather, box score, highlights, tickets, game chat.
-const HUB_TABS=[['standings','📊 Standings'],['injuries','🩹 Injuries'],['highlights','▶ Highlights'],['trivia','🧠 Trivia']];
+const HUB_TABS=[['standings','📊 Standings'],['trades','🔁 Trades'],['injuries','🩹 Injuries'],['highlights','▶ Highlights'],['trivia','🧠 Trivia']];
 let hubTab=(()=>{try{return localStorage.getItem('mohjeta.hubtab')||'standings';}catch(e){return 'standings';}})(),hubLg=null;
 function openHub(tab){if(tab)hubTab=tab;show('hub');}
 function myTeamSet(){const s=new Set();try{for(const k of myTeams())s.add(String(k).split('|').slice(1).join('|'));}catch(e){}return s;}
@@ -4043,7 +4051,7 @@ function logoOf(name){try{return teamBadge(name);}catch(e){return badge(name);}}
 function hubChips(box,opts,cur,on){const c=el('div',null,'chips hubchips');for(const [k,l] of opts){const b=el('button',l,'chip'+(k===cur?' on':''));b.type='button';b.setAttribute('aria-pressed',String(k===cur));b.onclick=()=>on(k);c.append(b);}box.append(c);return c;}
 function drawHub(){const tabs=$('hubTabs'),box=$('hubBox');if(!tabs||!box)return;tabs.replaceChildren();box.replaceChildren();
   for(const [k,l] of HUB_TABS){const b=el('button',l,'chip'+(k===hubTab?' on':''));b.type='button';b.setAttribute('aria-pressed',String(k===hubTab));b.onclick=()=>{hubTab=k;hubLg=null;try{localStorage.setItem('mohjeta.hubtab',k);}catch(e){}drawHub();};tabs.append(b);}
-  const d=D||{};try{({standings:hubStandings,injuries:hubInjuries,highlights:hubHighlights,trivia:hubTrivia}[hubTab]||hubStandings)(box,d);}catch(e){box.append(el('p','Could not show this right now.','hint'));}}
+  const d=D||{};try{({standings:hubStandings,trades:hubTrades,injuries:hubInjuries,highlights:hubHighlights,trivia:hubTrivia}[hubTab]||hubStandings)(box,d);}catch(e){box.append(el('p','Could not show this right now.','hint'));}}
 function hubEmpty(box,t){box.append(el('p',t,'hint hubempty'));}
 function hubStandings(box,d){const S=d.standings||{},L=S.leagues||{},R=S.rankings||{};const opts=Object.keys(L).map(k=>[k,sname(k)]).concat(Object.keys(R).map(k=>['rk:'+k,sname(k)+' Top 25']));
   if(!opts.length)return hubEmpty(box,'Standings load in a minute or two. Check back shortly.');
@@ -4109,7 +4117,7 @@ function hubTrivia(box){const s=triviaToday();if(!s)return hubEmpty(box,'Today�
   if(s.done){const right=s.qs.filter((x,j)=>s.ans[j]===x.a).length;c.append(el('p','You got '+right+' of '+s.qs.length+'. New questions tomorrow.','trdone'));}
   box.append(c);}
 function triviaHomeCard(){const s=triviaToday();if(!s||s.done)return null;const b=el('button',null,'hnext trhome');b.type='button';const info=el('div',null,'nx');info.append(el('small','Daily trivia · '+(triviaStreak(s)?'🔥 '+triviaStreak(s)+'-day streak':'start a streak')),el('b','🧠 5 quick questions from today’s games'));b.append(info,el('span','›','go'));b.onclick=()=>openHub('trivia');return b;}
-function hubHomeRow(){const b=el('button',null,'hubrow');b.type='button';b.onclick=()=>openHub();const t=el('span');t.append(el('b','🏟 Sports hub'),el('small','Standings · injury report · highlights · trivia'));b.append(t,el('span','›','go'));return b;}
+function hubHomeRow(){const b=el('button',null,'hubrow');b.type='button';b.onclick=()=>openHub();const t=el('span');t.append(el('b','🏟 Sports hub'),el('small','Standings · trades · injuries · highlights · trivia'));b.append(t,el('span','›','go'));return b;}
 // ---- game hub rows
 function weatherRow(g){const w=g.weather;if(!w||g.state!=='UPCOMING')return null;const r=el('div',null,'calrow wxrow');r.append(el('span','🌤 GAME-TIME WEATHER','rlbl'));
   const wind=parseInt(w.wind)||0,note=wind>=15?' · strong wind: passing and kicking get harder':(w.rain_pct>=60?' · rain likely':'');
@@ -4126,6 +4134,38 @@ function boxCard(g){const B=g.box;if(!B||(g.state!=='LIVE'&&g.state!=='FINAL'))r
   c.append(el('small','From ESPN’s box score'+(B.checked_at?' · updated '+hm(B.checked_at):''),'hint small'));return c;}
 function highlightCard(g){if(!g.highlight||g.state!=='FINAL')return null;const v={id:g.highlight,title:g.teams.map(t=>t.name).join(' vs ')+' highlights',league:g.league,at:g.start};const c=hlCard(v);c.classList.add('hlgame');return c;}
 BADGES.trivia_perfect=['🧠','Perfect trivia day'];BADGES.trivia7=['🔥','7-day trivia streak'];
+// ---- fix415 trade center (owner: "what do we offer in the realm of trade info" -> "all"): tracker, her read, deadlines,
+// trade machine for any two teams. Phone alerts for followed teams' trades come from push_alerts.trades.
+let tradeKind='trade',tmState={lg:null,a:null,b:null,pa:new Set(),pb:new Set()};
+function countdown2(at){const ms=Date.parse(at)-Date.now();if(!(ms>0))return 'passed';const d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5);return d>2?d+' days':d>0?d+' day'+(d===1?'':'s')+' '+h+' hr':h+' hr '+Math.floor(ms%36e5/6e4)+' min';}
+function hubTrades(box,d){const T=d.trades;if(!T)return hubEmpty(box,'The trade center loads in a minute or two (trades, signings and her read on each).');
+  const dl=el('div',null,'dlrow');for(const x of T.deadlines||[]){const c=el('div',null,'dlcard'+(x.at&&Date.parse(x.at)>Date.now()?'':' tbd'));c.append(el('small',sname(x.league)+' TRADE DEADLINE'),el('b',x.at?countdown2(x.at):'TBA'),el('span',x.label,'hint small'));dl.append(c);}box.append(dl);
+  const lgs=[...new Set((T.moves||[]).map(m=>m.league))];const opts=[['all','All']].concat(lgs.map(l=>[l,sname(l)]));if(!hubLg||!opts.some(o=>o[0]===hubLg))hubLg='all';hubChips(box,opts,hubLg,k=>{hubLg=k;drawHub();});
+  hubChips(box,[['trade','🔁 Trades'],['all','All moves'],['signing','Signings'],['release','Releases']],tradeKind,k=>{tradeKind=k;drawHub();});
+  const mine=myTeamSet();const rows=(T.moves||[]).filter(m=>(hubLg==='all'||m.league===hubLg)&&(tradeKind==='all'||m.kind===tradeKind)).sort((a,b)=>(mine.has(b.team)-mine.has(a.team))||String(b.date).localeCompare(String(a.date)));
+  if(!rows.length)box.append(el('p',tradeKind==='trade'?'No trades lately. Signings and releases are under All moves.':'Nothing here lately.','hint'));
+  for(const m of rows.slice(0,60)){const c=el('div',null,'card mvcard'+(mine.has(m.team)?' mine':'')+(m.kind==='trade'?' trade':''));const top=el('div',null,'mvtop');
+    top.append(logoOf(m.team),el('b',m.team),el('span',null,'sp'),el('span',{trade:'TRADE',signing:'SIGNED',release:'RELEASED',roster:'ROSTER'}[m.kind]||'MOVE','mvkind k-'+m.kind));c.append(top,el('p',m.text,'mvtext'),el('small',sname(m.league)+' · '+when(m.date),'hint small'));
+    const im=m.impact;if(im){const r=el('div',null,'mvread');const net=im.net_pts;r.append(el('small','HER READ'),el('b',(net>0?'+':'')+net.toFixed(1)+' pts a game'+(im.win_pct!=null?' · '+(im.win_pct>0?'+':'')+Math.round(im.win_pct*100)+'% win chance per game':''),net>0?'up':net<0?'down':''));
+      const lst=(a,s)=>a.length?el('span',s+a.map(x=>x.name+' ('+x.pts.toFixed(1)+')').join(', '),'hint small'):null;const g1=lst(im.gained,'In: '),l1=lst(im.lost,'Out: ');if(g1)r.append(g1);if(l1)r.append(l1);c.append(r);}
+    box.append(c);}
+  box.append(el('p','Official moves via ESPN. Her read uses her own player values (basketball: production above a bench player; football: quarterbacks), the same numbers her picks use. Follow a team to get a phone alert when it trades.','hint small'));
+  const tw=el('div');box.append(tw);tradeMachine(tw,d);}
+function tradeMachine(box,d){box.replaceChildren();const T=d.trades||{},M=T.machine||{};const lgs=Object.keys(M).filter(l=>Object.keys(M[l]).length>1);const c=el('div',null,'card tmcard');c.append(el('h4','⇄ Trade machine'),el('p','Swap players between any two teams and see how her model rates the deal.','hint small'));
+  if(!lgs.length){c.append(el('p','Her player values load with the trade center (NBA, WNBA, NFL quarterbacks).','hint small'));box.append(c);return;}
+  const S=tmState;if(!S.lg||!M[S.lg])S.lg=lgs[0];const teams=Object.keys(M[S.lg]).sort();if(!teams.includes(S.a))S.a=teams[0];if(!teams.includes(S.b)||S.b===S.a)S.b=teams.find(t=>t!==S.a);
+  const sel=(vals,cur,on,label)=>{const s=document.createElement('select');s.className='tmsel';s.setAttribute('aria-label',label);for(const v of vals){const o=el('option',v);o.value=v;s.append(o);}s.value=cur;s.onchange=()=>on(s.value);return s;};
+  const redraw=()=>tradeMachine(box,d);
+  if(lgs.length>1)c.append(sel(lgs,S.lg,v=>{S.lg=v;S.a=S.b=null;S.pa.clear();S.pb.clear();redraw();},'League'));
+  const cols=el('div',null,'tmcols');const side=(team,set,other,setTeam)=>{const col=el('div',null,'tmcol');col.append(sel(teams.filter(t=>t!==other),team,v=>{setTeam(v);set.clear();redraw();},'Team'));
+    for(const [n,v] of M[S.lg][team]||[]){const lb=el('label',null,'tmp'+(set.has(n)?' on':''));const cb=document.createElement('input');cb.type='checkbox';cb.checked=set.has(n);cb.onchange=()=>{cb.checked?set.add(n):set.delete(n);redraw();};lb.append(cb,el('span',n),el('small',v.toFixed(1)));col.append(lb);}return col;};
+  cols.append(side(S.a,S.pa,S.b,v=>S.a=v),side(S.b,S.pb,S.a,v=>S.b=v));c.append(cols);
+  const val=(team,set)=>(M[S.lg][team]||[]).filter(r=>set.has(r[0])).reduce((s,r)=>s+r[1],0);const out=el('div',null,'tmresult');
+  if(S.pa.size||S.pb.size){const va=val(S.a,S.pa),vb=val(S.b,S.pb),k=(T.pts_to_win||{})[S.lg]||0.03;const st=((d.standings||{}).leagues||{})[S.lg]||[];const gp=t=>{for(const g of st)for(const r of g.rows)if(r.team===t)return r.w+r.l+(r.t||0);return 0;};const left=t=>Math.max(0,((T.season_games||{})[S.lg]||82)-gp(t));
+    for(const [t,net] of [[S.a,vb-va],[S.b,va-vb]]){const r=el('div',null,'tmrow');const w=net*k*left(t);r.append(logoOf(t),el('b',teamNick(t)),el('span',null,'sp'),el('span',(net>0?'+':'')+net.toFixed(1)+' pts/game','tmv '+(net>0?'up':net<0?'down':'')),el('small',(w>0?'+':'')+w.toFixed(1)+' wins over '+left(t)+' left','hint small'));out.append(r);}
+    out.append(el('p',Math.abs(va-vb)<0.5?'Her read: a fair trade.':(vb>va?teamNick(S.a):teamNick(S.b))+' win this trade by her numbers.','tmverdict'));}
+  else out.append(el('p','Tick players on each side to build a trade.','hint small'));c.append(out);
+  c.append(el('small','A rough estimate from her player values (points of margin a game). Picks, salaries and fit are not counted.','hint small'));box.append(c);}
 // ---------------- fix410 (owner: "display the winner on the Home screen and the free version for some extra incentive to subscribe")
 // The Pick'em leaderboard lives on Home now. It is public (free version too); free users see a members nudge when the paywall is on.
 function homeBoard(){const c=el('div',null,'card hboard');c.id='homeBoard';
