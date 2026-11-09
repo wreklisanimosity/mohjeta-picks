@@ -1262,14 +1262,17 @@ function pickemRow(g){const all=pkLoad(),k=pkKey(g),mine=all[k];
 // they never matched, so every pick stayed "waiting" and then vanished (owner: "no leaderboard or recognition")
 function pkFinals(){const F=(D&&D.finals)||{},out={};for(const [k,v] of Object.entries(F)){out[k]=v;const i=k.indexOf('-');if(i>0)out[k.slice(i+1)]=v;}return out;}
 function pkCheer(all,F){let seen={};try{seen=JSON.parse(localStorage.getItem('mohjeta.pkSeen')||'{}')||{};}catch(e){}let n=0;
-  for(const [k,v] of Object.entries(all)){const w=F[k];if(!w||seen[k])continue;seen[k]=1;const hit=sameTeam(v.team,w);
+  for(const [k,v] of Object.entries(all)){const w=F[k];if(!w||seen[k])continue;seen[k]=1;const hit=sameTeam(v.team,w);if(hit&&v.her&&!sameTeam(v.her,w))setTimeout(()=>award('upset'),2500);
     if(n++<2)setTimeout(()=>toast((hit?'✅ Your pick ':'❌ Your pick ')+String(v.team).split(' ').pop()+(hit?' won':' lost')+(v.her&&!sameTeam(v.her,w)&&hit?' and she missed it 😤':'')),600+n*900);}
   try{localStorage.setItem('mohjeta.pkSeen',JSON.stringify(seen));}catch(e){}}
 function pickemScore(){const all=pkLoad(),F=pkFinals();pkCheer(all,F);let me=[0,0],her=[0,0],open=0;const now=Date.now();
   for(const [k,v] of Object.entries(all)){const w=F[k];
     if(!w){if(now-new Date(v.start)>5*86400000)delete all[k];else open++;continue;}
     const hit=t=>t&&sameTeam(t,w);me[hit(v.team)?0:1]++;if(v.her)her[hit(v.her)?0:1]++;}
-  pkSave(all);return {me,her,open};}
+  pkSave(all);
+  try{const done=Object.entries(all).filter(([k])=>F[k]).sort((a,b)=>Date.parse(a[1].start)-Date.parse(b[1].start));let run=0,best=0;for(const [k,v] of done){run=sameTeam(v.team,F[k])?run+1:0;best=Math.max(best,run);}
+    if(best>=3&&!badgeData().streak3)setTimeout(()=>award('streak3'),1500);}catch(e){}
+  return {me,her,open};}
 function pickemCard(){const sc=pickemScore();const c=el('div',null,'banner pkcard');
   const r=el('div',null,'row');r.append(iel('b','🎯 Pick\'em'),el('span',null,'sp'),el('span','You '+sc.me[0]+'-'+sc.me[1],'pks me'),el('span','vs','hint small'),el('span','Her '+sc.her[0]+'-'+sc.her[1],'pks'));c.append(r);
   const lead=sc.me[0]-sc.her[0];c.append(el('div',(sc.me[0]+sc.me[1]===0?'Tap a team on any game below to make your pick. Can you beat her?':lead>0?'You’re beating her by '+lead+'. 🔥':lead<0?'She leads by '+(-lead)+'. Pick again tonight.':'Dead even.')+(sc.open?' · '+sc.open+' pick'+(sc.open>1?'s':'')+' waiting on results':'')+(me?' · your picks count on the leaderboard':' · sign in (Chat) to get on the leaderboard'),'hint small'));
@@ -1326,12 +1329,20 @@ const MEDAL={first_pick:['target','bronze','#e0337a','hex'],five_picks:['hand','
   sim:['dice','bronze','#3c63e0','round'],sim25:['practice','silver','#17a589','hex'],trade:['swap','bronze','#d9622b','shield'],share:['share','bronze','#c2378f','round'],
   guess:['forecast','bronze','#6a3ad8','hex'],sharp:['arrow','gold','#d23a3a','shield'],chat:['chat','bronze','#2b8fd6','round'],compare:['compare','silver','#8a4fd8','shield'],
   fantasy:['basketball','silver','#e2701c','star'],alerts:['alerts','bronze','#c99a16','shield'],
-  beat_her_fantasy:['robot','gold','#8a2be2','star'],tester:['tools','neon','#c99a16','shield']};
+  beat_her_fantasy:['robot','gold','#8a2be2','star'],tester:['tools','neon','#c99a16','shield'],
+  prop_pick:['props','bronze','#e0337a','round'],props10:['flex','silver','#d23a3a','hex'],pk25:['pickem','silver','#2b8fd6','shield'],streak3:['fire','gold','#e2701c','star'],
+  upset:['boom','gold','#b0129b','hex'],champion:['trophy','neon','#c99a16','star'],sim_watch:['play','bronze','#3c63e0','hex'],voice:['sound','bronze','#17a589','round'],
+  film:['chart','silver','#6a3ad8','round'],scout:['eye','bronze','#2a9d8f','shield'],slip:['clipboard','bronze','#7b3fe4','hex'],regular:['calendar','silver','#c2378f','round'],night_owl:['sleep','bronze','#3a4fd8','star']};
 const MEDAL_ORDER=['first_pick','five_picks','beat_her','sim','sim25','trade','share','guess','sharp','chat','compare','fantasy','alerts'];
 function medalOf(k,locked){const i=MEDAL_ORDER.indexOf(k);if(i>=0){const s=el('span',null,'mj-medal mj-medal3d'+(locked?' locked':''));   // 3D-rendered medals (medals-3d.webp)
     s.style.backgroundPosition=(i/(MEDAL_ORDER.length-1)*100)+'% '+(locked?'100%':'0%');s.setAttribute('role','img');s.setAttribute('aria-label',BADGES[k][1]+(locked?' (locked)':''));return s;}
   const m=MEDAL[k];if(!m||!window.MohjetaIcons||!MohjetaIcons.medal)return null;return MohjetaIcons.medal(m[0],{tier:m[1],color:m[2],shape:m[3],locked,label:BADGES[k][1]+(locked?' (locked)':'')});}
-const BADGES={first_pick:['🎯','First pick'],five_picks:['🖐️','5 picks made'],beat_her:['👑','Beating the AI'],sim:['🎲','First simulation'],sim25:['🧪','25 simulations'],trade:['⇄','Trade machine'],share:['📤','Shared a card'],guess:['🔮','First guess'],sharp:['🏹','Guessed within 3 pts'],chat:['💬','First chat message'],compare:['⚖️','Compared players'],fantasy:['🏀','Drafted a fantasy team'],alerts:['🔔','Turned on alerts'],beat_her_fantasy:['🤖','Beat her at fantasy'],tester:['🛠️','Beta tester']};
+const BADGES={first_pick:['🎯','First pick'],five_picks:['🖐️','5 picks made'],beat_her:['👑','Beating the AI'],sim:['🎲','First simulation'],sim25:['🧪','25 simulations'],trade:['⇄','Trade machine'],share:['📤','Shared a card'],guess:['🔮','First guess'],sharp:['🏹','Guessed within 3 pts'],chat:['💬','First chat message'],compare:['⚖️','Compared players'],fantasy:['🏀','Drafted a fantasy team'],alerts:['🔔','Turned on alerts'],beat_her_fantasy:['🤖','Beat her at fantasy'],tester:['🛠️','Beta tester'],
+  // fix383 (owner: "add some more badges and achievements")
+  prop_pick:['🎯','First prop pick'],props10:['💪','Prop pro: 10 prop picks'],pk25:['🗳️','25 picks made'],streak3:['🔥','Hot hand: 3 wins in a row'],
+  upset:['😤','Called the upset'],champion:['🏆','Weekly champion'],sim_watch:['🍿','Watched a sim game'],voice:['🔊','Heard her rundown'],
+  film:['🎬','Film room: 10 breakdowns'],scout:['🔎','Scout: 5 team pages'],slip:['📋','Copied a bet slip'],regular:['📅','Regular: 7 days'],night_owl:['🦉','Night owl']};
+const BADGE_COUNT={first_pick:[['five_picks',5],['pk25',25]],prop_pick:[['props10',10]],breakdown:[['film',10]],team:[['scout',5]],sim:[['sim25',25]]};
 // ---------------- beta tester challenge (owner, Nov 7 2026): every part testers should try, each with how-to steps; each task
 // is ticked automatically the first time it is done (award() counts it), the last one by hand; all done -> the Beta tester badge
 function TESTS(){const ios=isIOSApp();const push=('serviceWorker' in navigator)&&('PushManager' in window);return [
@@ -1408,7 +1419,7 @@ function drawPlayBadges(){const pb=$('playBadges');if(pb)pb.replaceChildren(badg
 function badgeData(){try{return JSON.parse(localStorage.getItem('mohjeta.badges')||'{}')||{};}catch(e){return {};}}
 function award(kind){const b=badgeData();b._n=b._n||{};b._n[kind]=(b._n[kind]||0)+1;const earn=[];
   const give=k=>{if(!b[k]){b[k]=Date.now();earn.push(k);}};
-  if(kind==='sim'){give('sim');if(b._n.sim>=25)give('sim25');}else if(BADGES[kind])give(kind);
+  if(BADGES[kind])give(kind);for(const [k2,n2] of BADGE_COUNT[kind]||[])if(b._n[kind]>=n2)give(k2);
   try{localStorage.setItem('mohjeta.badges',JSON.stringify(b));}catch(e){}if(kind!=='tester')setTimeout(()=>{try{testerCheck();}catch(e){}},0);for(const k of earn){const md=medalOf(k,false);if(md){const t=toast('Badge unlocked: '+BADGES[k][1]);if(t&&t.prepend)t.prepend(md);}else toast(BADGES[k][0]+' Badge unlocked: '+BADGES[k][1]);}if(earn.length){if(window.MJSound)MJSound.play('badge');if(me&&myProfile)setTimeout(syncBadges,0);for(const sh of document.querySelectorAll('.shelf'))sh.replaceWith(badgeShelf());}}
 function toast(t){const n=document.querySelectorAll('.toast').length;const d=el('div',t,'toast');if(n)d.style.bottom='calc(var(--navh) + '+(24+n*76)+'px)';document.body.append(d);setTimeout(()=>d.classList.add('out'),2200);setTimeout(()=>d.remove(),2700);return d;}
 function badgeShelf(){const b=badgeData();const got=Object.keys(BADGES).filter(k=>b[k]);const d=el('div',null,'shelf');d.setAttribute('role','button');d.tabIndex=0;d.title='Open your trophy case';
@@ -1420,8 +1431,15 @@ function badgeShelf(){const b=badgeData();const got=Object.keys(BADGES).filter(k
 const BADGE_HOW={first_pick:'Make your first Pick’em pick.',five_picks:'Make 5 Pick’em picks.',beat_her:'Finish a night of Pick’em ahead of Mohjeta.',
   sim:'Simulate any game once.',sim25:'Run 25 simulations.',trade:'Make a trade in the trade machine (Simulate).',share:'Share any card with a friend.',
   guess:'Play Guess her number once.',sharp:'Guess her number within 3 points.',chat:'Send your first message in the Fan Lounge.',compare:'Compare two players side by side.',
-  fantasy:'Draft a nightly fantasy team.',alerts:'Turn on phone alerts.',beat_her_fantasy:'Outscore Mohjeta’s weekly fantasy lineup.',tester:'Finish every step of the beta tester challenge.'};
+  fantasy:'Draft a nightly fantasy team.',alerts:'Turn on phone alerts.',beat_her_fantasy:'Outscore Mohjeta’s weekly fantasy lineup.',tester:'Finish every step of the beta tester challenge.',
+  prop_pick:'Make your first Prop Pick’em pick (Play).',props10:'Make 10 Prop Pick’em picks.',pk25:'Make 25 Pick’em picks.',streak3:'Win 3 Pick’em picks in a row.',
+  upset:'Win a Pick’em pick on a game where Mohjeta picked the other team.',champion:'Win a weekly Pick’em, Prop Pick’em or fantasy title.',sim_watch:'Watch a simulated game play out (Simulate → Watch).',
+  voice:'Play her spoken rundown or a pick in her voice.',film:'Open 10 full game breakdowns.',scout:'Open 5 different team pages.',slip:'Copy a pick or parlay as a bet slip.',
+  regular:'Open Mohjeta on 7 different days.',night_owl:'Check her picks between midnight and 4 a.m.'};
 const BADGE_SHOW={};let badgeSyncing=false;
+setTimeout(()=>{try{const today=new Date().toDateString();let days=[];try{days=JSON.parse(localStorage.getItem('mohjeta.days')||'[]')||[];}catch(e){}   // fix383
+  if(!days.includes(today)){days.push(today);days=days.slice(-30);try{localStorage.setItem('mohjeta.days',JSON.stringify(days));}catch(e){}}
+  const b=badgeData();if(days.length>=7&&!b.regular)award('regular');const h=new Date().getHours();if(h<4&&!badgeData().night_owl)award('night_owl');}catch(e){}},5000);
 function badgeShowList(){try{const v=JSON.parse(localStorage.getItem('mohjeta.badgeShow')||'[]');return Array.isArray(v)?v.filter(k=>BADGES[k]).slice(0,3):[];}catch(e){return [];}}
 function myBadges(p,size){const list=(p&&p.id&&BADGE_SHOW[p.id])||(p&&Array.isArray(p.badge_show)?p.badge_show:null)||(p&&me&&p.id===me.id?badgeShowList():[]);
   const s=el('span',null,'nbadges'+(size?' '+size:''));for(const k of (list||[]).slice(0,3)){if(!BADGES[k])continue;const md=medalOf(k,false);if(md){md.title=BADGES[k][1];s.append(md);}}return s;}
@@ -1851,7 +1869,7 @@ function hofCard(){const c=el('div',null,'card hof');c.append(iel('h4','🏛️ 
   const seen=new Set();for(const r of rows.slice(0,12)){const k=r.kind+r.period;const row=el('div',null,'hofrow'+(seen.has(k)?' tie':'')+(me&&r.user_id===me.id?' mine':''));seen.add(k);
     row.append(el('span',champIcon(r),'hofic'),chatPic({user_id:r.user_id,name:r.name}),el('div',null,'hofn'));row.lastChild.append(el('b',r.name),el('small',r.label+' · '+r.stat));c.append(row);}
   return c;}
-function champCheer(){if(!me||!CHAMPS)return;let seen={};try{seen=JSON.parse(localStorage.getItem('mohjeta.champSeen')||'{}')||{};}catch(e){}
+function champCheer(){if(!me||!CHAMPS)return;if(CHAMPS.some(r=>r.user_id===me.id)&&!badgeData().champion)setTimeout(()=>award('champion'),2000);let seen={};try{seen=JSON.parse(localStorage.getItem('mohjeta.champSeen')||'{}')||{};}catch(e){}
   for(const r of CHAMPS){if(r.user_id!==me.id||seen[r.kind+r.period])continue;seen[r.kind+r.period]=1;if(Date.now()-Date.parse(r.created_at)>7*864e5)continue;
     setTimeout(()=>{const t=toast(champIcon(r)+' You’re the champion! '+r.label+' · '+r.stat);try{MJSound&&MJSound.play('badge');}catch(e){}},1200);}
   try{localStorage.setItem('mohjeta.champSeen',JSON.stringify(seen));}catch(e){}}
@@ -1885,7 +1903,7 @@ function teamSynopsis(name,lg,t,r,nextG){const done=t.g.filter(x=>x[4]),todo=t.g
   else if(todo[0])out.push('Next: '+(todo[0][3]?'vs ':'at ')+(todo[0][2]||todo[0][1])+' '+when(todo[0][0])+'.');
   return out.filter(Boolean).join(' ');}
 function ordinal(n){n=Number(n);const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
-async function openTeam(name,league){openSheet(()=>{const w=el('div',null,'teampage');w.id='teamView';w.append(el('p','Loading '+name+'…','hint'));return w;},'Team');
+async function openTeam(name,league){try{award('team');}catch(e){}openSheet(()=>{const w=el('div',null,'teampage');w.id='teamView';w.append(el('p','Loading '+name+'…','hint'));return w;},'Team');
   const T=await loadTeams2();const w=$('teamView');if(!w)return;const f=findTeam(T,name,league);w.replaceChildren();
   const head=el('div',null,'tphead');const cl=simColor(name)||(f&&f.t.c?'#'+f.t.c:null);if(cl)head.style.setProperty('--tc',cl);const b=teamBadge(name);b.classList.add('big');
   const tx=el('div');tx.append(el('span',(f?sname(f.lg):sname(league||'')).toUpperCase(),'simeyebrow'),el('h2',f?f.t.n:name),el('b',f?(f.t.rec||'')+(f.t.st?' · '+f.t.st:''):'','tprec'));head.append(b,tx);w.append(head);
@@ -2328,7 +2346,7 @@ async function proof(){if(Date.now()-proofAt<600000)return;proofAt=Date.now();co
 function propSlip(player,stat,line,side){const nm=STATNAME[stat]||stat;return player+' '+(side==='NO'?'Under ':'Over ')+(Number(line)-0.5)+' '+nm+' ('+(side==='NO'?'under ':'')+line+(side==='NO'?'':'+')+')';}
 function teamSlip(team,g){if(/^(tie|draw)$/i.test(String(team)))return 'Draw: '+((g&&g.name)||'')+(g?' · '+sname(g.league)+' · '+when(g.start):'');const opp=g?(g.teams||[]).find(t=>t.name!==team):null;return team+((g&&_SOC(g))?' to win (3-way)':' moneyline')+(opp?' ('+(opp.home?'@ ':'vs ')+opp.name+')':'')+(g?' · '+sname(g.league)+' · '+when(g.start):'');}
 async function copySlip(title,lines){const t=title+'\n'+lines.map((l,i)=>(i+1)+') '+l).join('\n')+'\n(Mohjeta · mohjeta.com · for fun, not betting advice)';
-  if(await copyText(t)){toast('📋 Copied '+lines.length+' leg'+(lines.length===1?'':'s')+'. Paste it into any betting app.');try{award('share');}catch(e){}}else shareIt({title,text:t});}
+  if(await copyText(t)){toast('📋 Copied '+lines.length+' leg'+(lines.length===1?'':'s')+'. Paste it into any betting app.');try{award('slip');}catch(e){}}else shareIt({title,text:t});}
 const _SOC=g=>/^(EPL|MLS|UCL|LA LIGA|SERIE A|BUNDESLIGA|LIGUE 1|UEL|UECL|EFL CHAMP)$/.test(g.league||'');
 // fix381 (owner: "Open on Kalshi" + "do it for DraftKings and FanDuel too"): website only (hidden in the iPhone app, Apple's
 // rules on gambling links). Kalshi: the exact event page (kalshi_url from site_extras / a prop's ticker). DraftKings and
@@ -3518,7 +3536,7 @@ async function ppFetch(force){if(!force&&PPROPS&&Date.now()-ppAt<120000)return P
       if(!r.error){const x=ppLoad();for(const k of r.data||[])x[k.prop_id]=k.side;ppSave(x);}}}}
   catch(e){PPROPS=PPROPS||[];}
   document.querySelectorAll('.ppcard').forEach(c=>c.replaceWith(propPickemCard()));return PPROPS;}
-async function ppPick(p,side){const x=ppLoad();x[p.id]=side;ppSave(x);award('first_pick');
+async function ppPick(p,side){const x=ppLoad();const was=x[p.id];x[p.id]=side;ppSave(x);if(!was)award('prop_pick');
   if(me&&sb){try{const {error}=await sb.from('prop_picks').upsert({prop_id:p.id,side},{onConflict:'user_id,prop_id'});
     if(error)toast(/profiles|foreign/i.test(error.message)?'Pick a chat name in Chat to join the props leaderboard':'Saved on this phone (leaderboard save failed)');}catch(e){}}
   document.querySelectorAll('.ppcard').forEach(c=>c.replaceWith(propPickemCard()));}
