@@ -677,6 +677,18 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .panel .hubbtn,.panel .menu button{border-color:#765487;box-shadow:inset 0 1px #ffffff18}
 :is(button,select,[role=button]):focus-visible{outline:3px solid #f3afff;outline-offset:2px}
 @media(hover:hover){.game-picker:hover #simPick,.panel .chips button:hover,.panel button.back:hover{border-color:#f3afff}}
+
+/* fix399 (owner: "make the panels all 3d so they don't look so flat"): one shared depth treatment for every panel/card:
+   lit top bevel + shaded bottom (inset shadows paint under the content, so text and colours are untouched), a soft lifted
+   drop shadow, a small rise on hover and a press-in on tap. */
+.card,.hstat,.htrophy,.hnext,.menu button,.tcard,.rgame,.rstation,.rteaser,.tfold,button.hero,.pushcard,.mini,.rlink{
+  box-shadow:inset 0 1px 0 #ffffff24,inset 0 16px 22px -16px #ffffff1c,inset 0 -18px 24px -16px #0000008c,inset 0 -2px 0 #00000066,0 12px 24px -8px #000000c4,0 3px 6px -2px #000000a0;
+  transition:transform .14s ease,box-shadow .2s ease}
+@media (hover:hover){.htrophy:hover,.hnext:hover,.menu button:hover,.tcard:hover,.rgame:hover,.rstation:hover,.rteaser:hover,button.hero:hover,.hstat:hover,.rlink:hover{transform:translateY(-2px);
+  box-shadow:inset 0 1px 0 #ffffff2e,inset 0 16px 22px -16px #ffffff24,inset 0 -18px 24px -16px #0000008c,inset 0 -2px 0 #00000066,0 18px 30px -8px #000000d0,0 4px 8px -2px #000000a8}}
+.htrophy:active,.hnext:active,.menu button:active,.tcard:active,.rgame:active,.rstation:active,.rteaser:active,button.hero:active,.hstat:active,.rlink:active{transform:translateY(1px) scale(.995);
+  box-shadow:inset 0 2px 6px #00000080,inset 0 -1px 0 #ffffff14,0 4px 10px -4px #000000b0}
+.tcard.shown{box-shadow:inset 0 1px 0 #ffffff24,inset 0 -18px 24px -16px #0000008c,0 0 16px #f5c54244,0 12px 24px -8px #000000c4}
 </style>
 <script src="languages.js?v=12" defer></script>
 </head>
