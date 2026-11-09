@@ -59,6 +59,7 @@ header{position:sticky;top:0;z-index:20;background:#0b0712f2;backdrop-filter:blu
 .brand b{color:var(--pink);text-shadow:0 0 10px var(--pink)}
 .brand{display:inline-flex;align-items:flex-end;white-space:nowrap}.brand-m{height:1.6em;width:auto;margin:0 -.1em -.2em -.14em;filter:drop-shadow(0 0 8px #ff4fd866);transition:transform .3s}.brand:hover .brand-m{transform:rotate(-6deg) scale(1.06)}
 .ticker{display:flex;align-items:center;gap:6px;margin:8px -16px -8px;padding:0 8px 0 0;background:linear-gradient(90deg,#2a0f33,#170b22);border-top:1px solid #ff4fd833;border-bottom:1px solid #ff4fd833;height:34px;overflow:hidden}
+#pushBox.flash{animation:pbFlash 1.6s ease-out}@keyframes pbFlash{0%,40%{box-shadow:0 0 0 3px #ff4fd8;border-radius:16px}100%{box-shadow:0 0 0 0 transparent}}
 .ticker[hidden]{display:none}.tk-view{flex:1;overflow:hidden;position:relative}.tk-view::before,.tk-view::after{content:"";position:absolute;top:0;bottom:0;width:18px;z-index:1;pointer-events:none}.tk-view::before{left:0;background:linear-gradient(90deg,#0b0712,#0b071200)}.tk-view::after{right:0;background:linear-gradient(270deg,#0b0712,#0b071200)}
 .tk-track{display:inline-flex;white-space:nowrap;animation:tk var(--tkdur,60s) linear infinite}.ticker:hover .tk-track,.ticker.paused .tk-track{animation-play-state:paused}
 @keyframes tk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -2995,14 +2996,17 @@ function drawNews(){const box=$('newsBox');if(!box||!NEWS)return;box.replaceChil
 let tkKey='';
 const TK_MAX=10;   // fix349: the banner is one long sliding strip (twice over); dozens of headlines made it tens of thousands of
                    // pixels wide, past what an iPhone can keep on screen, and the page could flash black. Newest 10 only.
-function tickerItems(){const out=[];const cut=Date.now()-14*864e5;try{out.push(...champTicker());}catch(e){}
+// fix388 (owner: "put a message in the banner to turn on notifications"): first in the banner until alerts are on here.
+let PUSH_ON=null;function alertsNudge(){try{if(capPush())return !apnsSaved();if(isIOSApp()||!('PushManager' in window)||!('serviceWorker' in navigator))return false;return PUSH_ON===false;}catch(e){return false;}}
+function goAlerts(){show('more');setTimeout(()=>{const b=$('pushBox');if(b){b.scrollIntoView({behavior:'smooth',block:'center'});b.classList.remove('flash');void b.offsetWidth;b.classList.add('flash');}},350);}
+function tickerItems(){const out=[];const cut=Date.now()-14*864e5;if(alertsNudge())out.push({site:true,label:'🔔 ALERTS',text:'Turn on phone alerts: her bets, your picks and when someone @’s you. Tap here',act:goAlerts});try{out.push(...champTicker());}catch(e){}
   for(const u of ((NEWS&&NEWS.updates)||[]).slice(0,3)){if(Date.parse(u.date)>=cut)out.push({site:true,label:'MOHJETA',text:u.title,go:'news'});}   // tap: the full update on What's new
   for(const h of ((D&&D.headlines)||[]).slice(0,TK_MAX))out.push({label:(SPORT_ICON[h.league]||'')+' '+sname(h.league).toUpperCase(),text:h.text,link:h.link});
   return out;}
 function drawTicker(){const bar=$('ticker'),tr=$('tkTrack');if(!bar||!tr)return;let off=false;try{off=sessionStorage.getItem('mohjeta.tk')==='0';}catch(e){}
-  const items=off?[]:tickerItems();if(!items.length){bar.hidden=true;return;}const key=JSON.stringify(items);if(key===tkKey&&!bar.hidden)return;tkKey=key;
+  const items=off?[]:tickerItems();if(!items.length){bar.hidden=true;return;}const key=JSON.stringify(items.map(x=>[x.label,x.text]));if(key===tkKey&&!bar.hidden)return;tkKey=key;
   const one=()=>items.map(x=>{const a=x.link?el('a',null,'tk-item'):el('button',null,'tk-item'+(x.site?' site':''));
-    if(x.link){a.href=x.link;a.target='_blank';a.rel='noopener noreferrer';}else{a.type='button';a.onclick=()=>show(x.go);}
+    if(x.link){a.href=x.link;a.target='_blank';a.rel='noopener noreferrer';}else{a.type='button';a.onclick=()=>x.act?x.act():show(x.go);}
     a.title=x.link?'Read the full story on ESPN':'Read the full update';a.append(el('b',x.label),el('span',x.text),el('span','›','tk-go'));return a;});
   if(bar.parentNode&&bar.parentNode.lastElementChild!==bar)bar.parentNode.append(bar);   // below the language picker (added to the header later)
   tr.replaceChildren(...one(),...one());bar.hidden=false;{const nb=$('newsBar');if(nb)nb.replaceChildren();}   // two copies: the loop restarts without a jump
@@ -3221,6 +3225,7 @@ async function drawAppPush(box,c){const P=capPush();const tok=apnsSaved();
   const off=el('button','Turn off alerts','mlink');off.type='button';off.onclick=async()=>{try{await supa();await sb.rpc('remove_apns',{token:tok});}catch(e){}try{localStorage.removeItem('mohjeta.apns');}catch(e){}
     try{await P.unregister();}catch(e){}toast('Alerts off');drawPush(box);};c.append(off);box.append(c);}
 async function drawPush(box){if(!box)return;box.replaceChildren();const c=el('div',null,'card pushcard');
+  pushSub().then(sub=>{PUSH_ON=!!sub;try{drawTicker();}catch(e){}}).catch(()=>{});
   const ios=/iPhone|iPad|iPod/.test(navigator.userAgent),standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
   const vapid=window._cfg&&window._cfg.vapid_public;
   c.append(iel('b','🔔 Phone alerts'));
