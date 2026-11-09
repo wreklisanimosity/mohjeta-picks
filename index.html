@@ -747,6 +747,16 @@ html,body{overscroll-behavior-y:none}
 .oleg{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.oleg .badge,.oleg img{width:32px;height:32px;flex:none}.olegt{flex:1;min-width:0;display:flex;flex-direction:column}.olegt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .olegs{font-size:12px;font-weight:800;white-space:nowrap;padding:3px 8px;border-radius:99px;background:#ffffff12}.oleg.s-won .olegs{background:#3ddc8426}.oleg.s-lost .olegs{background:#ff6b6b26}.oleg.s-ahead .olegs{background:#3ddc8426;color:#3ddc84}.oleg.s-behind .olegs{background:#ff9f4326;color:#ffb36b}.oleg.tap{cursor:pointer}
 .obsic{font-size:10px;font-weight:800;padding:3px 6px;border-radius:99px}.obsic.w{background:#3ddc8426;color:#3ddc84}.obsic.l{background:#ff6b6b26;color:#ff8a8a}.oleg.s-won .olegs{color:#3ddc84}.oleg.s-lost .olegs{color:#ff8a8a}.obsettled{margin-top:10px}.obsettled summary{cursor:pointer;font-weight:700;padding:8px 0}.obsrow{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}.obsrow div{display:flex;flex-direction:column;min-width:0}.obsrow div b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* fix419 (owner screenshot: "chat is a little off"): the profile page's .mav / .mwho styles were leaking into chat:
+   avatars squeezed into a 30x56 oval (half cut off) and "Chatting as" stacked in a tall column. Chat gets its own sizes. */
+#chatBox .msg .mav{height:30px!important;width:30px!important;border-radius:50%;border:0;box-shadow:none;background:none;overflow:hidden;display:block}
+#chatBox .msg .mav.gap{height:1px!important}
+#chatBox .msg .mav .badge,#chatBox .msg .mav .cpic,#chatBox .msg .mav img{width:30px!important;height:30px!important;font-size:11px}
+#chatBox .mwho{flex:none;flex-direction:row!important;align-items:center;justify-content:flex-start;gap:6px;flex-wrap:wrap;text-align:left}
+#chatBox .mwho b{font-size:15px}
+#chatBox .chatin::placeholder{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#chatBox textarea.chatin{min-height:44px;line-height:1.35;resize:none}
+#chatRoom[hidden]{display:none!important}
 </style>
 <script src="languages.js?v=13" defer></script>
 </head>
@@ -2038,7 +2048,7 @@ function composer(){const c=el('div',null,'card lounge-composer');
     const go=el('button','Save name','btn');go.type='button';go.onclick=async()=>{const {error}=await sb.from('profiles').insert({id:me.id,display_name:i.value.trim()});if(error){toast(/duplicate|unique/i.test(error.message)?'That name is taken':'Name not allowed');return;}myProfile=null;openChat();};
     c.append(i,go);return c;}
   if(myProfile.banned){c.append(el('p','Your account cannot post in chat.','hint'));return c;}
-  const t=el('textarea');t.maxLength=500;t.rows=1;t.placeholder='Say something… type @ to tag someone';t.className='chatin lounge-input';
+  const t=el('textarea');t.maxLength=500;t.rows=1;t.placeholder='Say something… @ to tag';t.className='chatin lounge-input';
   const sug=el('div',null,'msug');sug.hidden=true;
   const findTag=()=>{const pos=t.selectionStart||t.value.length;const before=t.value.slice(0,pos);const m=before.match(/(^|\s)@([^@\n]{0,20})$/);return m?{q:m[2],start:pos-m[2].length-1,pos}:null;};
   const showSug=()=>{const f=findTag();sug.replaceChildren();if(!f){sug.hidden=true;return;}const q=f.q.toLowerCase();
