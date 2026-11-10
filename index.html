@@ -1060,7 +1060,21 @@ function ratingTeamName(name){
   const row=el('span',null,'nfl-rating-name');
   row.append(teamBadge(name),document.createTextNode(name));return row;
 }
+// fix424 (owner: "we need logos for the NHL"): until the drawn NHL portraits arrive (NHL_PORTRAITS_TO_DRAW.md), NHL teams get
+// their initials on the team's own colors instead of a random color.
+const NHL_COLORS={'Anaheim Ducks':['#F47A38','#111'],'Boston Bruins':['#111','#FFB81C'],'Buffalo Sabres':['#003087','#FFB81C'],'Calgary Flames':['#C8102E','#F1BE48'],
+  'Carolina Hurricanes':['#CE1126','#111'],'Chicago Blackhawks':['#CF0A2C','#111'],'Colorado Avalanche':['#6F263D','#236192'],'Columbus Blue Jackets':['#002654','#CE1126'],
+  'Dallas Stars':['#006847','#8F8F8C'],'Detroit Red Wings':['#CE1126','#fff'],'Edmonton Oilers':['#041E42','#FF4C00'],'Florida Panthers':['#C8102E','#041E42'],
+  'Los Angeles Kings':['#111','#A2AAAD'],'Minnesota Wild':['#154734','#A6192E'],'Montreal Canadiens':['#AF1E2D','#192168'],'Montréal Canadiens':['#AF1E2D','#192168'],
+  'Nashville Predators':['#FFB81C','#041E42'],'New Jersey Devils':['#CE1126','#111'],'New York Islanders':['#00539B','#F47D30'],'New York Rangers':['#0038A8','#CE1126'],
+  'Ottawa Senators':['#C52032','#C2912C'],'Philadelphia Flyers':['#F74902','#111'],'Pittsburgh Penguins':['#111','#FCB514'],'San Jose Sharks':['#006D75','#111'],
+  'Seattle Kraken':['#001628','#99D9D9'],'St. Louis Blues':['#002F87','#FCB514'],'Tampa Bay Lightning':['#002868','#fff'],'Toronto Maple Leafs':['#00205B','#fff'],
+  'Utah Mammoth':['#111','#6CACE4'],'Utah Hockey Club':['#111','#6CACE4'],'Vancouver Canucks':['#00205B','#00843D'],'Vegas Golden Knights':['#B4975A','#333F42'],
+  'Washington Capitals':['#C8102E','#041E42'],'Winnipeg Jets':['#041E42','#7B303E']};
 function badge(name){const n=String(name||'?');let h=0;for(const ch of n)h=(h*31+ch.charCodeAt(0))>>>0;
+  {const c=NHL_COLORS[n];if(c){const words=n.replace(/[^A-Za-z0-9 ]/g,'').split(' ').filter(Boolean);const nick=words[words.length-1];
+    const b=el('span',(words.length>2&&/^(Maple|Golden|Blue|Red)$/.test(words[words.length-2])?words[words.length-2][0]+nick[0]:words[0][0]+nick[0]).toUpperCase(),'badge nhlb');
+    b.style.background='linear-gradient(145deg,'+c[0]+','+c[0]+' 60%,'+c[1]+')';b.style.boxShadow='inset 0 0 0 2px '+c[1]+'cc,0 3px 8px #0008';b.style.color=c[0]==='#fff'||c[0]==='#FFB81C'||c[0]==='#B4975A'?'#111':'#fff';b.setAttribute('aria-hidden','true');return b;}}
   const words=n.replace(/[^A-Za-z0-9 ]/g,'').split(' ').filter(Boolean);const ini=(words.length>1?words[0][0]+words[words.length-1][0]:n.slice(0,2)).toUpperCase();
   const b=el('span',ini,'badge');b.style.background='hsl('+(h%360)+' 60% 36%)';b.setAttribute('aria-hidden','true');return b;}
 const icon=r=>r==='WON'||String(r).startsWith('SOLD')?'✅':r==='LOST'?'❌':r==='EVEN'?'➖':'⏳';
