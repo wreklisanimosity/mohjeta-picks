@@ -1054,7 +1054,7 @@ const TEAM_COLORS={Celtics:'#007A33',Nets:'#2b2b2b',Knicks:'#006BB6','76ers':'#0
 function teamNick(name){const n=String(name||'');const m=n.match(/(Trail Blazers|Crimson Tide)$/);return m?m[1]:n.split(' ').pop();}
 function teamPlate(name,full){const team=name==='Los Angeles Clippers'?'LA Clippers':name;
   if(!teamPortraits.has(team))return el(full?'span':'b',full||String(name).length<=16?name:teamNick(name));
-  const p=el('span',full?name:teamNick(name),'tplate');p.style.setProperty('--tc',TEAM_COLORS[teamNick(name)]||'#333');return p;}
+  const p=el('span',full?name:teamNick(name),'tplate');p.style.setProperty('--tc',(typeof NHL_COLORS!=='undefined'&&NHL_COLORS[name]&&NHL_COLORS[name][0])||TEAM_COLORS[teamNick(name)]||'#333');return p;}   // fix425: NHL plates use NHL colors (Kings/Panthers/Jets/Ducks share nicknames)
 function ratingTeamName(name){
   if(!nflPortraitTeams.has(name))return name;
   const row=el('span',null,'nfl-rating-name');
