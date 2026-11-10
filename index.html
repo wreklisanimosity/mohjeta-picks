@@ -763,6 +763,7 @@ html,body{overscroll-behavior-y:none}
 .hedmv{font:inherit;width:34px;height:34px;border-radius:10px;border:1px solid #ffffff22;background:linear-gradient(180deg,#ffffff14,#ffffff06);color:inherit}.hedmv:disabled{opacity:.25}
 .hedacts{display:flex;gap:8px;align-items:center;margin-top:12px}.hblock{margin:10px 0}.hbhd{display:flex;align-items:center;justify-content:space-between;margin:6px 2px}
 .htrade{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;margin:6px 0;border-radius:14px;border:1px solid #ffffff1f;background:linear-gradient(135deg,#221438,#100b1c);color:inherit;font:inherit}.htrade .badge,.htrade img{width:30px;height:30px;flex:none}.htrade span{display:flex;flex-direction:column;min-width:0}.htrade b{font-size:13px}
+.idrec{padding:14px}.idrec h4{margin:0 0 8px}.idbig b{font-size:26px;display:block}.idstats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}.idstats div{display:flex;flex-direction:column;align-items:center;padding:8px 4px;border-radius:12px;background:#ffffff0a}.idstats b{font-size:15px}.idstats small{font-size:10px;color:var(--muted)}.idkind{font-size:12px;color:var(--muted);padding:2px 0}.obsic:not(.w):not(.l){background:#ffffff14;color:var(--muted)}
 </style>
 <script src="languages.js?v=13" defer></script>
 </head>
@@ -2900,6 +2901,20 @@ function openBetsCard(d){const C=d.combo_record;if(!C||!C.open)return null;const
     for(const x of S){const r=el('div',null,'obsrow');const t=el('div');t.append(el('b',x.legs.map(l=>teamNick(l.name||String(l.team||'').replace(/^Not /,''))).join(' + ')),el('small',x.legs.length+' legs · $'+Number(x.stake).toFixed(2)+' · '+when(x.at),'hint small'));
       r.append(el('span',x.status==='WON'?'WON':'LOST','obsic '+(x.status==='WON'?'w':'l')),t,el('span',null,'sp'),el('b',signed(x.pnl||0),'pl '+cls(x.pnl||0)));f.append(r);}w.append(f);}
   return w;}
+// ---- fix427 (owner: "she suggests parlays but leaves no record as to how those would have fared"): every suggested combo is
+// saved and graded (no money); this card shows the record and what $10 on each would have made.
+function ideasRecordCard(d){const I=d.combo_record&&d.combo_record.ideas;if(!I)return null;const n=I.won+I.lost;const c=el('div',null,'card idrec');
+  c.append(el('h4','📒 How her suggestions did'));
+  if(!n){c.append(el('p','Her suggested combos are being tracked from today. The first results show up as games finish'+(I.open?' ('+I.open+' waiting)':'')+'.','hint small'));return c;}
+  const big=el('div',null,'idbig');big.append(el('b',signed(I.pl),'pl '+cls(I.pl)),el('small','if you bet $'+I.stake+' on every combo she suggested','hint small'));c.append(big);
+  const row=el('div',null,'idstats');const st=(v,l)=>{const x=el('div');x.append(el('b',v),el('small',l));return x;};
+  row.append(st(I.won+'-'+I.lost,'record'),st(pct(I.hit),'hit'),st(pct(I.her_said),'she said'),st(String(I.open),'waiting'));c.append(row);
+  const note=I.hit!=null&&I.her_said!=null?(I.hit>=I.her_said-0.03?'They have hit about as often as she said, or better.':'They have hit less often than she said; she is too sure about combos so far.'):'';if(note)c.append(el('p',note,'hint small'));
+  for(const k of I.kinds||[])c.append(el('div',k.name+': '+k.won+'-'+k.lost+' · '+signed(k.pl),'idkind'));
+  const f=el('details',null,'obsettled');f.append(el('summary','Latest suggestions ('+(I.recent||[]).length+')'));
+  for(const x of I.recent||[]){const r=el('div',null,'obsrow');const t=el('div');t.append(el('b',x.legs.map(l=>(l.against?'not ':'')+teamNick(l.name||String(l.team||'').replace(/^Not /,''))).join(' + ')),el('small',x.legs.length+' legs · she said '+pct(x.her_p)+' · '+when(x.at),'hint small'));
+    r.append(el('span',x.status==='OPEN'?'WAIT':x.status,'obsic '+(x.status==='WON'?'w':x.status==='LOST'?'l':'')),t,el('span',null,'sp'),el('b',x.pl==null?'':signed(x.pl),x.pl==null?'':'pl '+cls(x.pl)));f.append(r);}
+  c.append(f);c.append(el('small','Tracking only, no money: each suggestion is saved once and graded from Kalshi’s official results.','hint small'));return c;}
 function openCombos(tab){if(tab){cmbTab=tab;try{localStorage.setItem('mohjeta.cmbTab',tab);}catch(e){}}show('combos');try{renderCombos(D);}catch(e){}window.scrollTo(0,0);}
 function renderCombos(d){const cl=$('comboList');if(!cl||!d)return;const bar=$('cmbTabs');
   if(bar){bar.replaceChildren(...CMB_TABS.map(([k,l])=>{const b=el('button',l,'chip'+(cmbTab===k?' on':''));b.type='button';b.setAttribute('aria-pressed',String(cmbTab===k));
@@ -2910,8 +2925,8 @@ function renderCombos(d){const cl=$('comboList');if(!cl||!d)return;const bar=$('
   if(cmbTab==='legs'){cl.replaceChildren(legsCard(d));return;}
   if(cmbTab==='build'){const w=el('div');const pb=el('div',null,'card');pb.id='propBuilder';
     const go=el('button','➕ Add props from the Props page','btn ghost small');go.type='button';go.onclick=()=>show('props');w.append(pb,go);cl.replaceChildren(w);try{drawBuilder();}catch(e){}needDet();return;}
-  const rc=(()=>{try{return comboRecordCard(d);}catch(e){return null;}})();const ob=(()=>{try{return openBetsCard(d);}catch(e){return null;}})();
-  cl.replaceChildren(...(ob?[ob]:[]),...(rc?[rc]:[]),...(d.combos&&d.combos.length?d.combos.map(comboCard):[empty('No strong combos right now','She only builds combos from legs she trusts (55%+ and better than Kalshi’s price). New ones show up as tonight’s picks come in; this page refreshes every few minutes.')]));}
+  const rc=(()=>{try{return comboRecordCard(d);}catch(e){return null;}})();const ob=(()=>{try{return openBetsCard(d);}catch(e){return null;}})();const ir=(()=>{try{return ideasRecordCard(d);}catch(e){return null;}})();
+  cl.replaceChildren(...(ob?[ob]:[]),...(rc?[rc]:[]),...(ir?[ir]:[]),...(d.combos&&d.combos.length?d.combos.map(comboCard):[empty('No strong combos right now','She only builds combos from legs she trusts (55%+ and better than Kalshi’s price). New ones show up as tonight’s picks come in; this page refreshes every few minutes.')]));}
 // fix378 (owner: "add it to the combo page"): her paper combo record on the Teams tab (combos.site_view via site_extras)
 function comboRecordCard(d){const C=d.combo_record;if(!C||!C.overall)return null;const O=C.overall,n=O.won+O.lost;
   const c=el('div',null,'card cmbrec');c.append(iel('h4','💰 Her combo profit (paper money)'));   // fix406 (owner): profit is the focus
