@@ -747,6 +747,7 @@ html,body{overscroll-behavior-y:none}
 .oleg{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.oleg .badge,.oleg img{width:32px;height:32px;flex:none}.olegt{flex:1;min-width:0;display:flex;flex-direction:column}.olegt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .olegs{font-size:12px;font-weight:800;white-space:nowrap;padding:3px 8px;border-radius:99px;background:#ffffff12}.oleg.s-won .olegs{background:#3ddc8426}.oleg.s-lost .olegs{background:#ff6b6b26}.oleg.s-ahead .olegs{background:#3ddc8426;color:#3ddc84}.oleg.s-behind .olegs{background:#ff9f4326;color:#ffb36b}.oleg.tap{cursor:pointer}
 .obsic{font-size:10px;font-weight:800;padding:3px 6px;border-radius:99px}.obsic.w{background:#3ddc8426;color:#3ddc84}.obsic.l{background:#ff6b6b26;color:#ff8a8a}.oleg.s-won .olegs{color:#3ddc84}.oleg.s-lost .olegs{color:#ff8a8a}.obsettled{margin-top:10px}.obsettled summary{cursor:pointer;font-weight:700;padding:8px 0}.obsrow{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}.obsrow div{display:flex;flex-direction:column;min-width:0}.obsrow div b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.obsrow>b.pl{white-space:nowrap;flex:none}
 /* fix419 (owner screenshot: "chat is a little off"): the profile page's .mav / .mwho styles were leaking into chat:
    avatars squeezed into a 30x56 oval (half cut off) and "Chatting as" stacked in a tall column. Chat gets its own sizes. */
 #chatBox .msg .mav{height:30px!important;width:30px!important;border-radius:50%;border:0;box-shadow:none;background:none;overflow:hidden;display:block}
@@ -2907,6 +2908,8 @@ function openBetsCard(d){const C=d.combo_record;if(!C||!C.open)return null;const
   return w;}
 // ---- fix427 (owner: "she suggests parlays but leaves no record as to how those would have fared"): every suggested combo is
 // saved and graded (no money); this card shows the record and what $10 on each would have made.
+/* fix432: two legs with the same nickname (NJ Devils + Duke Blue Devils showed as 'Devils + Devils') use the city/school instead */
+function ideaLegNames(legs){const nk=legs.map(l=>teamNick(l.name||String(l.team||'').replace(/^Not /,'')));return legs.map((l,i)=>(l.against?'not ':'')+(nk.filter(n=>n===nk[i]).length>1?(String(l.team||'').replace(/^Not /,'')||nk[i]):nk[i])).join(' + ');}
 function ideasRecordCard(d){const I=d.combo_record&&d.combo_record.ideas;if(!I)return null;const n=I.won+I.lost;const c=el('div',null,'card idrec');
   c.append(el('h4','📒 How her suggestions did'));
   if(!n){c.append(el('p','Her suggested combos are being tracked from today. The first results show up as games finish'+(I.open?' ('+I.open+' waiting)':'')+'.','hint small'));return c;}
@@ -2916,7 +2919,7 @@ function ideasRecordCard(d){const I=d.combo_record&&d.combo_record.ideas;if(!I)r
   const note=I.hit!=null&&I.her_said!=null?(I.hit>=I.her_said-0.03?'They have hit about as often as she said, or better.':'They have hit less often than she said; she is too sure about combos so far.'):'';if(note)c.append(el('p',note,'hint small'));
   for(const k of I.kinds||[])c.append(el('div',k.name+': '+k.won+'-'+k.lost+' · '+signed(k.pl),'idkind'));
   const f=el('details',null,'obsettled');f.append(el('summary','Latest suggestions ('+(I.recent||[]).length+')'));
-  for(const x of I.recent||[]){const r=el('div',null,'obsrow');const t=el('div');t.append(el('b',x.legs.map(l=>(l.against?'not ':'')+teamNick(l.name||String(l.team||'').replace(/^Not /,''))).join(' + ')),el('small',x.legs.length+' legs · she said '+pct(x.her_p)+' · '+when(x.at),'hint small'));
+  for(const x of I.recent||[]){const r=el('div',null,'obsrow');const t=el('div');t.append(el('b',ideaLegNames(x.legs)),el('small',x.legs.length+' legs · she said '+pct(x.her_p)+' · '+when(x.at),'hint small'));
     r.append(el('span',x.status==='OPEN'?'WAIT':x.status,'obsic '+(x.status==='WON'?'w':x.status==='LOST'?'l':'')),t,el('span',null,'sp'),el('b',x.pl==null?'':signed(x.pl),x.pl==null?'':'pl '+cls(x.pl)));f.append(r);}
   c.append(f);c.append(el('small','Tracking only, no money: each suggestion is saved once and graded from Kalshi’s official results.','hint small'));return c;}
 function openCombos(tab){if(tab){cmbTab=tab;try{localStorage.setItem('mohjeta.cmbTab',tab);}catch(e){}}show('combos');try{renderCombos(D);}catch(e){}window.scrollTo(0,0);}
