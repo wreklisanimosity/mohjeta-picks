@@ -1843,7 +1843,7 @@ async function initLive(){try{await supa();}catch(e){return;}
   const {data}=await sb.from('live_state').select('data').eq('id',1).maybeSingle();if(data&&data.data)applyLive(data.data);
   chatFab();startPresence();logVisit();drawPush($('pushBox'));memberRefresh(true);setInterval(()=>{if(!document.hidden)memberRefresh(false);},60000);
   liveSub();
-  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;setTimeout(preparePlayCheckout,0);if(me){setTimeout(finishPlayPurchase,0);setTimeout(claimStoredRef,600);}myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN'){toast('Signed in ✅');let jc=null;try{jc=sessionStorage.getItem('mohjeta.join');sessionStorage.removeItem('mohjeta.join');}catch(e){}if(jc)setTimeout(()=>joinLeague(jc),800);}if(chatOpen())openChat();});
+  sb.auth.onAuthStateChange((ev,s)=>{me=s&&s.user||null;try{if(ev==='SIGNED_IN'&&me&&Date.now()-Date.parse(me.created_at)<15*60e3)mjTrack('signup','ever');}catch(e){}setTimeout(preparePlayCheckout,0);if(me){setTimeout(finishPlayPurchase,0);setTimeout(claimStoredRef,600);}myProfile=null;updateAcct();memberRefresh(true);if(ev==='SIGNED_OUT')retrack();if(ev==='SIGNED_IN'){toast('Signed in ✅');let jc=null;try{jc=sessionStorage.getItem('mohjeta.join');sessionStorage.removeItem('mohjeta.join');}catch(e){}if(jc)setTimeout(()=>joinLeague(jc),800);}if(chatOpen())openChat();});
   if(/[?&]code=/.test(location.search)){for(let i=0;i<20&&!(await sb.auth.getSession()).data.session;i++)await new Promise(r=>setTimeout(r,250));
     try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}}
   const {data:ss}=await sb.auth.getSession();me=ss&&ss.session&&ss.session.user||null;preparePlayCheckout();updateAcct();memberRefresh(true);if(me)setTimeout(claimStoredRef,600);
@@ -4409,6 +4409,20 @@ async function drawChallenges(){
 setInterval(()=>{if(typeof chatOpen==='function'&&chatOpen())drawChallenges();},20000);
 
 })();
+</script>
+<script>
+/* fix438 (owner: "can you tell if anyone joined through the links we put on YouTube"): where visitors come from. Counts only
+   (source + event: visit / beta_page / testflight / play / signup). No names, no emails, no IPs, nothing tied to a person.
+   Source = ?from=yt|tt|ig|... on the link (remembered on this device), else the referring site, else "direct". */
+function mjSrc(){try{const p=new URLSearchParams(location.search);const q=(p.get('from')||'').toLowerCase();if(/^[a-z0-9_-]{1,20}$/.test(q)){localStorage.setItem('mohjeta.src',q);return q;}
+  const s=localStorage.getItem('mohjeta.src');if(s)return s;const r=document.referrer||'';
+  const g=/youtube\.|youtu\.be/.test(r)?'yt':/tiktok\./.test(r)?'tt':/instagram\./.test(r)?'ig':/google\./.test(r)?'google':p.get('app')?'app':(r&&!r.includes(location.host))?'web':'direct';
+  localStorage.setItem('mohjeta.src',g);return g;}catch(e){return 'direct';}}
+async function mjTrack(ev,once){try{const k='mohjeta.tr.'+ev;if(once==='session'&&sessionStorage.getItem(k))return;if(once==='ever'&&localStorage.getItem(k))return;
+  if(once==='session')sessionStorage.setItem(k,'1');if(once==='ever')localStorage.setItem(k,'1');
+  const c=window._cfg||await fetch('live-config.json',{cache:'no-store'}).then(r=>r.json());if(!c||!c.url||!c.anon_key)return;
+  await fetch(c.url+'/rest/v1/rpc/track_visit',{method:'POST',keepalive:true,headers:{apikey:c.anon_key,Authorization:'Bearer '+c.anon_key,'Content-Type':'application/json'},body:JSON.stringify({p_src:mjSrc(),p_ev:ev})});}catch(e){}}
+mjSrc();mjTrack('visit','session');
 </script>
 </body>
 </html>
