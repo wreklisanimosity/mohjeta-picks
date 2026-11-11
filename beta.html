@@ -29,14 +29,27 @@ footer{margin-top:22px;font-size:12px;color:#8f7aa8;line-height:1.5}
 
 <section class="card"><h2>📱 iPhone</h2>
 <ol><li>Tap the button. It opens Apple's TestFlight.</li><li>Install TestFlight if asked, then tap <b>Accept</b> and <b>Install</b>.</li><li>Open Mohjeta and sign in.</li></ol>
-<a class="btn" href="https://testflight.apple.com/join/TyhfHceG" rel="noopener">Join on TestFlight</a>
+<a class="btn" href="https://testflight.apple.com/join/TyhfHceG" rel="noopener" onclick="mjTrack('testflight')">Join on TestFlight</a>
 <p class="note">Spots are limited by Apple. If it says the beta is full, check back soon.</p></section>
 
 <section class="card"><h2>🤖 Android</h2>
 <ol><li>Tap the button while signed in to Google on your phone.</li><li>Tap <b>Become a tester</b>, then the Google Play link to install.</li><li>Open Mohjeta and sign in.</li></ol>
-<a class="btn alt" href="https://play.google.com/apps/testing/com.mohjeta.picks" rel="noopener">Join on Google Play</a>
+<a class="btn alt" href="https://play.google.com/apps/testing/com.mohjeta.picks" rel="noopener" onclick="mjTrack('play')">Join on Google Play</a>
 <p class="note">Android testers are added in batches. If Google says you aren't invited yet, check back soon.</p></section>
 
 <a class="back" href="./">‹ Back to mohjeta.com</a>
 <footer>Entertainment only · 21+ · Mohjeta's picks are model estimates, not betting advice.</footer>
-</main></body></html>
+</main><script>
+/* fix438 (owner: "can you tell if anyone joined through the links we put on YouTube"): where visitors come from. Counts only
+   (source + event: visit / beta_page / testflight / play / signup). No names, no emails, no IPs, nothing tied to a person.
+   Source = ?from=yt|tt|ig|... on the link (remembered on this device), else the referring site, else "direct". */
+function mjSrc(){try{const p=new URLSearchParams(location.search);const q=(p.get('from')||'').toLowerCase();if(/^[a-z0-9_-]{1,20}$/.test(q)){localStorage.setItem('mohjeta.src',q);return q;}
+  const s=localStorage.getItem('mohjeta.src');if(s)return s;const r=document.referrer||'';
+  const g=/youtube\.|youtu\.be/.test(r)?'yt':/tiktok\./.test(r)?'tt':/instagram\./.test(r)?'ig':/google\./.test(r)?'google':p.get('app')?'app':(r&&!r.includes(location.host))?'web':'direct';
+  localStorage.setItem('mohjeta.src',g);return g;}catch(e){return 'direct';}}
+async function mjTrack(ev,once){try{const k='mohjeta.tr.'+ev;if(once==='session'&&sessionStorage.getItem(k))return;if(once==='ever'&&localStorage.getItem(k))return;
+  if(once==='session')sessionStorage.setItem(k,'1');if(once==='ever')localStorage.setItem(k,'1');
+  const c=window._cfg||await fetch('live-config.json',{cache:'no-store'}).then(r=>r.json());if(!c||!c.url||!c.anon_key)return;
+  await fetch(c.url+'/rest/v1/rpc/track_visit',{method:'POST',keepalive:true,headers:{apikey:c.anon_key,Authorization:'Bearer '+c.anon_key,'Content-Type':'application/json'},body:JSON.stringify({p_src:mjSrc(),p_ev:ev})});}catch(e){}}
+mjSrc();mjTrack('beta_page','session');
+</script></body></html>
