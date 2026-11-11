@@ -1090,7 +1090,7 @@ function gapText(g){const k=kal(g);if(k==null||!g.pick)return null;const gp=Math
   return gp>0?['She is '+plural(gp,'point')+' above Kalshi','up']:gp<0?['She is '+plural(-gp,'point')+' below Kalshi','']:['She agrees with Kalshi',''];}
 const PRACTICE_NOTE='🧪 Practice pick: she is still learning this sport, so there is less information behind it. These picks are tracked to learn before she bets them. Use with caution.';
 // is this a game she bets? (placed, will bet, or practice)
-function laneOf(g){if(g.bet)return g.bet.result==='OPEN'?{t:'BET PLACED',c:'p-placed'}:g.bet.result==='WON'?{t:'BET WON',c:'p-won'}:g.bet.result==='LOST'?{t:'BET LOST',c:'p-lost'}:{t:'BET '+g.bet.result,c:'p-prac'};
+function laneOf(g){if(g.bet&&g.bet.sold!=null&&g.bet.result!=='OPEN')return {t:'SOLD EARLY',c:'p-prac'};if(g.bet)return g.bet.result==='OPEN'?{t:'BET PLACED',c:'p-placed'}:g.bet.result==='WON'?{t:'BET WON',c:'p-won'}:g.bet.result==='LOST'?{t:'BET LOST',c:'p-lost'}:{t:'BET '+g.bet.result,c:'p-prac'};
   const l=String(g.lane||'');if(l.startsWith('bets')){if(g.state&&g.state!=='UPCOMING')return {t:'NO BET',c:'p-prac'};   // started without a bet: live prices are not her pregame call
     if(l.includes('favorite')){const k=kal(g);if(k!=null&&k<50)return g.league==='NHL'?{t:'NO BET (UNDERDOG)',c:'p-prac'}:{t:'BETTING $5 ON THE FAVORITE',c:'p-bet'};}return {t:'BETTING $5',c:'p-bet'};}
   return {t:'PRACTICE',c:'p-prac'};}
@@ -2327,8 +2327,9 @@ if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceW
 const SPORT_ICON={NFL:'🏈',NCAAF:'🏈',NBA:'🏀',NCAAB:'🏀',WNBA:'🏀',NHL:'🏒',MLB:'⚾',ATP:'🎾',WTA:'🎾',BOXING:'🥊',UFC:'🥊'};
 const sportIcon=lg=>SPORT_ICON[lg]||'⚽';
 const shortTeam=n=>{n=String(n||'');return n.length<=14?n:teamNick(n);};
-function betStatus(r){return r.result==='OPEN'?'Open · pays '+usd(Math.max(0,(r.count||0)-r.paid))+' if it wins':icon(r.result)+' '+r.result.toLowerCase()+' '+signed(r.pnl);}
-function betBlock(g,big){const r=g.bet;const k=r.result==='WON'?' won':r.result==='LOST'?' lost':'';
+/* fix435: a bet she sold before the end says so (it was 'lost' while the game was still on) */
+function betStatus(r){if(r.sold!=null&&r.result!=='OPEN')return '↩ sold early at '+Math.round(r.sold*100)+'¢ · '+signed(r.pnl);return r.result==='OPEN'?'Open · pays '+usd(Math.max(0,(r.count||0)-r.paid))+' if it wins':icon(r.result)+' '+r.result.toLowerCase()+' '+signed(r.pnl);}
+function betBlock(g,big){const r=g.bet;const k=r.sold!=null&&r.result!=='OPEN'?'':r.result==='WON'?' won':r.result==='LOST'?' lost':'';
   const b=el('div',null,(big?'betbig':'mbet')+k);b.append(el('span','💵 HER BET','lbl'),el('b',big?r.team:shortTeam(r.team)),
     el(big?'div':'small',(big?(r.count?r.count+' contracts at ':'At ')+Math.round(r.price*100)+'¢ · ':Math.round(r.price*100)+'¢ · ')+betStatus(r),big?'small':''));return b;}
 // fix379 (owner: score display "boring and stock"): a scoreboard bug: LED digits on a dark panel, each score in its team's
@@ -2748,7 +2749,7 @@ function renderGames(d){const gs=d.games.slice().sort((a,b)=>(a.state==='LIVE'?0
       row.append(teamBadge(t.name),el('span',t.name+(g.state==='LIVE'?' '+(t.score??0):''),'team-name'));mid.append(row);}}
     else mid.append(el('div',g.state==='LIVE'?g.teams.map(t=>t.name+' '+(t.score??0)).join(' – '):(g.name||g.teams.map(t=>t.name).join(' vs '))));
     mid.append(tt);it.append(mid);
-    const pc=el('div',null,'pc');if(g.bet){pc.append(el('div','💵 Her bet','small'),el('b',teamNick(g.bet.team)),el('div',Math.round(g.bet.price*100)+'¢'+(g.bet.result==='OPEN'?'':' · '+g.bet.result.toLowerCase()),'hint small'));}
+    const pc=el('div',null,'pc');if(g.bet){pc.append(el('div','💵 Her bet','small'),el('b',teamNick(g.bet.team)),el('div',Math.round(g.bet.price*100)+'¢'+(g.bet.result==='OPEN'?'':' · '+(g.bet.sold!=null?'sold early':g.bet.result.toLowerCase())),'hint small'));}
     else if(g.pick){pc.append(el('div',g.pick.team.split(' ').slice(-1)[0],'small'),el('b',pct(g.pick.chance)));const k=kal(g);if(k!=null)pc.append(el('div','Kalshi '+k+'¢','hint small'));}else pc.append(el('span',g.locked?'🔒':'soon','hint small'));
     it.append(pc,el('span','›','chev'));box.append(it);}
   if(!shown.length)list.append(el('p','No games here in the next 24 hours.','empty'));}
@@ -2804,7 +2805,7 @@ function renderRecord(d){const b=d.bets;if(!b)return;
   const tb=el('table');const hr=el('tr');for(const x of ['Bet','Result'])hr.append(el('th',x));tb.append(hr);
   for(const r of rows.slice(0,150)){const tr=el('tr');tr.style.cursor='pointer';tr.tabIndex=0;
     const a=el('td');a.append(el('div',(r.stamp?'🔒 ':'')+(r.bet||r.side+' · '+r.title)),el('div',when(r.opened)+' · '+sname(r.league)+' · '+Math.round(r.price*100)+'¢ · paid '+usd(r.paid),'hint small'));
-    const res=el('td');res.style.textAlign='right';res.style.whiteSpace='nowrap';res.append(el('div',icon(r.result)+' '+(r.result==='OPEN'?'open':r.result.toLowerCase()),r.result==='WON'?'up':r.result==='LOST'?'down':'open'),el('div',r.pnl==null?(r.count?'+'+usd(r.count-r.paid)+' if it wins':''):signed(r.pnl),'small '+cls(r.pnl||0)));
+    const res=el('td');res.style.textAlign='right';res.style.whiteSpace='nowrap';res.append(el('div',r.sold!=null&&r.result!=='OPEN'?'↩ sold early':icon(r.result)+' '+(r.result==='OPEN'?'open':r.result.toLowerCase()),r.result==='WON'?'up':r.result==='LOST'?'down':'open'),el('div',r.pnl==null?(r.count?'+'+usd(r.count-r.paid)+' if it wins':''):signed(r.pnl),'small '+cls(r.pnl||0)));
     tr.append(a,res);tb.append(tr);const wr=el('tr');wr.hidden=true;const wd=el('td');wd.colSpan=2;wd.style.background='var(--card2)';
     wd.append(el('div','Why she bet: '+(r.why||'No reason recorded.'),'small'));if(typeof r.fair==='number')wd.append(el('div','She put it at '+Math.round(r.fair*100)+'% and paid '+Math.round(r.price*100)+'¢: an edge of '+plural(Math.round((r.fair-r.price)*100),'point')+'.','hint small'));
     if(r.stamp){wd.append(el('div','Sealed '+new Date(r.sealed).toLocaleString()+' · '+r.stamp,'mono'));
