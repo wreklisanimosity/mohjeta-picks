@@ -822,7 +822,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
     <h2>Track record</h2><div class="chips seg" id="recSwitch" role="tablist" aria-label="Show"><button type="button" data-rv="bets" aria-pressed="true">💵 Her bets</button><button type="button" data-rv="prac" aria-pressed="false">🧪 Practice</button></div><div id="dropNote"></div>
     <div class="chips" id="periodChips"></div><div class="stats" id="periodStats"></div>
     <div class="card"><div class="row"><b>Profit by day</b><span class="sp"></span><span class="hint small" id="barsNote"></span></div><div class="bars" id="dayBars"></div></div>
-    <div id="dayCard"></div><div id="skipBox"></div><div id="bySport"></div><div id="bestWorst"></div>
+    <div id="dayCard"></div><div id="unitsBox"></div><div id="skipBox"></div><div id="bySport"></div><div id="bestWorst"></div>
     <h3>Every bet</h3><div class="chips" id="sportChips"></div><div class="tablewrap" id="betTable"></div>
     <p class="hint small">Tap any bet to see why she placed it. 🔒 = sealed: fingerprinted the moment she placed it.</p>
     <div id="practiceBox"></div>
@@ -3059,7 +3059,7 @@ function needDet(){if(!D||!(D.games||[]).some(g=>g.has_more)||detBusy||(DET&&Dat
     try{renderSim();}catch(e){}try{renderProps(D);}catch(e){}try{if(on('combos'))renderCombos(D);}catch(e){}refreshSheet();}).catch(()=>{}).finally(()=>{detBusy=null;});}
 function render(d){D=d;try{drawTicker();}catch(e){}try{setTimeout(tradePopup,1500);}catch(e){}try{if(document.querySelector('#more.on'))renderMine();}catch(e){}try{drawRadioTeaser(d);if(document.querySelector('#radio.on'))drawRadioPage();}catch(e){}notePeople(d);applyMembers(d);mergeDet(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
-  $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderSkipped(d),()=>renderMore(d),()=>renderSimIfChanged(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
+  $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderSkipped(d),()=>renderUnits(d),()=>renderMore(d),()=>renderSimIfChanged(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
   if(lastLive&&Date.parse(lastLive.updated)>Date.parse(d.updated))applyLive(lastLive);
   navBtns.find(b=>b.dataset.tab==='record').hidden=!d.bets;
   refreshSheet();setTimeout(needDet,0);}
@@ -3357,6 +3357,17 @@ function drawBuilder(){const pb=$('propBuilder');if(!pb)return;const P=propData(
   pb.append(el('p','Each button: her chance for that side · Kalshi’s price. YES = the number or more; NO = less.','hint small'));}
 // ---------------- Results: practice picks ($0) — sports she picks every game but does not bet
 let pracSport='ALL';
+// fix447 (owner): customer-facing results in units (1 unit = her standard bet), ROI and win rate, per league and
+// overall, always labelled as tracked paper results until real money is in. Her stakes are not changed or inflated.
+function renderUnits(d){const box=$('unitsBox');if(!box)return;box.replaceChildren();const U=d.units;if(!U||!U.overall||!U.overall.bets)return;
+  const c=el('div',null,'card units');c.append(iel('h4','📒 '+(U.label||'Tracked paper results')),el('p',U.note||'','hint small'));
+  const u=v=>(v>0?'+':'')+(Math.round(v*100)/100).toFixed(2)+'u';const r=v=>v==null?'—':(v>0?'+':'')+(v*100).toFixed(1)+'%';
+  const O=U.overall,st=el('div',null,'stats');const stat=(l,v,cl)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cl||''));st.append(s);};
+  stat('Record',O.won+'-'+O.lost);stat('Win rate',O.win_rate==null?'—':pct(O.win_rate));stat('Units',u(O.units),'pl '+cls(O.units));stat('ROI',r(O.roi),'pl '+cls(O.roi||0));c.append(st);
+  const tw=el('div',null,'tablewrap');const tb=el('table');const hr=el('tr');for(const x of ['League','Record','Win %','Units','ROI'])hr.append(el('th',x));tb.append(hr);
+  for(const L of U.by_league||[]){const tr=el('tr');tr.append(el('td',L.league==='Combo'?'Combos':sname(L.league)),el('td',L.won+'-'+L.lost),el('td',L.win_rate==null?'—':pct(L.win_rate)),
+    el('td',u(L.units),L.units>0?'up':L.units<0?'down':''),el('td',r(L.roi),(L.roi||0)>0?'up':(L.roi||0)<0?'down':''));tb.append(tr);}
+  tw.append(tb);c.append(tw,el('p','Tracked paper results'+(U.since?' since '+new Date(U.since).toLocaleDateString([], {month:'short',day:'numeric'}):'')+'. Entertainment only · not betting advice · 21+.','hint small'));box.append(c);}
 function renderSkipped(d){const box=$('skipBox');if(!box)return;box.replaceChildren();const S=d.skipped;if(!S||!S.record||!S.record.n)return;
   const R=S.record;const c=el('div',null,'card');c.append(iel('h4','🔗 Parlay legs: her record (95¢+ favorites she doesn\'t bet)'),el('p','Games where Kalshi had her side above 95¢, so a $5 bet would win only pennies. She did not bet them, but her pick is still graded here. Not part of her betting record.','hint small'));
   const st=el('div',null,'stats');const stat=(l,v,cl)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cl||''));st.append(s);};
