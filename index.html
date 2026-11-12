@@ -769,6 +769,18 @@ html,body{overscroll-behavior-y:none}
    page was wider than the phone and slid sideways: logo cut off on the left, columns cut off on the right. */
 header>.ticker{margin:0!important;width:100%;max-width:100%}
 html,body{overflow-x:clip}
+/* fix446 (owner: "what about landscape mode", the app): a phone turned sideways is only ~390px tall, and the sticky
+   header + headline ticker + bottom bar ate about half of it. Sideways on a phone: the header scrolls away with the
+   page, the ticker hides, the bottom bar is one slim line, and the notch / home-bar edges get room. */
+@media (orientation:landscape) and (max-height:500px){
+header{position:relative!important}
+header .ticker{display:none!important}
+header .top{padding-top:4px!important;padding-bottom:4px!important}
+nav.tabs{padding-top:2px!important;padding-bottom:max(2px,env(safe-area-inset-bottom))!important;padding-left:max(12px,env(safe-area-inset-left))!important;padding-right:max(12px,env(safe-area-inset-right))!important}
+nav.tabs button[role=tab]{flex-direction:row!important;gap:5px!important;padding-top:5px!important;padding-bottom:5px!important;height:auto!important;font-size:11px!important}
+nav.tabs button[role=tab] svg{width:16px!important;height:16px!important}
+main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-left))!important;padding-right:max(12px,env(safe-area-inset-right))!important}
+}
 </style>
 <script src="languages.js?v=13" defer></script>
 </head>
