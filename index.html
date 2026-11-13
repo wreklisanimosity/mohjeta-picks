@@ -460,6 +460,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .brow.parlay{display:block;padding:8px 0;border-top:1px solid var(--line)}
 .legs .legrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:8px 0;color:var(--text);font:inherit;cursor:pointer}.legs .fn{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.legs .legodds{display:flex;flex-direction:column;align-items:flex-end;white-space:nowrap}.legs .legrec{font-weight:800;color:var(--green);margin-bottom:4px}.legs .legall{font-weight:700;margin:8px 0 2px}.legs .legwould{font-weight:700;margin:2px 0}.legs .legwould b{margin-left:4px}
 .openbets h4{margin:0 0 2px}.openbets>summary{list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer}.openbets>summary::-webkit-details-marker{display:none}.obst{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.obst b{font-size:16px}.obchev{flex:none;width:28px;height:28px;border-radius:50%;background:#ffffff10;position:relative;transition:transform .2s}.obchev::after{content:'';position:absolute;left:10px;top:8px;width:7px;height:7px;border-right:2px solid var(--pink);border-bottom:2px solid var(--pink);transform:rotate(45deg)}.openbets[open] .obchev{transform:rotate(180deg)}.openbets[open]>summary{margin-bottom:6px}.obrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:9px 0;color:var(--text);font:inherit;cursor:pointer}.obrow .obl{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.obrow .obr{font-weight:800;white-space:nowrap}
+.sncard .snmatch{display:flex;flex-direction:column;gap:2px;margin:6px 0}.snform{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;margin:8px 0}.snin{display:flex;flex-direction:column;gap:3px}.snin input{width:84px;font-size:20px;font-weight:800;text-align:center;padding:8px;border-radius:12px;border:1px solid var(--line);background:var(--card2,rgba(255,255,255,.05));color:var(--text)}.sndash{font-size:22px;padding-bottom:10px;color:var(--muted)}.snfinal{font-weight:800;font-size:18px;margin:6px 0}.snher{display:block;margin-top:4px}.snpast{padding:4px 0;border-top:1px solid var(--line)}
 .ppcard .pphead{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.ppcard .pphead h4{margin:0}
 .pprow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--line)}.pprow.picked .pptx b{color:var(--text)}
 .pptx{flex:1;min-width:150px;display:flex;flex-direction:column;gap:2px}.pptx small{color:var(--muted)}
@@ -835,6 +836,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
       <button type="button" class="hubbtn" data-go="fantasy"><span class="hi">🏀</span><b>Fantasy league</b><small>Draft 8 NBA players and battle other fans every night.</small></button>
       <button type="button" class="hubbtn" data-go="weekly"><span class="hi">🏈</span><b>Weekly fantasy</b><small>NFL, NBA and college football lineups, scored from real box scores.</small></button>
       <button type="button" class="hubbtn" id="hubGuess"><span class="hi">🔮</span><b>Guess her number</b><small>How sure is she? Guess before you see it.</small></button>
+      <button type="button" class="hubbtn" id="hubScore"><span class="hi">🔢</span><b>Score of the Night</b><small>Guess tonight's featured game to the exact score. Closest wins.</small></button>
       <button type="button" class="hubbtn" id="hubPickem"><span class="hi">🎯</span><b>Pick'em</b><small>Pick tonight's winners and try to beat her.</small></button>
       <button type="button" class="hubbtn" data-go="chat"><span class="hi">💬</span><b>Community chat</b><small>Talk games with other fans, live.</small></button>
     </div><span hidden id="hubTester"><small id="testerProg"></small></span><div id="playBadges"></div>
@@ -2130,6 +2132,7 @@ function composer(){const c=el('div',null,'card lounge-composer');
   $('heroSim').onclick=()=>{simMode='any';$('anyBox').replaceChildren();show('sim');renderSim();};
   $('hubGuess').onclick=()=>{show('guess');drawGuess();};
   $('hubTester').onclick=openTester;drawPlayBadges();
+  {const hs=$('hubScore');if(hs)hs.onclick=()=>{show('play');setTimeout(()=>{const x=document.querySelector('.sncard');if(x)x.scrollIntoView({behavior:'smooth',block:'start'});},300);};}
   $('hubPickem').onclick=()=>{show('picks');setTimeout(()=>{const x=document.querySelector('.pickem');if(x)x.scrollIntoView({behavior:'smooth',block:'center'});toast('Tap a team on any game to make your pick 🎯');},200);};})();
 // first-visit welcome: three short screens
 function tour(){let seen=false;try{seen=localStorage.getItem('mohjeta.tour')==='1';}catch(e){}if(seen)return;
@@ -2728,7 +2731,7 @@ function drawBetting(d){const box=$('betting');box.replaceChildren();
   const cr=el('div',null,'crumb');if(sports.length>1){const back=el('button','‹ All sports');back.type='button';back.onclick=()=>{tonSport=null;drawBetting(D);};cr.append(back);}
   {const h=el('h4',' '+sname(tonSport)+' · '+by[tonSport].length);if(window.SportArt)h.prepend(SportArt.el(tonSport));else h.prepend(sportIcon(tonSport));cr.append(h);}box.append(cr);
   const gr=el('div',null,'mgrid');for(const g of by[tonSport])gr.append(miniCard(g));box.append(gr);}
-function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();try{renderOpenBets(d);}catch(e){}try{renderLegs(d);}catch(e){}try{if(document.querySelector('#feed.on'))renderFeed(d);}catch(e){}setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(propPickemCard(),hofCard());/* fix410: leaderboard moved to Home */}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
+function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();try{renderOpenBets(d);}catch(e){}try{renderLegs(d);}catch(e){}try{if(document.querySelector('#feed.on'))renderFeed(d);}catch(e){}setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(scoreNightCard(),propPickemCard(),hofCard());/* fix410: leaderboard moved to Home */}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
     const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));{const ws=withSkipped(d,t.wins,t.losses);if(ws)box.append(el('div',ws.w+'-'+ws.l+' counting the '+(ws.sw+ws.sl)+' picks she skipped at 95¢+ (no bet on those)','hint small'));}
@@ -4154,6 +4157,58 @@ function propPickemCard(){const c=el('div',null,'card ppcard');const rows=PPROPS
     B.forEach((r,i)=>{const row=el('div',null,'brow');row.append(el('span',['🥇','🥈','🥉'][i]||String(i+1),'bk'),chatPic({user_id:null,name:r.name,profiles:{avatar_url:r.avatar}}),el('b',r.name),el('span',null,'sp'),el('span',r.wins+'-'+r.losses,'up'),el('span',r.beat_her?' · beat her '+r.beat_her+'×':'','hint small'));bd.append(row);});};
   fill();if(Date.now()-ppBoardAt>60000){ppBoardAt=Date.now();(async()=>{try{await supa();const {data,error}=await sb.from('prop_board').select('*').order('wins',{ascending:false}).order('losses').limit(15);if(!error){PPBOARD=data||[];fill();}}catch(e){}})();}
   c.append(bd);if(Date.now()-ppAt>120000)ppFetch();return c;}
+// ---------------- Score of the Night (fix451, owner Nov 13: new activity, "Make it so"). One featured game a day
+// (score_night.py picks it); fans guess the exact final score, closest total miss wins (database view score_ranked).
+// Guesses lock at the start (database rule). Trophies only, no prizes. No prices or betting links on it.
+const SNK='mohjeta.scoreGuess';let SNG=null,snAt=0,SNCOUNT={},SNRANK={};
+function snLoad(){try{return JSON.parse(localStorage.getItem(SNK)||'{}')||{};}catch(e){return {};}}
+function snSave(x){try{localStorage.setItem(SNK,JSON.stringify(x));}catch(e){}}
+async function snFetch(){try{await supa();const since=new Date(Date.now()-5*864e5).toISOString().slice(0,10);
+    const {data,error}=await sb.from('score_night').select('*').gte('day',since).order('day',{ascending:false}).limit(6);if(error)throw error;SNG=data||[];snAt=Date.now();
+    const ids=SNG.map(g=>g.id);
+    if(ids.length){const c=await sb.from('score_counts').select('*').in('game_id',ids);if(!c.error)for(const r of c.data||[])SNCOUNT[r.game_id]=r.n;
+      const fin=SNG.filter(g=>g.status==='final').map(g=>g.id);
+      if(fin.length){const r=await sb.from('score_ranked').select('game_id,name,avatar,a,b,miss,rnk').in('game_id',fin).order('rnk').limit(80);
+        if(!r.error){SNRANK={};for(const x of r.data||[])(SNRANK[x.game_id]=SNRANK[x.game_id]||[]).push(x);}}
+      if(me){const r=await sb.from('score_guesses').select('game_id,a,b').eq('user_id',me.id).in('game_id',ids);
+        if(!r.error){const x=snLoad();for(const k of r.data||[])x[k.game_id]=[k.a,k.b];snSave(x);}}}}
+  catch(e){SNG=SNG||[];}
+  document.querySelectorAll('.sncard').forEach(c=>c.replaceWith(scoreNightCard()));return SNG;}
+async function snGuess(g,a,b){if(!(Number.isInteger(a)&&Number.isInteger(b)&&a>=0&&b>=0&&a<=300&&b<=300)){toast('Enter both scores (whole numbers)');return;}
+  if(Date.parse(g.start)<=Date.now()){toast('Locked: the game has started');return;}
+  const x=snLoad();x[g.id]=[a,b];snSave(x);
+  if(me&&sb){try{const {error}=await sb.from('score_guesses').upsert({game_id:g.id,a,b},{onConflict:'user_id,game_id'});
+      if(error)toast(/profiles|foreign/i.test(error.message)?'Pick a chat name in Chat to count for the trophy':'Saved on this phone (the online save failed)');
+      else{toast('Locked in: '+a+'-'+b+' 🎯');SNCOUNT[g.id]=(SNCOUNT[g.id]||0)+(x[g.id]?0:1);}}catch(e){}}
+  else toast('Saved on this phone. Sign in (Chat) to count for the trophy.');
+  document.querySelectorAll('.sncard').forEach(c=>c.replaceWith(scoreNightCard()));}
+function snShort(t){return String(t||'').split(' ').pop();}
+function scoreNightCard(){const c=el('div',null,'card sncard');
+  const hd=el('div',null,'pphead');hd.append(iel('h4','🔢 Score of the Night'),el('span','Guess the exact final score. Closest wins.','hint small'));c.append(hd);
+  if(!SNG){c.append(el('p','Loading tonight’s game…','hint small'));snFetch();return c;}
+  const x=snLoad(),now=Date.now();
+  if(!SNG.length){c.append(el('p','Tonight’s game posts once the day’s slate is set. Check back soon.','hint small'));if(now-snAt>120000)snFetch();return c;}
+  const g=SNG[0],mine=x[g.id],started=Date.parse(g.start)<=now,A=snShort(g.team_a),B=snShort(g.team_b);
+  const m=el('div',null,'snmatch');m.append(el('b',g.team_a+' vs '+g.team_b),el('small',g.league+' · '+when(g.start)+(started?'':' · locks at tip-off'),'hint'));c.append(m);
+  if(g.status==='open'&&!started){
+    const f=el('div',null,'snform');const ia=document.createElement('input'),ib=document.createElement('input');
+    for(const [i,t,v] of [[ia,A,mine&&mine[0]],[ib,B,mine&&mine[1]]]){i.type='number';i.min='0';i.max='300';i.inputMode='numeric';i.placeholder=t;i.setAttribute('aria-label',t+' final score');if(v!=null)i.value=v;}
+    const la=el('label',null,'snin');la.append(el('span',A,'small'),ia);const lb=el('label',null,'snin');lb.append(el('span',B,'small'),ib);
+    const go=iel('button',mine?'Update guess':'Lock it in','btn');go.type='button';go.onclick=()=>snGuess(g,parseInt(ia.value,10),parseInt(ib.value,10));
+    f.append(la,el('span','–','sndash'),lb,go);c.append(f);
+    const n=SNCOUNT[g.id]||0;c.append(el('small',(n?n+' fan'+(n>1?'s have':' has')+' guessed':'Be the first to guess')+(me?'':' · sign in (Chat) to count for the trophy'),'hint'));
+    if(mine&&g.her_team)c.append(el('small','Mohjeta’s pick to win: '+g.her_team+(g.her_chance?' ('+pct(g.her_chance)+')':''),'hint snher'));}
+  else if(g.status==='open'){c.append(el('p',mine?'Locked. Your guess: '+A+' '+mine[0]+' – '+B+' '+mine[1]+'. Waiting on the final.':'Locked. The game has started. Tomorrow’s game posts in the morning.','small'));}
+  else if(g.status==='void'){c.append(el('p','This game didn’t finish, so there’s no winner. New game tomorrow.','hint small'));}
+  else{const R=SNRANK[g.id]||[];c.append(el('p','Final: '+A+' '+g.final_a+' – '+B+' '+g.final_b,'snfinal'));
+    if(mine){const miss=Math.abs(mine[0]-g.final_a)+Math.abs(mine[1]-g.final_b);const top=R[0];
+      c.append(el('p','Your guess: '+mine[0]+'-'+mine[1]+' · off by '+miss+(top&&miss<=top.miss?' · 🏆 you won (or tied for the win)!':''),'small'));}
+    if(R.length){const bd=el('div',null,'board');R.slice(0,5).forEach(r=>{const row=el('div',null,'brow');row.append(el('span',['🥇','🥈','🥉'][r.rnk-1]||String(r.rnk),'bk'),chatPic({user_id:null,name:r.name,profiles:{avatar_url:r.avatar}}),el('b',r.name),el('span',null,'sp'),el('span',r.a+'-'+r.b,'up'),el('span',' off by '+r.miss,'hint small'));bd.append(row);});c.append(bd);}
+    else c.append(el('p','No signed-in guesses on this one.','hint small'));}
+  const past=SNG.slice(1).filter(p=>p.status==='final');
+  if(past.length){const det=el('details',null,'pppast');det.append(el('summary','Past games ('+past.length+')'));
+    past.forEach(p=>{const top=(SNRANK[p.id]||[])[0];det.append(el('div',p.day+' · '+snShort(p.team_a)+' '+p.final_a+' – '+snShort(p.team_b)+' '+p.final_b+(top?' · 🏆 '+top.name+' ('+top.a+'-'+top.b+')':''),'small snpast'));});c.append(det);}
+  if(now-snAt>120000)snFetch();return c;}
 // ---------------- Pick'em leaderboard (Supabase; picks lock at the start time, graded by Mohjeta)
 async function pkUncloud(event){try{if(!me||!sb)return;const {error}=await sb.from('pickem').delete().eq('user_id',me.id).eq('event',event);if(error)toast('Removed on this phone (the leaderboard copy could not be removed)');}catch(e){}}
 async function pkCloud(event,team){try{if(!me||!sb)return;const {error}=await sb.from('pickem').upsert({event,team},{onConflict:'user_id,event'});
