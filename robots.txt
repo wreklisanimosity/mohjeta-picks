@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mohjeta.com/sitemap.xml
