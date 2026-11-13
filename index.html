@@ -1445,7 +1445,7 @@ function pickemCard(full){const sc=pickemScore();const c=el('div',null,'banner p
   const lead=sc.me[0]-sc.her[0];c.append(el('div',(sc.me[0]+sc.me[1]===0?'Tap a team on any game below to make your pick. Can you beat her?':lead>0?'You’re beating her by '+lead+'. 🔥':lead<0?'She leads by '+(-lead)+'. Pick again tonight.':'Dead even.')+(sc.open?' · '+sc.open+' pick'+(sc.open>1?'s':'')+' waiting on results':'')+(me?' · your picks count on the leaderboard':' · sign in (Chat) to get on the leaderboard'),'hint small'));
   if(sc.me[0]+sc.me[1]>=5&&sc.me[0]>sc.her[0])award('beat_her');
   const acts=el('div',null,'row');{const pb=iel('button','🎯 Prop Pick’em','btn ghost');pb.type='button';pb.onclick=()=>{show('play');setTimeout(()=>{const x=document.querySelector('#playBadges .ppcard');if(x)x.scrollIntoView({behavior:'smooth',block:'start'});},300);};acts.append(pb);}const gb=iel('button','🔮 Guess her number','btn ghost');gb.type='button';gb.onclick=()=>{show('guess');drawGuess();};acts.append(gb);
-  if(sc.me[0]+sc.me[1])acts.append(shareBtn(()=>({title:'Me vs the Mohjeta AI',big:sc.me[0]+'-'+sc.me[1],lines:['Mohjeta: '+sc.her[0]+'-'+sc.her[1],lead>0?'I’m beating the AI 😤':lead<0?'The AI is ahead… for now':'Dead even','Think you can beat her?']})));
+  if(sc.me[0]+sc.me[1])acts.append(shareBtn(()=>({title:'Me vs the Mohjeta AI',big:sc.me[0]+'-'+sc.me[1],lines:['Mohjeta: '+sc.her[0]+'-'+sc.her[1],lead>0?'I’m beating the AI 😤':lead<0?'The AI is ahead… for now':'Dead even','Can you beat Mohjeta?']})));
   c.append(acts);if(full)return c;   // fix402: the badge wall now lives in My Mohjeta (trophy case)
   const f=el('details',null,'pkfold');const sm=el('summary');sm.append(iel('span','🎯 Pick\'em'),el('span','You '+sc.me[0]+'-'+sc.me[1],'pks me'),el('span','vs','hint small'),el('span','Her '+sc.her[0]+'-'+sc.her[1],'pks'),el('i','›','pkgo'));
   f.append(sm,c);return f;}
@@ -1487,10 +1487,13 @@ function shareCard(c){const W=1080,H=1350,cv=document.createElement('canvas');cv
   x.fillStyle='#cbbfe0';x.font='600 48px system-ui,Segoe UI,Arial';wrapText(x,c.title,W/2,330,940,60);
   x.fillStyle='#39ff88';x.shadowColor='#39ff88';x.shadowBlur=40;x.font='900 150px system-ui,Segoe UI,Arial';x.fillText(c.big,W/2,640);x.shadowBlur=0;
   x.fillStyle='#f6f0ff';x.font='700 56px system-ui,Segoe UI,Arial';(c.lines||[]).forEach((l,i)=>x.fillText(l,W/2,800+i*90));
+  x.fillStyle='#ffd34d';x.font='800 40px system-ui,Segoe UI,Arial';x.fillText('JOIN THE FREE BETA',W/2,H-235);   // fix449: every shared card carries the way in
+  x.fillStyle='#ff8be6';x.font='900 64px system-ui,Segoe UI,Arial';x.fillText('mohjeta.com/beta',W/2,H-160);
   x.fillStyle='#9d8fb5';x.font='500 34px system-ui,Segoe UI,Arial';x.fillText('Model estimates for entertainment · not betting advice · 21+',W/2,H-80);
+  const link='https://mohjeta.com/beta?from=share';
   cv.toBlob(async blob=>{const file=new File([blob],'mohjeta.png',{type:'image/png'});
-    try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Mohjeta',text:c.title});return;}}catch(e){if(e&&e.name==='AbortError')return;}
-    if(isIOSApp()||window.Capacitor){shareIt({title:'Mohjeta',text:c.title+(c.big?' · '+c.big:''),url:siteLink('')});return;}   // the app can't save a download: share the words and link
+    try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Mohjeta',text:c.title+(c.big?' · '+c.big:'')+' · '+link});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+    if(isIOSApp()||window.Capacitor){shareIt({title:'Mohjeta',text:c.title+(c.big?' · '+c.big:''),url:link});return;}   // the app can't save a download: share the words and link
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mohjeta.png';document.body.append(a);a.click();a.remove();},'image/png');}
 function wrapText(x,t,cx,y,maxW,lh){const words=String(t).split(' ');let line='';for(const w of words){const test=line?line+' '+w:w;if(x.measureText(test).width>maxW&&line){x.fillText(line,cx,y);y+=lh;line=w;}else line=test;}x.fillText(line,cx,y);}
 // each badge is its own struck medal: icon, metal tier, enamel colour, shape (mohjeta-icons.js medal())
