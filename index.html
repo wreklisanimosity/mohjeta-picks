@@ -683,6 +683,11 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .hteambtn{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:84px;padding:10px 8px;border-radius:14px;border:1px solid rgba(180,77,255,.25);background:rgba(180,77,255,.07);color:inherit;font:inherit;cursor:pointer}
 .hteambtn .hi{font-size:22px}.hteambtn b{font-size:12px;white-space:nowrap}
 .plfull{margin-top:14px;border-top:1px solid rgba(180,77,255,.2);padding-top:6px}.plfull .plwide{overflow-x:auto;max-width:100%;display:block}.plfull h4{margin:12px 0 6px}
+.plprops{margin-top:14px;border-top:1px solid rgba(180,77,255,.2);padding-top:6px}.plprops h5{margin:12px 0 6px}.plpstat{font-weight:700;margin:10px 0 4px}.plprow{flex-wrap:wrap}
+.plhit{display:flex;align-items:center;gap:8px;margin:2px 0 8px}.plhitbars{display:inline-flex;gap:2px}.plhitbars i{width:7px;height:14px;border-radius:2px;background:var(--red);opacity:.75}.plhitbars i.y{background:var(--green)}
+.plbar{margin:10px 0}.plchk .stake{width:70px;margin:0 6px}.mprops{display:grid;gap:8px}
+.tppr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid rgba(255,255,255,.08);padding:9px 2px;color:inherit;cursor:pointer}.tppr b{flex:0 0 auto}.tppr .hint{flex:1 1 180px}
+.tpjump{position:sticky;top:0;z-index:2;background:var(--bg,#0b0613);padding:6px 0;margin:6px 0}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=8">
 <link rel="stylesheet" href="intro.css?v=3">
@@ -2289,6 +2294,8 @@ async function openTeam(name,league){try{award('team');}catch(e){}openSheet(()=>
     for(const p of stars){const row=el('div',null,'tpp');row.append(plink(p.name,t.n,lg),el('span',(p.pos||p.group||'')+(pnote(p)?' · '+pnote(p):''),'hint small'),el('span',String(p.rating),'tprate'));k.append(row);}
     k.append(el('p','Rating 0-99 = rank against players at the same position this season. Tap a name for his card.','hint small'));w.append(k);}
   const rc=el('div',null,'card tproster');rc.append(el('p','Loading the roster…','hint small'));w.append(rc);teamRosterCard(rc,t,lg,f.abbr);
+  if(['NBA','NFL','NHL'].includes(lg)){const pc=el('div',null,'card tpprops');w.insertBefore(pc,w.querySelector('.tpstats')||sched);teamPropsCard(pc,t,lg,f.abbr);}   // fix475
+  w.insertBefore(teamJump(w),syn);
   w.append(el('p','Schedule and results from ESPN; synopsis written by Mohjeta from her ratings and their results. Updated every few hours.','hint small'));}
 let simKey=null;const SIMLAST={};
 function renderSimIfChanged(){let k=null;try{k=JSON.stringify([simMode,simGames().map(g=>[g.id||g.name,g.sim?(g.sim.nba_model?g.sim.nba_model.model_hash||g.sim.nba_model.built_at:g.sim.margin+'/'+g.sim.total):0])]);}catch(e){}
@@ -3261,7 +3268,7 @@ function propName(o){return o.player+' · '+o.line+'+ '+(STATNAME[o.stat]||o.sta
 function propSide(o){return o.side==='YES'?'YES · '+o.line+' or more':'NO · '+(o.line-1)+' or fewer';}
 function propData(d){const P=d&&d.props;if(!P)return null;
   if(P.locked&&MEMBERS&&MEMBERS.props)return Object.assign({},P,{open:MEMBERS.props.open||[],board:MEMBERS.props.board||[],locked:false});return P;}
-function addLeg(leg){award('prop_builder');propLegs=propLegs.filter(x=>x.player!==leg.player);propLegs.push(leg);if(propLegs.length>8)propLegs.shift();drawBuilder();
+function addLeg(leg){award('prop_builder');propLegs=propLegs.filter(x=>!(x.player===leg.player&&x.stat===leg.stat));propLegs.push(leg);if(propLegs.length>8)propLegs.shift();drawBuilder();
   const n=$('pbCount');if(n)n.textContent=propLegs.length+' leg'+(propLegs.length===1?'':'s');toast('Added to prop builder ('+propLegs.length+')');}
 let propCat=null;
 const statLabel=st=>{const n=STATNAME[st]||st;return n[0].toUpperCase()+n.slice(1);};
@@ -4562,6 +4569,7 @@ function plBuild(name,team,lg,found){const b=found.base||{},a=found.adv||{};cons
     for(const l of G.line)sec.append(tableOf(l.labels,[l.stats]));sec.append(el('small','From ESPN’s box score'+(g.box.checked_at?' · updated '+hm(g.box.checked_at):'')+(g.state==='LIVE'?' · refreshes on its own':''),'hint small'));box.append(sec);}
   else if(G.next){const g=G.next;const p=g.pick||{};box.append(el('h4','Next game'),el('p',(g.teams||[]).map(t=>t.name).join(' vs ')+' · '+(g.start?new Date(g.start).toLocaleString([], {weekday:'short',hour:'numeric',minute:'2-digit'}):'')+(p.team?' · her pick: '+p.team+(p.chance!=null?' '+Math.round(p.chance*100)+'%':''):''),'plseason'));}
   if(!found.base&&!found.adv&&!G.live)box.append(el('p','No season numbers for this player yet (new, a backup, or not in her player ratings).','hint'));
+  {let pp=plOpen&&plOpen.name===name&&plOpen.propsNode;if(!pp){pp=plPropsSection(b.name||a.name||name,tm,lg);if(plOpen&&plOpen.name===name)plOpen.propsNode=pp;}box.append(pp);}   // fix475
   {const fs=el('div',null,'plfull');fs.append(el('h4','📊 Full stats'));const host=el('div');fs.append(host);box.append(fs);plFullFill(host,b.name||a.name||name,tm,lg);}
   box.append(el('p','Ratings and stats from Mohjeta’s player data (ESPN public stats). Rating 0-99 within his position.','hint small'));return box;}
 async function openPlayer(name,team,lg){plOpen={name,team,lg,found:{base:null,adv:null}};openSheet(()=>el('p','Loading '+name+'…','hint'),name);
@@ -4602,6 +4610,102 @@ function findPlayer(){openSheet(()=>{const box=el('div',null,'plfind');box.appen
   let t=null;inp.oninput=()=>{plfQ=inp.value;clearTimeout(t);t=setTimeout(()=>plfDraw(list,status),180);};
   box.append(inp,chips,status,list);plfDraw(list,status);setTimeout(()=>{try{inp.focus();}catch(e){}},60);return box;},'Find a player');}
 window.findPlayer=findPlayer;
+// ---- fix475 props live on the player and team cards (owner, Nov 16 2026: "the customer can find certain things by going
+// to the particular team like player props could be by clicking the player and finding different props for that player
+// to build your props to see how they do"). Team card -> "🎯 Player props" (his teammates with lines / her picks tonight)
+// -> player card -> "🎯 Props": her picks on him, every Kalshi line with YES/NO into the prop builder, how he did against
+// each line in his last 10 games (ESPN game log), her record on his props, and a "check any line" tool that works even
+// when no prop is priced. The Props tab stays as it is.
+const PLGL={pts:['points'],ast:['assists'],reb:['totalRebounds'],fg3:['threePointFieldGoalsMade-threePointFieldGoalsAttempted'],
+  nfl_pass_yds:['passingYards'],nfl_rush_yds:['rushingYards'],nfl_rec_yds:['receivingYards'],nfl_rec:['receptions'],nfl_pass_td:['passingTouchdowns'],
+  nfl_td:['rushingTouchdowns','receivingTouchdowns'],nhl_goals:['goals'],nhl_points:['points'],nhl_sog:['shotsTotal']};
+const PLCHK_STATS={NBA:['pts','reb','ast','fg3'],WNBA:['pts','reb','ast','fg3'],NCAAB:['pts','reb','ast','fg3'],
+  NFL:['nfl_pass_yds','nfl_rush_yds','nfl_rec_yds','nfl_rec','nfl_pass_td','nfl_td'],NCAAF:['nfl_pass_yds','nfl_rush_yds','nfl_rec_yds','nfl_rec','nfl_pass_td','nfl_td'],
+  NHL:['nhl_goals','nhl_points','nhl_sog']};
+let plChk={who:'',stat:null,line:null};
+function plGlVals(F,stat){const gl=F&&F.gl;if(!gl||!PLGL[stat])return [];const nm=gl.names||[];const ix=PLGL[stat].map(k=>nm.indexOf(k)).filter(i=>i>=0);if(!ix.length)return [];
+  const evs=gl.events||{};const st0=(gl.seasonTypes||[]).find(s=>(s.categories||[]).some(c=>(c.events||[]).length));if(!st0)return [];
+  const rows=[];for(const c of st0.categories||[])for(const e of c.events||[])rows.push(e);
+  rows.sort((a,b)=>String((evs[b.eventId]||{}).gameDate).localeCompare(String((evs[a.eventId]||{}).gameDate)));
+  return rows.slice(0,10).map(e=>ix.reduce((s,i)=>s+(parseFloat(String((e.stats||[])[i]??'0').split('-')[0])||0),0));}
+function plHitLine(vals,line,side){if(!vals.length)return null;const hit=vals.filter(v=>side==='NO'?v<line:v>=line).length;
+  const w=el('div',null,'plhit');const bars=el('span',null,'plhitbars');
+  for(const v of vals.slice().reverse()){const ok=side==='NO'?v<line:v>=line;const i=el('i',null,ok?'y':'n');i.title=String(v);bars.append(i);}
+  const h5=vals.slice(0,5).filter(v=>side==='NO'?v<line:v>=line).length,n5=Math.min(5,vals.length);
+  w.append(bars,el('span',(side==='NO'?'Under '+line:line+'+')+': last '+n5+' '+h5+'/'+n5+(vals.length>5?' · last '+vals.length+' '+hit+'/'+vals.length:'')+' · latest: '+vals.slice(0,5).join(', ')+(vals.length>5?'…':''),'hint small'));return w;}
+async function plDet(){if(DET&&Date.now()-detAt<120000)return DET;if(detBusy){try{await detBusy;}catch(e){}return DET;}
+  try{const r=await fetchPublicSnapshot('details.json');if(r.ok){const x=await r.json();if(x&&x.games){DET=x;detAt=Date.now();if(D)mergeDet(D);}}}catch(e){}return DET;}
+function plBuilderBar(bar){bar.replaceChildren();if(!propLegs.length){bar.append(el('span','Tap YES or NO on a line to start a prop combo.','hint small'));return;}
+  const b=el('button','🧱 Your prop builder · '+propLegs.length+' leg'+(propLegs.length===1?'':'s')+' · see how it could do ›','btn small');b.type='button';b.onclick=()=>openBuilder();bar.append(b);}
+function plPropsSection(name,team,lg){const sec=el('div',null,'plprops');sec.append(el('h4','🎯 Props research'),el('p','A research tool: check his lines against his recent games and build your own props. Only the “Her picks on him” box is Mohjeta’s own pick.','hint small'));const host=el('div');sec.append(host);
+  host.append(el('p','Loading his props…','hint small'));plPropsFill(host,name,team,lg);return sec;}
+async function plPropsFill(host,name,team,lg){let P=propData(D);
+  if(P&&P.board==null&&P.board_n){await plDet();P=propData(D);}
+  const F=ESPN_PATH[lg]?await plFullLoad(name,team,lg).catch(()=>null):null;
+  host.replaceChildren();const me=o=>plSame(o.player,name);
+  const open=P&&!P.locked?(P.open||[]).filter(me):[],board=P&&!P.locked?(P.board||[]).filter(me):[],done=P?(P.rows||[]).filter(me):[];
+  const bar=el('div',null,'plbar');
+  if(P&&P.locked)host.append(el('p','🔒 Her prop picks and the prop builder are for members.','hint small'));
+  if(open.length){host.append(el('h5','Her picks on him (tracked in her props record)','lugrp'));const g=el('div',null,'mprops');
+    for(const o of open){const c=miniProp(o);const vh=plHitLine(plGlVals(F,o.stat),o.line,o.side);if(vh)c.append(vh);
+      const add=c.querySelector('.add');if(add){const f0=add.onclick;add.onclick=e=>{f0(e);plBuilderBar(bar);};}g.append(c);}host.append(g);}
+  if(board.length){host.append(el('h5','Every Kalshi line tonight · build your own props','lugrp'));
+    const stats=[...new Set(board.map(b=>b.stat))];
+    for(const st of stats){const rows=board.filter(b=>b.stat===st).sort((a,b)=>a.line-b.line);const vals=plGlVals(F,st);
+      host.append(el('div',(STATICON[st]||'🎯')+' '+statLabel(st)+' · '+rows[0].game,'plpstat'));
+      for(const b of rows){const r=el('div',null,'prow plprow');r.append(el('span',b.line+'+ '+(STATNAME[b.stat]||b.stat),'ln'),el('span',null,'sp'));
+        for(const [side,her,price] of [['YES',b.her,b.yes],['NO',1-b.her,b.no]]){const on=propLegs.some(g=>plSame(g.player,b.player)&&g.stat===b.stat&&g.line===b.line&&g.side===side);
+          const x=el('button',side+' '+pct(her)+' · '+Math.round(price*100)+'¢','pbtn'+(on?' on':''));x.type='button';
+          x.setAttribute('aria-label',propName(b)+' '+side+': her chance '+pct(her)+', Kalshi '+Math.round(price*100)+' cents');
+          x.onclick=()=>{addLeg({player:b.player,stat:b.stat,line:b.line,side,her:Math.round(her*1000)/1000,price,game:b.game});
+            host.querySelectorAll('.pbtn[data-k]').forEach(y=>{const [st2,ln2,sd2]=y.dataset.k.split('|');y.classList.toggle('on',propLegs.some(g=>plSame(g.player,b.player)&&g.stat===st2&&String(g.line)===ln2&&g.side===sd2));});plBuilderBar(bar);};
+          x.dataset.k=b.stat+'|'+b.line+'|'+side;r.append(x);}
+        const wrap=el('div');wrap.append(r);const vh=plHitLine(vals,b.line,'YES');if(vh)wrap.append(vh);host.append(wrap);}}
+    host.append(el('p','Each button: her chance for that side · Kalshi’s price. YES = the number or more; NO = less. Green bars = games he reached the line.','hint small'));}
+  if(open.length||board.length){plBuilderBar(bar);host.append(bar);}
+  else if(!P||!P.locked)host.append(el('p','No prop lines for him right now. NBA prop prices show up a few hours before tip-off; her NFL and NHL prop picks appear before games.','hint small'));
+  if(done.length){const won=done.filter(r=>r.result==='WON').length,pl=done.reduce((a,r)=>a+(r.pnl||0),0);
+    host.append(el('h5','Her record on his props · '+won+'-'+(done.length-won)+' · '+signed(pl),'lugrp'));
+    host.append(tableOf(['Prop','Result'],done.slice(0,5).map(r=>[propName(r)+' · '+r.side+' · '+new Date(r.at*1000).toLocaleDateString([],{month:'short',day:'numeric'}),icon(r.result)+' '+r.result.toLowerCase()+' '+signed(r.pnl)])));}
+  // check any line against his last 10 games (works with no Kalshi price)
+  const cand=(PLCHK_STATS[lg]||[]).map(st=>[st,plGlVals(F,st)]).filter(([st,v])=>v.length&&v.some(x=>x>0));
+  if(cand.length){const key=lg+'|'+plNorm(name);if(plChk.who!==key)plChk={who:key,stat:null,line:null};
+    if(!cand.some(([s])=>s===plChk.stat)){plChk.stat=cand[0][0];plChk.line=null;}
+    const box=el('div',null,'plchk');box.append(el('h5','Check any line · his last 10 games','lugrp'));const chips=el('div',null,'chips');const out=el('div');
+    const inp=el('input');inp.type='number';inp.min='0';inp.step='1';inp.className='stake';inp.setAttribute('aria-label','Line to check');
+    const draw=()=>{const v=(cand.find(([s])=>s===plChk.stat)||[])[1]||[];if(plChk.line==null){const avg=v.reduce((a,x)=>a+x,0)/Math.max(1,v.length);plChk.line=Math.max(1,Math.round(avg));}
+      inp.value=String(plChk.line);out.replaceChildren();const h=plHitLine(v,plChk.line,'YES');if(h)out.append(h);
+      const avg=v.reduce((a,x)=>a+x,0)/Math.max(1,v.length);out.append(el('p','Average '+(Math.round(avg*10)/10)+' '+(STATNAME[plChk.stat]||plChk.stat)+' over these games. Past games only; not her chance.','hint small'));
+      chips.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.st===plChk.stat)));};
+    for(const [st] of cand){const b=el('button',statLabel(st));b.type='button';b.dataset.st=st;b.onclick=()=>{plChk.stat=st;plChk.line=null;draw();};chips.append(b);}
+    inp.oninput=()=>{const v=parseFloat(inp.value);if(v>=0){plChk.line=v;const s=plChk.stat,vv=(cand.find(([x])=>x===s)||[])[1]||[];out.firstChild&&out.firstChild.classList&&out.firstChild.classList.contains('plhit')&&out.firstChild.replaceWith(plHitLine(vv,v,'YES'));}};
+    const lab=el('label',null,'hint small');lab.append('Line ',inp,' or more');box.append(chips,lab,out);host.append(box);draw();}
+  if(!host.childNodes.length)host.append(el('p','No props for him yet.','hint small'));}
+function teamMine(t,lg,abbr){const ps=((((rt||{}).leagues||{})[lg]||{}).roster||{}).players||[];
+  return ps.filter(p=>p.team===abbr||p.team===t.n||(p.team_name&&(p.team_name===t.n||sameTeam(p.team_name,t.n)&&String(t.n).toLowerCase().endsWith(String(p.team_name).toLowerCase()))));}
+async function teamPropsCard(c,t,lg,abbr){c.replaceChildren(el('h4','🎯 Player props'),el('p','Loading…','hint small'));
+  let P=propData(D);if(P&&P.board==null&&P.board_n){await plDet();P=propData(D);}
+  await plRatings();if(ROSTER_FILE[lg]&&rosterLoaded[lg]!=='ok'){try{await ensureRoster(lg);}catch(e){}}
+  const mine=teamMine(t,lg,abbr);const who=o=>mine.find(p=>plSame(p.name,o.player));
+  const by=new Map();const put=(o,k)=>{const p=who(o);if(!p)return;const key=p.name;if(!by.has(key))by.set(key,{p,open:[],board:[],done:[]});by.get(key)[k].push(o);};
+  if(P){if(!P.locked){(P.open||[]).forEach(o=>put(o,'open'));(P.board||[]).forEach(o=>put(o,'board'));}(P.rows||[]).forEach(o=>put(o,'done'));}
+  c.replaceChildren(el('h4','🎯 Player props'));
+  const list=[...by.values()].sort((a,b)=>(b.open.length+b.board.length?1:0)-(a.open.length+a.board.length?1:0)||b.open.length-a.open.length||b.board.length-a.board.length||b.done.length-a.done.length);
+  const live=list.filter(x=>x.open.length||x.board.length),past=list.filter(x=>!x.open.length&&!x.board.length).slice(0,6);
+  const row=x=>{const b=el('button',null,'tppr');b.type='button';const won=x.done.filter(r=>r.result==='WON').length;
+    const o=x.open[0];const bits=[];if(x.board.length)bits.push(x.board.length+' line'+(x.board.length===1?'':'s')+' tonight');
+    if(o)bits.push('her pick: '+(o.side==='YES'?o.line+'+ ':'under '+o.line+' ')+(STATNAME[o.stat]||o.stat)+' '+pct(o.her));
+    if(x.done.length)bits.push('her record on him '+won+'-'+(x.done.length-won));
+    b.append(el('b',x.p.name),el('span',bits.join(' · '),'hint small'),el('span','›','cmbgo'));b.onclick=()=>openPlayer(x.p.name,t.n,lg);return b;};
+  if(live.length){c.append(el('div','Tonight','lugrp'));live.forEach(x=>c.append(row(x)));}
+  if(past.length){c.append(el('div','Her past prop picks on this team','lugrp'));past.forEach(x=>c.append(row(x)));}
+  if(!live.length)c.append(el('p',P&&P.locked?'🔒 Her prop picks are for members.':'No prop lines for '+t.n+' players right now. NBA prop prices show up a few hours before tip-off; her NFL and NHL prop picks appear before games.','hint small'));
+  c.append(el('p','Tap a player for every line, YES/NO into your prop builder, and how he did against each line in his last 10 games. Any player in the roster below works too: his card has a “check any line” tool.','hint small'));}
+function teamJump(w){const nav=el('div',null,'chips tpjump');
+  for(const [lab,sel] of [['🎯 Props','.tpprops'],['📈 Stats','.tpstats'],['⭐ Players','.tpstars'],['👥 Roster','.tproster'],['📅 Schedule','.tpsched']]){
+    if(!w.querySelector(sel))continue;const b=el('button',lab);b.type='button';b.onclick=()=>{const x=w.querySelector(sel);if(x)x.scrollIntoView({behavior:'smooth',block:'start'});};nav.append(b);}
+  return nav;}
+
 // fix474 (owner, Nov 15 2026: "There's gotta be more for players stats use someone else's model"): the full ESPN stat
 // sheet on every player card, read straight from ESPN's public player pages in the visitor's browser (nothing on her PC):
 // season-by-season tables for each stat category with career totals, and his last 5 games (date, opponent, result,
