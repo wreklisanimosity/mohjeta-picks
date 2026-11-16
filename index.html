@@ -688,6 +688,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .plbar{margin:10px 0}.plchk .stake{width:70px;margin:0 6px}.mprops{display:grid;gap:8px}
 .tppr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid rgba(255,255,255,.08);padding:9px 2px;color:inherit;cursor:pointer}.tppr b{flex:0 0 auto}.tppr .hint{flex:1 1 180px}
 .tpjump{position:sticky;top:0;z-index:2;background:var(--bg,#0b0613);padding:6px 0;margin:6px 0}
+.tdquick{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 10px}
+.myprow{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.08)}.mypres{text-align:right;white-space:nowrap}.mypres .btn{margin-top:4px}.plsave{gap:8px;margin-top:8px}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=8">
 <link rel="stylesheet" href="intro.css?v=3">
@@ -823,7 +825,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
     <button type="button" class="qjhandle" id="qjOpen" aria-label="All pages (quick jump)"><i></i><span>All pages</span></button>
     <button role="tab" data-tab="home" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3Z"/></svg>Home</button>
     <button role="tab" data-tab="picks" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5 2 7.5L12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>Tonight</button>
-    <button role="tab" data-tab="props" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/><path d="M17 4l2-2M19 6h2"/></svg>Props</button>
+    <button role="tab" data-tab="teams" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg>Teams</button>
     <button role="tab" data-tab="sim" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg>Simulate</button>
     <button role="tab" data-tab="record" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Results</button>
     <button role="tab" data-tab="play" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.3"/><circle cx="16" cy="8" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="8" cy="16" r="1.3"/><circle cx="16" cy="16" r="1.3"/></svg>Play</button>
@@ -877,7 +879,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
     <div class="wkhero"><span class="wkhero-ic">🏆</span><div><h2>Weekly Fantasy</h2><p>Build a lineup. Score with real stats. Beat Mohjeta.</p><span class="wkfree">FREE · NO ENTRY FEES · NO PRIZES</span></div></div><div id="weeklyBox"></div></section>
   <section class="panel" id="guess" role="tabpanel" aria-label="Guess her number"><button class="back" data-go="play">‹ Play</button>
     <h2>🔮 Guess her number</h2><p class="hint small">Guess how likely she thinks a team is to win, before you see it. Closer guesses score more (100 for exact). Saved on this phone only, just for fun.</p><div id="guessBox"></div></section>
-  <section class="panel" id="props" role="tabpanel" aria-label="Player props">
+  <section class="panel" id="props" role="tabpanel" aria-label="Player props"><button class="back" data-go="teams">‹ Teams</button>
     <h2>Player props</h2><p class="hint">NBA player props (points, assists, threes, rebounds) from her player rating: every game simulated 4,000 times, player by player. Kept separate from her game picks.</p>
     <div id="propsBox"></div>
   </section>
@@ -890,8 +892,9 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
     <h2>Ratings</h2><p class="hint small">Team strength from real final scores (Elo: 1500 is average, +100 is about a 64% favorite) and each league's players. Tennis: player Elo overall and by surface.</p>
     <div class="chips" id="rtChips"></div><div class="chips" id="rtViews"></div><select id="rtPick" aria-label="Choose team or position" hidden></select><input id="rtFind" type="search" placeholder="Find a team or player…" aria-label="Find a team or player"><button type="button" class="plfindlink" data-plfind>🔎 Search every player in every league ›</button><div id="rtBox"></div>
   </section>
-  <section class="panel" id="teams" role="tabpanel" aria-label="Teams"><button class="back" data-go="more">‹ My Mohjeta</button>
-    <h2>Teams</h2><p class="hint small">Every team by sport. Tap a team for its card: stats, schedule and full roster.</p>
+  <section class="panel" id="teams" role="tabpanel" aria-label="Teams">
+    <h2>Teams</h2><p class="hint small">Pick a sport, then a team: her next pick, stats, injuries, roster and player props. Tap a player for his card.</p>
+    <div class="tdquick"><button type="button" class="btn ghost small" id="tdFindP">🔎 Find a player</button><button type="button" class="btn ghost small" data-go="props">🎯 All props tonight</button><button type="button" class="btn ghost small" id="tdMyProps">📋 My props</button></div>
     <div class="chips" id="tdChips"></div><input id="tdFind" type="search" placeholder="Find a team…" aria-label="Find a team"><div id="tdBox"><p class="hint">Loading teams…</p></div>
   </section>
   <section class="panel" id="news" role="tabpanel" aria-label="What's new"><button class="back" data-go="more">‹ My Mohjeta</button>
@@ -1041,7 +1044,7 @@ const el=(t,txt,cls)=>{const n=document.createElement(t);if(txt!=null)n.textCont
 const iel=(t,txt,cls)=>{const n=el(t,txt,cls);return window.MohjetaIcons?MohjetaIcons.decorate(n):n;};
 if(window.MohjetaIcons){
  document.querySelectorAll('.hi,h2,#recSwitch button,#more button span').forEach(n=>MohjetaIcons.decorate(n));
- const names={home:'home',picks:'picks',props:'props',sim:'simulate',record:'results',play:'play',chat:'chat',more:'more'};
+ const names={home:'home',picks:'picks',teams:'arena',props:'props',sim:'simulate',record:'results',play:'play',chat:'chat',more:'more'};
  document.querySelectorAll('#nav [data-tab]').forEach(b=>{const old=b.querySelector('svg');if(old)old.replaceWith(MohjetaIcons.icon(names[b.dataset.tab]));});
 }
 
@@ -1147,7 +1150,7 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['home','picks','props','sim','record','play','chat','more'];const SUB={teams:'more',hub:'more',radio:'more',games:'more',ratings:'more',guess:'play',fantasy:'play',weekly:'play',feed:'more',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
+const TABS=['home','picks','teams','sim','record','play','chat','more'];const SUB={props:'teams',hub:'more',radio:'more',games:'more',ratings:'more',guess:'play',fantasy:'play',weekly:'play',feed:'more',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button[data-tab]')];
 function show(name,push){name=LEGACY[name]||name;
@@ -1560,7 +1563,7 @@ function TESTS(){const ios=isIOSApp();const push=('serviceWorker' in navigator)&
   ['first_pick',"Make a Pick'em pick","1) Tap “Tonight” in the menu at the bottom.  2) On any game that hasn’t started, find “Your pick:” with the two team names.  3) Tap the team you think will win. It lights up when it’s saved.",()=>show('picks')],
   ['guess','Guess her number','1) Tap “Play” in the menu at the bottom.  2) Tap “🔮 Guess her number”.  3) Move the slider to how sure you think she is about that game.  4) Tap “Lock it in” to see how close you were.',()=>{show('guess');drawGuess();}],
   ['sim','Simulate a game','1) Tap “Simulate” in the menu at the bottom.  2) Choose a team on each side.  3) Tap “⚔️ Fight!” to play the matchup 10,000 times and see who wins.  (You can also tap “Simulate this game ›” inside any game breakdown.)',()=>show('sim')],
-  ['prop_builder','Add a prop to the builder','1) Tap “Props” in the menu at the bottom.  2) Tap a prop type, like “Threes” or “Assists”.  3) On any pick, tap “+ Add to builder”.  (No picks showing? Prop picks appear on game days, usually a few hours before NBA and NFL games.)',()=>show('props')],
+  ['prop_builder','Add a prop to the builder','1) Tap “Teams” at the bottom and pick an NBA, NFL or NHL team.  2) Under “Player props”, tap a player.  3) On any line, tap YES or NO (or “+ Add to builder” on her pick).  (No lines showing? Prop prices appear on game days, usually a few hours before tip-off. All pages › Props has every prop at once.)',()=>show('teams')],
   ['chat','Say hi in chat','1) Sign in first (task 1).  2) Tap “Chat” in the menu at the bottom.  3) Type a message in the box at the bottom and send it. Keep it friendly.',()=>show('chat')],
   ...(push?[['alerts','Turn on alerts','1) Tap “More” in the menu at the bottom.  2) Under “🔔 Phone alerts”, tap “🔔 Turn on alerts”.  3) When your phone or browser asks, tap “Allow”.',()=>show('more')]]:[]),
   ['share','Share a card','1) Simulate a game (task 6).  2) Under the result, tap “📤 Share”.  3) Send it to someone or save the picture.',()=>show('sim')],
@@ -2282,7 +2285,7 @@ async function openTeam(name,league){try{award('team');}catch(e){}openSheet(()=>
   const syn=el('div',null,'card tpsyn');syn.append(el('span','THE SYNOPSIS','simeyebrow'),el('p',teamSynopsis(t.n,lg,t,r,nextG),'tpsyntext'));w.append(syn);
   const done=t.g.filter(x=>x[4]),todo=t.g.filter(x=>!x[4]);
   if(done.length){const form=el('div',null,'tpform');for(const x of done.slice(-8))form.append(el('span',x[4],'tpf '+x[4]));syn.append(form);}
-  if(nextG){const nb=el('button',null,'btn tpnext');nb.type='button';nb.append(el('span','Next: '+nextG.name+' · '+when(nextG.start)+' ›'));nb.onclick=()=>{closeSheet(true);openGame(nextG.id||nextG.name);};w.append(nb);}
+  if(nextG){const nb=el('button',null,'btn tpnext');nb.type='button';const np=nextG.pick||{};nb.append(el('span','Next: '+nextG.name+' · '+when(nextG.start)+((np.team||np.name)?' · her pick: '+(np.team||np.name)+(typeof np.chance==='number'?' '+pct(np.chance):''):'')+' ›'));nb.onclick=()=>{closeSheet(true);openGame(nextG.id||nextG.name);};w.append(nb);}
   const sched=el('div',null,'card tpsched');sched.append(el('h4','📅 Schedule'));
   const line=x=>{const row=el('div',null,'tpg'+(x[4]?' done':''));const d=new Date(x[0]);row.append(el('span',d.toLocaleDateString([],{month:'short',day:'numeric'}),'tpd'),el('span',(x[3]?'vs ':'@ ')+(x[2]||x[1]),'tpo'));
     if(x[4])row.append(el('b',x[4]+' '+x[5]+'-'+x[6],'tpr '+x[4]));else row.append(el('span',d.toLocaleTimeString([],{weekday:'short',hour:'numeric',minute:'2-digit'}),'tpt'));return row;};
@@ -2295,6 +2298,7 @@ async function openTeam(name,league){try{award('team');}catch(e){}openSheet(()=>
     k.append(el('p','Rating 0-99 = rank against players at the same position this season. Tap a name for his card.','hint small'));w.append(k);}
   const rc=el('div',null,'card tproster');rc.append(el('p','Loading the roster…','hint small'));w.append(rc);teamRosterCard(rc,t,lg,f.abbr);
   if(['NBA','NFL','NHL'].includes(lg)){const pc=el('div',null,'card tpprops');w.insertBefore(pc,w.querySelector('.tpstats')||sched);teamPropsCard(pc,t,lg,f.abbr);}   // fix475
+  {const ic=teamInjuryCard(t,lg);if(ic)w.insertBefore(ic,rc);}   // fix476
   w.insertBefore(teamJump(w),syn);
   w.append(el('p','Schedule and results from ESPN; synopsis written by Mohjeta from her ratings and their results. Updated every few hours.','hint small'));}
 let simKey=null;const SIMLAST={};
@@ -2731,7 +2735,7 @@ function legsCard(d){const gs=legGames(d);const S=d.skipped&&d.skipped.record;co
   c.append(el('p','Each leg can still lose, and the risk adds up: five 97% legs together hit only about 86% of the time. Chances shown are the lower of her number and the market\'s.','hint small'));
   box.append(c);return box;}
 // ---------------- every open bet in one place (on the Tonight page), whatever kind it is or wherever its game is shown
-function renderOpenBets(d){const box=$('openBets');if(!box)return;box.replaceChildren();const rows=((d.bets&&d.bets.rows)||[]).filter(r=>r.result==='OPEN');if(!rows.length)return;
+function renderOpenBets(d,into){const box=into||$('openBets');if(!box)return;if(!into)box.replaceChildren();const rows=((d.bets&&d.bets.rows)||[]).filter(r=>r.result==='OPEN');if(!rows.length)return;
   const key=v=>String(v||'').slice(0,16);const games=(d.games||[]).filter(g=>g.bet);
   // owner, Nov 7 2026: a drop-down. Closed it is one line (how many, money riding, how many live, what they pay);
   // tap to see every bet. Open/closed is remembered on this phone and kept through the 20-second refreshes.
@@ -3048,7 +3052,7 @@ function pageCount(k,d){d=d||D;if(!d)return '';const gs=d.games||[];const t=d.be
 function pageTile(p,d){const [k,ic,t,sub,tc]=p;const b=el('button',null,'htile');b.type='button';b.style.setProperty('--tc',tc);
   const c=pageCount(k,d);b.append(iel('span',ic),el('b',t),el('small',c||sub));b.onclick=()=>goPage(k);return b;}
 function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren();const hr=new Date().getHours();
-  const hh=el('div',null,'hhead');hh.append(el('h2',hr<5?'Late night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening'),el('p','Everything happening with her picks, one tap away.','hint small'));box.append(hh);
+  const hh=el('div',null,'hhead');hh.append(el('h2',hr<5?'Late night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening'),el('p','Her picks and bets for today. Teams, players and props are in Teams below.','hint small'));box.append(hh);
   const B={};try{if(myTeams().length)B.teams=myTeamsSection(d);}catch(e){}   // fix402: trophy row + tester panel moved to My Mohjeta
   {const dv=d.voice&&d.voice.daily;if(dv){const b=el('button',null,'hvoice');b.type='button';const im=el('img');im.src='logo-cut.webp?v=2';im.alt='';
     const tx=el('span');tx.append(el('b','Hear her rundown'),el('small','Her top picks in her own voice'+(dv.seconds?' · '+Math.round(dv.seconds)+' seconds':'')));const pl=el('span','▶','play');
@@ -3076,6 +3080,7 @@ function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren
     b.append(info,el('span','›','go'));b.onclick=()=>openGame(nx.id||nx.name);B.next=b;}
   try{B.trivia=triviaHomeCard();B.hub=hubHomeRow();}catch(e){}   // fix413
   try{B.board=homeBoard();}catch(e){}
+  try{B.today=homeTodayBlock(d);}catch(e){console.warn('home today',e);}try{B.bets=homeBetsBlock(d);}catch(e){console.warn('home bets',e);}   // fix476
   try{B.allteams=homeTeamsBlock();}catch(e){}   // fix473 (owner: "Put teams on the home page")
   try{B.live=homeLiveBlock(d,live);B.combos=homeCombosBlock(d);B.trades=homeTradesBlock(d);}catch(e){}   // fix420: extra blocks people can switch on   // fix410 (owner): leaderboard + winner on Home, free for everyone
   {const w=el('div');w.append(el('div','Go to','hsec'));const tiles=el('div',null,'htiles');for(const p of PAGES.slice(0,12))tiles.append(pageTile(p,d));w.append(tiles);
@@ -3369,6 +3374,7 @@ function drawBuilder(){const pb=$('propBuilder');if(!pb)return;const P=propData(
       x.onclick=()=>{propLegs=propLegs.filter(y=>y!==g);drawBuilder();};
       r.append(el('span',propName(g)+' · '+g.side,'ln'),el('span',null,'sp'),el('span',pct(g.her)+' · '+Math.round(g.price*100)+'¢','hint small'),x);ul.append(r);}
     pb.append(ul);
+    {const sv=el('button','📋 Save to My props','btn ghost small');sv.type='button';sv.onclick=()=>mypAdd(propLegs);pb.append(sv);}   // fix476
     pb.append(copyBtn('📋 Copy my parlay',()=>copySlip('My Mohjeta prop parlay',propLegs.map(g=>propSlip(g.player,g.stat,g.line,g.side)))));
     const herP=propLegs.reduce((a,g)=>a*g.her,1),kp=propLegs.reduce((a,g)=>a*g.price,1);
     const sr=el('div',null,'row');const lab=el('label','Stake $','hint small');const inp=el('input');inp.type='number';inp.min='1';inp.step='1';inp.value=String(propStake);inp.className='stake';
@@ -4395,17 +4401,17 @@ function tradePopup(){if(document.querySelector('.trpop'))return;let seen=[];try
   setTimeout(()=>{p.classList.add('out');setTimeout(()=>p.remove(),400);},9000);}
 // ---------------- fix420 (owner: "give customers the option to customize their own home page" -> yes): ✏️ Edit Home.
 // Every Home section is a block people can show / hide and move; three presets; reset. Saved on this phone.
-const HOME_BLOCKS=[['teams','⭐ My teams','Your followed teams tonight'],['voice','🎙 Her rundown','Her top picks in her own voice'],['stats','📊 Her numbers','Record, radio, tonight, combos'],
+const HOME_BLOCKS=[['today','🎯 Today’s picks','Every game she picks today'],['bets','💵 Her bets','Her open bets and what they pay'],['teams','⭐ My teams','Your followed teams tonight'],['voice','🎙 Her rundown','Her top picks in her own voice'],['stats','📊 Her numbers','Record, radio, tonight, combos'],
   ['next','⏰ Next up','Her next pick and the countdown'],['allteams','🏟 Teams','Every team by sport, with stats and rosters'],['live','● Live now','Every game being played right now'],['combos','🎟 Her open combos','What she has riding tonight'],
   ['trades','🔁 Latest trades','New trades and her read'],['trivia','🧠 Daily trivia','5 quick questions a day'],['hub','🏟 Sports hub','Standings, trades, injuries, highlights'],
   ['board','🏆 Leaderboard','Pick’em leaders and the champion'],['tiles','🧭 Go to','Shortcuts to every page']];
-const HOME_DEFAULT={order:['teams','voice','stats','next','allteams','live','combos','trades','trivia','hub','board','tiles'],hidden:['live','combos','trades']};
+const HOME_DEFAULT={v:2,order:['stats','next','today','bets','teams','voice','allteams','live','combos','trades','trivia','hub','board','tiles'],hidden:['allteams','live','combos','trades','trivia','hub','board','tiles']};   // fix476 (owner): Home = today's picks and her bets; teams, hub, trivia, leaderboard live in Teams / All pages
 const HOME_PRESETS={picks:['⚡ Picks first',['stats','next','combos','live','voice','tiles']],fan:['📺 Fan mode',['teams','live','stats','trades','hub','voice','tiles']],
   comp:['🏆 Competitor',['board','trivia','stats','combos','hub','tiles']]};
 let homeEditing=false;
-function homeLayout(){let L=null;try{L=JSON.parse(localStorage.getItem('mohjeta.homeLayout')||'null');}catch(e){}if(!L||!Array.isArray(L.order))L=JSON.parse(JSON.stringify(HOME_DEFAULT));
-  const ids=HOME_BLOCKS.map(b=>b[0]);L.order=L.order.filter(k=>ids.includes(k));if(!L.order.includes('allteams')){const i=L.order.indexOf('next');L.order.splice(i<0?L.order.length:i+1,0,'allteams');}for(const k of ids)if(!L.order.includes(k)){L.order.push(k);if(HOME_DEFAULT.hidden.includes(k))(L.hidden=L.hidden||[]).push(k);}L.hidden=(L.hidden||[]).filter(k=>ids.includes(k));return L;}
-function homeLayoutSave(L){try{if(L)localStorage.setItem('mohjeta.homeLayout',JSON.stringify(L));else localStorage.removeItem('mohjeta.homeLayout');}catch(e){}}
+function homeLayout(){let L=null;try{L=JSON.parse(localStorage.getItem('mohjeta.homeLayout')||'null');}catch(e){}if(!L||!Array.isArray(L.order)||L.v!==2)L=JSON.parse(JSON.stringify(HOME_DEFAULT));
+  const ids=HOME_BLOCKS.map(b=>b[0]);L.order=L.order.filter(k=>ids.includes(k));for(const k of ids)if(!L.order.includes(k)){L.order.push(k);if(HOME_DEFAULT.hidden.includes(k))(L.hidden=L.hidden||[]).push(k);}L.hidden=(L.hidden||[]).filter(k=>ids.includes(k));return L;}
+function homeLayoutSave(L){if(L)L.v=2;try{if(L)localStorage.setItem('mohjeta.homeLayout',JSON.stringify(L));else localStorage.removeItem('mohjeta.homeLayout');}catch(e){}}
 function homeLayoutApply(box,B){const L=homeLayout();if(homeEditing){box.append(homeEditor(L));return;}
   for(const k of L.order){if(L.hidden.includes(k))continue;const n=B[k];if(n)box.append(n);}
   const ed=el('button','✏️ Edit Home','btn ghost small hedit');ed.type='button';ed.onclick=()=>{homeEditing=true;renderHome(D);window.scrollTo(0,0);};box.append(ed);}
@@ -4610,6 +4616,16 @@ function findPlayer(){openSheet(()=>{const box=el('div',null,'plfind');box.appen
   let t=null;inp.oninput=()=>{plfQ=inp.value;clearTimeout(t);t=setTimeout(()=>plfDraw(list,status),180);};
   box.append(inp,chips,status,list);plfDraw(list,status);setTimeout(()=>{try{inp.focus();}catch(e){}},60);return box;},'Find a player');}
 window.findPlayer=findPlayer;
+// ---- fix476 (owner, Nov 16 2026: Home = "today's picks and her bets only"; Teams replaces Props in the bottom bar)
+function homeTodayBlock(d){const now=Date.now();const gs=(d.games||[]).filter(g=>g.pick&&(g.state==='LIVE'||g.state==='UPCOMING'&&new Date(g.start)-now<24*3600e3))
+    .sort((a,b)=>(a.state==='LIVE'?0:1)-(b.state==='LIVE'?0:1)||(isBetLane(b)?1:0)-(isBetLane(a)?1:0)||String(a.start).localeCompare(String(b.start)));
+  const w=el('div',null,'hblock');const h=el('div',null,'hbhd');h.append(el('b','🎯 Today’s picks'+(gs.length?' · '+gs.length:'')),el('button','All picks ›','mlink'));h.lastChild.type='button';h.lastChild.onclick=()=>show('picks');w.append(h);
+  if(!gs.length){w.append(el('p','No picks left in the next 24 hours. Her next ones show up here.','hint small'));return w;}
+  const gr=el('div',null,'mgrid');for(const g of gs.slice(0,6))gr.append(miniCard(g));w.append(gr);
+  if(gs.length>6){const m=el('button','See all '+gs.length+' picks ›','btn ghost small');m.type='button';m.onclick=()=>show('picks');w.append(m);}return w;}
+function homeBetsBlock(d){const rows=((d.bets&&d.bets.rows)||[]).filter(r=>r.result==='OPEN');if(!rows.length){const b=el('button',null,'hubrow');b.type='button';b.onclick=()=>show('record');
+    const t=el('span');t.append(el('b','💵 Her bets'),el('small','Nothing riding right now. She bets about 20 minutes before each start.'));b.append(t,el('span','›','go'));return b;}
+  const w=el('div');renderOpenBets(d,w);return w.firstChild||null;}
 // ---- fix475 props live on the player and team cards (owner, Nov 16 2026: "the customer can find certain things by going
 // to the particular team like player props could be by clicking the player and finding different props for that player
 // to build your props to see how they do"). Team card -> "🎯 Player props" (his teammates with lines / her picks tonight)
@@ -4636,7 +4652,8 @@ function plHitLine(vals,line,side){if(!vals.length)return null;const hit=vals.fi
 async function plDet(){if(DET&&Date.now()-detAt<120000)return DET;if(detBusy){try{await detBusy;}catch(e){}return DET;}
   try{const r=await fetchPublicSnapshot('details.json');if(r.ok){const x=await r.json();if(x&&x.games){DET=x;detAt=Date.now();if(D)mergeDet(D);}}}catch(e){}return DET;}
 function plBuilderBar(bar){bar.replaceChildren();if(!propLegs.length){bar.append(el('span','Tap YES or NO on a line to start a prop combo.','hint small'));return;}
-  const b=el('button','🧱 Your prop builder · '+propLegs.length+' leg'+(propLegs.length===1?'':'s')+' · see how it could do ›','btn small');b.type='button';b.onclick=()=>openBuilder();bar.append(b);}
+  const b=el('button','🧱 Your prop builder · '+propLegs.length+' leg'+(propLegs.length===1?'':'s')+' · see how it could do ›','btn small');b.type='button';b.onclick=()=>openBuilder();
+  const sv=el('button','📋 Save to My props','btn ghost small');sv.type='button';sv.onclick=()=>mypAdd(propLegs);bar.append(b,sv);}
 function plPropsSection(name,team,lg){const sec=el('div',null,'plprops');sec.append(el('h4','🎯 Props research'),el('p','A research tool: check his lines against his recent games and build your own props. Only the “Her picks on him” box is Mohjeta’s own pick.','hint small'));const host=el('div');sec.append(host);
   host.append(el('p','Loading his props…','hint small'));plPropsFill(host,name,team,lg);return sec;}
 async function plPropsFill(host,name,team,lg){let P=propData(D);
@@ -4657,7 +4674,7 @@ async function plPropsFill(host,name,team,lg){let P=propData(D);
         for(const [side,her,price] of [['YES',b.her,b.yes],['NO',1-b.her,b.no]]){const on=propLegs.some(g=>plSame(g.player,b.player)&&g.stat===b.stat&&g.line===b.line&&g.side===side);
           const x=el('button',side+' '+pct(her)+' · '+Math.round(price*100)+'¢','pbtn'+(on?' on':''));x.type='button';
           x.setAttribute('aria-label',propName(b)+' '+side+': her chance '+pct(her)+', Kalshi '+Math.round(price*100)+' cents');
-          x.onclick=()=>{addLeg({player:b.player,stat:b.stat,line:b.line,side,her:Math.round(her*1000)/1000,price,game:b.game});
+          x.onclick=()=>{addLeg({player:b.player,stat:b.stat,line:b.line,side,her:Math.round(her*1000)/1000,price,game:b.game,team,lg});
             host.querySelectorAll('.pbtn[data-k]').forEach(y=>{const [st2,ln2,sd2]=y.dataset.k.split('|');y.classList.toggle('on',propLegs.some(g=>plSame(g.player,b.player)&&g.stat===st2&&String(g.line)===ln2&&g.side===sd2));});plBuilderBar(bar);};
           x.dataset.k=b.stat+'|'+b.line+'|'+side;r.append(x);}
         const wrap=el('div');wrap.append(r);const vh=plHitLine(vals,b.line,'YES');if(vh)wrap.append(vh);host.append(wrap);}}
@@ -4679,7 +4696,9 @@ async function plPropsFill(host,name,team,lg){let P=propData(D);
       chips.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.st===plChk.stat)));};
     for(const [st] of cand){const b=el('button',statLabel(st));b.type='button';b.dataset.st=st;b.onclick=()=>{plChk.stat=st;plChk.line=null;draw();};chips.append(b);}
     inp.oninput=()=>{const v=parseFloat(inp.value);if(v>=0){plChk.line=v;const s=plChk.stat,vv=(cand.find(([x])=>x===s)||[])[1]||[];out.firstChild&&out.firstChild.classList&&out.firstChild.classList.contains('plhit')&&out.firstChild.replaceWith(plHitLine(vv,v,'YES'));}};
-    const lab=el('label',null,'hint small');lab.append('Line ',inp,' or more');box.append(chips,lab,out);host.append(box);draw();}
+    const lab=el('label',null,'hint small');lab.append('Line ',inp,' or more');
+    const sv=el('div',null,'row plsave');for(const [sd,t] of [['YES','📋 Save: over'],['NO','📋 Save: under']]){const b=el('button',t,'btn ghost small');b.type='button';b.onclick=()=>{if(plChk.line>0)mypAdd([{player:name,stat:plChk.stat,line:plChk.line,side:sd,team,lg}]);};sv.append(b);}
+    box.append(chips,lab,out,sv,el('p','Save tracks it in My props for his next game.','hint small'));host.append(box);draw();}
   if(!host.childNodes.length)host.append(el('p','No props for him yet.','hint small'));}
 function teamMine(t,lg,abbr){const ps=((((rt||{}).leagues||{})[lg]||{}).roster||{}).players||[];
   return ps.filter(p=>p.team===abbr||p.team===t.n||(p.team_name&&(p.team_name===t.n||sameTeam(p.team_name,t.n)&&String(t.n).toLowerCase().endsWith(String(p.team_name).toLowerCase()))));}
@@ -4701,8 +4720,68 @@ async function teamPropsCard(c,t,lg,abbr){c.replaceChildren(el('h4','🎯 Player
   if(past.length){c.append(el('div','Her past prop picks on this team','lugrp'));past.forEach(x=>c.append(row(x)));}
   if(!live.length)c.append(el('p',P&&P.locked?'🔒 Her prop picks are for members.':'No prop lines for '+t.n+' players right now. NBA prop prices show up a few hours before tip-off; her NFL and NHL prop picks appear before games.','hint small'));
   c.append(el('p','Tap a player for every line, YES/NO into your prop builder, and how he did against each line in his last 10 games. Any player in the roster below works too: his card has a “check any line” tool.','hint small'));}
+// ---- fix476 My Props (owner: "Add to my props" saves picks to a list and the site tracks whether they hit; kept apart
+// from her record). Saved on this phone, and in the person's account when signed in (Supabase my_props, own rows only).
+// Graded here from ESPN's game log: his first game that STARTS after the prop was saved (a game already under way does
+// not count), checked 4+ hours after that start. No game within 4 days = void.
+const MYPK='mohjeta.myProps';let mypSynced=0;
+function mypLoad(){try{const x=JSON.parse(localStorage.getItem(MYPK)||'[]');return Array.isArray(x)?x:[];}catch(e){return [];}}
+function mypSave(x){try{localStorage.setItem(MYPK,JSON.stringify(x.slice(-300)));}catch(e){}}
+const mypLg=st=>/^nfl_/.test(st)?'NFL':/^nhl_/.test(st)?'NHL':'NBA';
+const mypLabel=p=>p.player+' · '+(p.side==='NO'?'under '+p.line:p.line+'+')+' '+(STATNAME[p.stat]||p.stat);
+async function mypRow(p){if(!me||!sb)return false;try{const {error}=await sb.from('my_props').upsert({id:p.id,league:p.lg,team:p.team||null,game:p.game||null,player:p.player,stat:p.stat,line:p.line,side:p.side,
+  her:p.her??null,price:p.price??null,saved_at:new Date(p.at).toISOString(),result:p.result||null,value:p.value??null,game_date:p.gd||null,graded_at:p.gat?new Date(p.gat).toISOString():null},{onConflict:'user_id,id'});return !error;}catch(e){return false;}}
+async function mypAdd(list){const x=mypLoad();let n=0;
+  for(const l of list){const lg=l.lg||mypLg(l.stat);const id=(lg+'|'+plNorm(l.player)+'|'+l.stat+'|'+l.line+'|'+l.side+'|'+Date.now().toString(36)).replace(/[^A-Za-z0-9._|:-]/g,'');
+    if(x.some(p=>!p.result&&plSame(p.player,l.player)&&p.stat===l.stat&&p.line===l.line&&p.side===l.side))continue;
+    const p={id,lg,team:l.team||'',game:l.game||'',player:l.player,stat:l.stat,line:l.line,side:l.side,her:l.her??null,price:l.price??null,at:Date.now()};x.push(p);n++;mypRow(p);}
+  mypSave(x);toast(n?'Saved to My props ('+n+')'+(me?'':' on this phone. Sign in to keep them on every device'):'Already in My props');return n;}
+async function mypSync(){if(!me||Date.now()-mypSynced<60000)return;try{await supa();}catch(e){return;}mypSynced=Date.now();
+  try{const {data,error}=await sb.from('my_props').select('*').order('saved_at',{ascending:false}).limit(300);if(error)return;
+    const x=mypLoad();const have=new Set(x.map(p=>p.id));
+    for(const r of data||[]){const p={id:r.id,lg:r.league,team:r.team||'',game:r.game||'',player:r.player,stat:r.stat,line:r.line,side:r.side,her:r.her,price:r.price,at:Date.parse(r.saved_at),result:r.result||null,value:r.value,gd:r.game_date,gat:r.graded_at?Date.parse(r.graded_at):null};
+      if(!have.has(p.id))x.push(p);else{const i=x.findIndex(y=>y.id===p.id);if(p.result&&!x[i].result)x[i]=p;}}
+    const server=new Set((data||[]).map(r=>r.id));for(const p of x)if(!server.has(p.id))mypRow(p);   // props saved before signing in go up too
+    x.sort((a,b)=>a.at-b.at);mypSave(x);}catch(e){}}
+async function mypGrade(){const x=mypLoad();const now=Date.now();let ch=0;
+  for(const p of x.filter(p=>!p.result&&now-p.at>3*3600e3).slice(0,12)){
+    try{if(!ESPN_PATH[p.lg])continue;const id=await plEspnId(p.player,p.team,p.lg);if(!id)continue;
+      const gl=await fetch('https://site.web.api.espn.com/apis/common/v3/sports/'+ESPN_PATH[p.lg]+'/athletes/'+id+'/gamelog',{signal:AbortSignal.timeout(9000)}).then(r=>r.ok?r.json():null).catch(()=>null);if(!gl)continue;
+      const evs=gl.events||{};const nm=gl.names||[];const ix=(PLGL[p.stat]||[]).map(k=>nm.indexOf(k)).filter(i=>i>=0);
+      const rows=[];for(const s of gl.seasonTypes||[])for(const c of s.categories||[])for(const e of c.events||[])rows.push(e);
+      const after=rows.map(e=>[e,Date.parse((evs[e.eventId]||{}).gameDate)]).filter(([e,t])=>t>=p.at-15*60e3).sort((a,b)=>a[1]-b[1]);
+      if(after.length&&now-after[0][1]>4*3600e3){const [e,t]=after[0];
+        if(!ix.length){p.result='VOID';}else{const v=ix.reduce((s,i)=>s+(parseFloat(String((e.stats||[])[i]??'0').split('-')[0])||0),0);p.value=v;p.result=(p.side==='NO'?v<p.line:v>=p.line)?'HIT':'MISS';}
+        p.gd=new Date(t).toISOString();p.gat=now;ch++;mypRow(p);}
+      else if(!after.length&&now-p.at>4*864e5){p.result='VOID';p.gat=now;ch++;mypRow(p);}}catch(e){}}
+  if(ch)mypSave(x);return ch;}
+async function mypRemove(p){mypSave(mypLoad().filter(y=>y.id!==p.id));if(me&&sb){try{await sb.from('my_props').delete().eq('id',p.id);}catch(e){}}}
+function openMyProps(){openSheet(()=>{const w=el('div');w.id='mypView';w.append(el('h2','📋 My props'));const box=el('div');w.append(box);
+    const draw=()=>{box.replaceChildren();const x=mypLoad().slice().sort((a,b)=>b.at-a.at);const done=x.filter(p=>p.result==='HIT'||p.result==='MISS'),open=x.filter(p=>!p.result);
+      const hit=done.filter(p=>p.result==='HIT').length;const tiles=el('div',null,'tiles');for(const [l,v] of [['Hit',String(hit)],['Missed',String(done.length-hit)],['Hit rate',done.length?Math.round(hit/done.length*100)+'%':'—'],['Waiting',String(open.length)]]){const t=el('div',null,'tile');t.append(l,el('b',v));tiles.append(t);}
+      box.append(el('p','Your own props, tracked for you. This is separate from Mohjeta’s record: her prop picks are on her Results.','hint small'),tiles);
+      if(!me)box.append(el('p','Saved on this phone. Sign in (Chat › Sign in, no password) to keep them on every device.','hint small'));
+      const row=p=>{const r=el('div',null,'myprow');const t=el('div');t.append(plink(p.player,p.team||'',p.lg||'',p.player),el('div',(p.side==='NO'?'Under '+p.line:p.line+'+')+' '+(STATNAME[p.stat]||p.stat)+(p.game?' · '+p.game:'')+' · saved '+new Date(p.at).toLocaleDateString([],{month:'short',day:'numeric'}),'hint small'));
+        const res=el('div',null,'mypres');if(p.result==='HIT'||p.result==='MISS')res.append(el('b',(p.result==='HIT'?'✅ Hit':'❌ Missed'),p.result==='HIT'?'up':'down'),el('div','He had '+p.value,'hint small'));
+        else if(p.result==='VOID')res.append(el('span','Void (did not play)','hint small'));
+        else{res.append(el('span','Waiting for his next game','hint small'));const x2=el('button','Remove','btn ghost small');x2.type='button';x2.onclick=async()=>{await mypRemove(p);draw();};res.append(x2);}
+        r.append(t,res);return r;};
+      if(open.length){box.append(el('h4','Waiting'));open.forEach(p=>box.append(row(p)));}
+      if(x.length>open.length){box.append(el('h4','Finished'));x.filter(p=>p.result).slice(0,100).forEach(p=>box.append(row(p)));}
+      if(!x.length)box.append(el('p','Nothing saved yet. Open Teams › a team › a player, then tap “Save to My props” on a line, or save your prop builder.','hint'));
+      box.append(el('p','Graded from ESPN’s box score for his first game that starts after you save it (a game already under way doesn’t count). Entertainment and research only.','hint small'));};
+    draw();(async()=>{await mypSync();const n=await mypGrade();if($('mypView'))draw();})();return w;},'My props');}
+function teamInjuryCard(t,lg){const I=((D&&D.injuries)||{})[lg];if(!I)return null;const key=Object.keys(I).find(k=>k===t.n||sameTeam(k,t.n));
+  const c=el('div',null,'card tpinj');const rows=key?I[key]||[]:[];c.append(el('h4','🩹 Injuries'+(rows.length?' · '+rows.length:'')));
+  if(!rows.length){c.append(el('p','No one on the injury report.','hint small'));return c;}
+  const sc=r=>/Out|Reserve|Suspended/.test(r[1])?0:/Doubtful/.test(r[1])?1:/Questionable/.test(r[1])?2:3;
+  for(const r of rows.slice().sort((a,b)=>sc(a)-sc(b))){const row=el('div',null,'injrow');row.append(plink(r[0],t.n,lg,r[0]),el('span',r[2]||'','hint small injd'),
+    el('span',r[1],'injs '+(sc(r)===0?'s-out':sc(r)===1?'s-dbt':sc(r)===2?'s-q':'s-dtd')));c.append(row);}
+  c.append(el('p','Official designations via ESPN. Tap a name for his card.','hint small'));return c;}
+document.addEventListener('click',e=>{const t=e.target&&e.target.closest&&e.target.closest('#tdFindP,#tdMyProps');if(!t)return;if(t.id==='tdFindP')findPlayer();else openMyProps();});
+window.openMyProps=openMyProps;
 function teamJump(w){const nav=el('div',null,'chips tpjump');
-  for(const [lab,sel] of [['🎯 Props','.tpprops'],['📈 Stats','.tpstats'],['⭐ Players','.tpstars'],['👥 Roster','.tproster'],['📅 Schedule','.tpsched']]){
+  for(const [lab,sel] of [['🎯 Props','.tpprops'],['📈 Stats','.tpstats'],['🩹 Injuries','.tpinj'],['⭐ Players','.tpstars'],['👥 Roster','.tproster'],['📅 Schedule','.tpsched']]){
     if(!w.querySelector(sel))continue;const b=el('button',lab);b.type='button';b.onclick=()=>{const x=w.querySelector(sel);if(x)x.scrollIntoView({behavior:'smooth',block:'start'});};nav.append(b);}
   return nav;}
 
