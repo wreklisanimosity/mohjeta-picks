@@ -664,7 +664,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .plink{background:none;border:0;padding:0;margin:0;color:inherit;font:inherit;cursor:pointer;text-align:left;text-decoration:underline dotted rgba(200,160,255,.55);text-underline-offset:3px}
 .btrow .plink{font-weight:700}.plink:hover,.plink:focus-visible{color:#e9c8ff;outline:none;text-decoration-style:solid}
 .plcard .plhead{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}.plcard .pllg{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#f5c542}
-.plcard h3{margin:2px 0}.plcard .pltile{display:inline-flex;flex-direction:column;gap:2px;margin:0 8px 8px 0}.plcard .pltile b{font-size:20px}.plcard .plteam{color:#b9a7cf}.plcard .plstatus{background:rgba(255,120,80,.12);border:1px solid rgba(255,120,80,.35);border-radius:10px;padding:6px 10px;margin:6px 0;font-size:14px}
+.plcard h3{margin:2px 0}.plcard .pltile{display:inline-flex;flex-direction:column;gap:2px;margin:0 8px 8px 0}.plcard .pltile b,.plcard .pltile>span:last-child{font-size:20px;font-weight:700}.plcard .plteam{color:#b9a7cf}.plcard .plstatus{background:rgba(255,120,80,.12);border:1px solid rgba(255,120,80,.35);border-radius:10px;padding:6px 10px;margin:6px 0;font-size:14px}
 .plcard .plseason{margin:4px 0 10px;line-height:1.45}.plcard .pllive{border:1px solid rgba(80,230,140,.35);background:rgba(80,230,140,.06);border-radius:12px;padding:10px;margin:12px 0}
 .plcard .pllivehd{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}.plcard .pllivehd b{color:#5be38f}
 </style>
@@ -4526,7 +4526,7 @@ function plGames(name,team,lg){const gs=((D&&D.games)||[]).filter(g=>!lg||g.leag
 function plTile(label,val,cls){const x=el('div',null,'tile pltile');x.append(el('span',label,'hint small'));const v=val instanceof Node?val:el('b',val==null||val===''?'—':String(val));if(cls)v.classList.add(cls);x.append(v);return x;}
 function plBuild(name,team,lg,found){const b=found.base||{},a=found.adv||{};const box=el('div',null,'plcard');
   const tm=b.team_name||b.team||a.team||team||'';
-  const head=el('div',null,'plhead');head.append(el('div',(lg||'')+(b.pos||a.pos?' · '+(b.pos||a.pos):'')+(b.group?' · '+b.group:''),'pllg'),el('h3',b.name||a.name||name),el('div',tm,'plteam'));box.append(head);
+  const head=el('div',null,'plhead');head.append(el('div',(lg||'')+(b.pos||a.pos?' · '+(b.pos||a.pos):'')+(b.group&&b.group!==(b.pos||a.pos)?' · '+b.group:''),'pllg'),el('h3',b.name||a.name||name),el('div',tm,'plteam'));box.append(head);
   if(b.status)box.append(el('div','⚠️ '+b.status,'plstatus'));
   const tiles=el('div',null,'tiles');tiles.append(plTile('Mohjeta rating',b.rating==null?null:rcell(b.rating)));if(a.rating!=null)tiles.append(plTile('Points a game added',sg(a.rating)));if(a.rank)tiles.append(plTile('Rank at '+(a.group||'position'),'#'+a.rank));box.append(tiles);
   const season=found.base?pnote(b):'';if(season)box.append(el('h4','Season'),el('p',season,'plseason'));
