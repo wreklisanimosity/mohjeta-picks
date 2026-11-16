@@ -673,6 +673,11 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .plfindlink{display:block;margin:6px 0 10px;background:none;border:0;padding:4px 0;color:#d8a8ff;font:inherit;font-size:14px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .plinfo{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;margin-left:6px;border-radius:50%;border:1px solid rgba(200,160,255,.45);color:#e0c2ff;font-size:16px;cursor:pointer;flex:none}
 .plinline{border:1px solid rgba(180,77,255,.3);background:rgba(20,10,35,.95);border-radius:12px;padding:10px 12px;margin:2px 0 8px}.plinline .plcard h3{font-size:18px}
+.tdgrp{margin:16px 0 8px;color:#f5c542;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.tdgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.tdtile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border-radius:14px;border:1px solid rgba(180,77,255,.22);background:rgba(180,77,255,.06);color:inherit;font:inherit;cursor:pointer;text-align:center}
+.tdtile b{font-size:13px;line-height:1.2}.tdtile .badge{width:64px;height:64px}
+#tdFind{width:100%;box-sizing:border-box;margin:8px 0}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=8">
 <link rel="stylesheet" href="intro.css?v=3">
@@ -875,6 +880,10 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
     <h2>Ratings</h2><p class="hint small">Team strength from real final scores (Elo: 1500 is average, +100 is about a 64% favorite) and each league's players. Tennis: player Elo overall and by surface.</p>
     <div class="chips" id="rtChips"></div><div class="chips" id="rtViews"></div><select id="rtPick" aria-label="Choose team or position" hidden></select><input id="rtFind" type="search" placeholder="Find a team or player…" aria-label="Find a team or player"><button type="button" class="plfindlink" data-plfind>🔎 Search every player in every league ›</button><div id="rtBox"></div>
   </section>
+  <section class="panel" id="teams" role="tabpanel" aria-label="Teams"><button class="back" data-go="more">‹ My Mohjeta</button>
+    <h2>Teams</h2><p class="hint small">Every team by sport. Tap a team for its card: stats, schedule and full roster.</p>
+    <div class="chips" id="tdChips"></div><input id="tdFind" type="search" placeholder="Find a team…" aria-label="Find a team"><div id="tdBox"><p class="hint">Loading teams…</p></div>
+  </section>
   <section class="panel" id="news" role="tabpanel" aria-label="What's new"><button class="back" data-go="more">‹ My Mohjeta</button>
     <h2>What's new & how to use the site</h2><div id="newsBox"><p class="hint">Loading…</p></div>
   </section>
@@ -908,6 +917,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
       <button type="button" id="installMenu"><span>Install the app<small>Put Mohjeta on your home screen</small></span>›</button>
     </div></details>
     <details class="tfold mfold" open><summary><span>🧭 Explore Mohjeta</span></summary><div class="menu">
+      <button type="button" data-go="teams"><span>🏟 Teams<small>Every team by sport, with its card: stats, schedule, roster</small></span>›</button>
       <button type="button" data-plfind><span>🔎 Find a player or team<small>Team cards with stats and rosters, and player cards, even on days they don’t play</small></span>›</button>
       <button type="button" data-go="news"><span>🆕 What's new & how-to<small>Latest updates and how to use every part of the site</small></span>›</button>
       <button type="button" data-go="hub"><span>🏟 Sports hub<small>Standings, trade center, injury report, highlights and daily trivia</small></span>›</button>
@@ -1127,7 +1137,7 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['home','picks','props','sim','record','play','chat','more'];const SUB={hub:'more',radio:'more',games:'more',ratings:'more',guess:'play',fantasy:'play',weekly:'play',feed:'more',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
+const TABS=['home','picks','props','sim','record','play','chat','more'];const SUB={teams:'more',hub:'more',radio:'more',games:'more',ratings:'more',guess:'play',fantasy:'play',weekly:'play',feed:'more',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button[data-tab]')];
 function show(name,push){name=LEGACY[name]||name;
@@ -1137,6 +1147,7 @@ function show(name,push){name=LEGACY[name]||name;
   if(name==='radio')setTimeout(()=>{try{drawRadioPage();}catch(e){}},0);
   if(name==='hub')setTimeout(()=>{try{drawHub();}catch(e){}},0);
   if(name==='more')setTimeout(()=>{try{renderMine();}catch(e){}},0);
+  if(name==='teams')setTimeout(()=>{try{drawTeamsDir();}catch(e){}},0);
   if(name==='news')setTimeout(drawNews,0);   // chat = one floating overlay over any tab
   const panel=name==='record'?'recordp':name;
   for(const s of document.querySelectorAll('main .panel'))s.classList.toggle('on',s.id===panel);
@@ -4584,6 +4595,27 @@ function findPlayer(){openSheet(()=>{const box=el('div',null,'plfind');box.appen
   let t=null;inp.oninput=()=>{plfQ=inp.value;clearTimeout(t);t=setTimeout(()=>plfDraw(list,status),180);};
   box.append(inp,chips,status,list);plfDraw(list,status);setTimeout(()=>{try{inp.focus();}catch(e){}},60);return box;},'Find a player');}
 window.findPlayer=findPlayer;
+// ---- fix472 teams directory (owner, Nov 15 2026: "Create a teams with the team name and logo sort it by sport"): every
+// team in teams.json, one sport at a time (chips), grouped by division / conference (from its standing line), A-Z inside;
+// each tile = Mohjeta's own team picture (teamBadge: her portraits / drawn badges, never official logos) + name + record.
+// Tap -> team card (fix470: stats, schedule, full roster -> player cards).
+const TD_ORDER=['NFL','NBA','NHL','NCAAF','NCAAB','WNBA','MLB'];let tdLg=null;
+function tdGroup(st){const m=String(st||'').match(/ in (?:the )?(.+)$/);return m?m[1].replace(/ Division$/,''):'';}
+async function drawTeamsDir(){const box=$('tdBox'),chips=$('tdChips'),find=$('tdFind');if(!box)return;const T=await loadTeams2();const L=T.leagues||{};
+  const lgs=TD_ORDER.filter(k=>L[k]&&Object.keys(L[k]).length).concat(Object.keys(L).filter(k=>!TD_ORDER.includes(k)&&Object.keys(L[k]||{}).length));
+  if(!lgs.length){box.replaceChildren(el('p','Teams will show up after her next update.','hint'));return;}
+  if(!tdLg||!lgs.includes(tdLg))tdLg=lgs[0];
+  chips.replaceChildren(...lgs.map(k=>{const b=el('button',sname(k)+' · '+Object.keys(L[k]).length);b.type='button';b.setAttribute('aria-pressed',String(k===tdLg));b.onclick=()=>{tdLg=k;drawTeamsDir();};return b;}));
+  find.oninput=()=>drawTeamsDir();const q=plNorm(find.value);
+  const teams=Object.entries(L[tdLg]).map(([ab,t])=>Object.assign({ab},t)).filter(t=>!q||plNorm(t.n).includes(q)||plNorm(t.ab)===q).sort((a,b)=>String(a.n).localeCompare(String(b.n)));
+  if(!teams.length){box.replaceChildren(el('p','No team matches.','hint'));return;}
+  const by=new Map();for(const t of teams){const g=tdGroup(t.st)||'Teams';if(!by.has(g))by.set(g,[]);by.get(g).push(t);}
+  const keys=[...by.keys()].sort((a,b)=>a==='Teams'?1:b==='Teams'?-1:a.localeCompare(b));const parts=[];
+  for(const g of keys){parts.push(el('h4',g+' · '+by.get(g).length,'tdgrp'));const grid=el('div',null,'tdgrid');
+    for(const t of by.get(g)){const b=el('button',null,'tdtile');b.type='button';const bd=teamBadge(t.n);bd.classList.add('big');b.append(bd,el('b',t.n),el('span',t.rec||'','hint small'));b.onclick=()=>openTeam(t.n,tdLg);grid.append(b);}
+    parts.push(grid);}
+  box.replaceChildren(...parts);}
+
 // ---- fix470 team cards (owner, Nov 15 2026: "we should have team cards which should have team stats info and roster then
 // when you click on the player it should take you to the player card"): the team page (openTeam) now also shows a team
 // stats card (record, standing, scoring, home/road, her rating rank, offense/defense, position grades for NFL/NHL) and the
