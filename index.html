@@ -4953,8 +4953,16 @@ async function evoScore(){if(EVO.score!=null&&Date.now()-EVO.at<600000)return EV
       for(const m of h.data||[]){const mine=m.a_user===me.id?m.a_pts:m.b_pts,their=m.a_user===me.id?m.b_pts:m.a_pts;if(Number(mine)>Number(their))n+=3;}}catch(e){}}catch(e){}
   EVO={at:Date.now(),score:n};return n;}
 function evoStage(n){let s=1;EVO_STAGES.forEach((x,i)=>{if((n||0)>=x)s=i+1;});return s;}
+// fix492 (owner: "the actual team logo evolving ... the eagles become bird of prey ... packers ... nacho bear ... things like
+// that"): each team's OWN portrait art (never the real logo) can have stage 2-4 versions in portraits/evo/<file>-<stage>.webp,
+// listed in portraits/evo/ready.json ({"philadelphia-eagles":[2,3,4]}). Missing art falls back to the portrait + frame.
+let EVO_READY={};fetch('portraits/evo/ready.json?t='+Math.floor(Date.now()/3e5)).then(r=>r.ok?r.json():{}).then(x=>{if(x&&typeof x==='object'){EVO_READY=x;try{if(D)renderHome(D);}catch(e){}}}).catch(()=>{});
+function evoArt(team,stage){if(stage<2||!teamPortraits.has(team))return null;const base=String(teamPortraits.file(team)).replace(/\.webp$/,'');
+  const have=(EVO_READY[base]||[]).filter(n=>n<=stage);if(!have.length)return null;const n=Math.max(...have);
+  const im=document.createElement('img');im.className='badge team-portrait evoimg';im.alt='';im.decoding='async';im.src='portraits/evo/'+base+'-'+n+'.webp?v=1';
+  im.onerror=()=>{im.onerror=null;im.replaceWith(teamBadge(team));};return im;}
 function evoBadge(team,stage){const w=el('span',null,'evob evo'+stage);w.style.setProperty('--tc',(()=>{try{return simColor(team)||'#b44dff';}catch(e){return '#b44dff';}})());
-  w.append(teamBadge(team));if(stage>=3)w.append(tfxIcon(tfxMotif(team),'evom',tfxColor(team)));if(stage>=4)w.append(tfxIcon('crown','evoc','#ffd76a'));w.title='Stage '+stage+' badge';return w;}
+  w.append(evoArt(team,stage)||teamBadge(team));if(stage>=3)w.append(tfxIcon(tfxMotif(team),'evom',tfxColor(team)));if(stage>=4)w.append(tfxIcon('crown','evoc','#ffd76a'));w.title='Stage '+stage+' badge';return w;}
 // the look: CSS variables + body classes; particles on Home blocks
 function tfxApply(){const b=document.body;b.classList.remove('tfx1','tfx2','tfx3');document.querySelectorAll('.tfxp').forEach(x=>x.remove());
   const t=favMain();if(!t)return;const tier=tfxTier(teamXP(t));if(!tier)return;let c='#b44dff';try{c=simColor(t)||c;}catch(e){}
