@@ -678,6 +678,10 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .tdtile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border-radius:14px;border:1px solid rgba(180,77,255,.22);background:rgba(180,77,255,.06);color:inherit;font:inherit;cursor:pointer;text-align:center}
 .tdtile b{font-size:13px;line-height:1.2}.tdtile .badge{width:64px;height:64px}
 #tdFind{width:100%;box-sizing:border-box;margin:8px 0}
+.hteams{padding:12px 14px}.hteamshd{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}
+.hteamsrow{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px;scrollbar-width:none}.hteamsrow::-webkit-scrollbar{display:none}
+.hteambtn{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:84px;padding:10px 8px;border-radius:14px;border:1px solid rgba(180,77,255,.25);background:rgba(180,77,255,.07);color:inherit;font:inherit;cursor:pointer}
+.hteambtn .hi{font-size:22px}.hteambtn b{font-size:12px;white-space:nowrap}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=8">
 <link rel="stylesheet" href="intro.css?v=3">
@@ -3064,6 +3068,7 @@ function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren
     b.append(info,el('span','›','go'));b.onclick=()=>openGame(nx.id||nx.name);B.next=b;}
   try{B.trivia=triviaHomeCard();B.hub=hubHomeRow();}catch(e){}   // fix413
   try{B.board=homeBoard();}catch(e){}
+  try{B.allteams=homeTeamsBlock();}catch(e){}   // fix473 (owner: "Put teams on the home page")
   try{B.live=homeLiveBlock(d,live);B.combos=homeCombosBlock(d);B.trades=homeTradesBlock(d);}catch(e){}   // fix420: extra blocks people can switch on   // fix410 (owner): leaderboard + winner on Home, free for everyone
   {const w=el('div');w.append(el('div','Go to','hsec'));const tiles=el('div',null,'htiles');for(const p of PAGES.slice(0,12))tiles.append(pageTile(p,d));w.append(tiles);
   const more=el('button','All pages ⌃','btn ghost small');more.type='button';more.onclick=openQJ;w.append(more);B.tiles=w;}
@@ -4383,15 +4388,15 @@ function tradePopup(){if(document.querySelector('.trpop'))return;let seen=[];try
 // ---------------- fix420 (owner: "give customers the option to customize their own home page" -> yes): ✏️ Edit Home.
 // Every Home section is a block people can show / hide and move; three presets; reset. Saved on this phone.
 const HOME_BLOCKS=[['teams','⭐ My teams','Your followed teams tonight'],['voice','🎙 Her rundown','Her top picks in her own voice'],['stats','📊 Her numbers','Record, radio, tonight, combos'],
-  ['next','⏰ Next up','Her next pick and the countdown'],['live','● Live now','Every game being played right now'],['combos','🎟 Her open combos','What she has riding tonight'],
+  ['next','⏰ Next up','Her next pick and the countdown'],['allteams','🏟 Teams','Every team by sport, with stats and rosters'],['live','● Live now','Every game being played right now'],['combos','🎟 Her open combos','What she has riding tonight'],
   ['trades','🔁 Latest trades','New trades and her read'],['trivia','🧠 Daily trivia','5 quick questions a day'],['hub','🏟 Sports hub','Standings, trades, injuries, highlights'],
   ['board','🏆 Leaderboard','Pick’em leaders and the champion'],['tiles','🧭 Go to','Shortcuts to every page']];
-const HOME_DEFAULT={order:['teams','voice','stats','next','live','combos','trades','trivia','hub','board','tiles'],hidden:['live','combos','trades']};
+const HOME_DEFAULT={order:['teams','voice','stats','next','allteams','live','combos','trades','trivia','hub','board','tiles'],hidden:['live','combos','trades']};
 const HOME_PRESETS={picks:['⚡ Picks first',['stats','next','combos','live','voice','tiles']],fan:['📺 Fan mode',['teams','live','stats','trades','hub','voice','tiles']],
   comp:['🏆 Competitor',['board','trivia','stats','combos','hub','tiles']]};
 let homeEditing=false;
 function homeLayout(){let L=null;try{L=JSON.parse(localStorage.getItem('mohjeta.homeLayout')||'null');}catch(e){}if(!L||!Array.isArray(L.order))L=JSON.parse(JSON.stringify(HOME_DEFAULT));
-  const ids=HOME_BLOCKS.map(b=>b[0]);L.order=L.order.filter(k=>ids.includes(k));for(const k of ids)if(!L.order.includes(k)){L.order.push(k);if(HOME_DEFAULT.hidden.includes(k))(L.hidden=L.hidden||[]).push(k);}L.hidden=(L.hidden||[]).filter(k=>ids.includes(k));return L;}
+  const ids=HOME_BLOCKS.map(b=>b[0]);L.order=L.order.filter(k=>ids.includes(k));if(!L.order.includes('allteams')){const i=L.order.indexOf('next');L.order.splice(i<0?L.order.length:i+1,0,'allteams');}for(const k of ids)if(!L.order.includes(k)){L.order.push(k);if(HOME_DEFAULT.hidden.includes(k))(L.hidden=L.hidden||[]).push(k);}L.hidden=(L.hidden||[]).filter(k=>ids.includes(k));return L;}
 function homeLayoutSave(L){try{if(L)localStorage.setItem('mohjeta.homeLayout',JSON.stringify(L));else localStorage.removeItem('mohjeta.homeLayout');}catch(e){}}
 function homeLayoutApply(box,B){const L=homeLayout();if(homeEditing){box.append(homeEditor(L));return;}
   for(const k of L.order){if(L.hidden.includes(k))continue;const n=B[k];if(n)box.append(n);}
@@ -4595,6 +4600,13 @@ function findPlayer(){openSheet(()=>{const box=el('div',null,'plfind');box.appen
   let t=null;inp.oninput=()=>{plfQ=inp.value;clearTimeout(t);t=setTimeout(()=>plfDraw(list,status),180);};
   box.append(inp,chips,status,list);plfDraw(list,status);setTimeout(()=>{try{inp.focus();}catch(e){}},60);return box;},'Find a player');}
 window.findPlayer=findPlayer;
+// fix473 (owner, Nov 15 2026: "Put teams on the home page"): a Teams block on Home - one button per sport straight into the
+// Teams directory (fix472) on that sport, plus find-a-player-or-team. Part of the Home layout (can be moved / hidden).
+function homeTeamsBlock(){const w=el('div',null,'card hteams');const hd=el('div',null,'hteamshd');hd.append(el('b','🏟 Teams'),el('small','Every team by sport: stats, schedule, roster','hint small'));w.append(hd);
+  const row=el('div',null,'hteamsrow');for(const [k,ic,l] of [['NFL','🏈','NFL'],['NBA','🏀','NBA'],['NHL','🏒','NHL'],['NCAAF','🏈','College FB'],['NCAAB','🏀','College BB'],['MLB','⚾','MLB'],['WNBA','🏀','WNBA']]){
+    const b=el('button',null,'hteambtn');b.type='button';b.append(el('span',ic,'hi'),el('b',l));b.onclick=()=>{tdLg=k;show('teams');};row.append(b);}
+  w.append(row);const f=el('button','🔎 Find a player or team','btn ghost small');f.type='button';f.onclick=findPlayer;w.append(f);return w;}
+
 // ---- fix472 teams directory (owner, Nov 15 2026: "Create a teams with the team name and logo sort it by sport"): every
 // team in teams.json, one sport at a time (chips), grouped by division / conference (from its standing line), A-Z inside;
 // each tile = Mohjeta's own team picture (teamBadge: her portraits / drawn badges, never official logos) + name + record.
