@@ -19,6 +19,8 @@ p.lead{color:#d9c8ee;font-size:16px;line-height:1.5}
 .btn{display:block;text-align:center;padding:15px;border-radius:14px;font-weight:800;font-size:17px;text-decoration:none;color:#fff;background:linear-gradient(135deg,#ff6ae0,#b0249a);box-shadow:0 8px 24px #ff4fd855,inset 0 1px 0 #ffffff55}
 .btn.alt{background:linear-gradient(135deg,#3ddc84,#1c8f50);box-shadow:0 8px 24px #3ddc8444,inset 0 1px 0 #ffffff55}
 .note{margin-top:10px;font-size:13px;color:#a995c4;line-height:1.45}
+.step{margin:12px 0 8px;color:#d9c8ee;font-size:15px;line-height:1.5}.bform{display:grid;gap:10px}.bform input{width:100%;padding:14px;border-radius:12px;border:1px solid #ff4fd877;background:#0d0717;color:#fff;font-size:16px}
+.btn.ghost{background:transparent;border:2px solid #3ddc84;box-shadow:none;color:#3ddc84;margin-top:4px}#bmsg.ok{color:#3ddc84}#bmsg.bad{color:#ff8a8a}
 .back{display:inline-block;margin-top:26px;color:#ff8be6;font-weight:700;text-decoration:none}
 footer{margin-top:22px;font-size:12px;color:#8f7aa8;line-height:1.5}
 </style></head><body><main>
@@ -33,9 +35,12 @@ footer{margin-top:22px;font-size:12px;color:#8f7aa8;line-height:1.5}
 <p class="note">Spots are limited by Apple. If it says the beta is full, check back soon.</p></section>
 
 <section class="card"><h2>🤖 Android</h2>
-<ol><li>Tap the button while signed in to Google on your phone.</li><li>Tap <b>Become a tester</b>, then the Google Play link to install.</li><li>Open Mohjeta and sign in.</li></ol>
-<a class="btn alt" href="https://play.google.com/apps/testing/com.mohjeta.picks" rel="noopener" onclick="mjTrack('play')">Join on Google Play</a>
-<p class="note">Android testers are added in batches. If Google says you aren't invited yet, check back soon.</p></section>
+<p class="step"><b>Step 1.</b> Google only lets invited testers in. Enter the <b>Google (Gmail) address you use for the Play Store</b> on your phone:</p>
+<form id="bform" class="bform" novalidate><input id="bemail" type="email" inputmode="email" autocomplete="email" placeholder="you@gmail.com" required maxlength="254" aria-label="Your Google Play email">
+<button id="bsend" class="btn alt" type="submit">Add me to the Android beta</button><p id="bmsg" class="note" role="status"></p></form>
+<p class="step"><b>Step 2.</b> Once you're added (usually within a day), tap below on your phone, tap <b>Become a tester</b>, then install from Google Play.</p>
+<a class="btn alt ghost" href="https://play.google.com/apps/testing/com.mohjeta.picks" rel="noopener" onclick="mjTrack('play')">Open the Google Play beta</a>
+<p class="note">If Google says you aren't invited yet, you haven't been added yet: check back later. Your email is only used to add you to the Google Play test, never shared or shown on the site.</p></section>
 
 <a class="back" href="./">‹ Back to mohjeta.com</a>
 <footer>Entertainment only · 21+ · Mohjeta's picks are model estimates, not betting advice.</footer>
@@ -52,4 +57,18 @@ async function mjTrack(ev,once){try{const k='mohjeta.tr.'+ev;if(once==='session'
   const c=window._cfg||await fetch('live-config.json',{cache:'no-store'}).then(r=>r.json());if(!c||!c.url||!c.anon_key)return;
   await fetch(c.url+'/rest/v1/rpc/track_visit',{method:'POST',keepalive:true,headers:{apikey:c.anon_key,Authorization:'Bearer '+c.anon_key,'Content-Type':'application/json'},body:JSON.stringify({p_src:mjSrc(),p_ev:ev})});}catch(e){}}
 mjSrc();mjTrack('beta_page','session');
+/* fix490 (owner: the Google link "doesn't let them put their email in so it can be put in the test for Google"): Android
+   signups go to Supabase beta_signups (insert only; nobody can read the list from the site). */
+document.getElementById('bform').addEventListener('submit',async e=>{e.preventDefault();const inp=document.getElementById('bemail'),msg=document.getElementById('bmsg'),btn=document.getElementById('bsend');
+  const em=inp.value.trim().toLowerCase();msg.className='note';
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){msg.className='note bad';msg.textContent='Please enter a valid email address.';inp.focus();return;}
+  btn.disabled=true;msg.textContent='Adding you…';
+  try{const c=window._cfg||await fetch('live-config.json',{cache:'no-store'}).then(r=>r.json());window._cfg=c;
+    const r=await fetch(c.url+'/rest/v1/beta_signups?on_conflict=email',{method:'POST',headers:{apikey:c.anon_key,Authorization:'Bearer '+c.anon_key,'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=minimal'},
+      body:JSON.stringify({email:em,platform:'android',source:mjSrc()})});
+    if(!r.ok&&r.status!==409)throw new Error(String(r.status));
+    msg.className='note ok';msg.textContent='✅ You\'re on the list. We\'ll add '+em+' to the Google Play test, usually within a day. Then do Step 2.';inp.value='';mjTrack('signup');
+    try{localStorage.setItem('mohjeta.betaEmail','1');}catch(e2){}}
+  catch(err){msg.className='note bad';msg.textContent='Could not save that right now. Please try again in a minute.';}
+  finally{btn.disabled=false;}});
 </script></body></html>
