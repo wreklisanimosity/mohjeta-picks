@@ -4606,7 +4606,9 @@ async function teamRosterCard(c,t,lg,abbr){await plRatings();if(ROSTER_FILE[lg]&
   const mine=ps.filter(p=>p.team===abbr||p.team===t.n||(p.team_name&&(p.team_name===t.n||sameTeam(p.team_name,t.n)&&String(t.n).toLowerCase().endsWith(String(p.team_name).toLowerCase()))));
   c.replaceChildren(el('h4','👥 Roster'+(mine.length?' · '+mine.length:'')));
   if(!mine.length){c.append(el('p','The roster for this team isn’t in her player data yet.','hint small'));return;}
-  const groups=[...new Set(mine.map(p=>p.group||p.pos||'Players'))];
+  const GORD=['QB','RB','WR','TE','OL','DL','LB','DB','K','P','G','Guards','F','Forwards','C','Centers','W','D','Defense','Goalies','SP','RP'];
+  const gi=g=>{const i=GORD.indexOf(g);return i<0?99:i;};
+  const groups=[...new Set(mine.map(p=>p.group||p.pos||'Players'))].sort((a,b)=>gi(a)-gi(b)||String(a).localeCompare(String(b)));
   for(const g of groups){const sub=mine.filter(p=>(p.group||p.pos||'Players')===g).sort((a,b)=>(b.rating??-1)-(a.rating??-1));
     c.append(el('h5',g+' · '+sub.length,'lugrp'),tableOf(['Player','Pos','Rating','Season'],sub.map(p=>[plink(p.name,t.n,lg,p.name+(p.status?' ⚠️':'')),p.pos||'',rcell(p.rating),pnote(p)])));}
   c.append(el('p','Tap any player for his card: rating, season stats, and his live line when he plays.','hint small'));}
