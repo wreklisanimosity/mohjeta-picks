@@ -2333,7 +2333,7 @@ function findTeam(T,name,league){const L=(T.leagues||{});const lgs=league&&L[lea
 function teamLink(name,league,content){const b=el('button',null,'tlink');b.type='button';b.append(content==null?String(name):content);b.title='Schedule and synopsis';b.onclick=e=>{e.stopPropagation();openTeam(name,league);};return b;}
 function teamRating(name,lg){const L=rt&&rt.leagues&&rt.leagues[lg];if(!L||!L.teams)return null;return L.teams.find(t=>t.team===name)||L.teams.find(t=>sameTeam(t.team,name))||null;}
 function teamStars(name,lg,abbr){const L=rt&&rt.leagues&&rt.leagues[lg];const ps=L&&L.roster&&L.roster.players;if(!ps)return [];
-  return ps.filter(p=>p.team===abbr||sameTeam(p.team_name||'',name)&&String(name).toLowerCase().endsWith(String(p.team_name||'').toLowerCase())).filter(p=>!/^(OL|P|K)$/.test(p.group)&&!p.status&&p.est!=='new').sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,5);}
+  const byAb=abbr?ps.filter(p=>p.team===abbr):[];return (byAb.length?byAb:ps.filter(p=>sameTeam(p.team_name||'',name)&&String(name).toLowerCase().endsWith(String(p.team_name||'').toLowerCase()))).filter(p=>!/^(OL|P|K)$/.test(p.group)&&!p.status&&p.est!=='new').sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,5);}
 function teamSynopsis(name,lg,t,r,nextG){const done=t.g.filter(x=>x[4]),todo=t.g.filter(x=>!x[4]);const nick=t.s||simNick(name);const out=[];
   let streak=0,sk=null;for(let i=done.length-1;i>=0;i--){if(sk===null)sk=done[i][4];if(done[i][4]!==sk)break;streak++;}
   const recent=done.slice(-5),rw=recent.filter(x=>x[4]==='W').length;
@@ -4786,6 +4786,7 @@ async function plPropsFill(host,name,team,lg){let P=propData(D);
     box.append(chips,lab,out,sv,el('p','Save tracks it in My props for his next game.','hint small'));host.append(box);draw();}
   if(!host.childNodes.length)host.append(el('p','No props for him yet.','hint small'));}
 function teamMine(t,lg,abbr){const ps=((((rt||{}).leagues||{})[lg]||{}).roster||{}).players||[];
+  const byAb=abbr?ps.filter(p=>p.team===abbr):[];if(byAb.length)return byAb;
   return ps.filter(p=>p.team===abbr||p.team===t.n||(p.team_name&&(p.team_name===t.n||sameTeam(p.team_name,t.n)&&String(t.n).toLowerCase().endsWith(String(p.team_name).toLowerCase()))));}
 async function teamPropsCard(c,t,lg,abbr){c.replaceChildren(el('h4','🎯 Player props'),el('p','Loading…','hint small'));
   let P=propData(D);if(P&&P.board==null&&P.board_n){await plDet();P=propData(D);}
@@ -5002,7 +5003,15 @@ function openFavRewards(team,lg){openSheet(()=>{const w=el('div',null,'favrew no
     w.append(el('p','You have '+sc+' rival point'+(sc===1?'':'s')+': 1 for every player you finish above in a weekly fantasy week (any sport), 3 for every head-to-head league win. '+(stage<4?(EVO_STAGES[stage]-sc)+' more for stage '+(stage+1)+'.':'Top stage!')+(me?'':' Sign in to count your fantasy results.'),'hint small'));
     w.append(el('p','Badges and effects are Mohjeta’s own team-colored designs, not official team logos. Saved on this phone.','hint small'));return w;},'Team rewards');}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(tfxApply,300);});
-function teamInjuryCard(t,lg){const I=((D&&D.injuries)||{})[lg];if(!I)return null;const key=Object.keys(I).find(k=>k===t.n||sameTeam(k,t.n));
+// fix483: leagues missing from her injury feed (NFL, college football, WNBA, MLB) read ESPN's league injury list in the browser
+const INJX={};
+async function injFetch(lg){if(INJX[lg]&&Date.now()-INJX[lg].at<600000)return INJX[lg].v;let v={};
+  try{const j=await fetch('https://site.api.espn.com/apis/site/v2/sports/'+ESPN_PATH[lg]+'/injuries',{signal:AbortSignal.timeout(8000)}).then(r=>r.ok?r.json():null);
+    for(const tm of (j&&j.injuries)||[])v[tm.displayName]=(tm.injuries||[]).filter(i=>i.status&&!/^active$/i.test(i.status)).map(i=>[(i.athlete||{}).displayName||'',i.status,(i.details||{}).type||'']);}catch(e){}
+  INJX[lg]={at:Date.now(),v};return v;}
+function teamInjuryCard(t,lg,given){const I=given||((D&&D.injuries)||{})[lg];
+  if(!I){if(!ESPN_PATH[lg])return null;const ph=el('div',null,'card tpinj');ph.append(el('h4','🩹 Injuries'),el('p','Loading the injury report…','hint small'));
+    injFetch(lg).then(v=>{if(!Object.keys(v).length){ph.remove();return;}const key=Object.keys(v).find(k=>k===t.n||tsame(k,t.n));ph.replaceWith(teamInjuryCard(t,lg,{[t.n]:key?v[key]:[]}));});return ph;}const key=Object.keys(I).find(k=>k===t.n)||Object.keys(I).find(k=>tsame(k,t.n));
   const c=el('div',null,'card tpinj');const rows=key?I[key]||[]:[];c.append(el('h4','🩹 Injuries'+(rows.length?' · '+rows.length:'')));
   if(!rows.length){c.append(el('p','No one on the injury report.','hint small'));return c;}
   const sc=r=>/Out|Reserve|Suspended/.test(r[1])?0:/Doubtful/.test(r[1])?1:/Questionable/.test(r[1])?2:3;
@@ -5095,7 +5104,8 @@ function teamStatsCard(t,lg,r){const c=el('div',null,'card tpstats');c.append(el
   return c;}
 async function teamRosterCard(c,t,lg,abbr){await plRatings();if(ROSTER_FILE[lg]&&rosterLoaded[lg]!=='ok'){try{await ensureRoster(lg);}catch(e){}}
   const ps=((((rt||{}).leagues||{})[lg]||{}).roster||{}).players||[];
-  const mine=ps.filter(p=>p.team===abbr||p.team===t.n||(p.team_name&&(p.team_name===t.n||sameTeam(p.team_name,t.n)&&String(t.n).toLowerCase().endsWith(String(p.team_name).toLowerCase()))));
+  const byAb=abbr?ps.filter(p=>p.team===abbr):[];   // fix483: by abbreviation first (college nicknames repeat: Duquesne / James Madison Dukes)
+  const mine=byAb.length?byAb:ps.filter(p=>p.team===t.n||(p.team_name&&(p.team_name===t.n||sameTeam(p.team_name,t.n)&&String(t.n).toLowerCase().endsWith(String(p.team_name).toLowerCase()))));
   c.replaceChildren(el('h4','👥 Roster'+(mine.length?' · '+mine.length:'')));
   if(!mine.length){c.append(el('p','The roster for this team isn’t in her player data yet.','hint small'));return;}
   const GORD=['QB','RB','WR','TE','OL','DL','LB','DB','K','P','G','Guards','F','Forwards','C','Centers','W','D','Defense','Goalies','SP','RP'];
