@@ -801,7 +801,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
 <script src="sounds.js?v=2"></script>
 <script src="intro.js?v=3"></script>
 <header>
-  <div class="top"><div class="brand" id="home" role="link" tabindex="0" aria-label="Mohjeta"><img class="brand-m" src="logo-cut.webp?v=2" alt="" width="30" height="30"><span aria-hidden="true">OHJETA</span><b aria-hidden="true">.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><button type="button" class="btn subscribe-entry" id="subscribeEntry">Subscribe</button><span class="updated" id="updated">Loading…</span><button type="button" class="sndbtn" id="plFindBtn" aria-label="Find a player" title="Find a player">🔎</button><button type="button" class="sndbtn" id="sndBtn" data-sound-toggle aria-pressed="true" aria-label="Sound on">🔊</button><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
+  <div class="top"><div class="brand" id="home" role="link" tabindex="0" aria-label="Mohjeta"><img class="brand-m" src="logo-cut.webp?v=2" alt="" width="30" height="30"><span aria-hidden="true">OHJETA</span><b aria-hidden="true">.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><button type="button" class="btn subscribe-entry" id="subscribeEntry">Subscribe</button><span class="updated" id="updated">Loading…</span><button type="button" class="sndbtn" id="plFindBtn" aria-label="Find a player or team" title="Find a player or team">🔎</button><button type="button" class="sndbtn" id="sndBtn" data-sound-toggle aria-pressed="true" aria-label="Sound on">🔊</button><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
   <div class="ticker" id="ticker" hidden role="region" aria-label="Sports headlines and site news"><div class="tk-view"><div class="tk-track" id="tkTrack"></div></div><button type="button" class="tk-x" id="tkClose" aria-label="Hide the headlines">✕</button></div>
 </header>
   <nav class="tabs" role="tablist" aria-label="Sections" id="nav">
@@ -908,7 +908,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
       <button type="button" id="installMenu"><span>Install the app<small>Put Mohjeta on your home screen</small></span>›</button>
     </div></details>
     <details class="tfold mfold" open><summary><span>🧭 Explore Mohjeta</span></summary><div class="menu">
-      <button type="button" data-plfind><span>🔎 Find a player<small>Any NFL, NBA, NHL or college player, even when his team isn’t playing</small></span>›</button>
+      <button type="button" data-plfind><span>🔎 Find a player or team<small>Team cards with stats and rosters, and player cards, even on days they don’t play</small></span>›</button>
       <button type="button" data-go="news"><span>🆕 What's new & how-to<small>Latest updates and how to use every part of the site</small></span>›</button>
       <button type="button" data-go="hub"><span>🏟 Sports hub<small>Standings, trade center, injury report, highlights and daily trivia</small></span>›</button>
       <button type="button" data-go="radio"><span>🎧 Sports radio<small>Free live sports talk: ESPN Radio, Fox Sports Radio and more</small></span>›</button>
@@ -2268,9 +2268,11 @@ async function openTeam(name,league){try{award('team');}catch(e){}openSheet(()=>
   if(todo.length){sched.append(el('div','Coming up','lugrp'));todo.forEach(x=>sched.append(line(x)));}
   if(done.length){sched.append(el('div','Recent results','lugrp'));done.slice().reverse().forEach(x=>sched.append(line(x)));}
   w.append(sched);
+  w.insertBefore(teamStatsCard(t,lg,r),sched);   // fix470: team stats + full roster (tap a player for his card)
   const stars=teamStars(t.n,lg,f.abbr);if(stars.length){const k=el('div',null,'card tpstars');k.append(el('h4','⭐ Key players'));
-    for(const p of stars){const row=el('div',null,'tpp');row.append(el('b',p.name),el('span',(p.pos||p.group||'')+(pnote(p)?' · '+pnote(p):''),'hint small'),el('span',String(p.rating),'tprate'));k.append(row);}
-    k.append(el('p','Rating 0-99 = rank against players at the same position this season.','hint small'));w.append(k);}
+    for(const p of stars){const row=el('div',null,'tpp');row.append(plink(p.name,t.n,lg),el('span',(p.pos||p.group||'')+(pnote(p)?' · '+pnote(p):''),'hint small'),el('span',String(p.rating),'tprate'));k.append(row);}
+    k.append(el('p','Rating 0-99 = rank against players at the same position this season. Tap a name for his card.','hint small'));w.append(k);}
+  const rc=el('div',null,'card tproster');rc.append(el('p','Loading the roster…','hint small'));w.append(rc);teamRosterCard(rc,t,lg,f.abbr);
   w.append(el('p','Schedule and results from ESPN; synopsis written by Mohjeta from her ratings and their results. Updated every few hours.','hint small'));}
 let simKey=null;const SIMLAST={};
 function renderSimIfChanged(){let k=null;try{k=JSON.stringify([simMode,simGames().map(g=>[g.id||g.name,g.sim?(g.sim.nba_model?g.sim.nba_model.model_hash||g.sim.nba_model.built_at:g.sim.margin+'/'+g.sim.total):0])]);}catch(e){}
@@ -4533,7 +4535,7 @@ function plGames(name,team,lg){const gs=((D&&D.games)||[]).filter(g=>!lg||g.leag
 function plTile(label,val,cls){const x=el('div',null,'tile pltile');x.append(el('span',label,'hint small'));const v=val instanceof Node?val:el('b',val==null||val===''?'—':String(val));if(cls)v.classList.add(cls);x.append(v);return x;}
 function plBuild(name,team,lg,found){const b=found.base||{},a=found.adv||{};const box=el('div',null,'plcard');
   const tm=b.team_name||b.team||a.team||team||'';
-  const head=el('div',null,'plhead');head.append(el('div',(lg||'')+(b.pos||a.pos?' · '+(b.pos||a.pos):'')+(b.group&&b.group!==(b.pos||a.pos)?' · '+b.group:''),'pllg'),el('h3',b.name||a.name||name),el('div',tm,'plteam'));box.append(head);
+  const head=el('div',null,'plhead');head.append(el('div',(lg||'')+(b.pos||a.pos?' · '+(b.pos||a.pos):'')+(b.group&&b.group!==(b.pos||a.pos)?' · '+b.group:''),'pllg'),el('h3',b.name||a.name||name),(tm?teamLink(tm,lg,el('span',tm+' ›','plteam')):el('div','','plteam')));box.append(head);
   if(b.status)box.append(el('div','⚠️ '+b.status,'plstatus'));
   const tiles=el('div',null,'tiles');tiles.append(plTile('Mohjeta rating',b.rating==null?null:rcell(b.rating)));if(a.rating!=null)tiles.append(plTile('Points a game added',sg(a.rating)));if(a.rank)tiles.append(plTile('Rank at '+(a.group||'position'),'#'+a.rank));box.append(tiles);
   const season=found.base?pnote(b):'';if(season)box.append(el('h4','Season'),el('p',season,'plseason'));
@@ -4567,18 +4569,48 @@ async function plfDraw(list,status){const q=plNorm(plfQ);if(q.length<2){list.rep
     for(const k of college){try{await ensureRoster(k);}catch(e){}}status.textContent='';
     if(plNorm(plfQ)!==q)return;hits=plfPool(plfLg).filter(([k,p])=>{const n=plNorm(p.name);return n.includes(q)||q.split(' ').every(w=>n.split(' ').some(x=>x.startsWith(w)));});}
   hits.sort((a,b)=>{const ea=plNorm(a[1].name).startsWith(q)?0:1,eb=plNorm(b[1].name).startsWith(q)?0:1;return ea-eb||((b[1].rating??-1)-(a[1].rating??-1));});
-  if(!hits.length){list.replaceChildren(el('p','No player found'+(plfLg==='ALL'?'':' in '+plfLg)+'. Check the spelling, or try just the last name.','hint'));return;}
-  list.replaceChildren(...hits.slice(0,40).map(([k,p])=>{const b=el('button',null,'plres');b.type='button';
+  let teams=[];try{const T=await loadTeams2();for(const [k,L] of Object.entries(T.leagues||{})){if(plfLg!=='ALL'&&k!==plfLg)continue;for(const [ab,tm] of Object.entries(L||{})){const n=plNorm(tm.n);if(n.includes(q)||plNorm(ab)===q)teams.push([k,tm]);}}}catch(e){}
+  teams=teams.slice(0,8);
+  if(!hits.length&&!teams.length){list.replaceChildren(el('p','No player or team found'+(plfLg==='ALL'?'':' in '+plfLg)+'. Check the spelling, or try just the last name.','hint'));return;}
+  const tb=teams.map(([k,tm])=>{const b=el('button',null,'plres plteamres');b.type='button';b.append(el('b','🏟 '+tm.n),el('span',[k,tm.rec,tm.st].filter(Boolean).join(' · '),'hint small'),el('span','Team ›','hint small'));b.onclick=()=>openTeam(tm.n,k);return b;});
+  list.replaceChildren(...tb,...hits.slice(0,40).map(([k,p])=>{const b=el('button',null,'plres');b.type='button';
     b.append(el('b',p.name),el('span',[k,p.pos,p.team_name||p.team].filter(Boolean).join(' · '),'hint small'),rcell(p.rating));
     b.onclick=()=>openPlayer(p.name,p.team_name||p.team,k);return b;}));
   if(hits.length>40)list.append(el('p',hits.length-40+' more: type more of the name.','hint small'));}
-function findPlayer(){openSheet(()=>{const box=el('div',null,'plfind');box.append(el('h3','🔎 Find a player'),el('p','Any rated player in the NFL, NBA, NHL and college, whether his team plays today or not.','hint small'));
-  const inp=el('input');inp.type='search';inp.placeholder='Player name, e.g. Burrow';inp.setAttribute('aria-label','Player name');inp.value=plfQ;inp.className='plfinput';
+function findPlayer(){openSheet(()=>{const box=el('div',null,'plfind');box.append(el('h3','🔎 Find a player or team'),el('p','Any team or rated player in the NFL, NBA, NHL and college, whether they play today or not.','hint small'));
+  const inp=el('input');inp.type='search';inp.placeholder='Player or team, e.g. Burrow or Bengals';inp.setAttribute('aria-label','Player name');inp.value=plfQ;inp.className='plfinput';
   const chips=el('div',null,'chips');const list=el('div',null,'plreslist');const status=el('small','','hint small');
   const drawChips=()=>chips.replaceChildren(...PLF_LGS.map(([k,l])=>{const c=el('button',l);c.type='button';c.setAttribute('aria-pressed',String(plfLg===k));c.onclick=()=>{plfLg=k;drawChips();plfDraw(list,status);};return c;}));drawChips();
   let t=null;inp.oninput=()=>{plfQ=inp.value;clearTimeout(t);t=setTimeout(()=>plfDraw(list,status),180);};
   box.append(inp,chips,status,list);plfDraw(list,status);setTimeout(()=>{try{inp.focus();}catch(e){}},60);return box;},'Find a player');}
 window.findPlayer=findPlayer;
+// ---- fix470 team cards (owner, Nov 15 2026: "we should have team cards which should have team stats info and roster then
+// when you click on the player it should take you to the player card"): the team page (openTeam) now also shows a team
+// stats card (record, standing, scoring, home/road, her rating rank, offense/defense, position grades for NFL/NHL) and the
+// full roster by position group; every name opens his player card, and the player card links back to the team.
+function teamStatsCard(t,lg,r){const c=el('div',null,'card tpstats');c.append(el('h4','📈 Team stats'));const tiles=el('div',null,'tiles');
+  const add=(l,v)=>{if(v==null||v==='')return;const x=el('div',null,'tile pltile');x.append(el('span',l,'hint small'),el('b',String(v)));tiles.append(x);};
+  const u=lg==='NHL'?'Goals':'Points',dec=lg==='NHL'?1:0;add('Record',t.rec);add('Standing',(t.st||'').replace(/^(\d+)(st|nd|rd|th) in /,'$1$2 in '));
+  if(t.gp){add(u+' a game',(t.pf/t.gp).toFixed(dec));add('Allowed a game',(t.pa/t.gp).toFixed(dec));const d=(t.pf-t.pa)/t.gp;add('Avg margin',(d>0?'+':'')+d.toFixed(dec));}
+  add('Home',t.home);add('Road',t.road);
+  if(r){const n=((rt&&rt.leagues&&rt.leagues[lg]&&rt.leagues[lg].teams)||[]).length;add('Her rating',r.rating+(r.rank?' (#'+r.rank+(n?' of '+n:'')+')':''));if(r.trend_30d)add('Last 30 days',(r.trend_30d>0?'+':'')+r.trend_30d);}
+  const MT=((((rt||{}).leagues||{})[lg]||{}).matchups||{}).teams||[];const mt=MT.find(x=>x.team===t.n)||MT.find(x=>sameTeam(x.team,t.n));
+  if(mt){if(mt.offense!=null)add('Offense vs avg',(mt.offense>0?'+':'')+Number(mt.offense).toFixed(1));if(mt.defense!=null)add('Defense vs avg',(mt.defense>0?'+':'')+Number(mt.defense).toFixed(1));}
+  c.append(tiles);
+  if(POSFILE[lg]){const g=el('div');c.append(g);(async()=>{try{if(!POSR[lg]){const q=await fetch(POSFILE[lg]+'?t='+Math.floor(Date.now()/600000),{cache:'no-cache'});if(q.ok){POSR[lg]=await q.json();posAt[lg]=Date.now();}}
+    const P=POSR[lg];if(!P||!P.teams)return;const key=Object.keys(P.teams).find(k=>k===t.n||sameTeam(k,t.n));if(!key)return;const T=P.teams[key],G=P.groups||{},ORD=(P.order||POSORDER).filter(k=>T[k]);
+    g.append(el('h5','Position grades','lugrp'),tableOf(['Unit','Grade','Rank'],ORD.map(k=>[G[k]||k,gradeCell(T[k].grade),T[k].rank+' of '+(P.n_teams||32)])));}catch(e){}})();}
+  return c;}
+async function teamRosterCard(c,t,lg,abbr){await plRatings();if(ROSTER_FILE[lg]&&rosterLoaded[lg]!=='ok'){try{await ensureRoster(lg);}catch(e){}}
+  const ps=((((rt||{}).leagues||{})[lg]||{}).roster||{}).players||[];
+  const mine=ps.filter(p=>p.team===abbr||p.team===t.n||(p.team_name&&(p.team_name===t.n||sameTeam(p.team_name,t.n)&&String(t.n).toLowerCase().endsWith(String(p.team_name).toLowerCase()))));
+  c.replaceChildren(el('h4','👥 Roster'+(mine.length?' · '+mine.length:'')));
+  if(!mine.length){c.append(el('p','The roster for this team isn’t in her player data yet.','hint small'));return;}
+  const groups=[...new Set(mine.map(p=>p.group||p.pos||'Players'))];
+  for(const g of groups){const sub=mine.filter(p=>(p.group||p.pos||'Players')===g).sort((a,b)=>(b.rating??-1)-(a.rating??-1));
+    c.append(el('h5',g+' · '+sub.length,'lugrp'),tableOf(['Player','Pos','Rating','Season'],sub.map(p=>[plink(p.name,t.n,lg,p.name+(p.status?' ⚠️':'')),p.pos||'',rcell(p.rating),pnote(p)])));}
+  c.append(el('p','Tap any player for his card: rating, season stats, and his live line when he plays.','hint small'));}
+
 // fix469 (owner: "It should help when picking fantasy too"): ⓘ on every fantasy / weekly-fantasy player opens his card
 // right under the row (the picker stays open; tapping the row still adds him).
 function plInfo(name,team,lg,row){const b=el('span','ⓘ','plinfo');b.setAttribute('role','button');b.tabIndex=0;b.title='Player card: '+name;b.setAttribute('aria-label','Player card: '+name);
