@@ -724,6 +724,43 @@ body.tfx3 .card{animation-duration:1.8s}
 .sbburst{position:absolute;inset:0;pointer-events:none}.sbburst i{position:absolute;left:50%;top:50%;font-style:normal;font-size:18px;animation:sbpop .9s ease-out both}
 @keyframes sbpop{0%{transform:translate(0,0) scale(.4);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.3);opacity:0}}
 @media (prefers-reduced-motion:reduce){.tfxp,.sbburst{display:none}.evob,.evob .badge,body.tfx1 .card,body.tfx2 .card,body.tfx3 .card{animation:none!important}}
+/* fix480: neon team art + Your teams hero */
+.tfxi{display:inline-flex;line-height:0}.tfxi svg{width:100%;height:100%;display:block}
+.tfxpi{position:absolute;bottom:-24px;opacity:0;animation:tfxrise 6s linear infinite;filter:drop-shadow(0 0 5px var(--tfx,#b44dff))}
+.evom{position:absolute;right:-7px;bottom:-5px;width:20px;height:20px;filter:drop-shadow(0 0 4px var(--tc));animation:evobob 2s ease-in-out infinite}
+.evoc{position:absolute;top:-13px;left:50%;width:18px;height:18px;margin-left:-9px;filter:drop-shadow(0 0 4px #ffd76a)}
+.favoptm{margin-left:auto;width:22px;height:22px;filter:drop-shadow(0 0 4px rgba(255,255,255,.25))}.favum{width:26px;height:26px;flex:0 0 auto}
+.favu{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}.favu .hint{flex:1 1 100%;padding-left:36px;margin-top:-6px}
+.sbbi{position:absolute;left:50%;top:50%;width:18px;height:18px;animation:sbpop .9s ease-out both}.sbti{width:12px;height:12px;margin-right:3px;vertical-align:-2px}
+.sbtag{display:inline-flex;align-items:center;letter-spacing:.08em;font-size:9px}
+.favblock{margin:6px 0 14px}.favhd{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 8px}
+.favhd b{font-size:13px;letter-spacing:.14em;text-transform:uppercase;background:linear-gradient(90deg,#fff,#e2b8ff 60%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.favedit{background:none;border:1px solid var(--line);color:#e2b8ff;border-radius:999px;padding:3px 12px;font-weight:700;font-size:12px;cursor:pointer}
+.favtrack{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 6px;scrollbar-width:none}.favtrack::-webkit-scrollbar{display:none}
+.favhero{position:relative;flex:0 0 calc(100% - 34px);scroll-snap-align:start;overflow:hidden;border-radius:20px;padding:16px 16px 14px;color:var(--text);text-align:left;cursor:pointer;
+  border:1px solid color-mix(in srgb,var(--tc,#b44dff) 55%,transparent);
+  background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--tc,#b44dff) 55%,transparent),transparent 60%),radial-gradient(90% 80% at 0% 100%,#ff4fd833,transparent 60%),linear-gradient(160deg,#1d1030,#0d0816 70%);
+  box-shadow:0 10px 30px -12px color-mix(in srgb,var(--tc,#b44dff) 70%,transparent),inset 0 1px 0 rgba(255,255,255,.08)}
+.favhero.empty{display:flex;flex-direction:column;gap:10px;width:100%;flex-basis:100%;font:inherit;--tc:#58a6ff}
+.favbig{position:absolute;right:-18px;top:-30px;width:180px;height:180px;opacity:.5;filter:drop-shadow(0 0 18px var(--tc,#b44dff));animation:favfloat 5s ease-in-out infinite;pointer-events:none;transform:rotate(-12deg)}
+@keyframes favfloat{0%,100%{transform:rotate(-12deg) translateY(0) scale(1);opacity:.45}50%{transform:rotate(-6deg) translateY(6px) scale(1.06);opacity:.62}}
+@keyframes favturn{to{transform:rotate(360deg)}}
+.favglow{position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 70%,color-mix(in srgb,var(--tc) 35%,transparent) 80%,transparent 90%);animation:favturn 9s linear infinite;pointer-events:none;opacity:.6}
+.favtop{position:relative;display:flex;align-items:center;gap:12px}.favtop .evob .badge{width:58px;height:58px}
+.favnm{position:relative;flex:1;min-width:0;display:flex;flex-direction:column}.favey{font-size:10px;font-weight:800;letter-spacing:.16em;color:color-mix(in srgb,var(--tc,#b44dff) 45%,#fff)}
+.favnm h3{margin:2px 0 1px;font-size:24px;line-height:1.05;font-weight:900;letter-spacing:-.01em;text-shadow:0 0 18px color-mix(in srgb,var(--tc,#b44dff) 70%,transparent)}.favrec{font-size:12px;color:var(--muted)}
+.favring{position:relative;flex:0 0 58px;width:58px;height:58px;display:grid;place-items:center}.favring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.favring .rt{fill:none;stroke:rgba(255,255,255,.1);stroke-width:5}.favring .rf{fill:none;stroke:url(#none);stroke:color-mix(in srgb,var(--tc,#b44dff) 60%,#ff4fd8);stroke-width:5;stroke-linecap:round;filter:drop-shadow(0 0 4px var(--tc))}
+.favring b{position:relative;font-size:8.5px;letter-spacing:.06em;font-weight:900}
+.favgame{position:relative;margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:8px 10px;font-size:13px}
+.favgame.tap::after{content:'›';margin-left:auto;color:var(--pink);font-weight:900}.favgame b{font-weight:800}.favg1{color:var(--muted);font-size:12px;flex:1 1 100%}
+.favgame.live{border-color:#ff3b5c88}.favdot{width:8px;height:8px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 8px #ff3b5c;animation:favpulse 1.2s ease-in-out infinite}@keyframes favpulse{50%{opacity:.35}}
+.favfoot{position:relative;display:flex;align-items:center;gap:8px;margin-top:10px}.favnext{flex:1;font-size:11.5px;color:var(--muted)}
+.favbtn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;border-radius:999px;padding:6px 12px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap}
+.favbtn.main{border:0;background:linear-gradient(90deg,var(--purple),var(--pink));box-shadow:0 4px 14px -4px var(--pink)}
+.favadd{flex:0 0 96px;scroll-snap-align:start;border:1px dashed var(--line);border-radius:20px;background:rgba(255,255,255,.03);color:#e2b8ff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font:inherit}
+.favadd b{font-size:28px;line-height:1}.favdots{display:flex;justify-content:center;gap:6px;margin-top:2px}.favdots i{width:6px;height:6px;border-radius:9px;background:rgba(255,255,255,.2);transition:.2s}.favdots i.on{width:18px;background:linear-gradient(90deg,var(--purple),var(--pink))}
+@media (prefers-reduced-motion:reduce){.favbig,.favglow,.tfxpi,.evom,.favdot{animation:none!important}}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=8">
 <link rel="stylesheet" href="intro.css?v=3">
@@ -2435,9 +2472,9 @@ function scoreBug(g,big){const ts=g.teams||[];const a=ts[0]||{},h=ts[1]||{};cons
     const k=(g.id||g.name)+'|'+t.name,prev=SCOREPREV[k];SCOREPREV[k]=v;d.append(el('b',String(v),'sbn'+(String(v).length>2?' d3':'')+(prev!=null&&v>prev?' bump':'')));return d;};
   const mid=el('div',null,'sbmid');mid.append(el('i',null,fin?'sbdot off':'sbdot'),el('small',fin?'FINAL':String(g.detail||'LIVE').replace(/^●\s*/,'').replace(/^end of /i,'End ').replace(/\s+-\s+/,' ').slice(0,14),'sbclk'));
   w.append(box(a,sa,sh),mid,box(h,sh,sa));
-  try{const ft=[a,h].find(t=>isFav(t.name,g.league));if(ft&&tfxTier(teamXP(favOf(ft.name,g.league)[1]))>=2&&!fin){w.classList.add('sbstadium');const m=tfxMotif(ft.name);
-    if(w.querySelector('.bump')){const bu=el('div',null,'sbburst no-icons');for(let i=0;i<10;i++){const s2=el('i',m);s2.style.setProperty('--dx',(Math.random()*160-80).toFixed(0)+'px');s2.style.setProperty('--dy',(-40-Math.random()*60).toFixed(0)+'px');s2.style.animationDelay=(i*40)+'ms';bu.append(s2);}w.append(bu);}
-    w.append(el('span','🏟 '+m,'sbtag no-icons'));}}catch(e){}   // fix479 Diehard unlock
+  try{const ft=[a,h].find(t=>isFav(t.name,g.league));if(ft&&tfxTier(teamXP(favOf(ft.name,g.league)[1]))>=2&&!fin){w.classList.add('sbstadium');const m=tfxMotif(ft.name),mc=tfxColor(ft.name);
+    if(w.querySelector('.bump')){const bu=el('div',null,'sbburst no-icons');for(let i=0;i<10;i++){const s2=tfxIcon(m,'sbbi',mc);s2.style.setProperty('--dx',(Math.random()*160-80).toFixed(0)+'px');s2.style.setProperty('--dy',(-40-Math.random()*60).toFixed(0)+'px');s2.style.animationDelay=(i*40)+'ms';bu.append(s2);}w.append(bu);}
+    {const tg=el('span',null,'sbtag no-icons');tg.append(tfxIcon(m,'sbti',mc),document.createTextNode('STADIUM'));w.append(tg);}}}catch(e){}   // fix479 Diehard unlock
   return w;}
 function miniCard(g){const c=el('article',null,'card tap mini');c.tabIndex=0;c.setAttribute('role','button');c.setAttribute('aria-label',(g.name||'Game')+': open the full breakdown');
   c.onclick=()=>openGame(g.id||g.name);c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openGame(g.id||g.name);}};
@@ -4826,17 +4863,40 @@ function openMyProps(){openSheet(()=>{const w=el('div');w.id='mypView';w.append(
 const FAVK='mohjeta.favTeams',TXPK='mohjeta.teamXP',TFXK='mohjeta.teamFx';
 const TFX_TIERS=[[0,'Rookie'],[50,'Fan'],[150,'Diehard'],[400,'Superfan']];
 const EVO_STAGES=[0,10,40,100];
-const TFX_MOTIF=[[/thunder|lightning|chargers|sparks/i,'⚡'],[/heat|flames|blazers|fever|fire/i,'🔥'],[/suns?\b/i,'☀️'],[/rockets/i,'🚀'],[/jets/i,'✈️'],
-  [/avalanche|blizzard/i,'❄️'],[/kraken/i,'🐙'],[/storm/i,'⛈️'],[/hurricanes|cyclones/i,'🌀'],[/seahawks|eagles|falcons|hawks/i,'🦅'],[/ravens/i,'🐦‍⬛'],
-  [/cardinals|blue jays|orioles/i,'🐦'],[/bears|bruins|grizzlies|cubs/i,'🐻'],[/lions/i,'🦁'],[/bengals|tigers/i,'🐯'],[/panthers|jaguars|lynx/i,'🐆'],
-  [/wolves|wolfpack/i,'🐺'],[/bulls|longhorns/i,'🐂'],[/rams/i,'🐏'],[/broncos|colts|mustangs|stallions/i,'🐎'],[/dolphins/i,'🐬'],[/marlins/i,'🐟'],
-  [/sharks/i,'🦈'],[/hornets|yellow jackets/i,'🐝'],[/bucks/i,'🦌'],[/penguins/i,'🐧'],[/ducks/i,'🦆'],[/raptors/i,'🦖'],[/buccaneers|pirates|raiders/i,'🏴‍☠️'],
-  [/knights|vikings|spartans|warriors|titans/i,'⚔️'],[/kings|royals/i,'👑'],[/celtics|fighting irish/i,'☘️'],[/jazz/i,'🎷'],[/blues/i,'🎵'],[/magic/i,'✨'],
-  [/cowboys|rangers/i,'🤠'],[/knicks|liberty/i,'🗽'],[/clippers|mariners/i,'⛵'],[/bills|bison/i,'🦬'],[/wild|timbers/i,'🌲'],[/mammoth/i,'🦣'],[/stars/i,'🌟'],
-  [/pistons/i,'🏎️'],[/steelers/i,'🔩'],[/49ers/i,'⛏️'],[/saints/i,'⚜️'],[/packers/i,'🧀'],[/76ers/i,'🔔'],[/gators/i,'🐊'],[/badgers/i,'🦡'],[/razorbacks/i,'🐗'],
-  [/pelicans/i,'🪶'],[/nuggets|miners/i,'⛏️'],[/spurs/i,'🤠'],[/mavericks/i,'🐴'],[/trail/i,'🌲'],[/capitals|commanders|patriots|senators|nationals/i,'🎖️'],
-  [/canadiens|maple leafs|flames|oilers|canucks/i,'🍁'],[/devils/i,'😈'],[/islanders/i,'🏝️'],[/predators/i,'🐾'],[/texans|giants/i,'🌟'],[/browns/i,'🐶'],[/lakers/i,'💜']];
-function tfxMotif(team){const n=String(team||'');for(const [re,e] of TFX_MOTIF)if(re.test(n))return e;return '✨';}
+// fix480 (owner: "can we do better than emojis they don't match the sites theme"): every team symbol is Mohjeta's own neon
+// art (SVG), filled with a white -> team color -> pink gradient and a glow, so it matches the site.
+const TFX_MOTIF=[[/thunder|lightning|chargers|sparks/i,'bolt'],[/heat|flames|blazers|fever|fire/i,'flame'],[/suns?\b/i,'sun'],[/rockets|jets/i,'rocket'],
+  [/avalanche|blizzard|frost/i,'snow'],[/kraken|storm|waves|tide|surge/i,'wave'],[/hurricanes|cyclones/i,'swirl'],
+  [/seahawks|eagles|falcons|hawks|ravens|cardinals|blue jays|orioles|pelicans|ducks|penguins/i,'wing'],
+  [/bears|bruins|grizzlies|cubs|lions|bengals|tigers|panthers|jaguars|lynx|wolves|wolfpack|predators|gators|badgers|razorbacks|raptors|sharks|dolphins|marlins|browns/i,'claw'],
+  [/bulls|longhorns|rams|bucks|broncos|colts|mustangs|stallions|bills|bison|mammoth|mavericks/i,'horn'],
+  [/knights|vikings|spartans|warriors|titans|buccaneers|pirates|raiders|devils/i,'blade'],[/kings|royals|queens/i,'crown'],
+  [/celtics|fighting irish/i,'clover'],[/jazz|blues/i,'note'],[/magic|wizards/i,'spark'],[/clippers|mariners|islanders/i,'sail'],
+  [/wild|timbers|trail|canadiens|maple leafs|oilers|canucks|senators/i,'leaf'],[/stars|rangers|cowboys|spurs|texans|giants|knicks|liberty|patriots|capitals|commanders|nationals|76ers|saints/i,'star']];
+const TFX_ART={bolt:'<path d="M13.5 1.5 4 14h6.5l-1.5 8.5L19 9.5h-6.5z"/>',
+  flame:'<path d="M12 1.5c.8 3.6 4.9 5.3 4.9 10.6a4.9 4.9 0 0 1-9.8 0c0-2.6 1.4-3.9 2-6.4.9 1 1.6 2.3 1.6 3.9 1.2-2 1.6-4.6 1.3-8.1z"/><path d="M12 13.2c.5 1.6 2.2 2.2 2.2 4.4a2.2 2.2 0 0 1-4.4 0c0-1.2.8-1.8 1.1-3 .5.4.8 1 .8 1.7.4-1 .4-2 .3-3.1z" fill="#fff" opacity=".7"/>',
+  sun:'<circle cx="12" cy="12" r="4.6"/><path d="M12 1.5l1.3 4h-2.6zM12 22.5l-1.3-4h2.6zM1.5 12l4-1.3v2.6zM22.5 12l-4 1.3v-2.6zM4.6 4.6l3.7 2-1.8 1.8zM19.4 19.4l-3.7-2 1.8-1.8zM4.6 19.4l2-3.7 1.8 1.8zM19.4 4.6l-2 3.7-1.8-1.8z"/>',
+  rocket:'<path d="M12 1.5c3.4 2.3 5.3 6.2 5.3 10.4l-2 3.4H8.7l-2-3.4c0-4.2 1.9-8.1 5.3-10.4zM12 7.2a1.9 1.9 0 1 0 0 3.8 1.9 1.9 0 0 0 0-3.8z"/><path d="M8.6 16.3 6.4 21l3.5-2.2zM15.4 16.3l2.2 4.7-3.5-2.2zM10.6 16.8h2.8L12 22.5z" opacity=".7"/>',
+  snow:'<path d="M11 1.5h2v21h-2zM2.4 6.4l1-1.7 18.2 10.5-1 1.7zM20.6 4.7l1 1.7L3.4 16.9l-1-1.7z"/><path d="M12 5 9.5 2.6h5zM12 19l2.5 2.4h-5z" opacity=".7"/>',
+  wave:'<path d="M1.5 14.5c2.6-5.2 6.2-5.2 8.8 0 2.6 5.2 6.2 5.2 8.8 0l2.4.9c-3.3 6.9-8.8 6.9-12 0-2-4.1-4.3-4.1-6.2 0z"/><path d="M1.5 8.5c2.6-4 6.2-4 8.8 0s6.2 4 8.8 0l2.4.9c-3.3 5.3-8.8 5.3-12 0-2-3.1-4.3-3.1-6.2 0z" opacity=".55"/>',
+  swirl:'<path d="M12 2a10 10 0 1 0 10 10h-2.6A7.4 7.4 0 1 1 12 4.6a4.9 4.9 0 1 1-4.9 4.9h2.5A2.4 2.4 0 1 0 12 7.1z"/>',
+  wing:'<path d="M21.5 3C12 3.4 5.6 8.6 3 20.5l2 .6c.9-3 2.6-5.6 5-7.5-1.6 0-2.8-.2-3.8-.9 3.6-.8 6.8-2.6 9-5.4-1.6.2-2.9 0-3.9-.6 3.5-.7 7-1.7 10.2-3.7z"/>',
+  claw:'<path d="M5.5 3.5c2.6 3.2 3.4 7.6 2.2 12.2l-1.8.4c1-3.8.5-7.4-1.4-10.4zM11 2c2.6 3.8 3.4 8.5 2.2 13.6l-1.9.4c1-4.3.4-8.4-1.6-11.8zM16.6 3c2.5 3.3 3.2 7.7 2 12.4l-1.8.4c1-3.9.5-7.5-1.4-10.6z"/><path d="M4 18.5h16v2.5H4z" opacity=".55"/>',
+  horn:'<path d="M2 5c1.4 6.6 5.4 10 10 10s8.6-3.4 10-10c-2.4 3.6-5.6 5.6-10 5.6S4.4 8.6 2 5z"/><path d="M9.2 15.6h5.6l-1 6.9h-3.6z" opacity=".6"/>',
+  blade:'<path d="M20.5 1.5 22.5 3.5 10.6 15.4l-2-2z"/><path d="M5.6 12.6l5.8 5.8-1.6 1.6-1.5-1.5-3.8 3.8-1.8-1.8 3.8-3.8-1.5-1.5z" opacity=".7"/>',
+  crown:'<path d="M2.5 18.5h19l-1.8-11-4.6 4.4L12 4l-3.1 7.9-4.6-4.4z"/><path d="M3 20h18v2H3z" opacity=".6"/>',
+  clover:'<circle cx="12" cy="6.5" r="4.2"/><circle cx="6.6" cy="12.6" r="4.2"/><circle cx="17.4" cy="12.6" r="4.2"/><path d="M11 13h2l1.2 9.5h-2.4z" opacity=".7"/>',
+  note:'<path d="M9.5 17.8a3.3 3.3 0 1 1-2.1-3.1V4.2L20 1.8v13.3a3.3 3.3 0 1 1-2.1-3.1V5.7l-8.4 1.7z"/>',
+  spark:'<path d="M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6-2.6 7.9-2.6-7.9L1.5 12l7.9-2.6z"/><path d="M19 1.5l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z" opacity=".6"/>',
+  sail:'<path d="M12 2.5l8.5 13.5H12z"/><path d="M10.5 5.5 4.5 16h6z" opacity=".65"/><path d="M2.5 18h19l-2.4 3.5H4.9z"/>',
+  leaf:'<path d="M12 1.5 15 7l3-1-1 5 3 1-3.5 4.5 1 2-5.5-.9V22h-2v-4.4L4.5 18.5l1-2L2 12l3-1-1-5 3 1z"/>',
+  star:'<path d="M12 1.5l3.1 7.3 7.9.7-6 5.2 1.8 7.8L12 18.4l-6.8 4.1L7 14.7l-6-5.2 7.9-.7z"/>'};
+const TFX_WORD={bolt:'lightning bolts',flame:'flames',sun:'sun rays',rocket:'rockets',snow:'snowflakes',wave:'waves',swirl:'storm swirls',wing:'wings',claw:'claw marks',horn:'horns',blade:'blades',crown:'crowns',clover:'clovers',note:'music notes',spark:'sparks',sail:'sails',leaf:'leaves',star:'stars'};
+let tfxUid=0;
+function tfxMotif(team){const n=String(team||'');for(const [re,k] of TFX_MOTIF)if(re.test(n))return k;return 'spark';}
+function tfxColor(team){try{return simColor(team)||'#b44dff';}catch(e){return '#b44dff';}}
+function tfxIcon(key,cls,color){const id='tg'+(++tfxUid);const c=color||'#b44dff';const s=document.createElement('span');s.className='tfxi no-icons '+(cls||'');
+  s.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="'+c+'"/><stop offset="1" stop-color="#ff4fd8"/></linearGradient></defs><g fill="url(#'+id+')">'+(TFX_ART[key]||TFX_ART.spark)+'</g></svg>';return s;}
 function favLoad(){try{const x=JSON.parse(localStorage.getItem(FAVK)||'{}');return x&&typeof x==='object'?x:{};}catch(e){return {};}}
 function favSave(x){try{localStorage.setItem(FAVK,JSON.stringify(x));}catch(e){}}
 function favList(){return Object.entries(favLoad()).filter(([k,v])=>v&&typeof v==='string');}
@@ -4847,7 +4907,7 @@ function favMain(){let m=null;try{m=localStorage.getItem(TFXK);}catch(e){}const 
 function txpLoad(){try{return JSON.parse(localStorage.getItem(TXPK)||'{}')||{};}catch(e){return {};}}
 function txpEarn(team,key,pts,lg){if(!team)return;const fav=favOf(team,lg);if(!fav)return;const T=txpLoad();const r=T[fav[1]]||(T[fav[1]]={xp:0,k:[]});
   if(r.k.includes(key))return;const before=tfxTier(r.xp);r.k=r.k.concat(key).slice(-400);r.xp+=pts;try{localStorage.setItem(TXPK,JSON.stringify(T));}catch(e){}
-  const after=tfxTier(r.xp);if(after>before){toast(tfxMotif(fav[1])+' '+shortTeam(fav[1])+' '+TFX_TIERS[after][1]+' unlocked!');tfxApply();}}
+  const after=tfxTier(r.xp);if(after>before){toast('🔓 '+shortTeam(fav[1])+' '+TFX_TIERS[after][1]+' unlocked!');tfxApply();}}
 function teamXP(team){const r=txpLoad()[team];return r?r.xp:0;}
 function tfxTier(xp){let t=0;TFX_TIERS.forEach(([n],i)=>{if(xp>=n)t=i;});return t;}
 const tday=()=>new Date().toLocaleDateString('en-CA');
@@ -4862,24 +4922,51 @@ async function evoScore(){if(EVO.score!=null&&Date.now()-EVO.at<600000)return EV
   EVO={at:Date.now(),score:n};return n;}
 function evoStage(n){let s=1;EVO_STAGES.forEach((x,i)=>{if((n||0)>=x)s=i+1;});return s;}
 function evoBadge(team,stage){const w=el('span',null,'evob evo'+stage);w.style.setProperty('--tc',(()=>{try{return simColor(team)||'#b44dff';}catch(e){return '#b44dff';}})());
-  w.append(teamBadge(team));if(stage>=3)w.append(el('i',tfxMotif(team),'evom no-icons'));if(stage>=4)w.append(el('i','👑','evoc'));w.title='Stage '+stage+' badge';return w;}
+  w.append(teamBadge(team));if(stage>=3)w.append(tfxIcon(tfxMotif(team),'evom',tfxColor(team)));if(stage>=4)w.append(tfxIcon('crown','evoc','#ffd76a'));w.title='Stage '+stage+' badge';return w;}
 // the look: CSS variables + body classes; particles on Home blocks
 function tfxApply(){const b=document.body;b.classList.remove('tfx1','tfx2','tfx3');document.querySelectorAll('.tfxp').forEach(x=>x.remove());
   const t=favMain();if(!t)return;const tier=tfxTier(teamXP(t));if(!tier)return;let c='#b44dff';try{c=simColor(t)||c;}catch(e){}
   b.style.setProperty('--tfx',c);b.style.setProperty('--tfx2','color-mix(in srgb, '+c+' 55%, #ffffff)');b.classList.add('tfx'+tier);
   const m=tfxMotif(t),n=tier>=3?7:4;
-  for(const blk of document.querySelectorAll('#homeBox > .hblock, #homeBox > .hstats, #homeBox > .hnext, #homeBox > .card, #homeBox > .favblock')){
-    const p=el('div',null,'tfxp no-icons');for(let i=0;i<n;i++){const s=el('i',m);s.style.left=(5+Math.random()*90)+'%';s.style.animationDelay=(-Math.random()*6).toFixed(2)+'s';s.style.fontSize=(10+Math.random()*(tier>=3?12:7)).toFixed(0)+'px';p.append(s);}
+  for(const blk of document.querySelectorAll('#homeBox > .hblock, #homeBox > .hstats, #homeBox > .hnext, #homeBox > .card')){
+    const p=el('div',null,'tfxp no-icons');for(let i=0;i<n;i++){const s=tfxIcon(m,'tfxpi',c);s.style.left=(5+Math.random()*90)+'%';s.style.animationDelay=(-Math.random()*6).toFixed(2)+'s';s.style.width=s.style.height=(12+Math.random()*(tier>=3?14:8)).toFixed(0)+'px';p.append(s);}
     if(getComputedStyle(blk).position==='static')blk.style.position='relative';blk.append(p);}}
-function homeFavBlock(){const L=favList();const w=el('div',null,'card favblock');const hd=el('div',null,'hbhd');hd.append(el('b','⭐ Your teams'),el('button',L.length?'Edit ›':'Pick ›','mlink'));
-  hd.lastChild.type='button';hd.lastChild.onclick=openFavPicker;w.append(hd);
-  if(!L.length){const b=el('button','⭐ Pick your favorite team in each league','btn small');b.type='button';b.onclick=openFavPicker;
-    w.append(el('p','Your teams show here, and using the site for them unlocks team borders (Thunder gets lightning, Heat gets flames), a stadium scoreboard and evolved team badges.','hint small'),b);return w;}
-  const row=el('div',null,'favrow');const stage=evoStage(EVO.score||0);
-  for(const [lg,t] of L){const xp=teamXP(t),tier=tfxTier(xp),next=TFX_TIERS[tier+1];const b=el('button',null,'favt');b.type='button';b.onclick=()=>openFavRewards(t,lg);
-    const bar=el('span',null,'favbar');const f=el('i');f.style.width=(next?Math.min(100,100*(xp-TFX_TIERS[tier][0])/(next[0]-TFX_TIERS[tier][0])):100)+'%';bar.append(f);
-    b.append(evoBadge(t,stage),el('b',shortTeam(t)),el('small',sname(lg)+' · '+TFX_TIERS[tier][1],'hint small'),bar,el('span','Rewards ›','favgo'));row.append(b);}
-  w.append(row);if(EVO.score==null)evoScore().then(()=>{try{const nw=homeFavBlock();w.replaceWith(nw);tfxApply();}catch(e){}});return w;}
+// fix480 (owner: "jazz up the your team section it's kind of blah and doesn't stand out"): a hero card per favorite (swipe
+// between them): team-color stage with its big symbol slowly turning behind it, the evolved badge, record, a live score or
+// her pick for the next game, and a tier ring with what unlocks next.
+function favNext(t,lg){return ((D&&D.games)||[]).filter(g=>g.state!=='FINAL'&&(!lg||g.league===lg)&&(g.teams||[]).some(x=>tsame(x.name,t))).sort((a,b)=>(a.state==='LIVE'?0:1)-(b.state==='LIVE'?0:1)||String(a.start).localeCompare(String(b.start)))[0]||null;}
+function favRing(pct,label){const s=document.createElement('span');s.className='favring';const r=22,c=2*Math.PI*r;
+  s.innerHTML='<svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="'+r+'" class="rt"/><circle cx="26" cy="26" r="'+r+'" class="rf" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+(c*(1-pct)).toFixed(1)+'"/></svg>';
+  s.append(el('b',label));return s;}
+function favHero(t,lg,stage){const c=tfxColor(t),m=tfxMotif(t),xp=teamXP(t),tier=tfxTier(xp),next=TFX_TIERS[tier+1];
+  const h=el('div',null,'favhero no-icons');h.style.setProperty('--tc',c);h.setAttribute('role','button');h.tabIndex=0;h.onclick=e=>{if(!e.target.closest('button'))openFavRewards(t,lg);};
+  h.append(tfxIcon(m,'favbig',c));const glow=el('div',null,'favglow');h.append(glow);
+  const top=el('div',null,'favtop');top.append(evoBadge(t,stage));const nm=el('div',null,'favnm');
+  const tm=((TEAMPG&&TEAMPG.leagues&&TEAMPG.leagues[lg])?Object.values(TEAMPG.leagues[lg]).find(x=>x.n===t):null)||{};
+  nm.append(el('span','YOUR '+sname(lg).toUpperCase()+' TEAM','favey'),el('h3',shortTeam(t)),el('span',[tm.rec,tm.st].filter(Boolean).join(' · ')||t,'favrec'));top.append(nm);
+  const pct=next?Math.min(1,(xp-TFX_TIERS[tier][0])/(next[0]-TFX_TIERS[tier][0])):1;top.append(favRing(pct,TFX_TIERS[tier][1].toUpperCase()));h.append(top);
+  const g=favNext(t,lg);const line=el('div',null,'favgame');
+  if(g&&g.state==='LIVE'){const ts=g.teams||[];line.classList.add('live');line.append(el('i',null,'favdot'),el('b',ts.map(x=>teamNick(x.name)+' '+(x.score??0)).join('  –  ')),el('span',String(g.detail||'Live'),'hint small'));}
+  else if(g){const p=g.pick||{};line.append(el('span',(g.teams||[]).map(x=>teamNick(x.name)).join(' vs ')+' · '+when(g.start),'favg1'),el('b',p.team?'Her pick: '+teamNick(p.team)+(typeof p.chance==='number'?' '+pct0(p.chance):''):'Her pick soon'));}
+  else line.append(el('span','No game in the next few days','hint small'));
+  if(g){line.onclick=e=>{e.stopPropagation();openGame(g.id||g.name);};line.classList.add('tap');}h.append(line);
+  const foot=el('div',null,'favfoot');foot.append(el('span',next?(next[0]-xp)+' XP to '+next[1]+' · unlocks '+(tier===0?'the '+TFX_WORD[m]+' border':tier===1?'the stadium scoreboard':'the full storm'):'Every unlock earned','favnext'));
+  const tp=el('button','Team ›','favbtn');tp.type='button';tp.onclick=e=>{e.stopPropagation();openTeam(t,lg);};const rw=el('button','Rewards ›','favbtn main');rw.type='button';rw.onclick=e=>{e.stopPropagation();openFavRewards(t,lg);};
+  foot.append(tp,rw);h.append(foot);return h;}
+const pct0=v=>Math.round(v*100)+'%';
+function homeFavBlock(){const L=favList();const w=el('div',null,'favblock');
+  const hd=el('div',null,'favhd');hd.append(el('b','Your teams'),el('button',L.length?'Edit':'Pick','favedit'));hd.lastChild.type='button';hd.lastChild.onclick=openFavPicker;w.append(hd);
+  if(!L.length){const e=el('button',null,'favhero empty no-icons');e.type='button';e.onclick=openFavPicker;e.append(tfxIcon('bolt','favbig','#58a6ff'));
+    const tx=el('div',null,'favnm');tx.append(el('span','MAKE IT YOURS','favey'),el('h3','Pick your teams'),el('span','One per league. Using the site for them unlocks team borders (Thunder lightning, Heat flames), a stadium scoreboard and evolved badges.','favrec'));
+    e.append(tx,el('span','Choose teams ›','favbtn main'));w.append(e);return w;}
+  const main=favMain();const order=L.slice().sort((a,b)=>(b[1]===main)-(a[1]===main));const stage=evoStage(EVO.score||0);
+  const track=el('div',null,'favtrack');for(const [lg,t] of order)track.append(favHero(t,lg,stage));
+  const add=el('button',null,'favadd');add.type='button';add.append(el('b','+'),el('span','Add a team'));add.onclick=openFavPicker;track.append(add);w.append(track);
+  if(order.length>1){const dots=el('div',null,'favdots');order.forEach((x,i)=>dots.append(el('i',null,i?'':'on')));w.append(dots);
+    track.addEventListener('scroll',()=>{const i=Math.round(track.scrollLeft/Math.max(1,track.firstChild.offsetWidth+12));[...dots.children].forEach((d,k)=>d.classList.toggle('on',k===i));},{passive:true});}
+  if(EVO.score==null||!TEAMPG)Promise.all([evoScore(),loadTeams2()]).then(()=>{try{if(!w.isConnected)return;const nw=homeFavBlock();w.replaceWith(nw);tfxApply();}catch(e){}});
+  return w;}
+
 async function openFavPicker(){openSheet(()=>{const w=el('div');w.id='favPick';w.append(el('h2','⭐ Your favorite teams'),el('p','One per league. Your favorites show on Home, get followed for alerts, and unlock team rewards as you use the site for them.','hint small'));
     const box=el('div');w.append(box);box.append(el('p','Loading teams…','hint'));return w;},'Favorite teams');
   const T=await loadTeams2();const box=$('favPick')&&$('favPick').lastChild;if(!box)return;let lg=Object.keys(T.leagues||{})[0]||'NBA';let q='';
@@ -4888,18 +4975,18 @@ async function openFavPicker(){openSheet(()=>{const w=el('div');w.id='favPick';w
     const inp=el('input');inp.type='search';inp.placeholder='Find a team…';inp.className='chatin';inp.value=q;
     const list=el('div',null,'favlist no-icons');const fill=()=>{list.replaceChildren();const teams=Object.values(T.leagues[lg]||{}).filter(t=>!q||t.n.toLowerCase().includes(q.toLowerCase())).sort((a,b)=>a.n.localeCompare(b.n));
       if(F[lg]){const x=el('button','Clear my '+sname(lg)+' favorite','btn ghost small');x.type='button';x.onclick=()=>{const G=favLoad();delete G[lg];favSave(G);draw();tfxApply();if(D)renderHome(D);};list.append(x);}
-      for(const t of teams.slice(0,400)){const on=F[lg]===t.n;const b=el('button',null,'favopt'+(on?' on':''));b.type='button';b.append(teamBadge(t.n),el('b',t.n),el('span',on?'⭐ Favorite':tfxMotif(t.n),'hint small'));
+      for(const t of teams.slice(0,400)){const on=F[lg]===t.n;const b=el('button',null,'favopt'+(on?' on':''));b.type='button';b.append(teamBadge(t.n),el('b',t.n),on?el('span','⭐ Favorite','hint small'):tfxIcon(tfxMotif(t.n),'favoptm',tfxColor(t.n)));
         b.onclick=()=>{const G=favLoad();G[lg]=t.n;favSave(G);if(!isMyTeam(lg,t.n))toggleTeam(lg,t.n);if(!favMain()||Object.keys(G).length===1)try{localStorage.setItem(TFXK,t.n);}catch(e){}
           toast('⭐ '+t.n+' is your '+sname(lg)+' team');txpFromPicks();draw();tfxApply();if(D)renderHome(D);};list.append(b);}};
     inp.oninput=()=>{q=inp.value;fill();};box.append(chips,inp,list);fill();};draw();}
 function openFavRewards(team,lg){openSheet(()=>{const w=el('div',null,'favrew no-icons');const xp=teamXP(team),tier=tfxTier(xp),m=tfxMotif(team);const sc=EVO.score||0,stage=evoStage(sc);
-    const hd=el('div',null,'favrewhd');hd.append(evoBadge(team,stage));const tx=el('div');tx.append(el('span',sname(lg).toUpperCase(),'simeyebrow'),el('h2',team),el('b',m+' '+TFX_TIERS[tier][1]+' · '+xp+' XP','tprec'));hd.append(tx);w.append(hd);
+    const hd=el('div',null,'favrewhd');hd.append(evoBadge(team,stage));const tx=el('div');tx.append(el('span',sname(lg).toUpperCase(),'simeyebrow'),el('h2',team),el('b',TFX_TIERS[tier][1]+' · '+xp+' XP','tprec'));hd.append(tx);w.append(hd);
     const main=favMain()===team;const mb=el('button',main?'✅ Your site wears the '+shortTeam(team)+' look':'🎨 Wear the '+shortTeam(team)+' look on the site','btn'+(main?' ghost':''));mb.type='button';
-    mb.onclick=()=>{try{localStorage.setItem(TFXK,team);}catch(e){}tfxApply();closeSheet();toast(m+' '+shortTeam(team)+' look on');};w.append(mb);
+    mb.onclick=()=>{try{localStorage.setItem(TFXK,team);}catch(e){}tfxApply();closeSheet();toast(shortTeam(team)+' look on');};w.append(mb);
     w.append(el('h4','🔓 Team unlocks · earned by using the site for them'));
-    const U=[[0,'⭐ Your team on Home','Badge, tier and progress on your Home page.'],[50,m+' Animated team border','Your Home panels glow in team colors with '+m+' drifting through them.'],
-      [150,'🏟 Stadium scoreboard','Their live games get a jumbotron scoreboard with '+m+' bursts on every score, plus the border on every panel.'],[400,m+m+' Superfan storm','The full storm: more '+m+', a pulsing glow, everywhere.']];
-    for(const [n,t,x] of U){const r=el('div',null,'favu'+(xp>=n?' on':''));r.append(el('b',(xp>=n?'✅ ':'🔒 ')+t),el('span',x+(xp>=n?'':' · '+(n-xp)+' XP to go'),'hint small'));w.append(r);}
+    const U=[[0,'⭐ Your team on Home','Badge, tier and progress on your Home page.'],[50,'Animated team border','Your Home panels glow in team colors with '+TFX_WORD[m]+' drifting through them.'],
+      [150,'Stadium scoreboard','Their live games get a jumbotron scoreboard with '+TFX_WORD[m]+' bursting on every score, plus the border on every panel.'],[400,'Superfan storm','The full storm: more '+TFX_WORD[m]+', a pulsing glow, everywhere.']];
+    for(const [n,t,x] of U){const r=el('div',null,'favu'+(xp>=n?' on':''));r.append(tfxIcon(n>=50?m:'star','favum',xp>=n?tfxColor(team):'#5b5566'));r.append(el('b',(xp>=n?'':'🔒 ')+t),el('span',x+(xp>=n?'':' · '+(n-xp)+' XP to go'),'hint small'));w.append(r);}
     const how=el('div',null,'card');how.append(el('b','How to earn XP for '+shortTeam(team)),el('p','Open their team page (5 a day) · open one of their games (5 a day) · pick them in Pick’em (10) · that pick is right (+15) · save a My Props pick on one of their players (5 a day).','hint small'));w.append(how);
     w.append(el('h4','🧬 Evolved badge · beat other players'));
     const st=el('div',null,'evorow');for(let i=1;i<=4;i++){const c=el('div',null,'evocell'+(stage>=i?' on':''));c.append(evoBadge(team,i),el('small','Stage '+i+(i>1?' · '+EVO_STAGES[i-1]:''),'hint small'));st.append(c);}w.append(st);
