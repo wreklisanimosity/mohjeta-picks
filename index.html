@@ -4617,7 +4617,9 @@ async function plFullLoad(name,team,lg){const key=lg+'|'+plNorm(name)+'|'+plNorm
   const p=(async()=>{if(!ESPN_PATH[lg])return null;const id=await plEspnId(name,team,lg);if(!id)return null;const base='https://site.web.api.espn.com/apis/common/v3/sports/'+ESPN_PATH[lg]+'/athletes/'+id+'/';
     const [st,gl]=await Promise.all([fetch(base+'stats',{signal:AbortSignal.timeout(9000)}).then(r=>r.ok?r.json():null).catch(()=>null),fetch(base+'gamelog',{signal:AbortSignal.timeout(9000)}).then(r=>r.ok?r.json():null).catch(()=>null)]);
     return {id,st,gl};})();PLFULL[key]=p;p.catch(()=>{delete PLFULL[key];});return p;}
-function plFullBuild(F){const w=el('div',null,'plfullin');const cats=((F&&F.st&&F.st.categories)||[]).filter(c=>(c.statistics||[]).length);
+function plFullBuild(F){const w=el('div',null,'plfullin');const yr=r=>parseInt(String((r&&r.season&&(r.season.year||r.season.displayName))||'').slice(0,4))||0;
+  let cats=((F&&F.st&&F.st.categories)||[]).filter(c=>(c.statistics||[]).length);const top=Math.max(0,...cats.map(c=>yr((c.statistics||[]).slice(-1)[0])));
+  cats=cats.filter(c=>yr((c.statistics||[]).slice(-1)[0])>=top-1);   // only what he does now (no 2021 tackle on a QB)
   if(!cats.length&&!(F&&F.gl)){w.append(el('p','No detailed stat sheet for this player yet.','hint small'));return w;}
   const evs=(F.gl&&F.gl.events)||{};const st0=((F.gl&&F.gl.seasonTypes)||[]).find(s=>(s.categories||[]).some(c=>(c.events||[]).length));
   if(st0){const rows=[];for(const c of st0.categories||[])for(const e of c.events||[])rows.push(e);rows.sort((a,b)=>String((evs[b.eventId]||{}).gameDate).localeCompare(String((evs[a.eventId]||{}).gameDate)));
