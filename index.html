@@ -671,6 +671,8 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .plreslist{display:flex;flex-direction:column;gap:6px;margin-top:8px}.plres{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;align-items:center;text-align:left;gap:0 10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(180,77,255,.25);background:rgba(180,77,255,.06);color:inherit;font:inherit;cursor:pointer}
 .plres b{grid-column:1}.plres .hint{grid-column:1}.plres>span:last-child{grid-column:2;grid-row:1/3;font-weight:700;font-size:18px}
 .plfindlink{display:block;margin:6px 0 10px;background:none;border:0;padding:4px 0;color:#d8a8ff;font:inherit;font-size:14px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.plinfo{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;margin-left:6px;border-radius:50%;border:1px solid rgba(200,160,255,.45);color:#e0c2ff;font-size:16px;cursor:pointer;flex:none}
+.plinline{border:1px solid rgba(180,77,255,.3);background:rgba(20,10,35,.95);border-radius:12px;padding:10px 12px;margin:2px 0 8px}.plinline .plcard h3{font-size:18px}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=8">
 <link rel="stylesheet" href="intro.css?v=3">
@@ -3771,7 +3773,7 @@ async function renderFantasy(){const box=$('fantasyBox');if(!box)return;
   const list=el('div',null,'flist');const draw=()=>{list.replaceChildren();const qq=FQ.toLowerCase();
     const ps=Object.values(P).filter(p=>(p.minutes||0)>=8&&(FTEAM==='ALL'||p.team===FTEAM)&&(!qq||p.name.toLowerCase().includes(qq))).sort((a,b)=>b.salary-a.salary||fimpact(b)-fimpact(a)).slice(0,80);
     for(const p of ps){const on=FT.players.includes(String(p.id));const r=el('button',null,'frow'+(on?' on':''));r.type='button';
-      r.append(el('span',p.role,'frole'),el('span',null,'fn'),el('b',money$(p.salary)));r.children[1].append(el('b',p.name),el('span',' '+p.team.split(' ').pop()+' · '+(fimpact(p)>0?'+':'')+fimpact(p).toFixed(1)+' impact','hint small'));
+      r.append(el('span',p.role,'frole'),el('span',null,'fn'),el('b',money$(p.salary)));r.children[1].append(el('b',p.name),el('span',' '+p.team.split(' ').pop()+' · '+(fimpact(p)>0?'+':'')+fimpact(p).toFixed(1)+' impact','hint small'));r.append(plInfo(p.name,p.team,'NBA',r));
       r.onclick=()=>{const id=String(p.id);if(on)FT.players=FT.players.filter(x=>x!==id);else{if(FT.players.length>=FN){toast('Your team is full: remove someone first');return;}FT.players.push(id);}renderFantasy();};list.append(r);}};
   q.oninput=()=>{FQ=q.value;draw();};sel.onchange=()=>{FTEAM=sel.value;draw();};pick.append(q,sel,list);draw();box.append(pick);
   // league
@@ -4015,7 +4017,7 @@ function wkPicker(s,P,L,k,done){const slot=s.slots[k];WK.q='';
       for(const p of ps.slice(0,150)){const id=String(p.id);const inAt=L.indexOf(id);const fits=p.salary<=room;const r=el('button',null,'frow wkprow'+(inAt>=0?' on':''));r.type='button';if(!fits)r.classList.add('dim');
         const fn=el('span',null,'fn');fn.append(el('b',p.name+(p.inj?' ⚠️ '+p.inj:'')),el('span',p.team+' vs '+(p.opp||'?')+(p.games>1?' · '+p.games+' games':'')+(p.note?' · '+p.note:''),'hint small'));
         const nums=el('span',null,'wknums');nums.append(el('b',wkProj(p).toFixed(1)+' pts'),el('span',money$(p.salary),'hint small'));
-        r.append(wkPill(p.pos),fn,nums);
+        r.append(wkPill(p.pos),fn,nums,plInfo(p.name,p.team,s.league,r));
         r.onclick=()=>{if(inAt>=0&&inAt!==k){toast(p.name+' is already in your lineup');return;}if(!fits){toast('Too expensive: '+money$(p.salary-room)+' over what you have left');return;}
           L[k]=id;closeSheet();done();toast(p.name+' added ✅');};list.append(r);}};
     q.oninput=draw;w.append(sorts,q,list,el('p','“pts” is what she projects him to score this week. Value = points per $1,000 of salary.','hint small'));draw();return w;},'Players');}
@@ -4577,6 +4579,14 @@ function findPlayer(){openSheet(()=>{const box=el('div',null,'plfind');box.appen
   let t=null;inp.oninput=()=>{plfQ=inp.value;clearTimeout(t);t=setTimeout(()=>plfDraw(list,status),180);};
   box.append(inp,chips,status,list);plfDraw(list,status);setTimeout(()=>{try{inp.focus();}catch(e){}},60);return box;},'Find a player');}
 window.findPlayer=findPlayer;
+// fix469 (owner: "It should help when picking fantasy too"): ⓘ on every fantasy / weekly-fantasy player opens his card
+// right under the row (the picker stays open; tapping the row still adds him).
+function plInfo(name,team,lg,row){const b=el('span','ⓘ','plinfo');b.setAttribute('role','button');b.tabIndex=0;b.title='Player card: '+name;b.setAttribute('aria-label','Player card: '+name);
+  const go=async e=>{e.preventDefault();e.stopPropagation();const nx=row.nextElementSibling;if(nx&&nx.classList.contains('plinline')){nx.remove();return;}
+    const box=el('div',null,'plinline');box.append(el('p','Loading '+name+'…','hint small'));row.after(box);
+    let f={base:null,adv:null};try{f=await plFind(name,team,lg);}catch(x){}box.replaceChildren(plBuild(name,team,lg,f));};
+  b.onclick=go;b.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')go(e);};return b;}
+
 {const fb=$('plFindBtn');if(fb)fb.onclick=findPlayer;document.querySelectorAll('[data-plfind]').forEach(b=>b.onclick=findPlayer);}
 
 })();
