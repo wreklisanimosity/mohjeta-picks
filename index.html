@@ -2368,7 +2368,7 @@ async function openTeam(name,league){try{award('team');}catch(e){}try{txpEarn(na
     for(const p of stars){const row=el('div',null,'tpp');row.append(plink(p.name,t.n,lg),el('span',(p.pos||p.group||'')+(pnote(p)?' · '+pnote(p):''),'hint small'),el('span',String(p.rating),'tprate'));k.append(row);}
     k.append(el('p','Rating 0-99 = rank against players at the same position this season. Tap a name for his card.','hint small'));w.append(k);}
   const rc=el('div',null,'card tproster');rc.append(el('p','Loading the roster…','hint small'));w.append(rc);teamRosterCard(rc,t,lg,f.abbr);
-  if(['NBA','NFL','NHL'].includes(lg)){const pc=el('div',null,'card tpprops');w.insertBefore(pc,w.querySelector('.tpstats')||sched);teamPropsCard(pc,t,lg,f.abbr);}   // fix475
+  {const pc=el('div',null,'card tpprops');w.insertBefore(pc,w.querySelector('.tpstats')||sched);teamPropsCard(pc,t,lg,f.abbr);}   // fix475
   {const ic=teamInjuryCard(t,lg);if(ic)w.insertBefore(ic,rc);}   // fix476
   w.insertBefore(teamJump(w),syn);
   w.append(el('p','Schedule and results from ESPN; synopsis written by Mohjeta from her ratings and their results. Updated every few hours.','hint small'));}
@@ -3344,7 +3344,7 @@ function gsi(){if(isIOSApp())return Promise.resolve(false);   // Google blocks s
 // ---------------- members-only picks (only when the owner turns the paywall on): 7-day free trial, then subscription
 // ---------------- Props tab: her NBA points props, their own report card, and a prop builder
 let propLegs=[],propGame=null,propFind='',propShow='ALL',propStake=10,propAll=false;
-const STATNAME={pts:'points',reb:'rebounds',ast:'assists',fg3:'threes',nfl_pass_yds:'passing yards',nfl_rush_yds:'rushing yards',nfl_rec_yds:'receiving yards',nfl_rec:'catches',nfl_pass_td:'passing TDs',nfl_td:'touchdowns',nhl_goals:'goals',nhl_points:'points (NHL)',nhl_sog:'shots on goal'};
+const STATNAME={pts:'points',reb:'rebounds',ast:'assists',fg3:'threes',nfl_pass_yds:'passing yards',nfl_rush_yds:'rushing yards',nfl_rec_yds:'receiving yards',nfl_rec:'catches',nfl_pass_td:'passing TDs',nfl_td:'touchdowns',nhl_goals:'goals',nhl_points:'points (NHL)',nhl_sog:'shots on goal',mlb_hits:'hits',mlb_hr:'home runs',mlb_rbi:'RBIs',mlb_runs:'runs',mlb_k:'strikeouts'};
 function propName(o){return o.player+' · '+o.line+'+ '+(STATNAME[o.stat]||o.stat);}
 function propSide(o){return o.side==='YES'?'YES · '+o.line+' or more':'NO · '+(o.line-1)+' or fewer';}
 function propData(d){const P=d&&d.props;if(!P)return null;
@@ -4017,10 +4017,10 @@ function refreshLeagues(){if(simMode==='fantasy'&&document.querySelector('#sim.o
 // Nov 7 2026 redesign (owner: "very minimal, not clear, bland"): how-to strip, countdown, a lineup board with + Add slots,
 // a player picker with projections and value, Mohjeta's own lineup to beat (or copy), live head-to-head, leaderboards.
 const WK={sport:'NFL',list:null,at:0,pools:{},her:{},lineup:{},name:'',pos:'ALL',q:'',sort:'proj',err:''};
-const WK_SPORTS=[['NFL','🏈','NFL'],['NBA','🏀','NBA'],['MIX','🏈🏀','NFL + NBA'],['NCAAF','🎓','College']];   // fix478: MIX = NFL + NBA
+const WK_SPORTS=[['NFL','🏈','NFL'],['NBA','🏀','NBA'],['NHL','🏒','NHL'],['MIX','🏈🏀','NFL + NBA'],['MIXH','🏀🏒','NBA + NHL'],['MIXF','🏈🎓','NFL + College'],['NCAAF','🎓','College FB'],['NCAAB','🎓','College BB'],['WNBA','🏀','WNBA']];   // fix482: every league   // fix478: MIX = NFL + NBA
 const WK_FLEX={FLEX:['RB','WR','TE'],UTIL:['G','F','C']};
-const WK_POSC={QB:'#ff6b6b',RB:'#4cd97b',WR:'#58a6ff',TE:'#f5c542',FLEX:'#b98cff',K:'#9aa3c7',DST:'#ff9f43',G:'#58a6ff',F:'#4cd97b',C:'#ff9f43',UTIL:'#b98cff'};
-const WK_POSN={QB:'Quarterback',RB:'Running back',WR:'Wide receiver',TE:'Tight end',FLEX:'Flex (RB, WR or TE)',K:'Kicker',DST:'Team defense',G:'Guard',F:'Forward',C:'Center',UTIL:'Utility (any player)'};
+const WK_POSC={FW:'#ff6b9a',D:'#58a6ff',GK:'#f5c542',CQB:'#ff6b6b',CRB:'#4cd97b',CWR:'#58a6ff',CTE:'#f5c542',QB:'#ff6b6b',RB:'#4cd97b',WR:'#58a6ff',TE:'#f5c542',FLEX:'#b98cff',K:'#9aa3c7',DST:'#ff9f43',G:'#58a6ff',F:'#4cd97b',C:'#ff9f43',UTIL:'#b98cff'};
+const WK_POSN={FW:'Forward (hockey)',D:'Defenseman',GK:'Goalie',CQB:'College quarterback',CRB:'College running back',CWR:'College wide receiver',CTE:'College tight end',QB:'Quarterback',RB:'Running back',WR:'Wide receiver',TE:'Tight end',FLEX:'Flex (RB, WR or TE)',K:'Kicker',DST:'Team defense',G:'Guard',F:'Forward',C:'Center',UTIL:'Utility (any player)'};
 const wkFits=(slot,pos)=>slot===pos||(WK_FLEX[slot]||[]).includes(pos);
 function wkWhen(t){const d=new Date(t);return d.toLocaleString(undefined,{weekday:'short',hour:'numeric',minute:'2-digit'});}
 function wkLeft(t){let s=Math.max(0,(new Date(t)-Date.now())/1000);const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+'d '+h+'h':h?h+'h '+m+'m':m+'m';}
@@ -4044,13 +4044,18 @@ function wkHow(sport){const d=el('details',null,'card wkhow');const sm=el('summa
     const s=el('div',null,'wkstep');s.append(el('span',ic,'wkic'),el('b',t),el('span',x,'hint small'));steps.append(s);}
   d.append(steps,el('p','Lineups lock when the week’s first game starts. You can change yours as often as you like until then.','hint small'));
   const nbaSc=[['Point','1'],['Three made','+0.5'],['Rebound','1.25'],['Assist','1.5'],['Steal or block','2'],['Turnover','−0.5'],['Double-double','+1.5'],['Triple-double','+3']];
-  const sc=sport==='NBA'?nbaSc
+  const fbSc=[['Catch','1'],['10 rushing or receiving yards','1'],['Rushing or receiving TD','6'],['25 passing yards','1'],['Passing TD','4'],['Interception or lost fumble','−2']];
+  const nhlSc=[['Goal','8.5'],['Assist','5'],['Shot on goal','1.5'],['Blocked shot','1.3'],['Hat trick','+3'],['Goalie: save','0.7'],['Goalie: goal against','−3.5'],['Goalie: shutout (50+ min)','+4']];
+  const tag=(arr,lab)=>arr.map(([a,b],i)=>[(i?'':lab)+(i?a:a.toLowerCase()),b]);
+  const sc=sport==='NBA'||sport==='NCAAB'||sport==='WNBA'?nbaSc:sport==='NHL'?nhlSc
+    :sport==='MIXH'?[...tag(nbaSc,'🏀 NBA, his average per game: '),...tag(nhlSc,'🏒 NHL, his average per game: ')]
+    :sport==='MIXF'?[...tag(fbSc,'🏈 NFL + 🎓 college (PPR): ')]
     :sport==='MIX'?[['🏈 NFL (PPR): catch','1'],['10 rushing or receiving yards','1'],['Rushing or receiving TD','6'],['25 passing yards','1'],['Passing TD','4'],['Interception or lost fumble','−2'],...nbaSc.map(([a,b],i)=>[(i?'':'🏀 NBA, his average per game that week: ')+a.toLowerCase(),b])]
     :[['Catch','1'],['10 rushing or receiving yards','1'],['Rushing or receiving TD','6'],['25 passing yards','1'],['Passing TD','4'],['Interception or lost fumble','−2'],
       ...(sport==='NFL'?[['Kicker: field goal (under 40 / 40-49 / 50+ yds)','3 / 4 / 5'],['Kicker: extra point','1'],['Kicker: missed field goal','−1'],
         ['Defense: sack','1'],['Defense: interception or fumble recovery','2'],['Defense: safety','2'],['Defense: return or defensive TD','6'],
         ['Defense: points allowed 0 / 1-6 / 7-13 / 14-20','10 / 7 / 4 / 1'],['Defense: points allowed 21-27 / 28-34 / 35+','0 / −1 / −4']]:[])];
-  const t=el('div',null,'wkscore');t.append(el('b','Scoring'+(sport==='NBA'?' (every game he plays that week counts)':sport==='MIX'?' · lineup: QB, RB, WR, FLEX + G, G, F, C':' (PPR)')));for(const [a,b] of sc){const r=el('div',null,'row');r.append(el('span',a),el('b',b));t.append(r);}
+  const t=el('div',null,'wkscore');t.append(el('b','Scoring'+({NBA:' (every game he plays that week counts)',NCAAB:' (every game he plays that week counts)',WNBA:' (every game he plays that week counts)',NHL:' (every game that week counts) · lineup: 4 FW, 2 D, GK',MIX:' · lineup: QB, RB, WR, FLEX + G, G, F, C',MIXH:' · lineup: G, F, C, G + FW, FW, D, GK',MIXF:' · lineup: QB, RB, WR, FLEX + college QB, RB, WR, WR'}[sport]||' (PPR)')));for(const [a,b] of sc){const r=el('div',null,'row');r.append(el('span',a),el('b',b));t.append(r);}
   d.append(t,el('p','Free to play · no entry fees · no prizes. Just bragging rights.','hint small'));return d;}
 async function renderWeekly(){const box=$('weeklyBox');if(!box)return;
   const tabs=el('div',null,'wktabs');for(const [k,ic,l] of WK_SPORTS){const b=el('button',null,'wktab');b.type='button';b.append(el('span',ic),el('b',l));b.setAttribute('aria-pressed',String(WK.sport===k));
@@ -4713,10 +4718,11 @@ function homeBetsBlock(d){const rows=((d.bets&&d.bets.rows)||[]).filter(r=>r.res
 // when no prop is priced. The Props tab stays as it is.
 const PLGL={pts:['points'],ast:['assists'],reb:['totalRebounds'],fg3:['threePointFieldGoalsMade-threePointFieldGoalsAttempted'],
   nfl_pass_yds:['passingYards'],nfl_rush_yds:['rushingYards'],nfl_rec_yds:['receivingYards'],nfl_rec:['receptions'],nfl_pass_td:['passingTouchdowns'],
-  nfl_td:['rushingTouchdowns','receivingTouchdowns'],nhl_goals:['goals'],nhl_points:['points'],nhl_sog:['shotsTotal']};
+  nfl_td:['rushingTouchdowns','receivingTouchdowns'],nhl_goals:['goals'],nhl_points:['points'],nhl_sog:['shotsTotal'],
+  mlb_hits:['hits'],mlb_hr:['homeRuns'],mlb_rbi:['RBIs'],mlb_runs:['runs'],mlb_k:['strikeouts']};   // fix482: MLB
 const PLCHK_STATS={NBA:['pts','reb','ast','fg3'],WNBA:['pts','reb','ast','fg3'],NCAAB:['pts','reb','ast','fg3'],
   NFL:['nfl_pass_yds','nfl_rush_yds','nfl_rec_yds','nfl_rec','nfl_pass_td','nfl_td'],NCAAF:['nfl_pass_yds','nfl_rush_yds','nfl_rec_yds','nfl_rec','nfl_pass_td','nfl_td'],
-  NHL:['nhl_goals','nhl_points','nhl_sog']};
+  NHL:['nhl_goals','nhl_points','nhl_sog'],MLB:['mlb_hits','mlb_hr','mlb_rbi','mlb_runs','mlb_k']};
 let plChk={who:'',stat:null,line:null};
 function plGlVals(F,stat){const gl=F&&F.gl;if(!gl||!PLGL[stat])return [];const nm=gl.names||[];const ix=PLGL[stat].map(k=>nm.indexOf(k)).filter(i=>i>=0);if(!ix.length)return [];
   const evs=gl.events||{};const st0=(gl.seasonTypes||[]).find(s=>(s.categories||[]).some(c=>(c.events||[]).length));if(!st0)return [];
@@ -4759,7 +4765,7 @@ async function plPropsFill(host,name,team,lg){let P=propData(D);
         const wrap=el('div');wrap.append(r);const vh=plHitLine(vals,b.line,'YES');if(vh)wrap.append(vh);host.append(wrap);}}
     host.append(el('p','Each button: her chance for that side · Kalshi’s price. YES = the number or more; NO = less. Green bars = games he reached the line.','hint small'));}
   if(open.length||board.length){plBuilderBar(bar);host.append(bar);}
-  else if(!P||!P.locked)host.append(el('p','No prop lines for him right now. NBA prop prices show up a few hours before tip-off; her NFL and NHL prop picks appear before games.','hint small'));
+  else if(!P||!P.locked)host.append(el('p',['NBA','NFL','NHL'].includes(lg)?'No prop lines for him right now. NBA prop prices show up a few hours before tip-off; her NFL and NHL prop picks appear before games.':'Kalshi doesn’t list '+sname(lg)+' player props. Use “check any line” below to see how often he reaches a number.','hint small'));
   if(done.length){const won=done.filter(r=>r.result==='WON').length,pl=done.reduce((a,r)=>a+(r.pnl||0),0);
     host.append(el('h5','Her record on his props · '+won+'-'+(done.length-won)+' · '+signed(pl),'lugrp'));
     host.append(tableOf(['Prop','Result'],done.slice(0,5).map(r=>[propName(r)+' · '+r.side+' · '+new Date(r.at*1000).toLocaleDateString([],{month:'short',day:'numeric'}),icon(r.result)+' '+r.result.toLowerCase()+' '+signed(r.pnl)])));}
@@ -4797,7 +4803,10 @@ async function teamPropsCard(c,t,lg,abbr){c.replaceChildren(el('h4','🎯 Player
     b.append(el('b',x.p.name),el('span',bits.join(' · '),'hint small'),el('span','Props ›','cmbgo'));b.onclick=()=>openPlayer(x.p.name,t.n,lg);return b;};
   if(live.length){c.append(el('div','Tonight','lugrp'));live.forEach(x=>c.append(row(x)));}
   if(past.length){c.append(el('div','Her past prop picks on this team','lugrp'));past.forEach(x=>c.append(row(x)));}
-  if(!live.length)c.append(el('p',P&&P.locked?'🔒 Her prop picks are for members.':'No prop lines for '+t.n+' players right now. NBA prop prices show up a few hours before tip-off; her NFL and NHL prop picks appear before games.','hint small'));
+  const kal=['NBA','NFL','NHL'].includes(lg);
+  if(!live.length)c.append(el('p',P&&P.locked?'🔒 Her prop picks are for members.':kal?'No prop lines for '+t.n+' players right now. NBA prop prices show up a few hours before tip-off; her NFL and NHL prop picks appear before games.':'Kalshi doesn’t list '+sname(lg)+' player props, but you can still research any line: pick a player, set a number and see how often he hit it in his last 5 and 10 games.','hint small'));
+  if(!live.length){const top=mine.filter(p=>p.rating!=null).sort((a,b)=>b.rating-a.rating).slice(0,6);   // fix482: research works in every league
+    if(top.length){c.append(el('div','Research a player','lugrp'));for(const p of top){const b=el('button',null,'tppr');b.type='button';b.append(el('b',p.name),el('span',[p.pos,pnote(p)].filter(Boolean).join(' · '),'hint small'),el('span','Check lines ›','cmbgo'));b.onclick=()=>openPlayer(p.name,t.n,lg);c.append(b);}}}
   c.append(el('p','Tap a player for every line, YES/NO into your prop builder, and how he did against each line in his last 10 games. Any player in the roster below works too: his card has a “check any line” tool.','hint small'));}
 // ---- fix476 My Props (owner: "Add to my props" saves picks to a list and the site tracks whether they hit; kept apart
 // from her record). Saved on this phone, and in the person's account when signed in (Supabase my_props, own rows only).
