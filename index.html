@@ -682,6 +682,7 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .hteamsrow{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px;scrollbar-width:none}.hteamsrow::-webkit-scrollbar{display:none}
 .hteambtn{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:84px;padding:10px 8px;border-radius:14px;border:1px solid rgba(180,77,255,.25);background:rgba(180,77,255,.07);color:inherit;font:inherit;cursor:pointer}
 .hteambtn .hi{font-size:22px}.hteambtn b{font-size:12px;white-space:nowrap}
+.plfull{margin-top:14px;border-top:1px solid rgba(180,77,255,.2);padding-top:6px}.plfull .plwide{overflow-x:auto;max-width:100%;display:block}.plfull h4{margin:12px 0 6px}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=8">
 <link rel="stylesheet" href="intro.css?v=3">
@@ -4561,6 +4562,7 @@ function plBuild(name,team,lg,found){const b=found.base||{},a=found.adv||{};cons
     for(const l of G.line)sec.append(tableOf(l.labels,[l.stats]));sec.append(el('small','From ESPN’s box score'+(g.box.checked_at?' · updated '+hm(g.box.checked_at):'')+(g.state==='LIVE'?' · refreshes on its own':''),'hint small'));box.append(sec);}
   else if(G.next){const g=G.next;const p=g.pick||{};box.append(el('h4','Next game'),el('p',(g.teams||[]).map(t=>t.name).join(' vs ')+' · '+(g.start?new Date(g.start).toLocaleString([], {weekday:'short',hour:'numeric',minute:'2-digit'}):'')+(p.team?' · her pick: '+p.team+(p.chance!=null?' '+Math.round(p.chance*100)+'%':''):''),'plseason'));}
   if(!found.base&&!found.adv&&!G.live)box.append(el('p','No season numbers for this player yet (new, a backup, or not in her player ratings).','hint'));
+  {const fs=el('div',null,'plfull');fs.append(el('h4','📊 Full stats'));const host=el('div');fs.append(host);box.append(fs);plFullFill(host,b.name||a.name||name,tm,lg);}
   box.append(el('p','Ratings and stats from Mohjeta’s player data (ESPN public stats). Rating 0-99 within his position.','hint small'));return box;}
 async function openPlayer(name,team,lg){plOpen={name,team,lg,found:{base:null,adv:null}};openSheet(()=>el('p','Loading '+name+'…','hint'),name);
   try{plOpen.found=await plFind(name,team,lg);}catch(e){}
@@ -4600,6 +4602,36 @@ function findPlayer(){openSheet(()=>{const box=el('div',null,'plfind');box.appen
   let t=null;inp.oninput=()=>{plfQ=inp.value;clearTimeout(t);t=setTimeout(()=>plfDraw(list,status),180);};
   box.append(inp,chips,status,list);plfDraw(list,status);setTimeout(()=>{try{inp.focus();}catch(e){}},60);return box;},'Find a player');}
 window.findPlayer=findPlayer;
+// fix474 (owner, Nov 15 2026: "There's gotta be more for players stats use someone else's model"): the full ESPN stat
+// sheet on every player card, read straight from ESPN's public player pages in the visitor's browser (nothing on her PC):
+// season-by-season tables for each stat category with career totals, and his last 5 games (date, opponent, result,
+// line). ESPN player id found with ESPN's search (league + team matched); cached for the visit.
+const ESPN_PATH={NFL:'football/nfl',NBA:'basketball/nba',NHL:'hockey/nhl',NCAAF:'football/college-football',NCAAB:'basketball/mens-college-basketball',WNBA:'basketball/wnba',MLB:'baseball/mlb'};
+const ESPN_SLUG={NFL:'nfl',NBA:'nba',NHL:'nhl',NCAAF:'college-football',NCAAB:'mens-college-basketball',WNBA:'wnba',MLB:'mlb'};
+const PLFULL={};
+async function plEspnId(name,team,lg){const r=await fetch('https://site.web.api.espn.com/apis/search/v2?type=player&limit=10&query='+encodeURIComponent(name),{signal:AbortSignal.timeout(8000)});
+  const j=await r.json();const cs=((j.results||[]).find(x=>x.type==='player')||{}).contents||[];
+  const ok=cs.filter(c=>(c.defaultLeagueSlug||'')===ESPN_SLUG[lg]&&plSame(name,c.displayName));
+  const best=ok.find(c=>!team||plTeamHit(team,{team:c.subtitle||''}))||ok[0];const m=best&&String(best.uid||'').match(/a:(\d+)/);return m?m[1]:null;}
+async function plFullLoad(name,team,lg){const key=lg+'|'+plNorm(name)+'|'+plNorm(team);if(PLFULL[key])return PLFULL[key];
+  const p=(async()=>{if(!ESPN_PATH[lg])return null;const id=await plEspnId(name,team,lg);if(!id)return null;const base='https://site.web.api.espn.com/apis/common/v3/sports/'+ESPN_PATH[lg]+'/athletes/'+id+'/';
+    const [st,gl]=await Promise.all([fetch(base+'stats',{signal:AbortSignal.timeout(9000)}).then(r=>r.ok?r.json():null).catch(()=>null),fetch(base+'gamelog',{signal:AbortSignal.timeout(9000)}).then(r=>r.ok?r.json():null).catch(()=>null)]);
+    return {id,st,gl};})();PLFULL[key]=p;p.catch(()=>{delete PLFULL[key];});return p;}
+function plFullBuild(F){const w=el('div',null,'plfullin');const cats=((F&&F.st&&F.st.categories)||[]).filter(c=>(c.statistics||[]).length);
+  if(!cats.length&&!(F&&F.gl)){w.append(el('p','No detailed stat sheet for this player yet.','hint small'));return w;}
+  const evs=(F.gl&&F.gl.events)||{};const st0=((F.gl&&F.gl.seasonTypes)||[]).find(s=>(s.categories||[]).some(c=>(c.events||[]).length));
+  if(st0){const rows=[];for(const c of st0.categories||[])for(const e of c.events||[])rows.push(e);rows.sort((a,b)=>String((evs[b.eventId]||{}).gameDate).localeCompare(String((evs[a.eventId]||{}).gameDate)));
+    const labs=(F.gl.labels||[]).slice(0,9);if(rows.length){w.append(el('h4','Last '+Math.min(5,rows.length)+' games'));
+      w.append(tableOf(['Date','Opp','Result',...labs],rows.slice(0,5).map(e=>{const v=evs[e.eventId]||{};const d=v.gameDate?new Date(v.gameDate).toLocaleDateString([],{month:'short',day:'numeric'}):'';
+        return [d,(v.atVs||'')+' '+((v.opponent||{}).abbreviation||''),(v.gameResult||'')+' '+(v.score||''),...(e.stats||[]).slice(0,9)];})));}}
+  for(const c of cats.slice(0,4)){const rows=(c.statistics||[]).slice(-3).reverse();
+    w.append(el('h4',(c.displayName||c.name||'Stats')+' by season'));
+    const body=rows.map(r=>[(r.season&&r.season.displayName)||'',...(r.stats||[])]);if((c.totals||[]).length)body.push(['Career',...c.totals]);
+    const t=tableOf(['Season',...(c.labels||[])],body);t.classList.add('plwide');w.append(t);}
+  w.append(el('p','Full stats from ESPN.','hint small'));return w;}
+function plFullFill(host,name,team,lg){if(!host)return;host.replaceChildren(el('p','Loading his full stat sheet…','hint small'));
+  plFullLoad(name,team,lg).then(F=>{host.replaceChildren(F?plFullBuild(F):el('p','No detailed stat sheet found for this player.','hint small'));}).catch(()=>host.replaceChildren(el('p','The full stat sheet couldn’t load right now.','hint small')));}
+
 // fix473 (owner, Nov 15 2026: "Put teams on the home page"): a Teams block on Home - one button per sport straight into the
 // Teams directory (fix472) on that sport, plus find-a-player-or-team. Part of the Home layout (can be moved / hidden).
 function homeTeamsBlock(){const w=el('div',null,'card hteams');const hd=el('div',null,'hteamshd');hd.append(el('b','🏟 Teams'),el('small','Every team by sport: stats, schedule, roster','hint small'));w.append(hd);
