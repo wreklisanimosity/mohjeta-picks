@@ -667,6 +667,10 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .plcard h3{margin:2px 0}.plcard .pltile{display:inline-flex;flex-direction:column;gap:2px;margin:0 8px 8px 0}.plcard .pltile b,.plcard .pltile>span:last-child{font-size:20px;font-weight:700}.plcard .plteam{color:#b9a7cf}.plcard .plstatus{background:rgba(255,120,80,.12);border:1px solid rgba(255,120,80,.35);border-radius:10px;padding:6px 10px;margin:6px 0;font-size:14px}
 .plcard .plseason{margin:4px 0 10px;line-height:1.45}.plcard .pllive{border:1px solid rgba(80,230,140,.35);background:rgba(80,230,140,.06);border-radius:12px;padding:10px;margin:12px 0}
 .plcard .pllivehd{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}.plcard .pllivehd b{color:#5be38f}
+.plfind h3{margin:0 0 4px}.plfinput{width:100%;box-sizing:border-box;font-size:17px;padding:12px 14px;border-radius:12px;margin:8px 0}
+.plreslist{display:flex;flex-direction:column;gap:6px;margin-top:8px}.plres{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;align-items:center;text-align:left;gap:0 10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(180,77,255,.25);background:rgba(180,77,255,.06);color:inherit;font:inherit;cursor:pointer}
+.plres b{grid-column:1}.plres .hint{grid-column:1}.plres>span:last-child{grid-column:2;grid-row:1/3;font-weight:700;font-size:18px}
+.plfindlink{display:block;margin:6px 0 10px;background:none;border:0;padding:4px 0;color:#d8a8ff;font:inherit;font-size:14px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=8">
 <link rel="stylesheet" href="intro.css?v=3">
@@ -795,7 +799,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
 <script src="sounds.js?v=2"></script>
 <script src="intro.js?v=3"></script>
 <header>
-  <div class="top"><div class="brand" id="home" role="link" tabindex="0" aria-label="Mohjeta"><img class="brand-m" src="logo-cut.webp?v=2" alt="" width="30" height="30"><span aria-hidden="true">OHJETA</span><b aria-hidden="true">.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><button type="button" class="btn subscribe-entry" id="subscribeEntry">Subscribe</button><span class="updated" id="updated">Loading…</span><button type="button" class="sndbtn" id="sndBtn" data-sound-toggle aria-pressed="true" aria-label="Sound on">🔊</button><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
+  <div class="top"><div class="brand" id="home" role="link" tabindex="0" aria-label="Mohjeta"><img class="brand-m" src="logo-cut.webp?v=2" alt="" width="30" height="30"><span aria-hidden="true">OHJETA</span><b aria-hidden="true">.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><button type="button" class="btn subscribe-entry" id="subscribeEntry">Subscribe</button><span class="updated" id="updated">Loading…</span><button type="button" class="sndbtn" id="plFindBtn" aria-label="Find a player" title="Find a player">🔎</button><button type="button" class="sndbtn" id="sndBtn" data-sound-toggle aria-pressed="true" aria-label="Sound on">🔊</button><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
   <div class="ticker" id="ticker" hidden role="region" aria-label="Sports headlines and site news"><div class="tk-view"><div class="tk-track" id="tkTrack"></div></div><button type="button" class="tk-x" id="tkClose" aria-label="Hide the headlines">✕</button></div>
 </header>
   <nav class="tabs" role="tablist" aria-label="Sections" id="nav">
@@ -867,7 +871,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
   </section>
   <section class="panel" id="ratings" role="tabpanel" aria-label="Ratings"><button class="back" data-go="more">‹ My Mohjeta</button>
     <h2>Ratings</h2><p class="hint small">Team strength from real final scores (Elo: 1500 is average, +100 is about a 64% favorite) and each league's players. Tennis: player Elo overall and by surface.</p>
-    <div class="chips" id="rtChips"></div><div class="chips" id="rtViews"></div><select id="rtPick" aria-label="Choose team or position" hidden></select><input id="rtFind" type="search" placeholder="Find a team or player…" aria-label="Find a team or player"><div id="rtBox"></div>
+    <div class="chips" id="rtChips"></div><div class="chips" id="rtViews"></div><select id="rtPick" aria-label="Choose team or position" hidden></select><input id="rtFind" type="search" placeholder="Find a team or player…" aria-label="Find a team or player"><button type="button" class="plfindlink" data-plfind>🔎 Search every player in every league ›</button><div id="rtBox"></div>
   </section>
   <section class="panel" id="news" role="tabpanel" aria-label="What's new"><button class="back" data-go="more">‹ My Mohjeta</button>
     <h2>What's new & how to use the site</h2><div id="newsBox"><p class="hint">Loading…</p></div>
@@ -902,6 +906,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
       <button type="button" id="installMenu"><span>Install the app<small>Put Mohjeta on your home screen</small></span>›</button>
     </div></details>
     <details class="tfold mfold" open><summary><span>🧭 Explore Mohjeta</span></summary><div class="menu">
+      <button type="button" data-plfind><span>🔎 Find a player<small>Any NFL, NBA, NHL or college player, even when his team isn’t playing</small></span>›</button>
       <button type="button" data-go="news"><span>🆕 What's new & how-to<small>Latest updates and how to use every part of the site</small></span>›</button>
       <button type="button" data-go="hub"><span>🏟 Sports hub<small>Standings, trade center, injury report, highlights and daily trivia</small></span>›</button>
       <button type="button" data-go="radio"><span>🎧 Sports radio<small>Free live sports talk: ESPN Radio, Fox Sports Radio and more</small></span>›</button>
@@ -4543,6 +4548,36 @@ async function openPlayer(name,team,lg){plOpen={name,team,lg,found:{base:null,ad
   clearInterval(plTimer);plTimer=setInterval(()=>{const s=$('sheet');if(!plOpen||!s||!s.classList.contains('on')||!$('sheetBody').querySelector('.plcard')){clearInterval(plTimer);plOpen=null;return;}
     $('sheetBody').replaceChildren(plBuild(plOpen.name,plOpen.team,plOpen.lg,plOpen.found));},30000);}
 window.openPlayer=openPlayer;
+
+// ---- fix468 find any player (owner, Nov 15 2026: "want guests to be able to find them even when the team isn't playing"):
+// 🔎 in the top bar, "Find a player" in Explore and in Ratings. Free for everyone, no sign-in. Searches every rated player
+// (ratings.json rosters: NFL, NBA, NHL, WNBA, MLB; college football / basketball rosters load when picked or when the pro
+// leagues have no match). Tap a result for his card.
+const PLF_LGS=[['ALL','All'],['NFL','NFL'],['NBA','NBA'],['NHL','NHL'],['NCAAF','College FB'],['NCAAB','College BB']];
+let plfLg='ALL',plfQ='';
+function plfPool(lg){const R=rt&&rt.leagues;if(!R)return [];const lgs=lg==='ALL'?Object.keys(R).filter(k=>!/^(ATP|WTA)$/.test(k)):[lg];
+  const out=[];for(const k of lgs){for(const p of (((R[k]||{}).roster||{}).players)||[])out.push([k,p]);}return out;}
+async function plfDraw(list,status){const q=plNorm(plfQ);if(q.length<2){list.replaceChildren(el('p','Type at least 2 letters of a name (first, last or both).','hint small'));return;}
+  status.textContent='';await plRatings();
+  let hits=plfPool(plfLg).filter(([k,p])=>{const n=plNorm(p.name);return n.includes(q)||q.split(' ').every(w=>n.split(' ').some(x=>x.startsWith(w)));});
+  const college=plfLg==='NCAAF'||plfLg==='NCAAB'?[plfLg]:(plfLg==='ALL'&&hits.length<3?['NCAAF','NCAAB']:[]);
+  if(college.some(k=>ROSTER_FILE[k]&&rosterLoaded[k]!=='ok')){status.textContent='Loading college rosters…';
+    for(const k of college){try{await ensureRoster(k);}catch(e){}}status.textContent='';
+    if(plNorm(plfQ)!==q)return;hits=plfPool(plfLg).filter(([k,p])=>{const n=plNorm(p.name);return n.includes(q)||q.split(' ').every(w=>n.split(' ').some(x=>x.startsWith(w)));});}
+  hits.sort((a,b)=>{const ea=plNorm(a[1].name).startsWith(q)?0:1,eb=plNorm(b[1].name).startsWith(q)?0:1;return ea-eb||((b[1].rating??-1)-(a[1].rating??-1));});
+  if(!hits.length){list.replaceChildren(el('p','No player found'+(plfLg==='ALL'?'':' in '+plfLg)+'. Check the spelling, or try just the last name.','hint'));return;}
+  list.replaceChildren(...hits.slice(0,40).map(([k,p])=>{const b=el('button',null,'plres');b.type='button';
+    b.append(el('b',p.name),el('span',[k,p.pos,p.team_name||p.team].filter(Boolean).join(' · '),'hint small'),rcell(p.rating));
+    b.onclick=()=>openPlayer(p.name,p.team_name||p.team,k);return b;}));
+  if(hits.length>40)list.append(el('p',hits.length-40+' more: type more of the name.','hint small'));}
+function findPlayer(){openSheet(()=>{const box=el('div',null,'plfind');box.append(el('h3','🔎 Find a player'),el('p','Any rated player in the NFL, NBA, NHL and college, whether his team plays today or not.','hint small'));
+  const inp=el('input');inp.type='search';inp.placeholder='Player name, e.g. Burrow';inp.setAttribute('aria-label','Player name');inp.value=plfQ;inp.className='plfinput';
+  const chips=el('div',null,'chips');const list=el('div',null,'plreslist');const status=el('small','','hint small');
+  const drawChips=()=>chips.replaceChildren(...PLF_LGS.map(([k,l])=>{const c=el('button',l);c.type='button';c.setAttribute('aria-pressed',String(plfLg===k));c.onclick=()=>{plfLg=k;drawChips();plfDraw(list,status);};return c;}));drawChips();
+  let t=null;inp.oninput=()=>{plfQ=inp.value;clearTimeout(t);t=setTimeout(()=>plfDraw(list,status),180);};
+  box.append(inp,chips,status,list);plfDraw(list,status);setTimeout(()=>{try{inp.focus();}catch(e){}},60);return box;},'Find a player');}
+window.findPlayer=findPlayer;
+{const fb=$('plFindBtn');if(fb)fb.onclick=findPlayer;document.querySelectorAll('[data-plfind]').forEach(b=>b.onclick=findPlayer);}
 
 })();
 </script>
