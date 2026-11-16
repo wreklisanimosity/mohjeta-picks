@@ -1635,13 +1635,17 @@ const BADGE_COUNT={first_pick:[['five_picks',5],['pk25',25]],prop_pick:[['props1
 function TESTS(){const ios=isIOSApp();const push=('serviceWorker' in navigator)&&('PushManager' in window);return [
   ['signin','Sign in','1) Tap “Sign in” at the top right of the screen.  2) Tap “Continue with Apple” or “Continue with Google”, or type your email and tap “Send sign-in link”.  3) If you used email, open the email from Mohjeta, then type the 6-digit code into “Code from the email” and tap “Sign in with code”. When it works, your picture or initials show at the top right.',()=>show('chat')],
   ['breakdown','Open a game breakdown','1) Tap “Tonight” in the menu at the bottom.  2) Tap any game card.  3) Scroll down through her pick, her reasoning, injuries and the head-to-head stats.  4) Tap “‹ Back” at the top to close it.',()=>show('picks')],
-  ['voice','Hear her voice','1) Tap “Home” in the menu at the bottom.  2) At the top, tap “Hear her rundown ▶” and listen.  (No button there? Open one of her top picks on Tonight and tap “▶ Hear her”. Clips only show before games start.)',()=>show('home')],
+  ['voice','Hear her voice','1) Tap “Home” in the menu at the bottom.  2) Scroll down to “Hear her rundown ▶” and tap it.  (No button there? Open one of her top picks on Tonight and tap “▶ Hear her”. Clips only show before games start.)',()=>show('home')],
   ['first_pick',"Make a Pick'em pick","1) Tap “Tonight” in the menu at the bottom.  2) On any game that hasn’t started, find “Your pick:” with the two team names.  3) Tap the team you think will win. It lights up when it’s saved.",()=>show('picks')],
   ['guess','Guess her number','1) Tap “Play” in the menu at the bottom.  2) Tap “🔮 Guess her number”.  3) Move the slider to how sure you think she is about that game.  4) Tap “Lock it in” to see how close you were.',()=>{show('guess');drawGuess();}],
   ['sim','Simulate a game','1) Tap “Simulate” in the menu at the bottom.  2) Choose a team on each side.  3) Tap “⚔️ Fight!” to play the matchup 10,000 times and see who wins.  (You can also tap “Simulate this game ›” inside any game breakdown.)',()=>show('sim')],
   ['prop_builder','Add a prop to the builder','1) Tap “Teams” at the bottom and pick an NBA, NFL or NHL team.  2) Under “Player props”, tap a player.  3) On any line, tap YES or NO (or “+ Add to builder” on her pick).  (No lines showing? Prop prices appear on game days, usually a few hours before tip-off. All pages › Props has every prop at once.)',()=>show('teams')],
+  ['fav_team','Pick your teams','1) Tap “Home” in the menu at the bottom.  2) Under “Your teams”, tap “Pick”.  3) Tap a sport, then your favorite team. Its card shows up at the top of Home, and using the site for that team unlocks team rewards.',()=>{show('home');try{openFavPicker();}catch(e){}}],   // fix490
+  ['team','Open a team page','1) Tap “Teams” in the menu at the bottom.  2) Pick a sport, then tap any team.  3) Look through her next pick, team stats, injuries and the roster. Tap a player for his card.',()=>show('teams')],
+  ['my_props','Save a prop to My props','1) Tap “Teams” at the bottom and open an NBA, NFL or NHL team.  2) Tap a player.  3) Under “Check any line”, pick a stat, set a number and tap “📋 Save: over” (or under).  4) See it under Teams › “📋 My props”: it is graded after his next game.',()=>show('teams')],
+  ['fantasy','Enter weekly fantasy','1) Tap “Play” in the menu at the bottom, then “🏈 Weekly fantasy”.  2) Pick a tab, like NFL + NBA.  3) Fill every spot under the salary cap (or tap “✨ Fill the rest”), name your team and tap “💾 Save my lineup”.',()=>show('weekly')],
   ['chat','Say hi in chat','1) Sign in first (task 1).  2) Tap “Chat” in the menu at the bottom.  3) Type a message in the box at the bottom and send it. Keep it friendly.',()=>show('chat')],
-  ...(push?[['alerts','Turn on alerts','1) Tap “More” in the menu at the bottom.  2) Under “🔔 Phone alerts”, tap “🔔 Turn on alerts”.  3) When your phone or browser asks, tap “Allow”.',()=>show('more')]]:[]),
+  ...(push?[['alerts','Turn on alerts','1) Tap “My Mohjeta” in the menu at the bottom.  2) Under “🔔 Phone alerts”, tap “🔔 Turn on alerts”.  3) When your phone or browser asks, tap “Allow”.',()=>show('more')]]:[]),
   ['share','Share a card','1) Simulate a game (task 6).  2) Under the result, tap “📤 Share”.  3) Send it to someone or save the picture.',()=>show('sim')],
   ['language','Switch the language','1) At the top right, under the 🔊 sound button, tap “🌐 EN”.  2) Pick another language and look around a page.  3) Tap it again and choose English to switch back.',()=>window.scrollTo({top:0,behavior:'smooth'})],
   ...(ios?[['refresh','Pull to refresh','1) Scroll to the very top of any page.  2) Drag your finger down until the top says “↻ Release to refresh”.  3) Let go. The page reloads with the newest picks.',null]]:[]),
@@ -1663,7 +1667,7 @@ function testerCheck(){const st=testerState();const done=st.filter(x=>x.done).le
   if(done===st.length&&!badgeData().tester)award('tester');}
 // ---------------- tester challenge v2 + trophy case everywhere (fix362, owner: "beta tester challenge needs to be more
 // visible and its contents are a little boring looking and we need a trophy case for the badges")
-const TEST_IC={signin:'key',breakdown:'clipboard',voice:'sound',first_pick:'target',guess:'forecast',sim:'simulate',prop_builder:'props',
+const TEST_IC={fav_team:'star',team:'arena',my_props:'clipboard',fantasy:'basketball',signin:'key',breakdown:'clipboard',voice:'sound',first_pick:'target',guess:'forecast',sim:'simulate',prop_builder:'props',
   chat:'chat',alerts:'alerts',share:'share',language:'globe',refresh:'refresh',feedback:'mail'};
 function ring(frac,size,label){const NS='http://www.w3.org/2000/svg',s=document.createElementNS(NS,'svg');s.setAttribute('viewBox','0 0 44 44');s.setAttribute('class','pring');s.style.width=s.style.height=size+'px';
   s.innerHTML='<circle cx="22" cy="22" r="18" fill="none" stroke="#ffffff1a" stroke-width="5"/><circle cx="22" cy="22" r="18" fill="none" stroke="#f5c542" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+(113.1*frac).toFixed(1)+' 113.1" transform="rotate(-90 22 22)"/>'+
@@ -4842,7 +4846,7 @@ async function mypAdd(list){const x=mypLoad();let n=0;
   for(const l of list){const lg=l.lg||mypLg(l.stat);const id=(lg+'|'+plNorm(l.player)+'|'+l.stat+'|'+l.line+'|'+l.side+'|'+Date.now().toString(36)).replace(/[^A-Za-z0-9._|:-]/g,'');
     if(x.some(p=>!p.result&&plSame(p.player,l.player)&&p.stat===l.stat&&p.line===l.line&&p.side===l.side))continue;
     const p={id,lg,team:l.team||'',game:l.game||'',player:l.player,stat:l.stat,line:l.line,side:l.side,her:l.her??null,price:l.price??null,at:Date.now()};x.push(p);n++;mypRow(p);try{if(l.team)txpEarn(l.team,'mp'+tday(),5,lg);}catch(e){}}
-  mypSave(x);toast(n?'Saved to My props ('+n+')'+(me?'':' on this phone. Sign in to keep them on every device'):'Already in My props');return n;}
+  if(n)try{award('my_props');}catch(e){}mypSave(x);toast(n?'Saved to My props ('+n+')'+(me?'':' on this phone. Sign in to keep them on every device'):'Already in My props');return n;}
 async function mypSync(){if(!me||Date.now()-mypSynced<60000)return;try{await supa();}catch(e){return;}mypSynced=Date.now();
   try{const {data,error}=await sb.from('my_props').select('*').order('saved_at',{ascending:false}).limit(300);if(error)return;
     const x=mypLoad();const have=new Set(x.map(p=>p.id));
@@ -5005,7 +5009,7 @@ async function openFavPicker(){openSheet(()=>{const w=el('div');w.id='favPick';w
       if(F[lg]){const x=el('button','Clear my '+sname(lg)+' favorite','btn ghost small');x.type='button';x.onclick=()=>{const G=favLoad();delete G[lg];favSave(G);draw();tfxApply();if(D)renderHome(D);};list.append(x);}
       for(const t of teams.slice(0,400)){const on=F[lg]===t.n;const b=el('button',null,'favopt'+(on?' on':''));b.type='button';b.append(teamBadge(t.n),el('b',t.n),on?el('span','⭐ Favorite','hint small'):tfxIcon(tfxMotif(t.n),'favoptm',tfxColor(t.n)));
         b.onclick=()=>{const G=favLoad();G[lg]=t.n;favSave(G);if(!isMyTeam(lg,t.n))toggleTeam(lg,t.n);if(!favMain()||Object.keys(G).length===1)try{localStorage.setItem(TFXK,t.n);}catch(e){}
-          toast('⭐ '+t.n+' is your '+sname(lg)+' team');txpFromPicks();draw();tfxApply();if(D)renderHome(D);};list.append(b);}};
+          toast('⭐ '+t.n+' is your '+sname(lg)+' team');try{award('fav_team');}catch(e){}txpFromPicks();draw();tfxApply();if(D)renderHome(D);};list.append(b);}};
     inp.oninput=()=>{q=inp.value;fill();};box.append(chips,inp,list);fill();};draw();}
 function openFavRewards(team,lg){openSheet(()=>{const w=el('div',null,'favrew no-icons');const xp=teamXP(team),tier=tfxTier(xp),m=tfxMotif(team);const sc=EVO.score||0,stage=evoStage(sc);
     const hd=el('div',null,'favrewhd');hd.append(evoBadge(team,stage));const tx=el('div');tx.append(el('span',sname(lg).toUpperCase(),'simeyebrow'),el('h2',team),el('b',TFX_TIERS[tier][1]+' · '+xp+' XP','tprec'));hd.append(tx);w.append(hd);
