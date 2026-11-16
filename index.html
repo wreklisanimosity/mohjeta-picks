@@ -762,6 +762,10 @@ body.tfx3 .card{animation-duration:1.8s}
 .favadd{flex:0 0 96px;scroll-snap-align:start;border:1px dashed var(--line);border-radius:20px;background:rgba(255,255,255,.03);color:#e2b8ff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font:inherit}
 .favadd b{font-size:28px;line-height:1}.favdots{display:flex;justify-content:center;gap:6px;margin-top:2px}.favdots i{width:6px;height:6px;border-radius:9px;background:rgba(255,255,255,.2);transition:.2s}.favdots i.on{width:18px;background:linear-gradient(90deg,var(--purple),var(--pink))}
 @media (prefers-reduced-motion:reduce){.favbig,.favglow,.tfxpi,.evom,.favdot{animation:none!important}}
+.twincard{border-color:color-mix(in srgb,var(--pink) 45%,var(--line))}.twinhd{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#e2b8ff;margin-bottom:8px}
+.twingrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.twincol{display:flex;flex-direction:column;gap:2px;border-radius:12px;padding:10px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.twincol.real{background:linear-gradient(160deg,rgba(76,217,123,.14),rgba(255,255,255,.03));border-color:rgba(76,217,123,.35)}.twinlab{font-size:10px;font-weight:900;letter-spacing:.14em;color:var(--muted)}
+.twinnet{font-size:24px;font-weight:900}.twinrec{font-size:13px;font-weight:700}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=8">
 <link rel="stylesheet" href="intro.css?v=3">
@@ -910,7 +914,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
   <section class="panel" id="picks" role="tabpanel" aria-label="Picks">
     <div id="liveBox"></div><div id="radioTeaser"></div>
     <div id="record"></div><div id="openBets"></div><div id="installBox"></div><div id="alertsBox"></div>
-    <h3>Tonight she's betting</h3><p class="hint small xp">Games where she puts $5 of paper money on her pick at Kalshi's real price. Tap a sport to see them.</p><div id="betting"></div>
+    <h3>Tonight she's betting</h3><p class="hint small xp" data-live="Games where she puts $5 of real money on her pick on Kalshi. Tap a sport to see them.">Games where she puts $5 of paper money on her pick at Kalshi's real price. Tap a sport to see them.</p><div id="betting"></div>
     <div id="legsBox"></div><div id="copyBox"></div>
     <h3>Her most confident picks</h3><p class="hint small xp">Her most confident calls in every sport. 🧪 Practice picks are sports she is still learning and does not bet yet: less information behind them, so use them with caution. Their results are in Results. Tap any pick for the full breakdown.</p><div class="mgrid" id="best"></div>
     <h3>Latest results</h3><div class="strip" id="recent"></div>
@@ -1021,7 +1025,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
       <button type="button" data-go="terms"><span>Terms of use<small>What this site is and is not</small></span>›</button>
       <button type="button" data-go="privacy"><span>Privacy<small>How we use your information</small></span>›</button>
     </div></details>
-    <div class="notice">Entertainment and information only. Mohjeta's numbers are model estimates, not betting, financial or investment advice, and her bets use paper money. 21+ only. If you bet, follow the law where you live and never bet more than you can afford to lose. Gambling problem? Call 1-800-GAMBLER.</div>
+    <div class="notice">Entertainment and information only. Mohjeta's numbers are model estimates, not betting, financial or investment advice, and her bets use <span data-live="real money on Kalshi (a small test bankroll)">paper money</span>. 21+ only. If you bet, follow the law where you live and never bet more than you can afford to lose. Gambling problem? Call 1-800-GAMBLER.</div>
   </section>
   <section class="panel" id="combos" role="tabpanel" aria-label="Combo ideas"><button class="back" data-go="more">‹ My Mohjeta</button><h2>🎲 Combos &amp; parlays</h2><p class="hint">Every multi-leg idea in one place: her team combos, her prop parlays, heavy-favorite legs and your own builder. Every leg has to win, so these lose most of the time. For fun, not betting advice.</p><p class="hint small" id="comboUpd"></p><div class="chips cmbtabs" id="cmbTabs"></div><div class="grid" id="comboList"></div></section>
   <section class="panel" id="score" role="tabpanel" aria-label="Scorecard"><button class="back" data-go="more">‹ My Mohjeta</button><h2>Scorecard</h2><p class="hint">Every finished pick is graded against the official result. Hit = picked side won. Accuracy (Brier): 0 is perfect, 0.25 is a coin flip, lower is better.</p><div id="scoreBox"></div></section>
@@ -1041,7 +1045,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
     <h3>3. She compares it with the price</h3>
     <p>A Kalshi price of 59¢ means the market gives that side about a 59% chance. Each game shows both numbers so you can see the gap yourself.</p>
     <h3>4. She bets small and the same every time</h3>
-    <p>About $5 a game in the sports she bets, so no single game can swing the record. Other sports are practice: she still picks them, but does not bet. Right now all bets are <b>paper bets</b>: real Kalshi prices, pretend money, while the record builds.</p>
+    <p>About $5 a game in the sports she bets, so no single game can swing the record. Other sports are practice: she still picks them, but does not bet. <span data-live="Her game bets are now placed with real money on Kalshi (a small test bankroll); a paper copy of the same bets runs alongside for comparison.">Right now all bets are <b>paper bets</b>: real Kalshi prices, pretend money, while the record builds.</span></p>
     <h3>5. Everything is recorded and sealed</h3>
     <p>Each recorded bet has a fingerprint linked to the preceding entry. The Record tab checks the saved chain and reports whether current entry fields match their seals. This is a consistency check, not proof that an entire history could never be replaced.</p>
     <h3>What to keep in mind</h3>
@@ -2852,7 +2856,7 @@ function drawBetting(d){const box=$('betting');box.replaceChildren();
 function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();try{renderOpenBets(d);}catch(e){}try{renderLegs(d);}catch(e){}try{if(document.querySelector('#feed.on'))renderFeed(d);}catch(e){}setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(scoreNightCard(),propPickemCard(),hofCard());/* fix410: leaderboard moved to Home */}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
   if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
     r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'),el('span',signed(t.net),'pl '+cls(t.net)));box.append(r);
-    const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+' · paper money, real Kalshi prices','hint small'));{const ws=withSkipped(d,t.wins,t.losses);if(ws)box.append(el('div',ws.w+'-'+ws.l+' counting the '+(ws.sw+ws.sl)+' picks she skipped at 95¢+ (no bet on those)','hint small'));}
+    const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost+' '+signed(w.net)+(D&&D.bets&&D.bets.mode==='live'?' · real money on Kalshi':' · paper money, real Kalshi prices'),'hint small'));{const ws=withSkipped(d,t.wins,t.losses);if(ws)box.append(el('div',ws.w+'-'+ws.l+' counting the '+(ws.sw+ws.sl)+' picks she skipped at 95¢+ (no bet on those)','hint small'));}
     const go=el('button','See the full track record ›','more');go.style.cssText='background:none;border:0;padding:0;cursor:pointer';go.onclick=()=>show('record');box.append(go);rec.append(box);}
   const ab=$('alertsBox');ab.replaceChildren();if(d.alerts_url){const a=iel('a','🔔 Get her picks as they happen','btn');a.href=d.alerts_url;a.target='_blank';a.rel='noopener';ab.append(a);ab.style.margin='0 0 14px';}
   // fix412 (owner: "it says two live games why can't I see them"): Home counts every live game, so Live now shows every
@@ -3139,7 +3143,7 @@ function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren
     b.append(el('small',lab),el('b',big,c||''),el('small',small));if(window.MohjetaIcons)b.append(MohjetaIcons.icon(ic));b.onclick=go;return b;};
   {const ws=t&&t.settled?withSkipped(d,t.wins,t.losses):null;   // fix404 (owner): profit rides on the Record tile; the freed spot is Radio
     const rec=stat('Record',t&&t.settled?t.wins+'-'+t.losses:'—','','results','#123a24',()=>show('record'));const sm=rec.querySelectorAll('small')[1];
-    if(sm){sm.replaceChildren();if(t){sm.append(el('span',signed(t.net),'hpl pl '+cls(t.net)),document.createTextNode(' paper profit'));}else sm.textContent='Starting soon';}
+    if(sm){sm.replaceChildren();if(t){sm.append(el('span',signed(t.net),'hpl pl '+cls(t.net)),document.createTextNode(d.bets&&d.bets.mode==='live'?' real profit':' paper profit'));}else sm.textContent='Starting soon';}
     let onAir=0;try{onAir=radioGames(d).filter(([g])=>g.state==='LIVE').length;}catch(e){}
     const rad=stat('Radio',onAir?String(onAir):'24/7',onAir?'game'+(onAir>1?'s':'')+' on the radio now':'sports talk, free','headphones','#3a1450',()=>show('radio'));if(onAir)rad.classList.add('onair');
     st.append(rec,rad,
@@ -3156,6 +3160,7 @@ function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren
     b.append(info,el('span','›','go'));b.onclick=()=>openGame(nx.id||nx.name);B.next=b;}
   try{B.trivia=triviaHomeCard();B.hub=hubHomeRow();}catch(e){}   // fix413
   try{B.board=homeBoard();}catch(e){}
+  try{B.twin=twinCard(d);}catch(e){}   // fix485
   try{txpFromPicks();B.favs=homeFavBlock();}catch(e){console.warn('home favs',e);}   // fix479
   try{B.today=homeTodayBlock(d);}catch(e){console.warn('home today',e);}try{B.bets=homeBetsBlock(d);}catch(e){console.warn('home bets',e);}   // fix476
   try{B.allteams=homeTeamsBlock();}catch(e){}   // fix473 (owner: "Put teams on the home page")
@@ -3184,7 +3189,8 @@ function needDet(){if(!D||!(D.games||[]).some(g=>g.has_more)||detBusy||(DET&&Dat
   if(!(sheetGame&&sheetGame.has_more)&&!on('sim')&&!on('props')&&!on('combos'))return;
   detBusy=fetchPublicSnapshot('details.json').then(r=>r.ok?r.json():null).then(x=>{if(!x||!x.games)return;DET=x;detAt=Date.now();if(!D)return;mergeDet(D);
     try{renderSim();}catch(e){}try{renderProps(D);}catch(e){}try{if(on('combos'))renderCombos(D);}catch(e){}refreshSheet();}).catch(()=>{}).finally(()=>{detBusy=null;});}
-function render(d){D=d;try{drawTicker();}catch(e){}try{setTimeout(tradePopup,1500);}catch(e){}try{if(document.querySelector('#more.on'))renderMine();}catch(e){}try{drawRadioTeaser(d);if(document.querySelector('#radio.on'))drawRadioPage();}catch(e){}notePeople(d);applyMembers(d);mergeDet(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
+function liveWording(d){const on=!!(d&&d.bets&&d.bets.mode==='live');for(const n of document.querySelectorAll('[data-live]')){if(n.dataset.paper==null)n.dataset.paper=n.innerHTML;n.innerHTML=on?n.dataset.live:n.dataset.paper;}}   // fix485
+function render(d){D=d;try{liveWording(d);}catch(e){}try{drawTicker();}catch(e){}try{setTimeout(tradePopup,1500);}catch(e){}try{if(document.querySelector('#more.on'))renderMine();}catch(e){}try{drawRadioTeaser(d);if(document.querySelector('#radio.on'))drawRadioPage();}catch(e){}notePeople(d);applyMembers(d);mergeDet(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
   $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderSkipped(d),()=>renderUnits(d),()=>renderMore(d),()=>renderSimIfChanged(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
   if(lastLive&&Date.parse(lastLive.updated)>Date.parse(d.updated))applyLive(lastLive);
@@ -3487,7 +3493,7 @@ function drawBuilder(){const pb=$('propBuilder');if(!pb)return;const P=propData(
 let pracSport='ALL';
 // fix447 (owner): customer-facing results in units (1 unit = her standard bet), ROI and win rate, per league and
 // overall, always labelled as tracked paper results until real money is in. Her stakes are not changed or inflated.
-function renderUnits(d){const box=$('unitsBox');if(!box)return;box.replaceChildren();const U=d.units;if(!U||!U.overall||!U.overall.bets)return;
+function renderUnits(d){const box=$('unitsBox');if(!box)return;box.replaceChildren();try{const tc=twinCard(d);if(tc)box.append(tc);}catch(e){}const U=d.units;if(!U||!U.overall||!U.overall.bets)return;
   const c=el('div',null,'card units');c.append(iel('h4','📒 '+(U.label||'Tracked paper results')),el('p',U.note||'','hint small'));
   const u=v=>(v>0?'+':'')+(Math.round(v*100)/100).toFixed(2)+'u';const r=v=>v==null?'—':(v>0?'+':'')+(v*100).toFixed(1)+'%';
   const O=U.overall,st=el('div',null,'stats');const stat=(l,v,cl)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cl||''));st.append(s);};
@@ -4485,11 +4491,11 @@ function tradePopup(){if(document.querySelector('.trpop'))return;let seen=[];try
   setTimeout(()=>{p.classList.add('out');setTimeout(()=>p.remove(),400);},9000);}
 // ---------------- fix420 (owner: "give customers the option to customize their own home page" -> yes): ✏️ Edit Home.
 // Every Home section is a block people can show / hide and move; three presets; reset. Saved on this phone.
-const HOME_BLOCKS=[['favs','⭐ Your teams','Favorite team in each league + team rewards'],['today','🎯 Today’s picks','Every game she picks today'],['bets','💵 Her bets','Her open bets and what they pay'],['teams','⭐ My teams','Your followed teams tonight'],['voice','🎙 Her rundown','Her top picks in her own voice'],['stats','📊 Her numbers','Record, radio, tonight, combos'],
+const HOME_BLOCKS=[['twin','💵 Real vs paper','Real-money results next to the paper copy'],['favs','⭐ Your teams','Favorite team in each league + team rewards'],['today','🎯 Today’s picks','Every game she picks today'],['bets','💵 Her bets','Her open bets and what they pay'],['teams','⭐ My teams','Your followed teams tonight'],['voice','🎙 Her rundown','Her top picks in her own voice'],['stats','📊 Her numbers','Record, radio, tonight, combos'],
   ['next','⏰ Next up','Her next pick and the countdown'],['allteams','🏟 Teams','Every team by sport, with stats and rosters'],['live','● Live now','Every game being played right now'],['combos','🎟 Her open combos','What she has riding tonight'],
   ['trades','🔁 Latest trades','New trades and her read'],['trivia','🧠 Daily trivia','5 quick questions a day'],['hub','🏟 Sports hub','Standings, trades, injuries, highlights'],
   ['board','🏆 Leaderboard','Pick’em leaders and the champion'],['tiles','🧭 Go to','Shortcuts to every page']];
-const HOME_DEFAULT={v:2,order:['favs','stats','next','today','bets','teams','voice','allteams','live','combos','trades','trivia','hub','board','tiles'],hidden:['allteams','live','combos','trades','trivia','hub','board','tiles']};   // fix476 (owner): Home = today's picks and her bets; teams, hub, trivia, leaderboard live in Teams / All pages
+const HOME_DEFAULT={v:2,order:['favs','stats','twin','next','today','bets','teams','voice','allteams','live','combos','trades','trivia','hub','board','tiles'],hidden:['allteams','live','combos','trades','trivia','hub','board','tiles']};   // fix476 (owner): Home = today's picks and her bets; teams, hub, trivia, leaderboard live in Teams / All pages
 const HOME_PRESETS={picks:['⚡ Picks first',['stats','next','combos','live','voice','tiles']],fan:['📺 Fan mode',['teams','live','stats','trades','hub','voice','tiles']],
   comp:['🏆 Competitor',['board','trivia','stats','combos','hub','tiles']]};
 let homeEditing=false;
@@ -4702,6 +4708,17 @@ function findPlayer(){openSheet(()=>{const box=el('div',null,'plfind');box.appen
   box.append(inp,chips,status,list);plfDraw(list,status);setTimeout(()=>{try{inp.focus();}catch(e){}},60);return box;},'Find a player');}
 window.findPlayer=findPlayer;
 // ---- fix476 (owner, Nov 16 2026: Home = "today's picks and her bets only"; Teams replaces Props in the bottom bar)
+// ---- fix485 (owner: "Can you run the paper bets along side the real money" -> "Maybe a panel for both"): real money and
+// the paper copy of the same bets, side by side (site_extras.twin). Shows once real money has been bet.
+function twinCard(d){const T=d&&d.twin;if(!T||!T.real)return null;const c=el('div',null,'card twincard');
+  c.append(el('div','💵 Real money  vs  📄 Paper · the same bets','twinhd'));const g=el('div',null,'twingrid');
+  const col=(k,lab,R)=>{const x=el('div',null,'twincol '+k);x.append(el('span',lab,'twinlab'),el('b',signed(R.net||0),'twinnet '+cls(R.net||0)),
+      el('span',(R.won||0)+'-'+(R.lost||0)+(R.roi!=null?' · ROI '+Math.round(R.roi*100)+'%':''),'twinrec'),
+      el('span',R.open?R.open+' open · '+usd(R.at_risk||0)+' riding':'Nothing open','hint small'));return x;};
+  g.append(col('real','REAL MONEY',T.real),col('paper','PAPER',T.paper||{}));c.append(g);
+  const gap=(T.real.net||0)-((T.paper||{}).net||0);
+  c.append(el('p',(T.paper&&T.paper.settled?(Math.abs(gap)<0.01?'Same result so far.':'Real money is '+(gap>0?'ahead of':'behind')+' paper by '+usd(Math.abs(gap))+' (fills, fees and orders that did not fill). '):'')+T.note+' Since '+new Date(T.since).toLocaleDateString([],{month:'short',day:'numeric'})+'.','hint small'));
+  return c;}
 function homeTodayBlock(d){const now=Date.now();const gs=(d.games||[]).filter(g=>g.pick&&(g.state==='LIVE'||g.state==='UPCOMING'&&new Date(g.start)-now<24*3600e3))
     .sort((a,b)=>(a.state==='LIVE'?0:1)-(b.state==='LIVE'?0:1)||(isBetLane(b)?1:0)-(isBetLane(a)?1:0)||String(a.start).localeCompare(String(b.start)));
   const w=el('div',null,'hblock');const h=el('div',null,'hbhd');h.append(el('b','🎯 Today’s picks'+(gs.length?' · '+gs.length:'')),el('button','All picks ›','mlink'));h.lastChild.type='button';h.lastChild.onclick=()=>show('picks');w.append(h);
