@@ -661,6 +661,12 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .kpteams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:6px}.kpteams b{display:block;font-size:13px;margin-bottom:2px}
 .actiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
 .card.tap,.hubbtn{border-color:#5b3a7a}
+.plink{background:none;border:0;padding:0;margin:0;color:inherit;font:inherit;cursor:pointer;text-align:left;text-decoration:underline dotted rgba(200,160,255,.55);text-underline-offset:3px}
+.btrow .plink{font-weight:700}.plink:hover,.plink:focus-visible{color:#e9c8ff;outline:none;text-decoration-style:solid}
+.plcard .plhead{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}.plcard .pllg{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#f5c542}
+.plcard h3{margin:2px 0}.plcard .pltile{display:inline-flex;flex-direction:column;gap:2px;margin:0 8px 8px 0}.plcard .pltile b{font-size:20px}.plcard .plteam{color:#b9a7cf}.plcard .plstatus{background:rgba(255,120,80,.12);border:1px solid rgba(255,120,80,.35);border-radius:10px;padding:6px 10px;margin:6px 0;font-size:14px}
+.plcard .plseason{margin:4px 0 10px;line-height:1.45}.plcard .pllive{border:1px solid rgba(80,230,140,.35);background:rgba(80,230,140,.06);border-radius:12px;padding:10px;margin:12px 0}
+.plcard .pllivehd{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}.plcard .pllivehd b{color:#5be38f}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=8">
 <link rel="stylesheet" href="intro.css?v=3">
@@ -3109,7 +3115,7 @@ async function drawNflPos(box,pick,hit,lg){lg=lg||'NFL';const NM=lg==='NFL'?'NFL
       el('p',R.team_hint||('Value = how many expected points a game that unit adds over an average NFL unit (for the kicker: points over an average kicker on the same kicks). Built from the players expected to play, so injuries change it. Through week '+R.through_week+'.'),'hint small'));}
   else{const list=ORD.filter(k=>k!=='K');const cur=list.includes(pick.value)?pick.value:list[0];pick.replaceChildren(...list.map(k=>{const o=el('option',G[k]);o.value=k;return o;}));pick.value=cur;pick.onchange=()=>drawRatings();
     const ps=((R.players||{})[cur]||[]).filter(p=>hit(p.name)||hit(p.team));const keys=[...new Set(ps.flatMap(p=>Object.keys(p.stats||{})))].filter(k=>k!=='games').slice(0,lg==='NFL'?3:4);
-    parts.push(el('h3','Best '+(G[cur]||cur).toLowerCase()),tableOf(['#','Player','Team','Rating',...keys.map(k=>STATLBL[k]||k)],ps.slice(0,30).map(p=>[String(p.rank),p.name,p.team||'',sg(p.rating),...keys.map(k=>p.stats&&p.stats[k]!=null?String(p.stats[k]):'—')])),
+    parts.push(el('h3','Best '+(G[cur]||cur).toLowerCase()),tableOf(['#','Player','Team','Rating',...keys.map(k=>STATLBL[k]||k)],ps.slice(0,30).map(p=>[String(p.rank),plink(p.name,p.team||'',lg),p.team||'',sg(p.rating),...keys.map(k=>p.stats&&p.stats[k]!=null?String(p.stats[k]):'—')])),
       el('p',R.player_hint||('Rating = points a game he adds over an average '+(G[cur]||cur).toLowerCase().replace(/s$/,'')+' with a full load of snaps: what he did himself plus how his team did with him on the field. Offensive linemen are rated only by the second part (no stats are kept for blocking).'),'hint small'));}
   parts.push(el('p',R.note||'','hint small'));box.replaceChildren(...parts);}
 // ---------------- position grades for every league with player ratings (built here from the 0-99 player ratings)
@@ -3174,14 +3180,14 @@ function drawRatings(){if(!rt)return;const box=$('rtBox');const q=$('rtFind').va
     const cur=pick.value&&keys.includes(pick.value)?pick.value:keys[0];pick.replaceChildren(...keys.map(k=>{const o=el('option',k);o.value=k;return o;}));pick.value=cur;pick.hidden=false;
     const list=R.players.filter(p=>(byTeam?p.team===cur:p.group===cur)&&(hit(p.name)||hit(p.team))).sort((a,b)=>(b.rating??-1)-(a.rating??-1));
     const parts=[el('p',R.note,'hint small')];
-    if(byTeam){for(const g of [...new Set(list.map(p=>p.group))]){const sub=list.filter(p=>p.group===g);parts.push(el('h4',g+' · '+sub.length),tableOf(['Player','Pos','Rating','Season'],sub.map(p=>[p.name,p.pos,rcell(p.rating),pnote(p)])));}}
-    else parts.push(tableOf(['#','Player','Team','Pos','Rating','Season'],list.map((p,i)=>[p.rating==null?'—':i+1,p.name,p.team,p.pos,rcell(p.rating),pnote(p)])));
+    if(byTeam){for(const g of [...new Set(list.map(p=>p.group))]){const sub=list.filter(p=>p.group===g);parts.push(el('h4',g+' · '+sub.length),tableOf(['Player','Pos','Rating','Season'],sub.map(p=>[plink(p.name,p.team_name||p.team,rtLeague),p.pos,rcell(p.rating),pnote(p)])));}}
+    else parts.push(tableOf(['#','Player','Team','Pos','Rating','Season'],list.map((p,i)=>[p.rating==null?'—':i+1,plink(p.name,p.team_name||p.team,rtLeague),p.team,p.pos,rcell(p.rating),pnote(p)])));
     box.replaceChildren(el('h3',byTeam?cur+' roster':'Best at '+cur),...parts);return;}
   if(L.tennis){box.replaceChildren(el('h3','Player Elo'),tableOf(['Rank','Player','Elo','Hard','Clay','Grass'],L.tennis.filter(p=>hit(p.name)).map(p=>[p.rank,p.name,p.elo,p.surface.hard,p.surface.clay,p.surface.grass])));return;}
   const parts=rtView==='leaders'?[]:[el('h3','Team ratings')];
   if(rtView==='leaders'){}else if(!L.ready)parts.push(el('p',L.note||'Ratings are still being built.','hint'));
   else {const MT=Object.fromEntries((((L.matchups||{}).teams)||[]).map(x=>[x.team,x]));parts.push(tableOf(['#','Team','Rating','vs avg team','30 days','Record','Off','Def'],L.teams.filter(t=>hit(t.team)).map(t=>{const mt=MT[t.team]||{};const tr=el('span',t.trend_30d==null?'—':(t.trend_30d>0?'+':'')+t.trend_30d,t.trend_30d>0?'up':t.trend_30d<0?'down':'');return [t.rank,teamLink(t.team,rtLeague,ratingTeamName(t.team)),t.rating,pct(t.vs_average),tr,t.record,sg(mt.offense),sg(mt.defense)];})));}
-  const cats=((L.players||{}).categories||[]).map(c=>{const rs=c.leaders.filter(l=>hit(l.name)||hit(l.team));if(!rs.length)return null;const dv=el('div');dv.append(el('h4',c.category),tableOf(['Player','Team','Pos','Value'],rs.map(l=>[l.name,l.team,l.position,l.value])));return dv;}).filter(Boolean);
+  const cats=((L.players||{}).categories||[]).map(c=>{const rs=c.leaders.filter(l=>hit(l.name)||hit(l.team));if(!rs.length)return null;const dv=el('div');dv.append(el('h4',c.category),tableOf(['Player','Team','Pos','Value'],rs.map(l=>[plink(l.name,l.team,rtLeague),l.team,l.position,l.value])));return dv;}).filter(Boolean);
   if(cats.length&&rtView==='leaders'){const g=el('div',null,'cats');g.append(...cats);parts.push(el('h3','Player leaders'+(L.players.season?' · '+L.players.season:'')),g);}
   box.replaceChildren(...parts);}
 $('rtFind').oninput=drawRatings;$('rtPick').onchange=drawRatings;
@@ -4303,7 +4309,7 @@ function boxCard(g){const B=g.box;if(!B||(g.state!=='LIVE'&&g.state!=='FINAL'))r
   if((B.line||[]).length){const n=Math.max(...B.line.map(t=>t.periods.length));const tb=el('div',null,'boxline');const hd=el('div',null,'blrow bh');hd.append(el('span',''));for(let i=0;i<n;i++)hd.append(el('span',String(i+1)));hd.append(el('span','T'));tb.append(hd);
     for(const t of B.line){const row=el('div',null,'blrow');row.append(el('b',teamNick(t.team)));for(let i=0;i<n;i++)row.append(el('span',t.periods[i]||''));row.append(el('b',t.total||''));tb.append(row);}tb.style.setProperty('--n',n);c.append(tb);}
   for(const t of B.teams||[]){c.append(el('h5',t.team,'boxteam'));for(const cat of t.cats){const tb=el('div',null,'boxtab');tb.style.setProperty('--n',cat.labels.length);const hd=el('div',null,'btrow bh');hd.append(el('span',cat.name||''));for(const l of cat.labels)hd.append(el('span',l));tb.append(hd);
-      for(const r of cat.rows){const row=el('div',null,'btrow');row.append(el('b',r.name));for(const v of r.stats)row.append(el('span',v));tb.append(row);}c.append(tb);}}
+      for(const r of cat.rows){const row=el('div',null,'btrow');row.append(plink(r.full||r.name,t.team,g.league,r.name));for(const v of r.stats)row.append(el('span',v));tb.append(row);}c.append(tb);}}
   c.append(el('small','From ESPN’s box score'+(B.checked_at?' · updated '+hm(B.checked_at):''),'hint small'));return c;}
 function highlightCard(g){if(!g.highlight||g.state!=='FINAL')return null;const v={id:g.highlight,title:g.teams.map(t=>t.name).join(' vs ')+' highlights',league:g.league,at:g.start};const c=hlCard(v);c.classList.add('hlgame');return c;}
 BADGES.trivia_perfect=['🧠','Perfect trivia day'];BADGES.trivia7=['🔥','7-day trivia streak'];
@@ -4491,6 +4497,52 @@ async function drawChallenges(){
  }catch(e){box.replaceChildren(el('p','Fantasy invitations are temporarily unavailable. You can still use community chat.','hint small'));}finally{challengesBusy=false;}
 }
 setInterval(()=>{if(typeof chatOpen==='function'&&chatOpen())drawChallenges();},20000);
+
+// ---- fix467 player cards (owner, Nov 15 2026: "Can we add individual player cards with stats and live game updates" ->
+// tap any player; NBA, NFL, NHL, college). Tap a player's name (box scores, rosters, leaders, position ratings) for his
+// card: team, position, Mohjeta's 0-99 rating, season stats, status, advanced stats (NFL/NHL), his live line from the box
+// score while his game is on (refreshes with the live data), and his team's next game with her pick. No player photos.
+const PLSPORT={NBA:'basketball',WNBA:'basketball',NCAAB:'basketball',NFL:'football',NCAAF:'football',NHL:'hockey',MLB:'baseball'};
+let plOpen=null,plTimer=null;
+function plNorm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[.'’]/g,'').replace(/[^a-z ]/g,' ').replace(/\s+(jr|sr|ii|iii|iv|v)\s*$/,'').replace(/\s+/g,' ').trim();}
+function plSame(a,b){a=plNorm(a);b=plNorm(b);if(!a||!b)return false;if(a===b)return true;const x=a.split(' '),y=b.split(' ');
+  if(x[x.length-1]!==y[y.length-1])return false;return x[0][0]===y[0][0]&&(x[0].length===1||y[0].length===1);}
+function plTeamHit(want,p){if(!want)return true;const w=plNorm(want);return [p.team,p.team_name].filter(Boolean).some(t=>{const n=plNorm(t);return n&&(w===n||w.includes(n)||n.includes(w)||w.split(' ').pop()===n.split(' ').pop());});}
+function plink(name,team,lg,label){const b=el('button',label||name,'plink');b.type='button';b.dataset.pn=name||'';if(team)b.dataset.pt=team;if(lg)b.dataset.pl=lg;b.setAttribute('aria-label','Player card: '+name);return b;}
+document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('.plink');if(!b)return;e.preventDefault();e.stopPropagation();openPlayer(b.dataset.pn,b.dataset.pt||'',b.dataset.pl||'');},true);
+async function plRatings(){if(rt)return rt;try{const r=await fetchPublicSnapshot('ratings.json');if(r.ok)rt=await r.json();}catch(e){}return rt;}
+async function plFind(name,team,lg){const R=await plRatings();const out={base:null,adv:null};
+  if(R&&R.leagues&&R.leagues[lg]){if(ROSTER_FILE[lg]&&rosterLoaded[lg]!=='ok'){try{await ensureRoster(lg);}catch(e){}}
+    const ps=(((R.leagues[lg]||{}).roster||{}).players)||[];const hits=ps.filter(p=>plSame(name,p.name));
+    out.base=hits.find(p=>plTeamHit(team,p))||(hits.length===1?hits[0]:null);}
+  if(POSFILE[lg]){try{if(!POSR[lg]){const r=await fetch(POSFILE[lg]+'?t='+Math.floor(Date.now()/600000),{cache:'no-cache'});if(r.ok){POSR[lg]=await r.json();posAt[lg]=Date.now();}}
+    const P=POSR[lg];if(P&&P.players){for(const [grp,list] of Object.entries(P.players)){const h=(list||[]).find(p=>plSame(name,p.name)&&plTeamHit(team,p));if(h){out.adv=Object.assign({group:(P.groups||{})[grp]||grp},h);break;}}}}catch(e){}}
+  return out;}
+function plGames(name,team,lg){const gs=((D&&D.games)||[]).filter(g=>!lg||g.league===lg);const res={live:null,line:[],next:null};
+  for(const g of gs){if((g.state==='LIVE'||g.state==='FINAL')&&g.box){for(const t of g.box.teams||[])for(const c of t.cats||[])for(const r of c.rows||[]){
+      if(plSame(name,r.full||r.name)&&(!team||plTeamHit(team,{team:t.team}))){res.live=res.live||g;if(res.live===g)res.line.push({cat:c.name,labels:c.labels,stats:r.stats,team:t.team});}}}}
+  if(team)res.next=gs.filter(g=>g.state==='UPCOMING'&&(g.teams||[]).some(t=>plTeamHit(team,{team:t.name}))).sort((a,b)=>String(a.start).localeCompare(String(b.start)))[0]||null;
+  return res;}
+function plTile(label,val,cls){const x=el('div',null,'tile pltile');x.append(el('span',label,'hint small'));const v=val instanceof Node?val:el('b',val==null||val===''?'—':String(val));if(cls)v.classList.add(cls);x.append(v);return x;}
+function plBuild(name,team,lg,found){const b=found.base||{},a=found.adv||{};const box=el('div',null,'plcard');
+  const tm=b.team_name||b.team||a.team||team||'';
+  const head=el('div',null,'plhead');head.append(el('div',(lg||'')+(b.pos||a.pos?' · '+(b.pos||a.pos):'')+(b.group?' · '+b.group:''),'pllg'),el('h3',b.name||a.name||name),el('div',tm,'plteam'));box.append(head);
+  if(b.status)box.append(el('div','⚠️ '+b.status,'plstatus'));
+  const tiles=el('div',null,'tiles');tiles.append(plTile('Mohjeta rating',b.rating==null?null:rcell(b.rating)));if(a.rating!=null)tiles.append(plTile('Points a game added',sg(a.rating)));if(a.rank)tiles.append(plTile('Rank at '+(a.group||'position'),'#'+a.rank));box.append(tiles);
+  const season=found.base?pnote(b):'';if(season)box.append(el('h4','Season'),el('p',season,'plseason'));
+  const ak=Object.keys(a.stats||{});if(ak.length){box.append(el('h4','Advanced'));box.append(tableOf(ak.map(k=>STATLBL[k]||k),[ak.map(k=>String(a.stats[k]))]));}
+  const G=plGames(b.name||name,tm,lg);
+  if(G.live){const g=G.live;const sec=el('div',null,'pllive');const hd=el('div',null,'pllivehd');hd.append(el('b',g.state==='LIVE'?'● Live now':'Final'),el('span',(g.teams||[]).map(t=>teamNick(t.name)+' '+(t.score??'')).join(' – ')+(g.detail?' · '+g.detail:''),'hint small'));sec.append(hd);
+    for(const l of G.line)sec.append(tableOf(l.labels,[l.stats]));sec.append(el('small','From ESPN’s box score'+(g.box.checked_at?' · updated '+hm(g.box.checked_at):'')+(g.state==='LIVE'?' · refreshes on its own':''),'hint small'));box.append(sec);}
+  else if(G.next){const g=G.next;const p=g.pick||{};box.append(el('h4','Next game'),el('p',(g.teams||[]).map(t=>t.name).join(' vs ')+' · '+(g.start?new Date(g.start).toLocaleString([], {weekday:'short',hour:'numeric',minute:'2-digit'}):'')+(p.team?' · her pick: '+p.team+(p.chance!=null?' '+Math.round(p.chance*100)+'%':''):''),'plseason'));}
+  if(!found.base&&!found.adv&&!G.live)box.append(el('p','No season numbers for this player yet (new, a backup, or not in her player ratings).','hint'));
+  box.append(el('p','Ratings and stats from Mohjeta’s player data (ESPN public stats). Rating 0-99 within his position.','hint small'));return box;}
+async function openPlayer(name,team,lg){plOpen={name,team,lg,found:{base:null,adv:null}};openSheet(()=>el('p','Loading '+name+'…','hint'),name);
+  try{plOpen.found=await plFind(name,team,lg);}catch(e){}
+  if(plOpen&&plOpen.name===name)$('sheetBody').replaceChildren(plBuild(name,team,lg,plOpen.found));
+  clearInterval(plTimer);plTimer=setInterval(()=>{const s=$('sheet');if(!plOpen||!s||!s.classList.contains('on')||!$('sheetBody').querySelector('.plcard')){clearInterval(plTimer);plOpen=null;return;}
+    $('sheetBody').replaceChildren(plBuild(plOpen.name,plOpen.team,plOpen.lg,plOpen.found));},30000);}
+window.openPlayer=openPlayer;
 
 })();
 </script>
