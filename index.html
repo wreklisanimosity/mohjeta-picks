@@ -690,6 +690,15 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .tpjump{position:sticky;top:0;z-index:2;background:var(--bg,#0b0613);padding:6px 0;margin:6px 0}
 .tdquick{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 10px}
 .myprow{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.08)}.mypres{text-align:right;white-space:nowrap}.mypres .btn{margin-top:4px}.plsave{gap:8px;margin-top:8px}
+/* fix477 (owner: "is it clear what is a button"): one rule site-wide. Tappable = purple/pink text or a bordered pill with ›.
+   Plain information = no border. */
+.plink{color:#e2b8ff;text-decoration:none;border-bottom:1px solid rgba(226,184,255,.35)}.plink::after{content:' ›';color:var(--pink);font-weight:800}
+.plink:hover,.plink:focus-visible{color:#fff;border-bottom-color:var(--pink)}
+tr.pltap{cursor:pointer}tr.pltap:hover td,tr.pltap:active td{background:rgba(180,77,255,.10)}
+.tppr{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:6px 0}.tppr:hover,.tppr:active{border-color:var(--purple)}
+.tppr .cmbgo{margin-left:auto;color:#fff;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:999px;padding:3px 10px;font-weight:800;font-size:12px}
+div.tile,.tiles>.tile{border-color:transparent;background:rgba(255,255,255,.04)}
+.tpp .plink{flex:0 0 auto;margin-right:auto}
 </style>
 <link rel="stylesheet" href="mohjeta-icons.css?v=8">
 <link rel="stylesheet" href="intro.css?v=3">
@@ -2281,7 +2290,7 @@ async function openTeam(name,league){try{award('team');}catch(e){}openSheet(()=>
   const head=el('div',null,'tphead');const cl=simColor(name)||(f&&f.t.c?'#'+f.t.c:null);if(cl)head.style.setProperty('--tc',cl);const b=teamBadge(name);b.classList.add('big');
   const tx=el('div');tx.append(el('span',(f?sname(f.lg):sname(league||'')).toUpperCase(),'simeyebrow'),el('h2',f?f.t.n:name),el('b',f?(f.t.rec||'')+(f.t.st?' · '+f.t.st:''):'','tprec'));head.append(b,tx);w.append(head);
   if(!f){w.append(el('p','Schedule for this team isn’t available yet (NFL, NBA, WNBA, NHL, MLB, FBS college football and Division I college basketball are covered). Check back after her next update.','hint'));return;}
-  const lg=f.lg,t=f.t,r=teamRating(t.n,lg);const nextG=(D&&D.games||[]).filter(g=>g.state!=='FINAL'&&(g.teams||[]).some(x=>sameTeam(x.name,t.n))).sort((a,b)=>String(a.start).localeCompare(String(b.start)))[0];
+  const lg=f.lg,t=f.t,r=teamRating(t.n,lg);const nextG=(D&&D.games||[]).filter(g=>g.state!=='FINAL'&&(!g.league||g.league===lg)&&(g.teams||[]).some(x=>sameTeam(x.name,t.n))).sort((a,b)=>String(a.start).localeCompare(String(b.start)))[0];
   const syn=el('div',null,'card tpsyn');syn.append(el('span','THE SYNOPSIS','simeyebrow'),el('p',teamSynopsis(t.n,lg,t,r,nextG),'tpsyntext'));w.append(syn);
   const done=t.g.filter(x=>x[4]),todo=t.g.filter(x=>!x[4]);
   if(done.length){const form=el('div',null,'tpform');for(const x of done.slice(-8))form.append(el('span',x[4],'tpf '+x[4]));syn.append(form);}
@@ -3132,7 +3141,7 @@ const phi=z=>.5*(1+erf(z/Math.SQRT2));const sg=v=>v==null?'—':(v>0?'+':'')+v;
 const mh=el('select'),ma=el('select');[mh,ma].forEach(s=>{s.className='mpick';s.onchange=()=>drawRatings();});
 const spct=x=>x==null?'—':(x>0?'+':'')+Math.round(x*100)+'%';const pcell=a=>el('span',a?spct(a.pct):'—',a&&a.pct>0.05?'up':a&&a.pct<-0.05?'down':'');
 const rcell=v=>el('span',v==null?'—':String(v),v==null?'':v>=80?'r-hi':v>=50?'r-mid':'r-lo');
-function tableOf(cols,rows){const w=el('div',null,'tablewrap');const t=el('table');const h=el('tr');for(const c of cols)h.append(el('th',c));t.append(h);for(const r of rows){const tr=el('tr');for(const c of r){if(c instanceof Node){const td=el('td');td.append(c);tr.append(td);}else tr.append(el('td',c==null?'—':String(c)));}t.append(tr);}w.append(t);return w;}
+function tableOf(cols,rows){const w=el('div',null,'tablewrap');const t=el('table');const h=el('tr');for(const c of cols)h.append(el('th',c));t.append(h);for(const r of rows){const tr=el('tr');for(const c of r){if(c instanceof Node){const td=el('td');td.append(c);tr.append(td);}else tr.append(el('td',c==null?'—':String(c)));}if(tr.querySelectorAll('.plink').length===1)tr.classList.add('pltap');t.append(tr);}w.append(t);return w;}
 // ---------------- NFL: every player rated at his position, every team graded position by position (nfl-ratings.json)
 let NFLR=null,nflAt=0;const POSORDER=['QB','RB','WR','TE','OT','IOL','EDGE','IDL','LB','CB','S','K'];
 const POSFILE={NFL:'nfl-ratings.json',NHL:'nhl-ratings.json'},POSICON={NFL:'🏈',NHL:'🏒'},POSR={},posAt={};
@@ -4548,7 +4557,8 @@ function plSame(a,b){a=plNorm(a);b=plNorm(b);if(!a||!b)return false;if(a===b)ret
   if(x[x.length-1]!==y[y.length-1])return false;return x[0][0]===y[0][0]&&(x[0].length===1||y[0].length===1);}
 function plTeamHit(want,p){if(!want)return true;const w=plNorm(want);return [p.team,p.team_name].filter(Boolean).some(t=>{const n=plNorm(t);return n&&(w===n||w.includes(n)||n.includes(w)||w.split(' ').pop()===n.split(' ').pop());});}
 function plink(name,team,lg,label){const b=el('button',label||name,'plink');b.type='button';b.dataset.pn=name||'';if(team)b.dataset.pt=team;if(lg)b.dataset.pl=lg;b.setAttribute('aria-label','Player card: '+name);return b;}
-document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('.plink');if(!b)return;e.preventDefault();e.stopPropagation();openPlayer(b.dataset.pn,b.dataset.pt||'',b.dataset.pl||'');},true);
+document.addEventListener('click',e=>{if(e.target&&e.target.closest&&!e.target.closest('.plink,button,a,input')){const tr=e.target.closest('tr');const ls=tr?tr.querySelectorAll('.plink'):[];if(ls.length===1){ls[0].click();return;}}
+  const b=e.target&&e.target.closest&&e.target.closest('.plink');if(!b)return;e.preventDefault();e.stopPropagation();openPlayer(b.dataset.pn,b.dataset.pt||'',b.dataset.pl||'');},true);
 async function plRatings(){if(rt)return rt;try{const r=await fetchPublicSnapshot('ratings.json');if(r.ok)rt=await r.json();}catch(e){}return rt;}
 async function plFind(name,team,lg){const R=await plRatings();const out={base:null,adv:null};
   if(R&&R.leagues&&R.leagues[lg]){if(ROSTER_FILE[lg]&&rosterLoaded[lg]!=='ok'){try{await ensureRoster(lg);}catch(e){}}
@@ -4715,7 +4725,7 @@ async function teamPropsCard(c,t,lg,abbr){c.replaceChildren(el('h4','🎯 Player
     const o=x.open[0];const bits=[];if(x.board.length)bits.push(x.board.length+' line'+(x.board.length===1?'':'s')+' tonight');
     if(o)bits.push('her pick: '+(o.side==='YES'?o.line+'+ ':'under '+o.line+' ')+(STATNAME[o.stat]||o.stat)+' '+pct(o.her));
     if(x.done.length)bits.push('her record on him '+won+'-'+(x.done.length-won));
-    b.append(el('b',x.p.name),el('span',bits.join(' · '),'hint small'),el('span','›','cmbgo'));b.onclick=()=>openPlayer(x.p.name,t.n,lg);return b;};
+    b.append(el('b',x.p.name),el('span',bits.join(' · '),'hint small'),el('span','Props ›','cmbgo'));b.onclick=()=>openPlayer(x.p.name,t.n,lg);return b;};
   if(live.length){c.append(el('div','Tonight','lugrp'));live.forEach(x=>c.append(row(x)));}
   if(past.length){c.append(el('div','Her past prop picks on this team','lugrp'));past.forEach(x=>c.append(row(x)));}
   if(!live.length)c.append(el('p',P&&P.locked?'🔒 Her prop picks are for members.':'No prop lines for '+t.n+' players right now. NBA prop prices show up a few hours before tip-off; her NFL and NHL prop picks appear before games.','hint small'));
