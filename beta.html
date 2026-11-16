@@ -45,18 +45,6 @@ footer{margin-top:22px;font-size:12px;color:#8f7aa8;line-height:1.5}
 <a class="back" href="./">‹ Back to mohjeta.com</a>
 <footer>Entertainment only · 21+ · Mohjeta's picks are model estimates, not betting advice.</footer>
 </main><script>
-/* fix438 (owner: "can you tell if anyone joined through the links we put on YouTube"): where visitors come from. Counts only
-   (source + event: visit / beta_page / testflight / play / signup). No names, no emails, no IPs, nothing tied to a person.
-   Source = ?from=yt|tt|ig|... on the link (remembered on this device), else the referring site, else "direct". */
-function mjSrc(){try{const p=new URLSearchParams(location.search);const q=(p.get('from')||'').toLowerCase();if(/^[a-z0-9_-]{1,20}$/.test(q)){localStorage.setItem('mohjeta.src',q);return q;}
-  const s=localStorage.getItem('mohjeta.src');if(s)return s;const r=document.referrer||'';
-  const g=/youtube\.|youtu\.be/.test(r)?'yt':/tiktok\./.test(r)?'tt':/instagram\./.test(r)?'ig':/google\./.test(r)?'google':p.get('app')?'app':(r&&!r.includes(location.host))?'web':'direct';
-  localStorage.setItem('mohjeta.src',g);return g;}catch(e){return 'direct';}}
-async function mjTrack(ev,once){try{const k='mohjeta.tr.'+ev;if(once==='session'&&sessionStorage.getItem(k))return;if(once==='ever'&&localStorage.getItem(k))return;
-  if(once==='session')sessionStorage.setItem(k,'1');if(once==='ever')localStorage.setItem(k,'1');
-  const c=window._cfg||await fetch('live-config.json',{cache:'no-store'}).then(r=>r.json());if(!c||!c.url||!c.anon_key)return;
-  await fetch(c.url+'/rest/v1/rpc/track_visit',{method:'POST',keepalive:true,headers:{apikey:c.anon_key,Authorization:'Bearer '+c.anon_key,'Content-Type':'application/json'},body:JSON.stringify({p_src:mjSrc(),p_ev:ev})});}catch(e){}}
-mjSrc();mjTrack('beta_page','session');
 /* fix490 (owner: the Google link "doesn't let them put their email in so it can be put in the test for Google"): Android
    signups go to Supabase beta_signups (insert only; nobody can read the list from the site). */
 document.getElementById('bform').addEventListener('submit',async e=>{e.preventDefault();const inp=document.getElementById('bemail'),msg=document.getElementById('bmsg'),btn=document.getElementById('bsend');
@@ -71,4 +59,17 @@ document.getElementById('bform').addEventListener('submit',async e=>{e.preventDe
     try{localStorage.setItem('mohjeta.betaEmail','1');}catch(e2){}}
   catch(err){msg.className='note bad';msg.textContent='Could not save that right now. Please try again in a minute.';}
   finally{btn.disabled=false;}});
+</script><script>
+/* fix438 (owner: "can you tell if anyone joined through the links we put on YouTube"): where visitors come from. Counts only
+   (source + event: visit / beta_page / testflight / play / signup). No names, no emails, no IPs, nothing tied to a person.
+   Source = ?from=yt|tt|ig|... on the link (remembered on this device), else the referring site, else "direct". */
+function mjSrc(){try{const p=new URLSearchParams(location.search);const q=(p.get('from')||'').toLowerCase();if(/^[a-z0-9_-]{1,20}$/.test(q)){localStorage.setItem('mohjeta.src',q);return q;}
+  const s=localStorage.getItem('mohjeta.src');if(s)return s;const r=document.referrer||'';
+  const g=/youtube\.|youtu\.be/.test(r)?'yt':/tiktok\./.test(r)?'tt':/instagram\./.test(r)?'ig':/google\./.test(r)?'google':p.get('app')?'app':(r&&!r.includes(location.host))?'web':'direct';
+  localStorage.setItem('mohjeta.src',g);return g;}catch(e){return 'direct';}}
+async function mjTrack(ev,once){try{const k='mohjeta.tr.'+ev;if(once==='session'&&sessionStorage.getItem(k))return;if(once==='ever'&&localStorage.getItem(k))return;
+  if(once==='session')sessionStorage.setItem(k,'1');if(once==='ever')localStorage.setItem(k,'1');
+  const c=window._cfg||await fetch('live-config.json',{cache:'no-store'}).then(r=>r.json());if(!c||!c.url||!c.anon_key)return;
+  await fetch(c.url+'/rest/v1/rpc/track_visit',{method:'POST',keepalive:true,headers:{apikey:c.anon_key,Authorization:'Bearer '+c.anon_key,'Content-Type':'application/json'},body:JSON.stringify({p_src:mjSrc(),p_ev:ev})});}catch(e){}}
+mjSrc();mjTrack('beta_page','session');
 </script></body></html>
