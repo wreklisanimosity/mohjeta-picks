@@ -3107,7 +3107,7 @@ function comboRecordCard(d){const C=d.combo_record;if(!C||!C.overall)return null
     for(const x of C.recent){const r=el('div',null,'cmbhist');const t=el('div');t.append(el('b',x.legs.map(l=>teamNick(l.team)).join(' + ')),el('small',x.legs.length+' legs · she said '+pct(x.her_p)+' · '+new Date(x.at).toLocaleDateString([],{month:'short',day:'numeric'}),'hint'));
       r.append(t,el('span',x.status==='OPEN'?'⏳ Open':(x.status==='WON'?'✅ ':'❌ ')+signed(x.pnl||0),'cmbst '+(x.status==='WON'?'up':x.status==='LOST'?'down':'')));det.append(r);}
     c.append(det);}
-  c.append(el('p','Paper money only: she never places real combos. She bets every combo she expects to make money on (up to 12 a day), bigger stakes on better value. Graded from Kalshi’s official results.','hint small'));return c;}
+  c.append(el('p','Tracked picks only: she never places real combos. She tracks every combo she likes (up to 12 a day). Graded from Kalshi’s official results.','hint small'));return c;}
 function renderMore(d){renderCombos(d);
   {const u=$('comboUpd');if(u)u.textContent=d.updated?'Updated '+new Date(d.updated).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+' · refreshes every 3 minutes (every minute during live games)':'';}
   const sc=d.scorecard,sb=$('scoreBox');sb.replaceChildren();
@@ -3506,7 +3506,7 @@ function drawBuilder(){const pb=$('propBuilder');if(!pb)return;const P=propData(
 let pracSport='ALL';
 // fix447 (owner): customer-facing results in units (1 unit = her standard bet), ROI and win rate, per league and
 // overall, always labelled as tracked paper results until real money is in. Her stakes are not changed or inflated.
-function renderUnits(d){const box=$('unitsBox');if(!box)return;box.replaceChildren();try{const tc=twinCard(d);if(tc)box.append(tc);}catch(e){}const U=d.units;if(!U||!U.overall||!U.overall.bets)return;
+function renderUnits(d){const box=$('unitsBox');if(!box)return;box.replaceChildren();if(NO_MONEY){box.hidden=true;return;}try{const tc=twinCard(d);if(tc)box.append(tc);}catch(e){}const U=d.units;if(!U||!U.overall||!U.overall.bets)return;
   const c=el('div',null,'card units');c.append(iel('h4','📒 '+(U.label||'Tracked paper results')),el('p',U.note||'','hint small'));
   const u=v=>(v>0?'+':'')+(Math.round(v*100)/100).toFixed(2)+'u';const r=v=>v==null?'—':(v>0?'+':'')+(v*100).toFixed(1)+'%';
   const O=U.overall,st=el('div',null,'stats');const stat=(l,v,cl)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cl||''));st.append(s);};
@@ -3516,7 +3516,7 @@ function renderUnits(d){const box=$('unitsBox');if(!box)return;box.replaceChildr
     el('td',u(L.units),L.units>0?'up':L.units<0?'down':''),el('td',r(L.roi),(L.roi||0)>0?'up':(L.roi||0)<0?'down':''));tb.append(tr);}
   tw.append(tb);c.append(tw,el('p','Tracked paper results'+(U.since?' since '+new Date(U.since).toLocaleDateString([], {month:'short',day:'numeric'}):'')+'. Entertainment only · not betting advice · 21+.','hint small'));box.append(c);}
 function renderSkipped(d){const box=$('skipBox');if(!box)return;box.replaceChildren();const S=d.skipped;if(!S||!S.record||!S.record.n)return;
-  const R=S.record;const c=el('div',null,'card');c.append(iel('h4','🔗 Parlay legs: her record (95¢+ favorites she doesn\'t bet)'),el('p','Games where Kalshi had her side above 95¢, so a $5 bet would win only pennies. She did not bet them, but her pick is still graded here. Not part of her betting record.','hint small'));
+  const R=S.record;const c=el('div',null,'card');c.append(iel('h4','🔗 Parlay legs: her record (95¢+ favorites she doesn\'t bet)'),el('p','Games where Kalshi had her side above 95¢. She did not bet them, but her pick is still graded here. Not part of her betting record.','hint small'));
   const st=el('div',null,'stats');const stat=(l,v,cl)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cl||''));st.append(s);};
   stat('Record',R.won+'-'+(R.n-R.won));stat('Win rate',pct(R.won/R.n));c.append(st);
   const det=el('details');det.append(el('summary','Every skipped pick'));const tw=el('div',null,'tablewrap');const tb=el('table');const hr=el('tr');for(const x of ['Pick','Result'])hr.append(el('th',x));tb.append(hr);
