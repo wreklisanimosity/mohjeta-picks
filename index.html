@@ -2793,9 +2793,10 @@ function renderFeed(d){const box=$('feedBox'),ch=$('feedChips');if(!box||!ch)ret
 // her record counting the picks she skipped (95c+ favorites, no bet): shown next to her betting record, which stays bets only
 // fix508 (owner: "Combine records with skipped picks since they are the same now"): with no betting shown, the picks she
 // skipped (95¢+ favorites, no price) are just picks, so they count in her one record everywhere on the site.
-function skipAll(d){const S=d&&d.skipped;const R=S&&(S.record_since||S.record);return R&&R.n?R:{n:0,won:0,by_league:{}};}
-function skipWin(d,days){const S=d&&d.skipped;const t0=(days?Date.now()-days*864e5:0);const st=S&&S.since?Date.parse(S.since):0;
-  const r=((S&&S.rows)||[]).filter(x=>x.at&&x.at*1000>=Math.max(t0,st||0));return {n:r.length,won:r.filter(x=>x.result==='WON').length,rows:r};}
+function skipAll(d){const S=d&&d.skipped;const R=S&&S.record;   // fix509: every skipped pick, all time
+return R&&R.n?R:{n:0,won:0,by_league:{}};}
+function skipWin(d,days){const S=d&&d.skipped;const t0=(days?Date.now()-days*864e5:0);
+  const r=((S&&S.rows)||[]).filter(x=>x.at&&x.at*1000>=t0);return {n:r.length,won:r.filter(x=>x.result==='WON').length,rows:r};}
 function combo(d,w,l){const K=skipAll(d);const W=w+K.won,L=l+(K.n-K.won);return {w:W,l:L,rate:W+L?W/(W+L):null};}
 function withSkipped(d,w,l){const S=d&&d.skipped&&d.skipped.record;if(!S||!S.n)return null;return {w:w+S.won,l:l+(S.n-S.won),sw:S.won,sl:S.n-S.won};}
 // ---------------- parlay legs: her picks on heavy favorites (95c+) that she does not bet (95c cap), for clients' own parlays
@@ -2956,7 +2957,7 @@ function renderRecord(d){const b=d.bets;if(!b)return;
   const BS=Object.values(m).sort((x,y)=>y.won/y.n-x.won/x.n||y.n-x.n);const bs=$('bySport');bs.replaceChildren();
   if(BS.length){bs.append(el('h3','By sport'));const tw=el('div',null,'tablewrap');const tb=el('table');const h=el('tr');for(const x of ['Sport','Record','Win rate'])h.append(el('th',x));tb.append(h);
     for(const g of BS){const tr=el('tr');const ret=g.spent?g.net/g.spent:null;tr.append(el('td',sname(g.league)),el('td',g.won+'-'+(g.n-g.won)),el('td',pct(g.won/g.n)));tb.append(tr);}
-    tw.append(tb);bs.append(tw,el('p','A few bets in a sport is mostly luck.','hint small'));}
+    tw.append(tb);bs.append(tw,el('p','A few picks in a sport is mostly luck.','hint small'));}
   // best and worst calls
   const bw=$('bestWorst');bw.replaceChildren();const fin=src.slice();
   if(!NO_MONEY&&fin.length>=4){const best=fin.slice().sort((x,y)=>y.pnl-x.pnl).slice(0,3),worst=fin.slice().sort((x,y)=>x.pnl-y.pnl).slice(0,3);
@@ -3153,7 +3154,7 @@ function pageCount(k,d){d=d||D;if(!d)return '';const gs=d.games||[];const t=d.be
 function pageTile(p,d){const [k,ic,t,sub,tc]=p;const b=el('button',null,'htile');b.type='button';b.style.setProperty('--tc',tc);
   const c=pageCount(k,d);b.append(iel('span',ic),el('b',t),el('small',c||sub));b.onclick=()=>goPage(k);return b;}
 function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren();const hr=new Date().getHours();
-  const hh=el('div',null,'hhead');hh.append(el('h2',hr<5?'Late night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening'),el('p','Her picks and bets for today. Teams, players and props are in Teams below.','hint small'));box.append(hh);
+  const hh=el('div',null,'hhead');hh.append(el('h2',hr<5?'Late night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening'),el('p','Her picks for today. Teams, players and props are in Teams below.','hint small'));box.append(hh);
   const B={};try{if(myTeams().length)B.teams=myTeamsSection(d);}catch(e){}   // fix402: trophy row + tester panel moved to My Mohjeta
   {const dv=d.voice&&d.voice.daily;if(dv){const b=el('button',null,'hvoice');b.type='button';const im=el('img');im.src='logo-cut.webp?v=2';im.alt='';
     const tx=el('span');tx.append(el('b','Hear her rundown'),el('small','Her top picks in her own voice'+(dv.seconds?' · '+Math.round(dv.seconds)+' seconds':'')));const pl=el('span','▶','play');
