@@ -2791,6 +2791,12 @@ function renderFeed(d){const box=$('feedBox'),ch=$('feedChips');if(!box||!ch)ret
   if(!items.length){box.append(el('p','Nothing yet in the last few hours. News shows up here as soon as she picks it up.','hint'));return;}
   const c=el('div',null,'card feed');items.forEach(x=>c.append(feedRow(x)));box.append(c);}
 // her record counting the picks she skipped (95c+ favorites, no bet): shown next to her betting record, which stays bets only
+// fix508 (owner: "Combine records with skipped picks since they are the same now"): with no betting shown, the picks she
+// skipped (95¢+ favorites, no price) are just picks, so they count in her one record everywhere on the site.
+function skipAll(d){const S=d&&d.skipped;const R=S&&(S.record_since||S.record);return R&&R.n?R:{n:0,won:0,by_league:{}};}
+function skipWin(d,days){const S=d&&d.skipped;const t0=(days?Date.now()-days*864e5:0);const st=S&&S.since?Date.parse(S.since):0;
+  const r=((S&&S.rows)||[]).filter(x=>x.at&&x.at*1000>=Math.max(t0,st||0));return {n:r.length,won:r.filter(x=>x.result==='WON').length,rows:r};}
+function combo(d,w,l){const K=skipAll(d);const W=w+K.won,L=l+(K.n-K.won);return {w:W,l:L,rate:W+L?W/(W+L):null};}
 function withSkipped(d,w,l){const S=d&&d.skipped&&d.skipped.record;if(!S||!S.n)return null;return {w:w+S.won,l:l+(S.n-S.won),sw:S.won,sl:S.n-S.won};}
 // ---------------- parlay legs: her picks on heavy favorites (95c+) that she does not bet (95c cap), for clients' own parlays
 function legGames(d){const now=Date.now();return (d.games||[]).filter(g=>g.state==='UPCOMING'&&g.pick&&Date.parse(g.start)>now&&
@@ -2867,9 +2873,9 @@ function drawBetting(d){const box=$('betting');box.replaceChildren();
   {const h=el('h4',' '+sname(tonSport)+' · '+by[tonSport].length);if(window.SportArt)h.prepend(SportArt.el(tonSport));else h.prepend(sportIcon(tonSport));cr.append(h);}box.append(cr);
   const gr=el('div',null,'mgrid');for(const g of by[tonSport])gr.append(miniCard(g));box.append(gr);}
 function renderPicks(d){const b=d.bets,rec=$('record');rec.replaceChildren();try{renderOpenBets(d);}catch(e){}try{renderLegs(d);}catch(e){}try{if(document.querySelector('#feed.on'))renderFeed(d);}catch(e){}setTimeout(()=>resultFlash(b&&b.totals),300);{const pc=pickemCard();pc.classList.add('xp');rec.append(pc);const pb=$('playBadges');if(pb)pb.replaceChildren(scoreNightCard(),propPickemCard(),hofCard());/* fix410: leaderboard moved to Home */}{const fb=b&&streakBanner(b.rows);if(fb)rec.append(fb);}
-  if(b&&b.totals&&b.totals.settled){const t=b.totals;const box=el('div',null,'banner');const r=el('div',null,'row');
-    r.append(el('span',t.wins+'-'+t.losses,'rec'),el('span',pct(t.win_rate)+' wins','hint'),el('span',null,'sp'));box.append(r);
-    const w=windowStats(b.rows,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+w.won+'-'+w.lost,'hint small'));{const ws=withSkipped(d,t.wins,t.losses);if(ws)box.append(el('div',ws.w+'-'+ws.l+' counting the '+(ws.sw+ws.sl)+' picks she skipped at 95¢+ (no bet on those)','hint small'));}
+  if(b&&b.totals&&(b.totals.settled||skipAll(d).n)){const t=b.totals;const cb=combo(d,t.wins||0,t.losses||0);const box=el('div',null,'banner');const r=el('div',null,'row');
+    r.append(el('span',cb.w+'-'+cb.l,'rec'),el('span',(cb.rate==null?'—':pct(cb.rate))+' wins','hint'),el('span',null,'sp'));box.append(r);
+    const w=windowStats(b.rows,7),k7=skipWin(d,7);box.append(el('div','Record since '+(b.since?new Date(b.since).toLocaleDateString([], {month:'short',day:'numeric'}):'the start')+' · last 7 days '+(w.won+k7.won)+'-'+(w.lost+k7.n-k7.won),'hint small'));
     const go=el('button','See the full track record ›','more');go.style.cssText='background:none;border:0;padding:0;cursor:pointer';go.onclick=()=>show('record');box.append(go);rec.append(box);}
   const ab=$('alertsBox');ab.replaceChildren();if(d.alerts_url){const a=iel('a','🔔 Get her picks as they happen','btn');a.href=d.alerts_url;a.target='_blank';a.rel='noopener';ab.append(a);ab.style.margin='0 0 14px';}
   // fix412 (owner: "it says two live games why can't I see them"): Home counts every live game, so Live now shows every
@@ -2929,8 +2935,8 @@ function renderRecord(d){const b=d.bets;if(!b)return;
       el('span',r.result==='OPEN'?'open':r.result.toLowerCase(),r.result==='WON'?'up':r.result==='LOST'?'down':'open'));list.append(row);}
     ps.after(list);}
   const w=period&&period!=='today'?windowStats(b.rows,period):null;
-  if(period==='today'){}else if(w){stat('Record',w.won+'-'+w.lost);stat('Win rate',w.won+w.lost?pct(w.won/(w.won+w.lost)):'—');}
-  else{stat('Record',T.wins+'-'+T.losses);{const ws=withSkipped(D,T.wins,T.losses);if(ws)stat('With skipped picks',ws.w+'-'+ws.l);}stat('Win rate',pct(T.win_rate));}
+  if(period==='today'){}else if(w){const kw=skipWin(D,period),W=w.won+kw.won,L=w.lost+kw.n-kw.won;stat('Record',W+'-'+L);stat('Win rate',W+L?pct(W/(W+L)):'—');}
+  else{const cb=combo(D,T.wins||0,T.losses||0);stat('Record',cb.w+'-'+cb.l);stat('Win rate',cb.rate==null?'—':pct(cb.rate));}
   // profit by day
   const days={};for(const r of b.rows)if(r.pnl!=null&&!r.carried){const k=new Date(r.opened).toLocaleDateString('en-CA');days[k]=(days[k]||0)+r.pnl;}
   const keys=Object.keys(days).sort().slice(period?-period:-60);const mx=Math.max(1,...keys.map(k=>Math.abs(days[k])));const bars=$('dayBars');bars.replaceChildren(el('div',null,'zero'));
@@ -2945,6 +2951,8 @@ function renderRecord(d){const b=d.bets;if(!b)return;
     dc.append(box);}
   // by sport (in the window)
   const src=w?w.rows:b.rows.filter(r=>r.pnl!=null&&!r.carried);const m={};for(const r of src){const g=m[r.league]=m[r.league]||{league:r.league,n:0,won:0,net:0,spent:0};g.n++;g.spent+=r.paid||0;g.net+=r.pnl;if(r.pnl>0)g.won++;}
+  if(period!=='today'){if(w){for(const x of skipWin(D,period).rows){const g=m[x.league]=m[x.league]||{league:x.league,n:0,won:0,net:0,spent:0};g.n++;if(x.result==='WON')g.won++;}}   // fix508
+    else for(const [lg,v] of Object.entries(skipAll(D).by_league||{})){const g=m[lg]=m[lg]||{league:lg,n:0,won:0,net:0,spent:0};g.n+=v.n;g.won+=v.won;}}
   const BS=Object.values(m).sort((x,y)=>y.won/y.n-x.won/x.n||y.n-x.n);const bs=$('bySport');bs.replaceChildren();
   if(BS.length){bs.append(el('h3','By sport'));const tw=el('div',null,'tablewrap');const tb=el('table');const h=el('tr');for(const x of ['Sport','Record','Win rate'])h.append(el('th',x));tb.append(h);
     for(const g of BS){const tr=el('tr');const ret=g.spent?g.net/g.spent:null;tr.append(el('td',sname(g.league)),el('td',g.won+'-'+(g.n-g.won)),el('td',pct(g.won/g.n)));tb.append(tr);}
@@ -3155,8 +3163,8 @@ function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren
   const st=el('div',null,'hstats');const stat=(lab,big,small,ic,tc,go,c)=>{const b=el('button',null,'hstat');b.type='button';b.style.setProperty('--tc',tc);
     b.append(el('small',lab),el('b',big,c||''),el('small',small));if(window.MohjetaIcons)b.append(MohjetaIcons.icon(ic));b.onclick=go;return b;};
   {const ws=t&&t.settled?withSkipped(d,t.wins,t.losses):null;   // fix404 (owner): profit rides on the Record tile; the freed spot is Radio
-    const rec=stat('Record',t&&t.settled?t.wins+'-'+t.losses:'—','','results','#123a24',()=>show('record'));const sm=rec.querySelectorAll('small')[1];
-    if(sm){sm.replaceChildren();if(t&&t.settled)sm.textContent=pct(t.win_rate)+' of her picks won';else sm.textContent='Starting soon';}
+    const cb=combo(d,(t&&t.wins)||0,(t&&t.losses)||0);const rec=stat('Record',cb.w+cb.l?cb.w+'-'+cb.l:'—','','results','#123a24',()=>show('record'));const sm=rec.querySelectorAll('small')[1];
+    if(sm){sm.replaceChildren();if(cb.rate!=null)sm.textContent=pct(cb.rate)+' of her picks won';else sm.textContent='Starting soon';}
     let onAir=0;try{onAir=radioGames(d).filter(([g])=>g.state==='LIVE').length;}catch(e){}
     const rad=stat('Radio',onAir?String(onAir):'24/7',onAir?'game'+(onAir>1?'s':'')+' on the radio now':'sports talk, free','headphones','#3a1450',()=>show('radio'));if(onAir)rad.classList.add('onair');
     st.append(rec,rad,
@@ -3506,16 +3514,18 @@ function drawBuilder(){const pb=$('propBuilder');if(!pb)return;const P=propData(
 let pracSport='ALL';
 // fix447 (owner): customer-facing results in units (1 unit = her standard bet), ROI and win rate, per league and
 // overall, always labelled as tracked paper results until real money is in. Her stakes are not changed or inflated.
-function renderUnits(d){const box=$('unitsBox');if(!box)return;box.replaceChildren();try{const tc=twinCard(d);if(tc)box.append(tc);}catch(e){}const U=d.units;if(!U||!U.overall||!U.overall.bets)return;
+function renderUnits(d){const box=$('unitsBox');if(!box)return;box.replaceChildren();try{const tc=twinCard(d);if(tc)box.append(tc);}catch(e){}const U=d.units;if(!U||!U.overall||(!U.overall.bets&&!(NO_MONEY&&skipAll(d).n)))return;
   const c=el('div',null,'card units');c.append(iel('h4',NO_MONEY?'📒 Her record by sport':'📒 '+(U.label||'Tracked paper results')),...(NO_MONEY?[]:[el('p',U.note||'','hint small')]));
   const u=v=>(v>0?'+':'')+(Math.round(v*100)/100).toFixed(2)+'u';const r=v=>v==null?'—':(v>0?'+':'')+(v*100).toFixed(1)+'%';
-  const O=U.overall,st=el('div',null,'stats');const stat=(l,v,cl)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cl||''));st.append(s);};
+  const K=skipAll(d);const O=NO_MONEY?{...U.overall,won:U.overall.won+K.won,lost:U.overall.lost+(K.n-K.won)}:U.overall;if(NO_MONEY)O.win_rate=O.won+O.lost?O.won/(O.won+O.lost):null;const st=el('div',null,'stats');const stat=(l,v,cl)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cl||''));st.append(s);};
   stat('Record',O.won+'-'+O.lost);stat('Win rate',O.win_rate==null?'—':pct(O.win_rate));if(!NO_MONEY){stat('Units',u(O.units),'pl '+cls(O.units));stat('ROI',r(O.roi),'pl '+cls(O.roi||0));}c.append(st);
   const tw=el('div',null,'tablewrap');const tb=el('table');const hr=el('tr');for(const x of (NO_MONEY?['League','Record','Win %']:['League','Record','Win %','Units','ROI']))hr.append(el('th',x));tb.append(hr);
-  for(const L of U.by_league||[]){const tr=el('tr');tr.append(el('td',L.league==='Combo'?'Combos':sname(L.league)),el('td',L.won+'-'+L.lost),el('td',L.win_rate==null?'—':pct(L.win_rate)),
+  const LG=(U.by_league||[]).map(x=>({...x}));if(NO_MONEY){for(const [lg,v] of Object.entries(K.by_league||{})){let x=LG.find(y=>y.league===lg);if(!x){x={league:lg,won:0,lost:0};LG.push(x);}x.won+=v.won;x.lost+=v.n-v.won;}
+    for(const x of LG)x.win_rate=x.won+x.lost?x.won/(x.won+x.lost):null;LG.sort((a,b)=>(b.won+b.lost)-(a.won+a.lost));}
+  for(const L of LG){const tr=el('tr');tr.append(el('td',L.league==='Combo'?'Combos':sname(L.league)),el('td',L.won+'-'+L.lost),el('td',L.win_rate==null?'—':pct(L.win_rate)),
     ...(NO_MONEY?[]:[el('td',u(L.units),L.units>0?'up':L.units<0?'down':''),el('td',r(L.roi),(L.roi||0)>0?'up':(L.roi||0)<0?'down':'')]));tb.append(tr);}
   tw.append(tb);c.append(tw,el('p',(NO_MONEY?'Her picks':'Tracked paper results')+(U.since?' since '+new Date(U.since).toLocaleDateString([], {month:'short',day:'numeric'}):'')+'. Entertainment only · not betting advice · 21+.','hint small'));box.append(c);}
-function renderSkipped(d){const box=$('skipBox');if(!box)return;box.replaceChildren();const S=d.skipped;if(!S||!S.record||!S.record.n)return;
+function renderSkipped(d){const box=$('skipBox');if(!box)return;box.replaceChildren();const S=d.skipped;if(NO_MONEY||!S||!S.record||!S.record.n)return;   // fix508: counted in her record now
   const R=S.record;const c=el('div',null,'card');c.append(iel('h4','🔗 Parlay legs: her record (95¢+ favorites she doesn\'t bet)'),el('p','Games where Kalshi had her side above 95¢. She did not bet them, but her pick is still graded here. Not part of her betting record.','hint small'));
   const st=el('div',null,'stats');const stat=(l,v,cl)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cl||''));st.append(s);};
   stat('Record',R.won+'-'+(R.n-R.won));stat('Win rate',pct(R.won/R.n));c.append(st);
