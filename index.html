@@ -2958,12 +2958,12 @@ function renderRecord(d){const b=d.bets;if(!b)return;
   const chips=$('sportChips');chips.replaceChildren();const sports=['ALL',...new Set(b.rows.map(r=>r.league))];
   for(const k of sports){const x=el('button',k==='ALL'?'All sports':sname(k));x.type='button';x.setAttribute('aria-pressed',String(k===betSport));x.onclick=()=>{betSport=k;renderRecord(d);};chips.append(x);}
   const rows=b.rows.filter(r=>betSport==='ALL'||r.league===betSport).slice().sort((x,y)=>String(y.opened).localeCompare(String(x.opened)));
-  const tb=el('table');const hr=el('tr');for(const x of ['Bet','Result'])hr.append(el('th',x));tb.append(hr);
+  const tb=el('table');const hr=el('tr');for(const x of ['Pick','Result'])hr.append(el('th',x));tb.append(hr);
   for(const r of rows.slice(0,150)){const tr=el('tr');tr.style.cursor='pointer';tr.tabIndex=0;
     const a=el('td');a.append(el('div',(r.stamp?'🔒 ':'')+(r.bet||r.side+' · '+r.title)),el('div',when(r.opened)+' · '+sname(r.league),'hint small'));if(r.error)a.append(el('div','⚠️ '+r.error,'hint small'));
     const res=el('td');res.style.textAlign='right';res.style.whiteSpace='nowrap';res.append(el('div',r.error?'⚠️ not counted':r.sold!=null&&r.result!=='OPEN'?'↩ sold early':icon(r.result)+' '+(r.result==='OPEN'?'open':r.result.toLowerCase()),r.result==='WON'?'up':r.result==='LOST'?'down':'open'),el('div','','small'));
     tr.append(a,res);tb.append(tr);const wr=el('tr');wr.hidden=true;const wd=el('td');wd.colSpan=2;wd.style.background='var(--card2)';
-    wd.append(el('div','Why she bet: '+(r.why||'No reason recorded.'),'small'));if(typeof r.fair==='number')wd.append(el('div','She put it at '+Math.round(r.fair*100)+'%; Kalshi’s price said '+Math.round(r.price*100)+'%.','hint small'));
+    wd.append(el('div','Why she picked it: '+(r.why||'No reason recorded.'),'small'));if(typeof r.fair==='number')wd.append(el('div','She put it at '+Math.round(r.fair*100)+'%; Kalshi’s price said '+Math.round(r.price*100)+'%.','hint small'));
     if(r.stamp){wd.append(el('div','Sealed '+new Date(r.sealed).toLocaleString()+' · '+r.stamp,'mono'));
       if(r.seal_status==='mismatch')wd.append(el('p','This entry differs from its saved seal.','down'));
       else if(r.seal_status==='matched')wd.append(el('p','Entry fields match the saved seal.','hint small'));}wr.append(wd);tb.append(wr);
@@ -3506,15 +3506,15 @@ function drawBuilder(){const pb=$('propBuilder');if(!pb)return;const P=propData(
 let pracSport='ALL';
 // fix447 (owner): customer-facing results in units (1 unit = her standard bet), ROI and win rate, per league and
 // overall, always labelled as tracked paper results until real money is in. Her stakes are not changed or inflated.
-function renderUnits(d){const box=$('unitsBox');if(!box)return;box.replaceChildren();if(NO_MONEY){box.hidden=true;return;}try{const tc=twinCard(d);if(tc)box.append(tc);}catch(e){}const U=d.units;if(!U||!U.overall||!U.overall.bets)return;
-  const c=el('div',null,'card units');c.append(iel('h4','📒 '+(U.label||'Tracked paper results')),el('p',U.note||'','hint small'));
+function renderUnits(d){const box=$('unitsBox');if(!box)return;box.replaceChildren();try{const tc=twinCard(d);if(tc)box.append(tc);}catch(e){}const U=d.units;if(!U||!U.overall||!U.overall.bets)return;
+  const c=el('div',null,'card units');c.append(iel('h4',NO_MONEY?'📒 Her record by sport':'📒 '+(U.label||'Tracked paper results')),...(NO_MONEY?[]:[el('p',U.note||'','hint small')]));
   const u=v=>(v>0?'+':'')+(Math.round(v*100)/100).toFixed(2)+'u';const r=v=>v==null?'—':(v>0?'+':'')+(v*100).toFixed(1)+'%';
   const O=U.overall,st=el('div',null,'stats');const stat=(l,v,cl)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cl||''));st.append(s);};
-  stat('Record',O.won+'-'+O.lost);stat('Win rate',O.win_rate==null?'—':pct(O.win_rate));stat('Units',u(O.units),'pl '+cls(O.units));stat('ROI',r(O.roi),'pl '+cls(O.roi||0));c.append(st);
-  const tw=el('div',null,'tablewrap');const tb=el('table');const hr=el('tr');for(const x of ['League','Record','Win %','Units','ROI'])hr.append(el('th',x));tb.append(hr);
+  stat('Record',O.won+'-'+O.lost);stat('Win rate',O.win_rate==null?'—':pct(O.win_rate));if(!NO_MONEY){stat('Units',u(O.units),'pl '+cls(O.units));stat('ROI',r(O.roi),'pl '+cls(O.roi||0));}c.append(st);
+  const tw=el('div',null,'tablewrap');const tb=el('table');const hr=el('tr');for(const x of (NO_MONEY?['League','Record','Win %']:['League','Record','Win %','Units','ROI']))hr.append(el('th',x));tb.append(hr);
   for(const L of U.by_league||[]){const tr=el('tr');tr.append(el('td',L.league==='Combo'?'Combos':sname(L.league)),el('td',L.won+'-'+L.lost),el('td',L.win_rate==null?'—':pct(L.win_rate)),
-    el('td',u(L.units),L.units>0?'up':L.units<0?'down':''),el('td',r(L.roi),(L.roi||0)>0?'up':(L.roi||0)<0?'down':''));tb.append(tr);}
-  tw.append(tb);c.append(tw,el('p','Tracked paper results'+(U.since?' since '+new Date(U.since).toLocaleDateString([], {month:'short',day:'numeric'}):'')+'. Entertainment only · not betting advice · 21+.','hint small'));box.append(c);}
+    ...(NO_MONEY?[]:[el('td',u(L.units),L.units>0?'up':L.units<0?'down':''),el('td',r(L.roi),(L.roi||0)>0?'up':(L.roi||0)<0?'down':'')]));tb.append(tr);}
+  tw.append(tb);c.append(tw,el('p',(NO_MONEY?'Her picks':'Tracked paper results')+(U.since?' since '+new Date(U.since).toLocaleDateString([], {month:'short',day:'numeric'}):'')+'. Entertainment only · not betting advice · 21+.','hint small'));box.append(c);}
 function renderSkipped(d){const box=$('skipBox');if(!box)return;box.replaceChildren();const S=d.skipped;if(!S||!S.record||!S.record.n)return;
   const R=S.record;const c=el('div',null,'card');c.append(iel('h4','🔗 Parlay legs: her record (95¢+ favorites she doesn\'t bet)'),el('p','Games where Kalshi had her side above 95¢. She did not bet them, but her pick is still graded here. Not part of her betting record.','hint small'));
   const st=el('div',null,'stats');const stat=(l,v,cl)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,cl||''));st.append(s);};
