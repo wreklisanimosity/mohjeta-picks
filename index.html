@@ -662,6 +662,11 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .actiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
 .card.tap,.hubbtn{border-color:#5b3a7a}
 .wkjump{width:100%;margin:6px 0 14px;border-color:#a66bff}
+.frow.fcard{cursor:pointer}.frow.fcard:hover{border-color:#a66bff}.frow .fsal{white-space:nowrap}
+.fadd{flex:none;border:1px solid #a66bff;background:#a66bff22;color:var(--text);border-radius:999px;padding:5px 12px;font:inherit;font-weight:700;font-size:.85em;cursor:pointer;white-space:nowrap}
+.fadd.on{background:#3ddc8433;border-color:#3ddc84}.fadd:disabled{opacity:.55;cursor:default;border-color:var(--line);background:none}
+.plfant{margin:12px 0}.plfantbtn{width:100%}.plfantopts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.plfantrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}.plfantrow .fn{flex:1;min-width:0;display:flex;flex-direction:column}
 .plink{background:none;border:0;padding:0;margin:0;color:inherit;font:inherit;cursor:pointer;text-align:left;text-decoration:underline dotted rgba(200,160,255,.55);text-underline-offset:3px}
 .btrow .plink{font-weight:700}.plink:hover,.plink:focus-visible{color:#e9c8ff;outline:none;text-decoration-style:solid}
 .plcard .plhead{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}.plcard .pllg{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#f5c542}
@@ -3858,10 +3863,33 @@ function draggable(n,handle,key,onTap){let sx=0,sy=0,ox=0,oy=0,moved=false,on=fa
 addEventListener('resize',()=>{for(const [id,k] of [['chatFab','mohjeta.fabpos'],['chatDrawer','mohjeta.chatpos']]){const n=$(id);if(n&&n.style.left)place(n,k);}});
 // ---------------- fantasy league (NBA, members): 8 players, $50,000 cap, nightly league played by Mohjeta
 const FCAP=50000,FN=8;let FT={name:'',players:[]},FLOADED=false,FQ='',FTEAM='ALL';
-async function fpool(){const T=await loadTeams();const L=T&&T.leagues&&T.leagues.NBA;if(!L)return null;const P={};
-  for(const [team,v] of Object.entries(L.teams||{}))for(const p of v.players||[])P[String(p.id)]={...p,team,salary:p.salary||3000};return {P,L};}
+// fix500 (owner: "make sure the fantasy rosters match the teams section roster"): the nightly pool comes from the lineup
+// model (players seen in each team's recent box scores), so injured players and deep bench were missing and a traded player
+// could sit on his old team. The team pages' rosters (ratings.json, ESPN) now decide who is on which team: players they list
+// but the model doesn't are shown (Out / not in the rotation: 0 minutes, can't be drafted), traded players move, and players
+// no longer on the roster are flagged.
+let FPOOL=null;
+async function fpool(){if(FPOOL&&Date.now()-FPOOL.at<600000)return FPOOL.v;const T=await loadTeams();const L=T&&T.leagues&&T.leagues.NBA;if(!L)return null;const P={};
+  for(const [team,v] of Object.entries(L.teams||{}))for(const p of v.players||[])P[String(p.id)]={...p,team,salary:p.salary||3000};
+  try{await plRatings();const R=((((rt||{}).leagues||{}).NBA||{}).roster||{}).players||[];
+    if(R.length>300){let inj={};try{inj=await injFetch('NBA');}catch(e){}
+      const byName=new Map(R.map(r=>[plNorm(r.name),r]));const full={};          // roster abbreviation -> lineup-model team name
+      for(const tn of Object.keys(L.teams||{})){const cnt={};for(const p of (L.teams[tn].players||[])){const r=byName.get(plNorm(p.name));if(r)cnt[r.team]=(cnt[r.team]||0)+1;}
+        const best=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];if(best)full[best[0]]=tn;}
+      const per={};for(const r of R)per[r.team]=(per[r.team]||0)+1;
+      const injOf=(tn,nm)=>{const x=(inj[tn]||[]).find(i=>plNorm(i[0])===plNorm(nm));return x?x[1]+(x[2]?' ('+x[2]+')':''):'';};
+      const have=new Set();
+      for(const p of Object.values(P)){const r=byName.get(plNorm(p.name));
+        if(r&&full[r.team]){p.team=full[r.team];have.add(plNorm(p.name));}               // moved teams: follow the team page
+        else if(!r&&per[Object.keys(full).find(k=>full[k]===p.team)]>=8)p.off='No longer on the '+teamNick(p.team)+' roster';
+        const st=injOf(p.team,p.name);if(st)p.out=st;}
+      const ROLE={G:'G',F:'F',C:'C'};
+      for(const r of R){if(have.has(plNorm(r.name))||!full[r.team])continue;const tn=full[r.team];const st=injOf(tn,r.name)||r.status||'';
+        P['r-'+r.team+'-'+plNorm(r.name)]={id:'r-'+r.team+'-'+plNorm(r.name),name:r.name,team:tn,role:ROLE[r.group]||ROLE[r.pos]||'F',minutes:0,offense:0,defense:0,
+          salary:3000,out:st||'Not in the rotation right now',nodraft:true};}}}catch(e){}
+  const v={P,L};FPOOL={at:Date.now(),v};return v;}
 function fimpact(p){return ((p.offense||0)+(p.defense||0))*(p.minutes||0)/48;}
-function fcheck(ids,P){if(ids.length!==FN)return 'Pick '+(FN-ids.length)+' more';const ps=ids.map(i=>P[i]);if(ps.some(x=>!x))return 'A player is no longer listed';
+function fcheck(ids,P){if(ids.length!==FN)return 'Pick '+(FN-ids.length)+' more';const ps=ids.map(i=>P[i]);if(ps.some(x=>!x))return 'A player is no longer listed';{const g=ps.find(x=>x.off);if(g)return g.name+' left the team: swap him';}
   if(ps.reduce((a,p)=>a+p.salary,0)>FCAP)return 'Over the cap';const r=new Set(ps.map(p=>p.role));for(const k of ['G','F','C'])if(!r.has(k))return 'Needs a '+({G:'guard',F:'forward',C:'center'})[k];return null;}
 const money$=v=>'$'+v.toLocaleString();
 async function renderFantasy(){const box=$('fantasyBox');if(!box)return;
@@ -3880,7 +3908,9 @@ async function renderFantasy(){const box=$('fantasyBox');if(!box)return;
   const bar=el('div',null,'capbar');const f=el('i');f.style.width=Math.min(100,100*spent/FCAP)+'%';if(spent>FCAP)f.classList.add('over');bar.append(f);
   mine.append(el('h4','My team'),nm,el('div',money$(spent)+' of '+money$(FCAP)+' · '+FT.players.length+'/'+FN+' players · left '+money$(FCAP-spent),'hint small'),bar);
   const slots=el('div',null,'fslots');for(const i of FT.players){const p=P[i];const r=el('button',null,'fslot');r.type='button';r.title='Remove';
-    r.append(el('b',p.name),el('span',p.role+' · '+p.team.split(' ').pop()+' · '+money$(p.salary),'hint small'),el('span','✕','fx'));r.onclick=()=>{FT.players=FT.players.filter(x=>x!==i);renderFantasy();};slots.append(r);}
+    const fx=el('span','✕','fx');fx.setAttribute('role','button');fx.title='Remove '+p.name;r.title='Player card: '+p.name;
+    r.append(el('b',p.name+(p.off||p.out?' ⚠️':'')),el('span',p.role+' · '+p.team.split(' ').pop()+' · '+money$(p.salary)+(p.off?' · '+p.off:p.out?' · '+p.out:''),'hint small'),fx);
+    r.onclick=e=>{if(e.target===fx){FT.players=FT.players.filter(x=>x!==i);renderFantasy();return;}openPlayer(p.name,p.team,'NBA');};slots.append(r);}
   for(let k=FT.players.length;k<FN;k++)slots.append(el('div','Empty slot','fslot empty'));mine.append(slots);
   const err=fcheck(FT.players,P);const save=el('button',err?err:'💾 Save team','btn');save.type='button';save.disabled=!!err;
   save.onclick=async()=>{if(!/^[A-Za-z0-9 _.'-]{3,24}$/.test(FT.name.trim())){toast('Team name: 3-24 letters or numbers');return;}
@@ -3891,10 +3921,16 @@ async function renderFantasy(){const box=$('fantasyBox');if(!box)return;
   const pick=el('div',null,'card');pick.append(el('h4','Players'));const q=el('input');q.className='chatin';q.placeholder='Search players';q.value=FQ;
   const teams=[...new Set(Object.values(P).map(p=>p.team))].sort();const sel=el('select');sel.className='mpick';for(const t of ['ALL',...teams]){const o=el('option',t==='ALL'?'All teams':t);o.value=t;sel.append(o);}sel.value=FTEAM;
   const list=el('div',null,'flist');const draw=()=>{list.replaceChildren();const qq=FQ.toLowerCase();
-    const ps=Object.values(P).filter(p=>(p.minutes||0)>=8&&(FTEAM==='ALL'||p.team===FTEAM)&&(!qq||p.name.toLowerCase().includes(qq))).sort((a,b)=>b.salary-a.salary||fimpact(b)-fimpact(a)).slice(0,80);
-    for(const p of ps){const on=FT.players.includes(String(p.id));const r=el('button',null,'frow'+(on?' on':''));r.type='button';
-      r.append(el('span',p.role,'frole'),el('span',null,'fn'),el('b',money$(p.salary)));r.children[1].append(el('b',p.name),el('span',' '+p.team.split(' ').pop()+' · '+(fimpact(p)>0?'+':'')+fimpact(p).toFixed(1)+' impact','hint small'));r.append(plInfo(p.name,p.team,'NBA',r));
-      r.onclick=()=>{const id=String(p.id);if(on)FT.players=FT.players.filter(x=>x!==id);else{if(FT.players.length>=FN){toast('Your team is full: remove someone first');return;}FT.players.push(id);}renderFantasy();};list.append(r);}};
+    const whole=FTEAM!=='ALL'||qq.length>=3;   // fix500: a team (or a name search) shows the whole roster, like the team page
+    const ps=Object.values(P).filter(p=>!p.off&&(whole||(p.minutes||0)>=8)&&(FTEAM==='ALL'||p.team===FTEAM)&&(!qq||p.name.toLowerCase().includes(qq)))
+      .sort((a,b)=>(a.nodraft?1:0)-(b.nodraft?1:0)||b.salary-a.salary||fimpact(b)-fimpact(a)).slice(0,whole?60:80);
+    if(!ps.length)list.append(el('p','No players match.','hint small'));
+    for(const p of ps){const id=String(p.id);const on=FT.players.includes(id);const r=el('div',null,'frow fcard'+(on?' on':'')+(p.nodraft?' dim':''));r.setAttribute('role','button');r.tabIndex=0;r.title='Player card: '+p.name;
+      const fn=el('span',null,'fn');fn.append(el('b',p.name+(p.out?' ⚠️':'')),el('span',' '+p.team.split(' ').pop()+' · '+(p.nodraft?p.out:(fimpact(p)>0?'+':'')+fimpact(p).toFixed(1)+' impact'+(p.out?' · '+p.out:'')),'hint small'));
+      const add=el('button',p.nodraft?'Out':on?'✓ On team':'+ Add','fadd'+(on?' on':''));add.type='button';add.disabled=!!p.nodraft;add.title=p.nodraft?p.name+' isn’t playing right now':on?'Remove '+p.name:'Add '+p.name+' to your team';
+      add.onclick=e=>{e.stopPropagation();if(on)FT.players=FT.players.filter(x=>x!==id);else{if(FT.players.length>=FN){toast('Your team is full: remove someone first');return;}FT.players.push(id);toast(p.name+' added: tap 💾 Save team when you’re done');}renderFantasy();};
+      r.append(el('span',p.role,'frole'),fn,el('b',money$(p.salary),'fsal'),add);
+      r.onclick=()=>openPlayer(p.name,p.team,'NBA');r.onkeydown=e=>{if(e.key==='Enter')openPlayer(p.name,p.team,'NBA');};list.append(r);}};
   q.oninput=()=>{FQ=q.value;draw();};sel.onchange=()=>{FTEAM=sel.value;draw();};pick.append(q,sel,list);draw();box.append(pick);
   // league
   const lg=el('div',null,'card');lg.append(iel('h4','🏆 League · last 30 days'));box.append(lg);
@@ -4107,7 +4143,7 @@ async function wkBuilder(c,s){const n=s.slots.length;let P;try{P=await wkPool(s.
   const board=el('div',null,'wkboard');s.slots.forEach((slot,k)=>{const id=L[k];
     if(!id){const e=el('button',null,'wkslot empty');e.type='button';e.append(wkPill(slot),el('b','+ Add '+(slot==='FLEX'||slot==='UTIL'?slot.toLowerCase():slot)),el('span',WK_POSN[slot]||'','hint small'));
       e.onclick=()=>wkPicker(s,P,L,k,redraw);board.append(e);return;}
-    const p=P[id];const r=el('div',null,'wkslot');const top=el('div',null,'row');top.append(wkPill(slot),el('b',p.name+(p.inj?' ⚠️':'')));
+    const p=P[id];const r=el('div',null,'wkslot');const top=el('div',null,'row');const pn=el('b',p.name+(p.inj?' ⚠️':''),'plink');pn.title='Player card: '+p.name;pn.onclick=e=>{e.stopPropagation();wkCard(p,s);};top.append(wkPill(slot),pn);
     const x=el('button','✕','wkx');x.type='button';x.title='Remove '+p.name;x.onclick=()=>{L[k]=null;redraw();};
     r.append(top,el('span',p.team+' vs '+(p.opp||'?')+(p.games>1?' · '+p.games+' games':''),'hint small'),el('span',money$(p.salary)+' · '+wkProj(p).toFixed(1)+' proj','wkmeta'),x);
     r.onclick=e=>{if(e.target!==x)wkPicker(s,P,L,k,redraw);};board.append(r);});c.append(board);
@@ -4141,13 +4177,54 @@ function wkPicker(s,P,L,k,done){const slot=s.slots[k];WK.q='';
       const ps=Object.values(P).filter(p=>wkFits(slot,p.pos)&&(!qq||(p.name||'').toLowerCase().includes(qq)||(p.team||'').toLowerCase()===qq));
       const val=p=>wkProj(p)/(p.salary/1000);ps.sort(WK.sort==='salary'?(a,b)=>b.salary-a.salary:WK.sort==='value'?(a,b)=>val(b)-val(a):(a,b)=>wkProj(b)-wkProj(a));
       if(!ps.length)list.append(el('p','No players match.','hint small'));
-      for(const p of ps.slice(0,150)){const id=String(p.id);const inAt=L.indexOf(id);const fits=p.salary<=room;const r=el('button',null,'frow wkprow'+(inAt>=0?' on':''));r.type='button';if(!fits)r.classList.add('dim');
+      for(const p of ps.slice(0,150)){const id=String(p.id);const inAt=L.indexOf(id);const fits=p.salary<=room;const r=el('div',null,'frow wkprow fcard'+(inAt>=0?' on':''));r.setAttribute('role','button');r.tabIndex=0;r.title='Player card: '+p.name;if(!fits)r.classList.add('dim');
         const fn=el('span',null,'fn');fn.append(el('b',p.name+(p.inj?' ⚠️ '+p.inj:'')),el('span',p.team+' vs '+(p.opp||'?')+(p.games>1?' · '+p.games+' games':'')+(p.note?' · '+p.note:''),'hint small'));
         const nums=el('span',null,'wknums');nums.append(el('b',wkProj(p).toFixed(1)+' pts'),el('span',money$(p.salary),'hint small'));
-        r.append(wkPill(p.pos),fn,nums,plInfo(p.name,p.team,s.league,r));
-        r.onclick=()=>{if(inAt>=0&&inAt!==k){toast(p.name+' is already in your lineup');return;}if(!fits){toast('Too expensive: '+money$(p.salary-room)+' over what you have left');return;}
-          L[k]=id;closeSheet();done();toast(p.name+' added ✅');};list.append(r);}};
+        const add=el('button',inAt===k?'✓ In':'+ Add','fadd'+(inAt===k?' on':''));add.type='button';add.title='Put '+p.name+' in this spot';
+        add.onclick=e=>{e.stopPropagation();if(inAt>=0&&inAt!==k){toast(p.name+' is already in your lineup');return;}if(!fits){toast('Too expensive: '+money$(p.salary-room)+' over what you have left');return;}
+          L[k]=id;closeSheet();done();toast(p.name+' added ✅');};
+        r.append(wkPill(p.pos),fn,nums,add);r.onclick=()=>wkCard(p,s);r.onkeydown=e=>{if(e.key==='Enter')wkCard(p,s);};list.append(r);}};
     q.oninput=draw;w.append(sorts,q,list,el('p','“pts” is what she projects him to score this week. Value = points per $1,000 of salary.','hint small'));draw();return w;},'Players');}
+// fix500: a weekly player's league (combo slates mix sports) -> his player card
+function wkLeague(sport,pos){if(sport==='MIX')return /^(G|F|C|UTIL)$/.test(pos)?'NBA':'NFL';if(sport==='MIXH')return /^(FW|D|GK)$/.test(pos)?'NHL':'NBA';
+  if(sport==='MIXF')return /^C(QB|RB|WR|TE)$/.test(pos)?'NCAAF':'NFL';return sport;}
+function wkCard(p,s){if(p.pos==='DST'){toast(p.name+': team defense');return;}openPlayer(p.name,p.team,wkLeague(s.sport,p.pos));}
+// fix500 (owner: "add a button under each player card to add to your fantasy roster"): every fantasy game he can go in
+const WK_FOR={NFL:['NFL','MIX','MIXF'],NBA:['NBA','MIX','MIXH'],NHL:['NHL','MIXH'],NCAAF:['NCAAF','MIXF'],NCAAB:['NCAAB'],WNBA:['WNBA']};
+async function wkLineupOf(s,P){if(WK.lineup[s.id])return WK.lineup[s.id];const n=s.slots.length;let l=Array(n).fill(null);const d=wkLoadDraft(s.id,n);if(d){l=d.l;if(d.n&&!WK.name)WK.name=d.n;}
+  if(me){try{const {data}=await sb.from('weekly_entries').select('name,lineup').eq('slate_id',s.id).eq('user_id',me.id).maybeSingle();if(data&&Array.isArray(data.lineup)&&data.lineup.length===n){l=data.lineup.map(String);if(!WK.name)WK.name=data.name;}}catch(e){}}
+  WK.lineup[s.id]=l.map(x=>x&&P[x]?x:null);return WK.lineup[s.id];}
+function plFantasySection(name,b,lg){const sec=el('div',null,'plfant');const btn=el('button','➕ Add to my fantasy team','btn plfantbtn');btn.type='button';const out=el('div',null,'plfantopts');sec.append(btn,out);
+  if(!WK_FOR[lg]){btn.disabled=true;btn.textContent='No fantasy game for '+lg+' yet';return sec;}
+  const same=(a,c)=>plNorm(a)===plNorm(c);
+  btn.onclick=async()=>{btn.disabled=true;btn.textContent='Finding his fantasy games…';out.replaceChildren();const opts=[];
+    try{if(lg==='NBA'){const fp=await fpool();const hit=fp&&Object.values(fp.P).find(x=>same(x.name,name)&&!x.off&&(!b.team_name||sameTeam(x.team,b.team_name)));
+        if(hit)opts.push({label:'🏀 Nightly NBA fantasy',sub:hit.nodraft?(hit.out||'Not playing right now'):money$(hit.salary),bad:hit.nodraft?hit.out||'He isn’t playing right now':'',go:async()=>{
+          if(!me||!(typeof ACCESS!=='undefined'&&ACCESS&&ACCESS.access)){show('fantasy');return 'Sign in (members) to draft your nightly team';}
+          if(!FLOADED){FLOADED=true;try{const {data}=await sb.from('fantasy_teams').select('name,players').eq('user_id',me.id).maybeSingle();if(data)FT={name:data.name,players:(data.players||[]).map(String)};}catch(e){}}
+          const id=String(hit.id);if(FT.players.includes(id))return hit.name+' is already on your nightly team';if(FT.players.length>=FN)return 'Your nightly team is full: remove someone first';
+          FT.players.push(id);return 'ok:Added to your nightly team: open Nightly NBA fantasy and tap 💾 Save team';},open:'fantasy'});}
+      const list=await wkList();
+      for(const sl of list.filter(x=>x.status==='open'&&WK_FOR[lg].includes(x.sport))){let P;try{P=await wkPool(sl.id);}catch(e){continue;}
+        const hit=Object.values(P).find(x=>same(x.name,name)&&wkLeague(sl.sport,x.pos)===lg&&(!b.team||!x.team||x.team===b.team))||Object.values(P).find(x=>same(x.name,name)&&wkLeague(sl.sport,x.pos)===lg);if(!hit)continue;
+        const sp=(WK_SPORTS.find(x=>x[0]===sl.sport)||[,'',sl.sport]);
+        opts.push({label:sp[1]+' '+sl.label,sub:hit.pos+' · '+money$(hit.salary)+' · locks '+wkWhen(sl.locks_at),go:async()=>{const L=await wkLineupOf(sl,P);const id=String(hit.id);
+          if(L.includes(id))return hit.name+' is already in that lineup';
+          let k=sl.slots.findIndex((slot,i)=>!L[i]&&slot===hit.pos);if(k<0)k=sl.slots.findIndex((slot,i)=>!L[i]&&wkFits(slot,hit.pos));
+          if(k<0)return 'No open '+hit.pos+' spot: open the lineup and swap someone';
+          L[k]=id;wkSaveDraft(sl.id);const spent=L.reduce((a,i)=>a+(i&&P[i]?P[i].salary:0),0);
+          return 'ok:'+hit.name+' is in your '+sl.label+' lineup ('+sl.slots[k]+')'+(spent>sl.cap?' · over the cap: swap someone':'')+'. Open it to save.';},open:'weekly',sport:sl.sport});}}
+    catch(e){}
+    btn.disabled=false;btn.textContent='➕ Add to my fantasy team';
+    if(!opts.length){out.append(el('p','He isn’t in any fantasy game that’s open right now (his team may not play this week).','hint small'));return;}
+    out.append(el('p','Pick where to add him:','hint small'));
+    for(const o of opts){const r=el('div',null,'plfantrow');const t=el('span',null,'fn');t.append(el('b',o.label),el('span',o.sub,'hint small'));
+      const a=el('button',o.bad?'Out':'+ Add','fadd');a.type='button';a.disabled=!!o.bad;if(o.bad)a.title=o.bad;
+      a.onclick=async()=>{a.disabled=true;let msg='';try{msg=await o.go();}catch(e){msg='Couldn’t add him: try again';}a.disabled=false;
+        if(String(msg).startsWith('ok:')){a.textContent='✓ Added';a.classList.add('on');const go=el('button','Open ›','btn ghost small');go.type='button';
+          go.onclick=()=>{closeSheet();if(o.sport)WK.sport=o.sport;show(o.open);};r.append(go);toast(msg.slice(3));}else if(msg)toast(msg);};
+      r.append(t,a);out.append(r);}};
+  return sec;}
 function wkAuto(s,P,L){const used=new Set(L.filter(Boolean));const all=Object.values(P).filter(p=>!p.inj);
   const cheapest=slot=>Math.min(...all.filter(p=>!used.has(String(p.id))&&wkFits(slot,p.pos)).map(p=>p.salary),99999);
   const open=s.slots.map((x,i)=>L[i]?null:i).filter(i=>i!=null).sort((a,b)=>(WK_FLEX[s.slots[a]]?1:0)-(WK_FLEX[s.slots[b]]?1:0));
@@ -4664,6 +4741,7 @@ function plBuild(name,team,lg,found){const b=found.base||{},a=found.adv||{};cons
   const head=el('div',null,'plhead');head.append(el('div',(lg||'')+(b.pos||a.pos?' · '+(b.pos||a.pos):'')+(b.group&&b.group!==(b.pos||a.pos)?' · '+b.group:''),'pllg'),el('h3',b.name||a.name||name),(tm?teamLink(tm,lg,el('span',tm+' ›','plteam')):el('div','','plteam')));box.append(head);
   if(b.status)box.append(el('div','⚠️ '+b.status,'plstatus'));
   const tiles=el('div',null,'tiles');tiles.append(plTile('Mohjeta rating',b.rating==null?null:rcell(b.rating)));if(a.rating!=null)tiles.append(plTile('Points a game added',sg(a.rating)));if(a.rank)tiles.append(plTile('Rank at '+(a.group||'position'),'#'+a.rank));box.append(tiles);
+  {let fs=plOpen&&plOpen.name===name&&plOpen.fantNode;if(!fs){fs=plFantasySection(b.name||a.name||name,b,lg);if(plOpen&&plOpen.name===name)plOpen.fantNode=fs;}box.append(fs);}   // fix500
   const season=found.base?pnote(b):'';if(season)box.append(el('h4','Season'),el('p',season,'plseason'));
   const ak=Object.keys(a.stats||{});if(ak.length){box.append(el('h4','Advanced'));box.append(tableOf(ak.map(k=>STATLBL[k]||k),[ak.map(k=>String(a.stats[k]))]));}
   const G=plGames(b.name||name,tm,lg);
