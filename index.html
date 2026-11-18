@@ -899,6 +899,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
 <body>
 <script src="sounds.js?v=2"></script>
 <script src="intro.js?v=3"></script>
+<script src="tour.js?v=1" defer></script>
 <header>
   <div class="top"><div class="brand" id="home" role="link" tabindex="0" aria-label="Mohjeta"><img class="brand-m" src="logo-cut.webp?v=2" alt="" width="30" height="30"><span aria-hidden="true">OHJETA</span><b aria-hidden="true">.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><button type="button" class="btn subscribe-entry" id="subscribeEntry">Subscribe</button><span class="updated" id="updated">Loading…</span><button type="button" class="sndbtn" id="plFindBtn" aria-label="Find a player or team" title="Find a player or team">🔎</button><button type="button" class="sndbtn" id="sndBtn" data-sound-toggle aria-pressed="true" aria-label="Sound on">🔊</button><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
   <div class="ticker" id="ticker" hidden role="region" aria-label="Sports headlines and site news"><div class="tk-view"><div class="tk-track" id="tkTrack"></div></div><button type="button" class="tk-x" id="tkClose" aria-label="Hide the headlines">✕</button></div>
@@ -931,11 +932,11 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
     <div class="chips" id="gameChips"></div><div class="chips" id="laneChips"></div><div id="gameList"></div>
   </section>
   <section class="panel" id="recordp" role="tabpanel" aria-label="Track record">
-    <h2>Track record</h2><div class="chips seg" id="recSwitch" role="tablist" aria-label="Show"><button type="button" data-rv="bets" aria-pressed="true">💵 Her bets</button><button type="button" data-rv="prac" aria-pressed="false">🧪 Practice</button></div><div id="dropNote"></div>
+    <h2>Track record</h2><div class="chips seg" id="recSwitch" role="tablist" aria-label="Show"><button type="button" data-rv="bets" aria-pressed="true">📒 Her picks</button><button type="button" data-rv="prac" aria-pressed="false">🧪 Practice</button></div><div id="dropNote"></div>
     <div class="chips" id="periodChips"></div><div class="stats" id="periodStats"></div>
     <div class="card" hidden><div class="row"><b>Profit by day</b><span class="sp"></span><span class="hint small" id="barsNote"></span></div><div class="bars" id="dayBars"></div></div>
     <div id="dayCard"></div><div id="unitsBox"></div><div id="skipBox"></div><div id="bySport"></div><div id="bestWorst"></div>
-    <h3>Every bet</h3><div class="chips" id="sportChips"></div><div class="tablewrap" id="betTable"></div>
+    <h3>Every pick</h3><div class="chips" id="sportChips"></div><div class="tablewrap" id="betTable"></div>
     <p class="hint small">Tap any bet to see why she placed it. 🔒 = sealed: fingerprinted the moment she placed it.</p>
     <div id="practiceBox"></div>
     <div id="calib"></div><div id="proof"></div>
@@ -1012,6 +1013,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
       <button type="button" id="installMenu"><span>Install the app<small>Put Mohjeta on your home screen</small></span>›</button>
     </div></details>
     <details class="tfold mfold" open><summary><span>🧭 Explore Mohjeta</span></summary><div class="menu">
+      <button type="button" data-tour><span>🗺 Take the app tour<small>A 30-second walkthrough of every tab and where to tap</small></span>›</button>
       <button type="button" data-go="teams"><span>🏟 Teams<small>Every team by sport, with its card: stats, schedule, roster</small></span>›</button>
       <button type="button" data-plfind><span>🔎 Find a player or team<small>Team cards with stats and rosters, and player cards, even on days they don’t play</small></span>›</button>
       <button type="button" data-go="news"><span>🆕 What's new & how-to<small>Latest updates and how to use every part of the site</small></span>›</button>
@@ -2278,7 +2280,7 @@ function tour(){let seen=false;try{seen=localStorage.getItem('mohjeta.tour')==='
     const row=el('div',null,'row');const skip=el('button','Skip','mlink');skip.type='button';skip.onclick=done;
     const next=el('button',i<steps.length-1?'Next ›':'Let’s go','btn');next.type='button';next.onclick=()=>{if(i<steps.length-1){i++;draw();}else done();};row.append(skip,el('span',null,'sp'),next);box.append(row);};
   const done=()=>{try{localStorage.setItem('mohjeta.tour','1');}catch(e){}ov.remove();};draw();}
-(function(){const go=()=>{const g=$('ageGate');if(g&&!g.hidden){setTimeout(go,800);return;}tour();};setTimeout(go,1200);})();
+// fix515: the first-visit welcome is now the full app tour (tour.js, waits for the age check itself); tour() above is unused
 // ---------------- any-matchup simulator + battle arena (original art: team-colored badges, no logos or mascots)
 let simMode='tonight',TEAMS=null,customG=null;const anyPick={};
 async function loadTeams(){if(pw().on){if(!SIMDATA)return null;TEAMS=SIMDATA;return TEAMS;}if(TEAMS)return TEAMS;try{const r=await fetch('sim-teams.json?t='+Date.now(),{cache:'no-store'});if(r.ok)TEAMS=await r.json();}catch(e){}return TEAMS;}
