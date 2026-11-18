@@ -1960,6 +1960,13 @@ function drawGuess(){const box=$('guessBox');box.replaceChildren();const G=guess
   c.append(v,r,go);box.append(c);}
 function todayRows(rows){const now=new Date(),start=new Date(now);start.setHours(6,0,0,0);if(now<start)start.setDate(start.getDate()-1);   // her betting day runs 6 AM to 6 AM
   return (rows||[]).filter(r=>!r.carried&&Date.parse(r.opened)>=start.getTime());}
+function todayAll(d,rows){const bets=todayRows(rows);if(!NO_MONEY)return bets;   // fix512 (owner: "Tonight she had more than 14 picks those aren't showing in todays"): every pick, not just bets
+  const now=new Date(),start=new Date(now);start.setHours(6,0,0,0);if(now<start)start.setDate(start.getDate()-1);const t0=start.getTime(),t1=t0+864e5;
+  const out=bets.slice(),seen=new Set();
+  for(const x of ((d&&d.skipped&&d.skipped.rows)||[])){const t=(x.at||0)*1000;if(t<t0||t>=t1)continue;if(x.event)seen.add(x.event);out.push({result:x.result,bet:String(x.team||'').startsWith('Against ')?x.team:x.team+' to win',league:x.league,pnl:null});}
+  for(const g of ((d&&d.games)||[])){if(!g.pick||!g.pick.team||g.bet||!g.event||seen.has(g.event)||/^practice/.test(g.lane||''))continue;const s=Date.parse(g.start);if(!(s>=t0&&s<t1))continue;
+    out.push({result:'OPEN',bet:g.pick.team+' to win',league:g.league,pnl:null});}
+  return out;}
 function resultFlash(T){if(!T)return;let last=null;try{last=JSON.parse(localStorage.getItem('mohjeta.lastrec')||'null');}catch(e){}
   if(last&&(T.wins>last.w||T.losses>last.l)){const dw=T.wins-last.w,dl=T.losses-last.l;const msg=[dw>0?'+'+dw+' W ✅':'',dl>0?'+'+dl+' L ❌':''].filter(Boolean).join('  ');if(msg){toast('New results: '+msg);if(window.MJSound)MJSound.play(dw>=dl?'win':'loss');
     for(const e of document.querySelectorAll('.banner .rec,#periodStats .stat strong'))e.classList.add('flash');}}
@@ -2929,7 +2936,7 @@ function renderRecord(d){const b=d.bets;if(!b)return;
   const pc=$('periodChips');pc.replaceChildren();for(const [k,l] of [['today','Today'],[7,'Last 7 days'],...(young?[]:[[30,'Last 30 days']]),[0,'Since the start']]){const x=el('button',l);x.type='button';x.setAttribute('aria-pressed',String(k===period));x.onclick=()=>{period=k;renderRecord(d);};pc.append(x);}
   const T=b.totals;const ps=$('periodStats');ps.replaceChildren();document.querySelectorAll('.todaylist').forEach(x=>x.remove());
   const stat=(l,v,c)=>{const s=el('div',null,'stat');s.append(el('small',l),el('strong',v,c||''));ps.append(s);};
-  if(period==='today'){const rs=todayRows(b.rows),won=rs.filter(r=>r.result==='WON').length,lost=rs.filter(r=>r.result==='LOST').length,open=rs.filter(r=>r.result==='OPEN').length,net=rs.reduce((a,r)=>a+(r.pnl||0),0);
+  if(period==='today'){const rs=todayAll(d,b.rows),won=rs.filter(r=>r.result==='WON').length,lost=rs.filter(r=>r.result==='LOST').length,open=rs.filter(r=>r.result==='OPEN').length,net=rs.reduce((a,r)=>a+(r.pnl||0),0);
     stat('Picks today',String(rs.length));stat('Won-lost',won+'-'+lost);stat('Still open',String(open),'open');
     const list=el('div',null,'todaylist');if(!rs.length)list.append(el('p','No finished picks yet today.','hint'));
     for(const r of rs){const row=el('div',null,'trow');row.append(el('span',icon(r.result),'ti'),el('span',(r.bet||r.title||'').slice(0,60),'tn'),el('span',null,'sp'),
