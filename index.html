@@ -2962,7 +2962,7 @@ function renderRecord(d){const b=d.bets;if(!b)return;
   if(period!=='today'){if(w){for(const x of skipWin(D,period).rows){const g=m[x.league]=m[x.league]||{league:x.league,n:0,won:0,net:0,spent:0};g.n++;if(x.result==='WON')g.won++;}}   // fix508
     else for(const [lg,v] of Object.entries(skipAll(D).by_league||{})){const g=m[lg]=m[lg]||{league:lg,n:0,won:0,net:0,spent:0};g.n+=v.n;g.won+=v.won;}}
   const BS=Object.values(m).sort((x,y)=>y.won/y.n-x.won/x.n||y.n-x.n);const bs=$('bySport');bs.replaceChildren();
-  if(BS.length){bs.append(el('h3','By sport'));const tw=el('div',null,'tablewrap');const tb=el('table');const h=el('tr');for(const x of ['Sport','Record','Win rate'])h.append(el('th',x));tb.append(h);
+  if(BS.length&&!NO_MONEY){   // fix513 (owner: "This can go there is already one above it"): 'Her record by sport' already shows itbs.append(el('h3','By sport'));const tw=el('div',null,'tablewrap');const tb=el('table');const h=el('tr');for(const x of ['Sport','Record','Win rate'])h.append(el('th',x));tb.append(h);
     for(const g of BS){const tr=el('tr');const ret=g.spent?g.net/g.spent:null;tr.append(el('td',sname(g.league)),el('td',g.won+'-'+(g.n-g.won)),el('td',pct(g.won/g.n)));tb.append(tr);}
     tw.append(tb);bs.append(tw,el('p','A few picks in a sport is mostly luck.','hint small'));}
   // best and worst calls
