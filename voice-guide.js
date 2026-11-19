@@ -25,7 +25,8 @@
     {sel:'.ppcard',name:'howto-prop',where:'prepend'},
     {sel:'#fantasy h2',name:'howto-fantasy',where:'after'},
     {sel:'#weekly .wkhero',name:'howto-weekly',where:'after'},
-    {sel:'#sim h2',name:'howto-sim',where:'after'}
+    {sel:'#sim h2',name:'howto-sim',where:'after'},
+    {sel:'#draft h2',name:'howto-draft',where:'after'}   // fix517
   ];
   function css(){if(document.getElementById('vgCss'))return;const st=document.createElement('style');st.id='vgCss';st.textContent=`
 .vg-btn{display:inline-flex;align-items:center;gap:6px;margin:6px 0 8px;padding:7px 12px;border-radius:999px;border:1px solid #b44dff88;
