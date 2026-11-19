@@ -20,6 +20,10 @@
     {tab:'home',title:'You’re all set ✅',text:'That’s the tour. You can replay it anytime from My Mohjeta → “Take the app tour”.'}
   ];
   let i=0,box,ring,card,onKey,onResize;
+  // fix516: her voice reads each step (voice-guide.js), when Sound is on; the 🔊 on the card mutes just the tour
+  const VK='mohjeta.tourVoice';
+  const voiceOn=()=>{try{return localStorage.getItem(VK)!=='0'&&(!window.MJVoice||MJVoice.soundOn());}catch(e){return true;}};
+  const say=()=>{if(window.MJVoice){if(voiceOn())MJVoice.play('tour-'+String(i+1).padStart(2,'0'));else MJVoice.stop();}};
   const $=s=>{try{return s?document.querySelector(s):null;}catch(e){return null;}};
   const visible=el=>{if(!el)return false;const r=el.getBoundingClientRect();return r.width>0&&r.height>0;};
   function css(){if($('#mjTourCss'))return;const st=document.createElement('style');st.id='mjTourCss';st.textContent=`
@@ -33,6 +37,7 @@
 #mjTour .tr-dots{flex:1;display:flex;gap:4px;flex-wrap:wrap}
 #mjTour .tr-dots i{width:6px;height:6px;border-radius:50%;background:#ffffff33}#mjTour .tr-dots i.on{background:#ff4fd8}
 #mjTour button{font:inherit;border-radius:12px;padding:9px 14px;border:1px solid #b44dff88;background:transparent;color:#f3eaff;cursor:pointer}
+#mjTour button.tr-vo{padding:8px 10px;font-size:16px}
 #mjTour button.go{background:linear-gradient(135deg,#8a2be2,#ff4fd8);border:0;font-weight:700}
 #mjTour .tr-skip{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;font-size:13px;padding:6px 12px;background:#0008}
 @media (prefers-reduced-motion:reduce){#mjTour .tr-ring,#mjTour .tr-card{transition:none}}`;document.head.append(st);}
@@ -50,12 +55,15 @@
     card.innerHTML='';const h=document.createElement('h4');h.textContent=s.title;const p=document.createElement('p');p.textContent=s.text;
     const row=document.createElement('div');row.className='tr-row';const dots=document.createElement('div');dots.className='tr-dots';
     STEPS.forEach((_,k)=>{const d=document.createElement('i');if(k===i)d.className='on';dots.append(d);});row.append(dots);
+    if(window.MJVoice){const vb=document.createElement('button');vb.type='button';vb.className='tr-vo';const lab=()=>{const on=voiceOn();vb.textContent=on?'🔊':'🔇';vb.setAttribute('aria-label',on?'Mute her voice':'Hear her voice');vb.setAttribute('aria-pressed',String(on));};lab();
+      vb.onclick=()=>{let on=!voiceOn();try{localStorage.setItem(VK,on?'1':'0');if(on&&!MJVoice.soundOn()){if(window.MJSound&&MJSound.set)MJSound.set(true);else localStorage.setItem('mohjeta.sound','1');}}catch(e){}lab();say();};row.append(vb);}
     if(i>0&&!last){const bk=document.createElement('button');bk.type='button';bk.textContent='Back';bk.onclick=()=>{i--;render();};row.append(bk);}
     const nx=document.createElement('button');nx.type='button';nx.className='go';nx.textContent=i===0?'Start the tour':last?'Done':'Next';nx.onclick=()=>last?end(true):(i++,render());row.append(nx);
     card.append(h,p,row);card.setAttribute('aria-label',s.title);
+    say();
     requestAnimationFrame(()=>{place();setTimeout(place,380);});try{nx.focus({preventScroll:true});}catch(e){}
     try{window.MJSound&&MJSound.play&&i>0&&MJSound.play('tap');}catch(e){}}
-  function end(done){try{localStorage.setItem(KEY,done?'done':'skipped');}catch(e){}
+  function end(done){try{window.MJVoice&&MJVoice.stop();}catch(e){}try{localStorage.setItem(KEY,done?'done':'skipped');}catch(e){}
     if(box)box.remove();box=null;removeEventListener('keydown',onKey);removeEventListener('resize',onResize);
     const b=$('#nav [data-tab="home"]');if(b&&done)b.click();}
   function start(){if(box)return;css();i=0;
