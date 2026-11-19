@@ -895,11 +895,23 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
 }
 </style>
 <script src="languages.js?v=13" defer></script>
+<style>/* fix517 draft with friends */
+.drrow{gap:10px;align-items:center;margin:8px 0}.drsel{font:inherit;padding:6px 10px;border-radius:10px;background:#140b22;color:inherit;border:1px solid var(--line)}
+#draftBox input[type=text],#draftBox input[type=search]{width:100%;box-sizing:border-box;margin:6px 0;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#120a1e;color:inherit;font:inherit}
+.drcode{font-size:44px;font-weight:900;letter-spacing:8px;margin:2px 0 10px;background:linear-gradient(135deg,#b44dff,#ff4fd8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.drmembers{display:grid;gap:6px;margin:8px 0}.drmember{padding:8px 10px;border-radius:10px;background:#ffffff0d}.drmember.empty{opacity:.5;font-style:italic}
+.drlist{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;padding:10px;margin:6px 0;border-radius:12px;border:1px solid var(--line);background:#ffffff08;color:inherit;font:inherit;cursor:pointer}
+.drclock.mine{border-color:#ff4fd8;box-shadow:0 0 0 2px #ff4fd855}.drclock .drwho{display:flex;flex-direction:column}#drClock{font-size:26px;font-variant-numeric:tabular-nums}#drClock.low{color:#ff6b6b}
+.drorder{display:flex;gap:6px;overflow-x:auto;margin-top:8px;padding-bottom:4px}.drchip{white-space:nowrap;font-size:12px;padding:4px 9px;border-radius:999px;background:#ffffff10}.drchip.now{background:linear-gradient(135deg,#8a2be2,#ff4fd8)}.drchip.me{outline:1px solid #ff4fd8}
+.drslots{display:grid;gap:6px}.drslot{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;background:#ffffff0a}.drslot.empty{opacity:.6}
+.drplayers{display:grid;gap:6px;max-height:60vh;overflow:auto}.drp{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid var(--line)}.drpi{flex:1;display:flex;flex-direction:column;min-width:0}.drpi b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drproj{font-weight:800;font-variant-numeric:tabular-nums;color:#e9b8ff}.drteam{margin:8px 0;padding:6px 8px;border-radius:12px;background:#ffffff08}.drteam summary{display:flex;align-items:center;gap:8px;cursor:pointer}
+</style>
 </head>
 <body>
 <script src="sounds.js?v=2"></script>
 <script src="intro.js?v=3"></script>
-<script src="voice-guide.js?v=1" defer></script>
+<script src="voice-guide.js?v=2" defer></script>
 <script src="tour.js?v=2" defer></script>
 <header>
   <div class="top"><div class="brand" id="home" role="link" tabindex="0" aria-label="Mohjeta"><img class="brand-m" src="logo-cut.webp?v=2" alt="" width="30" height="30"><span aria-hidden="true">OHJETA</span><b aria-hidden="true">.</b></div><span class="pill p-prac hide-s">VIEW ONLY</span><button type="button" class="btn subscribe-entry" id="subscribeEntry">Subscribe</button><span class="updated" id="updated">Loading…</span><button type="button" class="sndbtn" id="plFindBtn" aria-label="Find a player or team" title="Find a player or team">🔎</button><button type="button" class="sndbtn" id="sndBtn" data-sound-toggle aria-pressed="true" aria-label="Sound on">🔊</button><button type="button" class="online" id="online" hidden aria-label="Who is online"></button><button type="button" class="acct" id="acct" hidden aria-label="Account"></button></div>
@@ -947,6 +959,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
     <div class="hub">
       <button type="button" class="hubbtn" data-go="sim"><span class="hi">🎲</span><b>Simulate a game</b><small>Play tonight's games 10,000 times. Sit stars, make trades.</small></button>
       <button type="button" class="hubbtn" data-go="fantasy"><span class="hi">🏀</span><b>Nightly NBA fantasy</b><small>Draft 8 NBA players and battle other fans every night. (NFL is in Weekly fantasy.)</small></button>
+      <button type="button" class="hubbtn" data-go="draft"><span class="hi">🤝</span><b>Draft with friends</b><small>Pick how many are playing, then take turns drafting players until every spot is filled.</small></button>
       <button type="button" class="hubbtn" data-go="weekly"><span class="hi">🏈</span><b>Weekly fantasy</b><small>NFL, NBA, NHL, college, WNBA and two-sport combos, scored from real box scores.</small></button>
       <button type="button" class="hubbtn" id="hubGuess"><span class="hi">🔮</span><b>Guess her number</b><small>How sure is she? Guess before you see it.</small></button>
       <button type="button" class="hubbtn" id="hubScore"><span class="hi">🔢</span><b>Score of the Night</b><small>Guess tonight's featured game to the exact score. Closest wins.</small></button>
@@ -959,6 +972,8 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
     <div class="community-layout"><aside class="community-side"><div class="battle-card"><span class="community-eyebrow">YOUR NEXT MATCHUP</span><h3>A friendly rivalry<br>starts here.</h3><div class="battle-art" aria-hidden="true"><span>M</span><b>VS</b><span>YOU</span></div><p>Tap a player’s name in chat to send a private fantasy invitation.</p><button type="button" class="btn" data-go="fantasy">Build your lineup <span aria-hidden="true">↗</span></button><small>Nightly matchups · No entry fees or prizes</small></div><div id="challengeInbox"></div><details class="community-rules"><summary>Keep the lounge welcoming</summary><p>Be respectful. No selling picks, links, referral codes, or guaranteed-win claims. Moderators can remove messages and mute accounts. 21+ · Gambling problem? 1-800-GAMBLER.</p></details></aside><div class="community-conversation"><div class="lounge-heading"><div><span class="community-eyebrow">THE CONVERSATION</span><h3>Courtside & beyond</h3></div><span class="lounge-label">ALL SPORTS</span></div><select id="chatRoom" class="mpick" aria-label="Choose a chat room"></select><div id="chatBox"></div></div></div></section>
   <section class="panel" id="fantasy" role="tabpanel" aria-label="Nightly NBA fantasy"><button class="back" data-go="play">‹ Play</button>
     <h2>🏀 Nightly NBA fantasy</h2><p class="hint small">Draft 8 real NBA players under a $50,000 cap. Every night Mohjeta plays the whole league with the same player ratings behind her picks. Members only · free to play · no entry fees, no prizes.</p><button type="button" class="hubbtn wkjump" data-go="weekly"><span class="hi">🏈</span><b>Looking for NFL?</b><small>Weekly fantasy has NFL, NHL, college football and basketball, WNBA and two-sport combos ›</small></button><div id="fantasyBox"></div></section>
+  <section class="panel" id="draft" role="tabpanel" aria-label="Draft with friends"><button class="back" data-go="play">‹ Play</button>
+    <h2>🤝 Draft with friends</h2><p class="hint small">Pick how many are playing, send your friends the code, and take turns drafting real players until every spot is filled. Free · no entry fees · no prizes.</p><div id="draftBox"></div></section>
   <section class="panel" id="weekly" role="tabpanel" aria-label="Weekly fantasy"><button class="back" data-go="play">‹ Play</button>
     <div class="wkhero"><span class="wkhero-ic">🏆</span><div><h2>Weekly Fantasy</h2><p>Build a lineup. Score with real stats. Beat Mohjeta.</p><span class="wkfree">FREE · NO ENTRY FEES · NO PRIZES</span></div></div><div id="weeklyBox"></div></section>
   <section class="panel" id="guess" role="tabpanel" aria-label="Guess her number"><button class="back" data-go="play">‹ Play</button>
@@ -1238,12 +1253,13 @@ const flipped=g=>g.bet&&g.pick&&!sameTeam(g.bet.team,g.pick.team);
 let D=null;
 
 // ---------------- navigation (tabs, sub-pages, game sheet)
-const TABS=['home','picks','teams','sim','record','play','chat','more'];const SUB={props:'teams',hub:'more',radio:'more',games:'more',ratings:'more',guess:'play',fantasy:'play',weekly:'play',feed:'more',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
+const TABS=['home','picks','teams','sim','record','play','chat','more'];const SUB={draft:'play',props:'teams',hub:'more',radio:'more',games:'more',ratings:'more',guess:'play',fantasy:'play',weekly:'play',feed:'more',combos:'more',news:'more',score:'more',how:'more',odds:'more',safe:'more',terms:'more',privacy:'more'};
 const LEGACY={today:'games',bets:'record',best:'picks'};
 const navBtns=[...document.querySelectorAll('#nav button[data-tab]')];
 function show(name,push){name=LEGACY[name]||name;
   if(name==='fantasy')setTimeout(renderFantasy,0);
   if(name==='weekly')setTimeout(renderWeekly,0);
+  if(name==='draft')setTimeout(drawDraft,0);
   if(name==='feed')setTimeout(()=>{if(D)renderFeed(D);},0);
   if(name==='radio')setTimeout(()=>{try{drawRadioPage();}catch(e){}},0);
   if(name==='hub')setTimeout(()=>{try{drawHub();}catch(e){}},0);
@@ -4352,6 +4368,128 @@ async function h2hOpen(lid,fresh){openSheet(()=>{const w=el('div');w.id='h2hView
   if(L.owner){const t=el('button',L.her?'Remove Mohjeta':'🤖 Add Mohjeta','btn ghost small');t.type='button';t.onclick=async()=>{const {error}=await sb.rpc('set_league_her',{lid,on_off:!L.her});toast(error?error.message:(L.her?'She’s out from next week':'She joins from next week 🤖'));h2hOpen(lid);};acts.append(t);}
   const lv=el('button',L.owner?'Delete league':'Leave league','btn ghost small');lv.type='button';lv.onclick=async()=>{if(!confirmBox(L.owner?'Delete "'+L.name+'" for everyone?':'Leave "'+L.name+'"?'))return;
     const q=L.owner?sb.from('fantasy_leagues').delete().eq('id',lid):sb.from('fantasy_members').delete().eq('league_id',lid).eq('user_id',me.id);const {error}=await q;toast(error?error.message:'Done');closeSheet();renderWeekly();};acts.append(lv);w.append(acts);}
+// ---------------- Draft with friends (fix517, owner Nov 18: "a draft that lets them pick how many people are playing then lets
+// them take turns picking the players on their team until all slots are filled" -> online, NBA / NFL / NHL / college).
+// supabase_draft.sql: draft_rooms / draft_members / draft_picks, written only through create_draft / join_draft / start_draft /
+// make_pick (snake order and turns are checked in the database). Player pool + lineup slots come from the sport's weekly slate.
+// Free: no entry fees, no prizes. When someone's clock runs out, any phone in the room makes their best-available pick.
+const DR_SPORTS=[['NBA','🏀','NBA'],['NFL','🏈','NFL'],['NHL','🏒','NHL'],['NCAAF','🎓','College FB'],['NCAAB','🎓','College BB']];
+const DR={room:null,members:[],picks:[],pool:null,ch:null,tick:null,poll:null,q:'',pos:'ALL',sport:'NBA',seats:4,secs:90,busy:false,code:'',err:''};
+function drName(){return (myProfile&&myProfile.display_name)||'';}
+function drTurn(ids,n){const L=ids.length;if(!L)return null;const r=Math.floor(n/L),i=n%L;return r%2===0?ids[i]:ids[L-1-i];}
+function drOpenSlots(room,uid){const left=[...room.slots];for(const p of DR.picks)if(p.user_id===uid){const k=left.indexOf(p.slot);if(k>=0)left.splice(k,1);}return left;}
+function drSlotFor(room,uid,pos){const left=drOpenSlots(room,uid);return left.find(s=>s===pos)||left.find(s=>wkFits(s,pos))||null;}
+function drMemberName(uid){const m=DR.members.find(x=>x.user_id===uid);return m?m.name:'?';}
+function drStop(){if(DR.ch&&sb){try{sb.removeChannel(DR.ch);}catch(e){}}DR.ch=null;clearInterval(DR.tick);clearInterval(DR.poll);DR.tick=DR.poll=null;}
+async function drLoad(id){await supa();
+  const [r,m,p]=await Promise.all([sb.from('draft_rooms').select('*').eq('id',id).maybeSingle(),sb.from('draft_members').select('user_id,name,joined_at').eq('room_id',id).order('joined_at'),
+    sb.from('draft_picks').select('pick_no,user_id,player_id,player,slot,auto').eq('room_id',id).order('pick_no')]);
+  if(r.error)throw r.error;if(!r.data)throw Error('That draft is gone');
+  DR.room=r.data;DR.members=m.data||[];DR.picks=p.data||[];
+  if(!DR.pool||DR.pool.slate!==DR.room.slate_id){const P=await wkPool(DR.room.slate_id);DR.pool={slate:DR.room.slate_id,P};}}
+function drSub(id){if(DR.ch||!sb)return;const again=()=>{clearTimeout(DR._t);DR._t=setTimeout(()=>drRefresh(id),250);};
+  DR.ch=sb.channel('draft-'+id).on('postgres_changes',{event:'*',schema:'public',table:'draft_picks',filter:'room_id=eq.'+id},again)
+    .on('postgres_changes',{event:'*',schema:'public',table:'draft_rooms',filter:'id=eq.'+id},again)
+    .on('postgres_changes',{event:'*',schema:'public',table:'draft_members',filter:'room_id=eq.'+id},again).subscribe();
+  DR.poll=setInterval(()=>{if(!document.hidden)drRefresh(id);},6000);   // in case live updates drop
+  DR.tick=setInterval(drClock,1000);}
+async function drRefresh(id){if(!DR.room||DR.room.id!==id)return;const before=DR.picks.length,st=DR.room.status;
+  try{await drLoad(id);}catch(e){return;}
+  if(DR.picks.length>before){const p=DR.picks[DR.picks.length-1];if(p.user_id!==(me&&me.id))toast(drMemberName(p.user_id)+' took '+(p.player&&p.player.name||'a player'));
+    try{window.MJSound&&MJSound.play(p.user_id===(me&&me.id)?'lock':'tick');}catch(e){}}
+  if(DR.room.status==='drafting'&&drTurn(DR.room.order_ids,DR.room.pick_no)===(me&&me.id)&&(before!==DR.picks.length||st!=='drafting')){toast('🎯 You’re on the clock!');try{navigator.vibrate&&navigator.vibrate(120);}catch(e){}}
+  if(st!=='done'&&DR.room.status==='done')try{window.MJSound&&MJSound.play('badge');}catch(e){}
+  const sig=DR.room.status+'|'+DR.room.pick_no+'|'+DR.members.length+'|'+DR.picks.length+'|'+DR.room.deadline;if(sig===DR._sig)return;DR._sig=sig;drawDraft();}
+function drClock(){const r=DR.room;const c=document.getElementById('drClock');if(!r||r.status!=='drafting'||!r.deadline){if(c)c.textContent='';return;}
+  const left=Math.max(0,Math.round((Date.parse(r.deadline)-Date.now())/1000));if(c){c.textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');c.classList.toggle('low',left<=10);}
+  if(left===0&&!DR.busy&&!DR._auto)drAuto();}
+async function drAuto(){const r=DR.room;if(!r||r.status!=='drafting')return;DR._auto=true;   // time ran out: best available that fits
+  try{const who=drTurn(r.order_ids,r.pick_no),taken=new Set(DR.picks.map(p=>p.player_id));
+    const best=Object.values(DR.pool.P).filter(p=>!taken.has(String(p.id))&&drSlotFor(r,who,p.pos)).sort((a,b)=>wkProj(b)-wkProj(a))[0];
+    if(best){await new Promise(res=>setTimeout(res,600+Math.random()*1500));if(DR.room.pick_no===r.pick_no)await sb.rpc('make_pick',{p_room:r.id,p_player:String(best.id),p_slot:drSlotFor(r,who,best.pos)});}}
+  catch(e){}finally{setTimeout(()=>{DR._auto=false;drRefresh(r.id);},1500);}}
+async function drPick(p){const r=DR.room;const slot=drSlotFor(r,me.id,p.pos);if(!slot||DR.busy)return;DR.busy=true;
+  try{const {error}=await sb.rpc('make_pick',{p_room:r.id,p_player:String(p.id),p_slot:slot});if(error)throw error;try{window.MJSound&&MJSound.play('lock');}catch(e){}await drRefresh(r.id);}
+  catch(e){toast(String(e.message||e).replace(/^.*?: /,''));await drRefresh(r.id);}finally{DR.busy=false;}}
+function drOpen(id){drStop();DR.room={id};DR._sig=null;DR._home=0;DR.pool=null;DR.q='';DR.pos='ALL';try{localStorage.setItem('mohjeta.draft',id);}catch(e){}
+  drLoad(id).then(()=>{drSub(id);drawDraft();}).catch(e=>{DR.room=null;try{localStorage.removeItem('mohjeta.draft');}catch(x){}toast(String(e.message||e));drawDraft();});drawDraft();}
+function drLeaveView(){drStop();DR.room=null;DR._sig=null;DR._home=1;try{localStorage.removeItem('mohjeta.draft');}catch(e){}drawDraft();}
+async function drawDraft(){const box=$('draftBox');if(!box)return;
+  if(!me){const c=el('div',null,'banner members');c.append(el('b','Sign in to draft with friends'),el('div','Free: sign in with Google and pick a chat name. Then start a draft or join one with a code.','hint small'));
+    const b=el('button','Sign in','btn');b.type='button';b.onclick=()=>show('chat');c.append(b);box.replaceChildren(c);return;}
+  const qp=new URLSearchParams(location.search).get('draft');if(qp&&!DR._qp){DR._qp=1;DR.code=qp.toUpperCase().slice(0,5);if(!DR.room)return drHome(box);}
+  if(!DR.room){let last=null;try{last=localStorage.getItem('mohjeta.draft');}catch(e){}if(last&&!DR._home){drOpen(last);return;}return drHome(box);}
+  const r=DR.room;if(!r.status){box.replaceChildren(el('p','Loading the draft…','hint'));return;}
+  const top=el('div',null,'row drtop');const back=el('button','‹ All drafts','btn ghost small');back.type='button';back.onclick=drLeaveView;
+  top.append(back,el('span',null,'sp'),el('span',(DR_SPORTS.find(x=>x[0]===r.sport)||[0,'',r.sport])[2]+' · code '+r.code,'hint small'));
+  if(r.status==='lobby')return box.replaceChildren(top,drLobby(r));
+  if(r.status==='done')return box.replaceChildren(top,drResults(r));
+  box.replaceChildren(top,...drBoard(r));drClock();}
+function drHome(box){const make=el('div',null,'card');make.append(el('h3','Start a draft'));
+  const sp=el('div',null,'chips');for(const [k,ic,l] of DR_SPORTS){const b=el('button',ic+' '+l);b.type='button';b.setAttribute('aria-pressed',String(DR.sport===k));b.onclick=()=>{DR.sport=k;drawDraft();};sp.append(b);}
+  const seats=el('div',null,'row drrow');seats.append(el('span','How many people are playing?','hint'));const sel=el('select',null,'drsel');sel.setAttribute('aria-label','How many people are playing');
+  for(let n=2;n<=10;n++){const o=el('option',String(n));o.value=n;if(n===DR.seats)o.selected=true;sel.append(o);}sel.onchange=()=>{DR.seats=+sel.value;};seats.append(sel);
+  const clock=el('div',null,'row drrow');clock.append(el('span','Time per pick','hint'));const cs=el('select',null,'drsel');cs.setAttribute('aria-label','Time per pick');
+  for(const [v,l] of [[60,'1 min'],[90,'1½ min'],[120,'2 min'],[300,'5 min']]){const o=el('option',l);o.value=v;if(v===DR.secs)o.selected=true;cs.append(o);}cs.onchange=()=>{DR.secs=+cs.value;};clock.append(cs);
+  const nm=el('input');nm.type='text';nm.maxLength=24;nm.placeholder='Your team name';nm.value=DR.name||drName();nm.oninput=()=>{DR.name=nm.value;};nm.setAttribute('aria-label','Your team name');
+  const go=el('button','Create draft','btn');go.type='button';go.onclick=async()=>{go.disabled=true;
+    try{await supa();const L=await wkList(true);const s=L.filter(x=>x.sport===DR.sport).sort((a,b)=>new Date(b.locks_at)-new Date(a.locks_at));
+      const pick=s.find(x=>new Date(x.locks_at)>Date.now())||s[0];if(!pick)throw Error('No '+DR.sport+' players yet: try another sport');
+      const {data,error}=await sb.rpc('create_draft',{p_slate:pick.id,p_seats:DR.seats,p_name:(nm.value||drName()||'My team').trim(),p_secs:DR.secs});if(error)throw error;drOpen(data.id);}
+    catch(e){toast(String(e.message||e));go.disabled=false;}};
+  make.append(sp,seats,clock,nm,go,el('p','You get a 5-letter code to send your friends. Everyone drafts from their own phone, taking turns (snake order) until every spot is filled.','hint small'));
+  const join=el('div',null,'card');join.append(el('h3','Join a draft'));const code=el('input');code.type='text';code.maxLength=5;code.placeholder='Code (like 7F3A2)';code.value=DR.code||'';code.setAttribute('aria-label','Draft code');code.style.textTransform='uppercase';
+  const jn=el('input');jn.type='text';jn.maxLength=24;jn.placeholder='Your team name';jn.value=DR.name||drName();jn.setAttribute('aria-label','Your team name');
+  const jb=el('button','Join','btn');jb.type='button';jb.onclick=async()=>{jb.disabled=true;try{await supa();const {data,error}=await sb.rpc('join_draft',{p_code:code.value.trim(),p_name:(jn.value||drName()||'My team').trim()});if(error)throw error;DR.code='';drOpen(data.id);}catch(e){toast(String(e.message||e));jb.disabled=false;}};
+  join.append(code,jn,jb);
+  const mine=el('div',null,'card');mine.append(el('h3','My drafts'),el('p','Loading…','hint small'));
+  box.replaceChildren(make,join,mine);
+  supa().then(()=>sb.rpc('my_drafts')).then(({data,error})=>{mine.replaceChildren(el('h3','My drafts'));if(error||!data||!data.length){mine.append(el('p',error?'Draft with friends is being set up. Check back soon.':'No drafts yet. Start one above!','hint small'));return;}
+    for(const d of data){const b=el('button',null,'drlist');b.type='button';b.append(el('b',(DR_SPORTS.find(x=>x[0]===d.sport)||[0,'',d.sport])[2]+' · '+d.code),el('span',d.status==='lobby'?'Waiting: '+d.joined+' of '+d.seats+' joined':d.status==='drafting'?'Drafting now':'Finished','hint small'));b.onclick=()=>drOpen(d.id);mine.append(b);}}).catch(()=>{});}
+function drShareLink(r){return 'https://mohjeta.com/?draft='+r.code+'#draft';}
+function drLobby(r){const c=el('div',null,'card drlobby');c.append(el('div','Draft code','hint small'),el('div',r.code,'drcode'));
+  const sh=el('button','📤 Invite friends','btn');sh.type='button';sh.onclick=async()=>{const url=drShareLink(r),text='Join my Mohjeta draft! Code '+r.code;
+    try{if(navigator.share){await navigator.share({title:'Mohjeta draft',text,url});return;}}catch(e){return;}try{await navigator.clipboard.writeText(text+' '+url);toast('Invite copied');}catch(e){toast(text);}};
+  c.append(sh,el('h4','Players '+DR.members.length+' of '+r.seats));const ul=el('div',null,'drmembers');
+  for(const m of DR.members)ul.append(el('div',(m.user_id===r.host?'👑 ':'')+m.name+(m.user_id===me.id?' (you)':''),'drmember'));
+  for(let k=DR.members.length;k<r.seats;k++)ul.append(el('div','Waiting for a friend…','drmember empty'));c.append(ul);
+  if(r.host===me.id){const st=el('button',DR.members.length<2?'Waiting for friends…':'Start the draft','btn');st.type='button';st.disabled=DR.members.length<2;
+    st.onclick=async()=>{st.disabled=true;const {error}=await sb.rpc('start_draft',{p_room:r.id});if(error){toast(error.message);st.disabled=false;}else drRefresh(r.id);};c.append(st);
+    if(DR.members.length<r.seats&&DR.members.length>=2)c.append(el('p','You can start now with '+DR.members.length+', or wait for everyone.','hint small'));}
+  else c.append(el('p','Waiting for the host to start the draft. Order is random.','hint small'));
+  const lv=el('button',r.host===me.id?'Cancel draft':'Leave','btn ghost small');lv.type='button';lv.onclick=async()=>{await sb.rpc('leave_draft',{p_room:r.id});drLeaveView();};c.append(lv);
+  c.append(el('p','Spots: '+r.slots.join(', ')+' · '+Math.round(r.secs/60*10)/10+' min per pick','hint small'));return c;}
+function drBoard(r){const n=r.order_ids.length,R=r.slots.length,who=drTurn(r.order_ids,r.pick_no),mine=who===me.id;
+  const head=el('div',null,'card drclock'+(mine?' mine':''));const row=el('div',null,'row');
+  row.append(el('div',null,'drwho'),el('span',null,'sp'),el('b','','drtime'));row.firstChild.append(el('small','Round '+(Math.floor(r.pick_no/n)+1)+' of '+R+' · pick '+(r.pick_no+1)+' of '+n*R,'hint small'),el('b',mine?'🎯 You’re on the clock!':'On the clock: '+drMemberName(who)));
+  row.lastChild.id='drClock';head.append(row);
+  const order=el('div',null,'drorder');for(let k=0;k<Math.min(n*R-r.pick_no,n*2);k++){const u=drTurn(r.order_ids,r.pick_no+k);order.append(el('span',(k?'':'▶ ')+drMemberName(u),'drchip'+(u===me.id?' me':'')+(k?'':' now')));}head.append(order);
+  // my team
+  const team=el('div',null,'card');team.append(el('h4','My team'));const left=drOpenSlots(r,me.id);const grid=el('div',null,'drslots');
+  const minePicks=DR.picks.filter(p=>p.user_id===me.id);for(const p of minePicks){const s=el('div',null,'drslot');s.append(wkPill(p.slot),el('span',p.player.name+' · '+(p.player.team||''),''));grid.append(s);}
+  for(const s of left){const d=el('div',null,'drslot empty');d.append(wkPill(s),el('span','Open','hint small'));grid.append(d);}team.append(grid);
+  // players
+  const list=el('div',null,'card');list.append(el('h4','Available players'));const taken=new Set(DR.picks.map(p=>p.player_id));
+  const q=el('input');q.type='search';q.placeholder='Find a player or team…';q.value=DR.q;q.setAttribute('aria-label','Find a player');q.oninput=()=>{DR.q=q.value;drawList();};
+  const pos=el('div',null,'chips');const all=[...new Set(Object.values(DR.pool.P).map(p=>p.pos))];for(const k of ['ALL',...all]){const b=el('button',k==='ALL'?'All':k);b.type='button';b.setAttribute('aria-pressed',String(DR.pos===k));b.onclick=()=>{DR.pos=k;for(const x of pos.children)x.setAttribute('aria-pressed',String(x===b));drawList();};pos.append(b);}
+  const rows=el('div',null,'drplayers');list.append(q,pos,rows);
+  function drawList(){rows.replaceChildren();const t=DR.q.trim().toLowerCase();let shown=0;
+    const ps=Object.values(DR.pool.P).filter(p=>!taken.has(String(p.id))&&(DR.pos==='ALL'||p.pos===DR.pos)&&(!t||(p.name+' '+(p.team||'')).toLowerCase().includes(t))).sort((a,b)=>wkProj(b)-wkProj(a));
+    for(const p of ps){if(shown++>=60)break;const rw=el('div',null,'drp');const info=el('div',null,'drpi');info.append(el('b',p.name),el('span',(p.team||'')+(p.opp?' vs '+p.opp:'')+(p.note?' · '+p.note:''),'hint small'));
+      const fit=mine&&drSlotFor(r,me.id,p.pos);const b=el('button',fit?'Draft':'—','btn small'+(fit?'':' ghost'));b.type='button';b.disabled=!fit||DR.busy;b.onclick=()=>drPick(p);
+      rw.append(wkPill(p.pos),info,el('span',String(Math.round(wkProj(p)*10)/10),'drproj'),b);rows.append(rw);}
+    if(!ps.length)rows.append(el('p','No players match.','hint small'));}
+  drawList();
+  // recent picks
+  const rec=el('div',null,'card');rec.append(el('h4','Picks so far'));for(const p of DR.picks.slice(-8).reverse())rec.append(el('div','#'+(p.pick_no+1)+' '+drMemberName(p.user_id)+': '+p.player.name+' ('+p.slot+')'+(p.auto?' · auto':''),'hint small'));
+  if(!DR.picks.length)rec.append(el('p','No picks yet.','hint small'));
+  return [head,team,list,rec];}
+function drResults(r){const out=el('div');const teams=DR.members.map(m=>{const ps=DR.picks.filter(p=>p.user_id===m.user_id);return {m,ps,pts:ps.reduce((a,p)=>a+(typeof p.player.proj==='number'?p.player.proj:0),0)};}).sort((a,b)=>b.pts-a.pts);
+  const hd=el('div',null,'card drdone');hd.append(el('h3','🏆 Draft complete'),el('p','Mohjeta’s projection for this week, from the same player ratings behind her picks:','hint small'));
+  teams.forEach((t,i)=>{const c=el('details',null,'drteam');if(t.m.user_id===me.id)c.open=true;const s=el('summary');s.append(el('b',(i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':(i+1)+'. ')+t.m.name+(t.m.user_id===me.id?' (you)':'')),el('span',null,'sp'),el('span',Math.round(t.pts*10)/10+' pts','drproj'));c.append(s);
+    for(const p of t.ps.sort((a,b)=>r.slots.indexOf(a.slot)-r.slots.indexOf(b.slot))){const rw=el('div',null,'drslot');rw.append(wkPill(p.slot),el('span',p.player.name+' · '+(p.player.team||'')+(p.auto?' · auto':''),''));c.append(rw);}hd.append(c);});
+  const w=teams[0];hd.append(shareBtn(()=>({title:'Our Mohjeta draft',big:w?w.m.name:'',lines:['Projected winner: '+(w?w.m.name:''),teams.length+' teams · '+r.sport,'Draft with friends at mohjeta.com']})));
+  out.append(hd);return out;}
 // ---------------- Prop Pick'em (fix372, owner: "can we add props to pickem" -> a daily featured 10 on its own record and
 // leaderboard). prop_pickem.py features the props and grades them from Kalshi; picks lock at tip-off (database rule).
 const PPK='mohjeta.propPicks';let PPROPS=null,ppAt=0,PPBOARD=null,ppBoardAt=0;
