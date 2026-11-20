@@ -3611,7 +3611,7 @@ function drawTicker(){const bar=$('ticker'),tr=$('tkTrack');if(!bar||!tr)return;
     a.title=x.link?'Read the full story on ESPN':'Read the full update';a.append(el('b',x.label),el('span',x.text),el('span','›','tk-go'));return a;});
   if(bar.parentNode&&bar.parentNode.lastElementChild!==bar)bar.parentNode.append(bar);   // below the language picker (added to the header later)
   tr.replaceChildren(...one(),...one());bar.hidden=false;{const nb=$('newsBar');if(nb)nb.replaceChildren();}   // two copies: the loop restarts without a jump
-  requestAnimationFrame(()=>{const w=tr.scrollWidth/2;tr.style.setProperty('--tkdur',Math.max(25,Math.round(w/55))+'s');});}
+  requestAnimationFrame(()=>{const w=tr.scrollWidth/2;tr.style.setProperty('--tkdur',Math.max(40,Math.round(w/30))+'s');   // fix519 (owner: "scrolls too fast to read"): 55 -> 30 px a second});}
 {const bar=$('ticker');if(bar){bar.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')bar.classList.toggle('paused');},{passive:true});
   $('tkClose').onclick=()=>{try{sessionStorage.setItem('mohjeta.tk','0');}catch(e){}bar.hidden=true;try{drawNewsBar();}catch(e){}};}}
 function loadNews(){fetch('news.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(n=>{if(!n)return;NEWS=n;drawNewsBar();try{drawTicker();}catch(e){}if(document.querySelector('#news.on'))drawNews();}).catch(()=>{});}
