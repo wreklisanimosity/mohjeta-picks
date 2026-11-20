@@ -45,6 +45,10 @@
           }
           const model=(g.sim?.players?.[team]||[]).find(x=>x.name===p.name);
           if(model&&Number.isFinite(model.worth))card.append(node('small',model.worth.toFixed(1)+' '+(g.sim.unit||'pts')+' modeled impact'));
+          // fix521 (owner: "clicking a player takes you to their player card"): tap a matchup player -> his player card
+          if(typeof root.openPlayer==='function'){card.classList.add('tappable');card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Open '+p.name+'’s player card');
+            const go=()=>root.openPlayer(p.name,team,g.league,root.GameMatchups.backFn?root.GameMatchups.backFn():null);card.addEventListener('click',go);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
+            card.append(node('small','Tap for player card ›','matchup-open'));}
           return card;};
         row.append(player(a,sides[0]?.team),node('span','VS','matchup-vs'),player(b,sides[1]?.team));
         const stats=node('div',null,'matchup-stats');
