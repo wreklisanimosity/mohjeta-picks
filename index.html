@@ -4529,7 +4529,9 @@ function radioStop(quiet){airCrowd(false);if(RAD.au){try{RAD.au.pause();}catch(e
 function radioNext(){if(!RAD.gid||RAD.stream||(RAD.au&&!RAD.au.paused&&!RAD.au.ended)||!RAD.q.length)return;const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;
   if(!RAD.au)RAD.au=new Audio();const a=RAD.au;a.src=l.url;a.onended=()=>{if(l.mood==='hype')airRoar();radioNext();};a.onerror=()=>radioNext();a.play().catch(()=>{});
   if(!RAD.bed)airCrowd(true);drawAir();}   // one element, reused: keeps playing with the screen off on more phones
-function airName(g){const T=g.teams||[];if(T.length!==2||!T[0]||!T[1]||typeof openTeam!=='function')return el('b',g.name||'');   // fix525 (owner: tapping the teams in Mohjeta Live opens their card)
+function airName(g){let T=g.teams||[];if(T.length!==2||!T[0]||!T[1]){const m=((D&&D.games)||[]).find(x=>String(x.id)===String(g.id));   // the site's own game: full team names right away
+    T=m&&(m.teams||[]).length===2?(m.teams.some(t=>t.home)?[m.teams.find(t=>!t.home).name,m.teams.find(t=>t.home).name]:[m.teams[1].name,m.teams[0].name]):[];}   // ESPN order: home first
+  if(T.length!==2||!T[0]||!T[1]||typeof openTeam!=='function')return el('b',g.name||'');   // fix525 (owner: tapping the teams in Mohjeta Live opens their card)
   const b=el('b',null,'airteams');const mk=n=>{const t=el('button',n,'airtm');t.type='button';t.title='Open '+n;t.onclick=e=>{e.stopPropagation();openTeam(n,g.league);};return t;};
   b.append(mk(T[0]),el('span',' @ ','hint'),mk(T[1]));return b;}
 function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.state==='LIVE'||g.state==='UPCOMING'||(g.lines||[]).length);
