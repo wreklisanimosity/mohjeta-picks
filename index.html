@@ -907,6 +907,13 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
 .drplayers{display:grid;gap:6px;max-height:60vh;overflow:auto}.drp{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid var(--line)}.drpi{flex:1;display:flex;flex-direction:column;min-width:0}.drpi b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .drproj{font-weight:800;font-variant-numeric:tabular-nums;color:#e9b8ff}.drteam{margin:8px 0;padding:6px 8px;border-radius:12px;background:#ffffff08}.drteam summary{display:flex;align-items:center;gap:8px;cursor:pointer}
 </style>
+<style>/* fix520 Mohjeta Live */
+.airc{border-color:#ff4fd866}.airrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.airrow.on{background:#ff4fd810}
+.airi{flex:1;display:flex;flex-direction:column;min-width:0}.airi span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.airbar{position:fixed;left:8px;right:8px;bottom:calc(var(--navh) + var(--safe) + 8px);z-index:40;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;
+ background:linear-gradient(135deg,#2a1145,#160a26);border:1px solid #ff4fd877;box-shadow:0 8px 24px #000a;max-width:560px;margin:0 auto}
+.airt{flex:1;display:flex;flex-direction:column;min-width:0}.airt span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.airic{font-size:18px}
+</style>
 </head>
 <body>
 <script src="sounds.js?v=2"></script>
@@ -932,7 +939,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
   <div id="newsBar"></div>
   <section class="panel on" id="home" role="tabpanel" aria-label="Home"><div id="homeBox"><p class="hint">Loading her dashboard…</p></div></section>
   <section class="panel" id="picks" role="tabpanel" aria-label="Picks">
-    <div id="liveBox"></div><div id="radioTeaser"></div>
+    <div class="mjair"></div><div id="liveBox"></div><div id="radioTeaser"></div>
     <div id="record"></div><div id="openBets"></div><div id="installBox"></div><div id="alertsBox"></div>
     <h3>Tonight's picks</h3><p class="hint small xp">The games she picks tonight, with her chance for each. Tap a sport to see them.</p><div id="betting"></div>
     <div id="legsBox"></div><div id="copyBox"></div>
@@ -1004,7 +1011,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
   <section class="panel" id="radio" role="tabpanel" aria-label="Sports radio"><button class="back" data-go="more">‹ My Mohjeta</button>
     <div class="rhero"><div class="rhero-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
       <span class="onair">● ON AIR</span><h2>🎙 Mohjeta Radio</h2><p>Live games and 24/7 sports talk, free. It plays right here while you keep browsing.</p></div>
-    <div id="radioLive"></div>
+    <div class="mjair"></div><div id="radioLive"></div>
     <h3 class="rsec">📻 24/7 sports talk</h3>
     <div class="radiolist">
       <a class="rstation" href="https://tunein.com/search/?query=ESPN%20Radio" data-tunein="s25876" data-label="ESPN Radio" target="_blank" rel="noopener noreferrer"><em class="rtile t-espn">ESPN</em><b>ESPN Radio</b><span>National sports talk, big games and breaking news · plays here</span><i>›</i></a>
@@ -2097,7 +2104,7 @@ function deleteMyAccount(parent){
   };box.append(status,confirm,cancel);document.body.append(ov);
 }
 let liveKey=null;
-function applyLive(L){if(!D||!L){lastLive=L;return;}{let k=null;try{const {updated,...rest}=L;k=JSON.stringify(rest);}catch(e){}
+function applyLive(L){if(L&&L.radio){try{radioFeed(L.radio);}catch(e){}}if(!D||!L){lastLive=L;return;}{let k=null;try{const {updated,...rest}=L;k=JSON.stringify(rest);}catch(e){}
   if(k&&k===liveKey){lastLive=L;const u=$('updated');u.classList.remove('stale');u.textContent='● Live '+hm(L.updated);u.classList.add('livedot');return;}liveKey=k;}lastLive=L;const byId=new Map(D.games.map(g=>[g.id||g.name,g]));
   {let locked=false;const mine=pkLoad();
   for(const g of L.games||[]){const cur=byId.get(g.id||g.name);if(cur){if(cur.state==='UPCOMING'&&g.state&&g.state!=='UPCOMING'&&mine[pkKey(cur)])locked=true;Object.assign(cur,g);}else D.games.push(g);}
@@ -3611,7 +3618,7 @@ function drawTicker(){const bar=$('ticker'),tr=$('tkTrack');if(!bar||!tr)return;
     a.title=x.link?'Read the full story on ESPN':'Read the full update';a.append(el('b',x.label),el('span',x.text),el('span','›','tk-go'));return a;});
   if(bar.parentNode&&bar.parentNode.lastElementChild!==bar)bar.parentNode.append(bar);   // below the language picker (added to the header later)
   tr.replaceChildren(...one(),...one());bar.hidden=false;{const nb=$('newsBar');if(nb)nb.replaceChildren();}   // two copies: the loop restarts without a jump
-  requestAnimationFrame(()=>{const w=tr.scrollWidth/2;tr.style.setProperty('--tkdur',Math.max(40,Math.round(w/30))+'s');   // fix519 (owner: "scrolls too fast to read"): 55 -> 30 px a second});}
+  requestAnimationFrame(()=>{const w=tr.scrollWidth/2;tr.style.setProperty('--tkdur',Math.max(40,Math.round(w/30))+'s');/* fix519 (owner: scrolls too fast to read): 55 -> 30 px a second */});}
 {const bar=$('ticker');if(bar){bar.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')bar.classList.toggle('paused');},{passive:true});
   $('tkClose').onclick=()=>{try{sessionStorage.setItem('mohjeta.tk','0');}catch(e){}bar.hidden=true;try{drawNewsBar();}catch(e){}};}}
 function loadNews(){fetch('news.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(n=>{if(!n)return;NEWS=n;drawNewsBar();try{drawTicker();}catch(e){}if(document.querySelector('#news.on'))drawNews();}).catch(()=>{});}
@@ -4490,6 +4497,28 @@ function drResults(r){const out=el('div');const teams=DR.members.map(m=>{const p
     for(const p of t.ps.sort((a,b)=>r.slots.indexOf(a.slot)-r.slots.indexOf(b.slot))){const rw=el('div',null,'drslot');rw.append(wkPill(p.slot),el('span',p.player.name+' · '+(p.player.team||'')+(p.auto?' · auto':''),''));c.append(rw);}hd.append(c);});
   const w=teams[0];hd.append(shareBtn(()=>({title:'Our Mohjeta draft',big:w?w.m.name:'',lines:['Projected winner: '+(w?w.m.name:''),teams.length+' teams · '+r.sport,'Draft with friends at mohjeta.com']})));
   out.append(hd);return out;}
+// ---------------- Mohjeta Live (fix520, owner Nov 20: "play by play radio in her voice"): her call of her featured games.
+// live_call.py on her PC speaks the big moments in her voice and lists the clips in the live feed (L.radio); here a listener picks
+// a game and the clips play one after another as they arrive (about 30-60 s behind the real game).
+const RAD={feed:null,gid:null,q:[],played:new Set(),au:null,last:''};
+function radioFeed(R){RAD.feed=R;if(RAD.gid){const g=(R.games||[]).find(x=>x.id===RAD.gid);if(g){for(const l of g.lines||[])if(!RAD.played.has(l.id)&&!RAD.q.some(x=>x.id===l.id))RAD.q.push(l);radioNext();}}drawAir();}
+function radioListen(gid){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===gid);if(!g)return;try{window.MJVoice&&MJVoice.stop();}catch(e){}
+  radioStop(true);RAD.gid=gid;RAD.played=new Set();const L=g.lines||[];for(const l of L.slice(0,-2))RAD.played.add(l.id);RAD.q=L.slice(-2);   // catch up with the last two
+  if(!RAD.q.length)toast('🎙 She’ll start talking when the game heats up. Keep this open.');radioNext();drawAir();}
+function radioStop(quiet){if(RAD.au){try{RAD.au.pause();}catch(e){}}RAD.au=null;RAD.q=[];if(!quiet){RAD.gid=null;drawAir();}}
+function radioNext(){if(!RAD.gid||(RAD.au&&!RAD.au.paused&&!RAD.au.ended)||!RAD.q.length)return;const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;
+  const a=new Audio(l.url);RAD.au=a;a.onended=()=>{RAD.au=null;radioNext();};a.onerror=()=>{RAD.au=null;radioNext();};a.play().catch(()=>{RAD.au=null;});drawAir();}
+function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.state==='LIVE'||g.state==='UPCOMING'||(g.lines||[]).length);
+  for(const box of document.querySelectorAll('.mjair')){box.replaceChildren();if(!gs.length)continue;
+    const c=el('div',null,'card airc');const h=el('div',null,'row');h.append(el('b',(R.on_air?'🔴 ON AIR · ':'🎙 ')+'Mohjeta Live'),el('span',null,'sp'),el('span','Her call, in her voice','hint small'));c.append(h);
+    for(const g of gs){const r=el('div',null,'airrow'+(g.id===RAD.gid?' on':''));const info=el('div',null,'airi');info.append(el('b',g.name||''),
+        el('span',g.state==='LIVE'?(g.why==='crunch'?'🔥 Crunch time':'Live now')+((g.lines||[]).length?' · “'+(g.lines[g.lines.length-1].text||'').slice(0,60)+'”':''):g.state==='UPCOMING'?'She calls this one tonight':'Final','hint small'));
+      const b=el('button',g.id===RAD.gid?'■ Stop':'▶ Listen','btn small'+(g.id===RAD.gid?'':' ghost'));b.type='button';b.disabled=g.state==='UPCOMING';b.onclick=()=>g.id===RAD.gid?radioStop():radioListen(g.id);r.append(info,b);c.append(r);}
+    box.append(c);}
+  let bar=document.getElementById('airBar');if(!RAD.gid){if(bar)bar.remove();return;}
+  if(!bar){bar=el('div',null,'airbar');bar.id='airBar';document.body.append(bar);}
+  const g=(gs.find(x=>x.id===RAD.gid)||{});bar.replaceChildren();const t=el('div',null,'airt');t.append(el('b','🎙 '+(g.name||'Mohjeta Live')),el('span',RAD.last||'Waiting for the next big moment…','hint small'));
+  const x=el('button','■','btn small');x.type='button';x.setAttribute('aria-label','Stop Mohjeta Live');x.onclick=()=>radioStop();bar.append(el('span',RAD.au&&!RAD.au.paused?'🔊':'⏳','airic'),t,x);}
 // ---------------- Prop Pick'em (fix372, owner: "can we add props to pickem" -> a daily featured 10 on its own record and
 // leaderboard). prop_pickem.py features the props and grades them from Kalshi; picks lock at tip-off (database rule).
 const PPK='mohjeta.propPicks';let PPROPS=null,ppAt=0,PPBOARD=null,ppBoardAt=0;
