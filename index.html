@@ -4499,15 +4499,28 @@ function drResults(r){const out=el('div');const teams=DR.members.map(m=>{const p
   out.append(hd);return out;}
 // ---------------- Mohjeta Live (fix520, owner Nov 20: "play by play radio in her voice"): her call of her featured games.
 // live_call.py on her PC speaks the big moments in her voice and lists the clips in the live feed (L.radio); here a listener picks
-// a game and the clips play one after another as they arrive (about 30-60 s behind the real game).
-const RAD={feed:null,gid:null,q:[],played:new Set(),au:null,last:''};
-function radioFeed(R){RAD.feed=R;if(RAD.gid){const g=(R.games||[]).find(x=>x.id===RAD.gid);if(g){for(const l of g.lines||[])if(!RAD.played.has(l.id)&&!RAD.q.some(x=>x.id===l.id))RAD.q.push(l);radioNext();}}drawAir();}
+// a game and the clips play one after another as they arrive. fix522 (owner: "make it faster" + listen when not in the app):
+// while listening, radio.json is read every 4 s (also with the screen off); "Lock-screen mode" plays the game's HLS stream
+// (her clips + silence) in one audio element, which phones keep playing in the background, with lock-screen controls.
+const RAD={feed:null,gid:null,q:[],played:new Set(),au:null,last:'',poll:null,stream:false,sa:null};
+function radioFeed(R){if(!R||!R.games)return;RAD.feed=R;if(RAD.gid&&!RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);if(g){for(const l of g.lines||[])if(!RAD.played.has(l.id)&&!RAD.q.some(x=>x.id===l.id))RAD.q.push(l);radioNext();}}
+  if(RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);const l=g&&(g.lines||[])[(g.lines||[]).length-1];if(l)RAD.last=l.text;}drawAir();}
+async function radioPoll(){try{const base=window.publicCdn?await publicCdn():null;if(!base)return;const r=await fetch(base+'/radio.json',{cache:'no-cache',signal:AbortSignal.timeout(6000)});if(r.ok)radioFeed(await r.json());}catch(e){}}
+function radioMeta(g){try{if(!('mediaSession' in navigator))return;navigator.mediaSession.metadata=new MediaMetadata({title:'Mohjeta Live',artist:(g&&g.name)||'Her call, in her voice',album:'Mohjeta',artwork:[{src:'icon-512.png',sizes:'512x512',type:'image/png'}]});
+  navigator.mediaSession.setActionHandler('pause',()=>radioStop());navigator.mediaSession.setActionHandler('stop',()=>radioStop());}catch(e){}}
 function radioListen(gid){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===gid);if(!g)return;try{window.MJVoice&&MJVoice.stop();}catch(e){}
-  radioStop(true);RAD.gid=gid;RAD.played=new Set();const L=g.lines||[];for(const l of L.slice(0,-2))RAD.played.add(l.id);RAD.q=L.slice(-2);   // catch up with the last two
-  if(!RAD.q.length)toast('🎙 She’ll start talking when the game heats up. Keep this open.');radioNext();drawAir();}
-function radioStop(quiet){if(RAD.au){try{RAD.au.pause();}catch(e){}}RAD.au=null;RAD.q=[];if(!quiet){RAD.gid=null;drawAir();}}
-function radioNext(){if(!RAD.gid||(RAD.au&&!RAD.au.paused&&!RAD.au.ended)||!RAD.q.length)return;const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;
-  const a=new Audio(l.url);RAD.au=a;a.onended=()=>{RAD.au=null;radioNext();};a.onerror=()=>{RAD.au=null;radioNext();};a.play().catch(()=>{RAD.au=null;});drawAir();}
+  radioStop(true);RAD.gid=gid;RAD.stream=false;RAD.played=new Set();const L=g.lines||[];for(const l of L.slice(0,-2))RAD.played.add(l.id);RAD.q=L.slice(-2);   // catch up with the last two
+  if(!RAD.q.length)toast('🎙 She’ll start talking when the game heats up. Keep this open, or tap 🔒 to listen with your phone locked.');
+  clearInterval(RAD.poll);RAD.poll=setInterval(radioPoll,4000);radioPoll();radioMeta(g);radioNext();drawAir();}
+function radioLock(){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD.gid);if(!g)return;
+  if(!g.stream){toast('Her lock-screen stream starts once the game is live.');return;}
+  const a=document.createElement('audio');if(!a.canPlayType('application/vnd.apple.mpegurl')){toast('Lock-screen listening isn’t supported in this browser yet. Keep the page open, or try Safari.');return;}
+  if(RAD.au){try{RAD.au.pause();}catch(e){}}RAD.au=null;RAD.q=[];RAD.stream=true;a.src=g.stream;a.setAttribute('playsinline','');RAD.sa=a;
+  a.play().then(()=>toast('🔒 You can lock your phone now. She keeps talking.')).catch(()=>toast('Tap ▶ again to start the stream.'));radioMeta(g);drawAir();}
+function radioStop(quiet){if(RAD.au){try{RAD.au.pause();}catch(e){}}if(RAD.sa){try{RAD.sa.pause();RAD.sa.removeAttribute('src');RAD.sa.load();}catch(e){}}RAD.au=null;RAD.sa=null;RAD.stream=false;RAD.q=[];
+  if(!quiet){RAD.gid=null;clearInterval(RAD.poll);RAD.poll=null;drawAir();}}
+function radioNext(){if(!RAD.gid||RAD.stream||(RAD.au&&!RAD.au.paused&&!RAD.au.ended)||!RAD.q.length)return;const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;
+  if(!RAD.au)RAD.au=new Audio();const a=RAD.au;a.src=l.url;a.onended=()=>radioNext();a.onerror=()=>radioNext();a.play().catch(()=>{});drawAir();}   // one element, reused: keeps playing with the screen off on more phones
 function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.state==='LIVE'||g.state==='UPCOMING'||(g.lines||[]).length);
   for(const box of document.querySelectorAll('.mjair')){box.replaceChildren();if(!gs.length)continue;
     const c=el('div',null,'card airc');const h=el('div',null,'row');h.append(el('b',(R.on_air?'🔴 ON AIR · ':'🎙 ')+'Mohjeta Live'),el('span',null,'sp'),el('span','Her call, in her voice','hint small'));c.append(h);
@@ -4517,8 +4530,10 @@ function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.state==='L
     box.append(c);}
   let bar=document.getElementById('airBar');if(!RAD.gid){if(bar)bar.remove();return;}
   if(!bar){bar=el('div',null,'airbar');bar.id='airBar';document.body.append(bar);}
-  const g=(gs.find(x=>x.id===RAD.gid)||{});bar.replaceChildren();const t=el('div',null,'airt');t.append(el('b','🎙 '+(g.name||'Mohjeta Live')),el('span',RAD.last||'Waiting for the next big moment…','hint small'));
-  const x=el('button','■','btn small');x.type='button';x.setAttribute('aria-label','Stop Mohjeta Live');x.onclick=()=>radioStop();bar.append(el('span',RAD.au&&!RAD.au.paused?'🔊':'⏳','airic'),t,x);}
+  const g=(gs.find(x=>x.id===RAD.gid)||{});bar.replaceChildren();const t=el('div',null,'airt');t.append(el('b','🎙 '+(g.name||'Mohjeta Live')+(RAD.stream?' · 🔒':'')),el('span',RAD.last||'Waiting for the next big moment…','hint small'));
+  const lk=el('button','🔒','btn small ghost');lk.type='button';lk.title='Keep playing with your phone locked';lk.setAttribute('aria-label','Lock-screen mode');lk.hidden=RAD.stream;lk.onclick=radioLock;
+  const x=el('button','■','btn small');x.type='button';x.setAttribute('aria-label','Stop Mohjeta Live');x.onclick=()=>radioStop();
+  bar.append(el('span',RAD.stream||(RAD.au&&!RAD.au.paused)?'🔊':'⏳','airic'),t,lk,x);}
 // ---------------- Prop Pick'em (fix372, owner: "can we add props to pickem" -> a daily featured 10 on its own record and
 // leaderboard). prop_pickem.py features the props and grades them from Kalshi; picks lock at tip-off (database rule).
 const PPK='mohjeta.propPicks';let PPROPS=null,ppAt=0,PPBOARD=null,ppBoardAt=0;
