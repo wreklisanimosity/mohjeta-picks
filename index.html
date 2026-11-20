@@ -779,8 +779,8 @@ body.tfx3 .card{animation-duration:1.8s}
 <script src="mohjeta-icons.js?v=10"></script>
 <script src="sport-art.js?v=2"></script>
 <script src="live-data.js?v=3"></script>
-<link rel="stylesheet" href="game-matchups.css?v=3">
-<script src="game-matchups.js?v=3"></script>
+<link rel="stylesheet" href="game-matchups.css?v=4">
+<script src="game-matchups.js?v=4"></script>
 <link rel="stylesheet" href="languages.css?v=4">
 <style>
 .game-picker{position:relative;display:block;margin-block:12px;cursor:pointer}
@@ -2784,7 +2784,7 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
     const tm=Object.entries(KP.teams||{}).filter(([,ps])=>ps&&ps.length);if(tm.length){const tw=el('div',null,'kpteams');for(const [t,ps] of tm){const d=el('div');d.append(el('b',t));
       for(const p of ps)d.append(el('div',p.name+(p.rating!=null?' · '+(Number.isInteger(p.rating)?'rated '+p.rating:sg(p.rating)):'')+(/[1-9]/.test(String(p.stats||''))?' · '+p.stats:''),'hint small'));tw.append(d);}c.append(tw);}
     c.append(el('p','From her player ratings (each player ranked against his position this season) and the injury report.','hint small'));b.append(c);}
-  if(window.GameMatchups){GameMatchups.theme={badge:teamBadge,color:n=>TEAM_COLORS[teamNick(n)]};b.append(GameMatchups.render(g));}   // after her bet and pick, so those come first
+  if(window.GameMatchups){GameMatchups.theme={badge:teamBadge,color:n=>TEAM_COLORS[teamNick(n)]};GameMatchups.backFn=()=>{const h=location.hash;return h.startsWith('#game/')?()=>openGame(decodeURIComponent(h.slice(6)),false):null;};b.append(GameMatchups.render(g));}   // after her bet and pick, so those come first
   if(g.event){const cb=iel('button','💬 Chat about it ›','btn ghost');cb.type='button';cb.onclick=()=>{closeSheet(true);show('chat');};b.append(cb);}
   if((g.sim||g.has_sim)&&g.state==='UPCOMING'){const sb=el('button','Simulate this game ›','btn');sb.type='button';sb.onclick=()=>{simId=g.id||g.name;show('sim');renderSim();};b.append(sb);}
   if(g.has_more&&!g.details&&!g.sim&&!g.key_players&&!g.lineups)b.append(el('p','Loading the full breakdown…','hint small'));
@@ -4943,11 +4943,12 @@ function plBuild(name,team,lg,found){const b=found.base||{},a=found.adv||{};cons
   {let pp=plOpen&&plOpen.name===name&&plOpen.propsNode;if(!pp){pp=plPropsSection(b.name||a.name||name,tm,lg);if(plOpen&&plOpen.name===name)plOpen.propsNode=pp;}box.append(pp);}   // fix475
   {const fs=el('div',null,'plfull');fs.append(el('h4','📊 Full stats'));const host=el('div');fs.append(host);box.append(fs);plFullFill(host,b.name||a.name||name,tm,lg);}
   box.append(el('p','Ratings and stats from Mohjeta’s player data (ESPN public stats). Rating 0-99 within his position.','hint small'));return box;}
-async function openPlayer(name,team,lg){plOpen={name,team,lg,found:{base:null,adv:null}};openSheet(()=>el('p','Loading '+name+'…','hint'),name);
+function plWithBack(n){if(!plOpen||!plOpen.back)return n;const b=el('button','‹ Back to the game','btn ghost small');b.type='button';b.onclick=plOpen.back;const w=el('div');w.append(b,n);return w;}   /* fix521: player card opened from a game's matchups */
+async function openPlayer(name,team,lg,back){plOpen={name,team,lg,back:typeof back==='function'?back:null,found:{base:null,adv:null}};openSheet(()=>el('p','Loading '+name+'…','hint'),name);
   try{plOpen.found=await plFind(name,team,lg);}catch(e){}
-  if(plOpen&&plOpen.name===name)$('sheetBody').replaceChildren(plBuild(name,team,lg,plOpen.found));
+  if(plOpen&&plOpen.name===name)$('sheetBody').replaceChildren(plWithBack(plBuild(name,team,lg,plOpen.found)));
   clearInterval(plTimer);plTimer=setInterval(()=>{const s=$('sheet');if(!plOpen||!s||!s.classList.contains('on')||!$('sheetBody').querySelector('.plcard')){clearInterval(plTimer);plOpen=null;return;}
-    $('sheetBody').replaceChildren(plBuild(plOpen.name,plOpen.team,plOpen.lg,plOpen.found));},30000);}
+    $('sheetBody').replaceChildren(plWithBack(plBuild(plOpen.name,plOpen.team,plOpen.lg,plOpen.found)));},30000);}
 window.openPlayer=openPlayer;
 
 // ---- fix468 find any player (owner, Nov 15 2026: "want guests to be able to find them even when the team isn't playing"):
