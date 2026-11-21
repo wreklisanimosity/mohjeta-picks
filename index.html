@@ -909,6 +909,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
 </style>
 <style>/* fix520 Mohjeta Live */
 .airc{position:relative;overflow:hidden;border:1px solid #ff4fd855;background:radial-gradient(120% 90% at 0% 0%,#ff4fd822,transparent 55%),radial-gradient(90% 80% at 100% 100%,#8a2be233,transparent 60%),linear-gradient(160deg,#1d0d33,#120820);box-shadow:0 0 0 1px #8a2be222,0 10px 30px #8a2be22e}
+.mjair{min-width:0;max-width:100%}.airc{animation:none!important;opacity:1}.airc{min-width:0;max-width:100%;box-sizing:border-box}.airrow{min-width:0}.airteams{min-width:0;max-width:100%}.airtm{min-width:0}.airchip{flex:none}.airhd{min-width:0}.airtt{min-width:0}   /* fix541: long team names made the box wider than the phone */
 .airc.onair{border-color:#ff4fd8aa;box-shadow:0 0 22px #ff4fd844,0 10px 30px #8a2be240}
 .airhd{display:flex;align-items:center;gap:10px;padding-bottom:10px}.airtt{display:flex;flex-direction:column;line-height:1.2}
 .airlogo{font-size:19px;font-weight:900;letter-spacing:.3px;background:linear-gradient(90deg,#fff,#ffb3f0 45%,#c58bff);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -4552,7 +4553,9 @@ function airName(g){let T=g.teams||[];if(T.length!==2||!T[0]||!T[1]){const m=((D
       let bd=null;try{bd=teamBadge(n);}catch(e){}if(bd)t.append(bd);t.append(el('span',(at?'@ ':'')+n,'airtn'));t.onclick=e=>{e.stopPropagation();openTeam(n,g.league);};return t;};
   b.append(mk(T[0]),mk(T[1],true));return b;}   // fix527: badges + names, one team per line
 function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.state==='LIVE'||g.state==='UPCOMING'||(g.lines||[]).length);
-  for(const box of document.querySelectorAll('.mjair')){box.replaceChildren();if(!gs.length)continue;
+  const ak=JSON.stringify([gs.map(g=>[g.id,g.state,g.why,(g.lines||[]).length,g.teams]),RAD.gid,!!(R&&R.on_air)]);   // fix541: redraw only when something changed (no flicker)
+  const boxes=[...document.querySelectorAll('.mjair')].filter(b=>b.dataset.ak!==ak||!b.firstChild===!!gs.length);
+  for(const box of boxes){box.dataset.ak=ak;box.replaceChildren();if(!gs.length)continue;
     const c=el('div',null,'card airc'+(R.on_air?' onair':''));const h=el('div',null,'airhd');const eq=el('span',null,'aireq');eq.setAttribute('aria-hidden','true');eq.append(el('i'),el('i'),el('i'),el('i'));
     const tt=el('div',null,'airtt');tt.append(el('b','Mohjeta Live','airlogo'),el('span','Her call, in her voice','hint small'));h.append(eq,tt,el('span',null,'sp'),el('span',R.on_air?'ON AIR':'TONIGHT','airchip'+(R.on_air?' on':'')));c.append(h);
     for(const g of gs){const r=el('div',null,'airrow'+(g.id===RAD.gid?' on':''));const info=el('div',null,'airi');info.append(airName(g),
