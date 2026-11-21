@@ -908,9 +908,25 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
 .drproj{font-weight:800;font-variant-numeric:tabular-nums;color:#e9b8ff}.drteam{margin:8px 0;padding:6px 8px;border-radius:12px;background:#ffffff08}.drteam summary{display:flex;align-items:center;gap:8px;cursor:pointer}
 </style>
 <style>/* fix520 Mohjeta Live */
-.airc{border-color:#ff4fd866}.airrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.airrow.on{background:#ff4fd810}
+.airc{position:relative;overflow:hidden;border:1px solid #ff4fd855;background:radial-gradient(120% 90% at 0% 0%,#ff4fd822,transparent 55%),radial-gradient(90% 80% at 100% 100%,#8a2be233,transparent 60%),linear-gradient(160deg,#1d0d33,#120820);box-shadow:0 0 0 1px #8a2be222,0 10px 30px #8a2be22e}
+.airc.onair{border-color:#ff4fd8aa;box-shadow:0 0 22px #ff4fd844,0 10px 30px #8a2be240}
+.airhd{display:flex;align-items:center;gap:10px;padding-bottom:10px}.airtt{display:flex;flex-direction:column;line-height:1.2}
+.airlogo{font-size:19px;font-weight:900;letter-spacing:.3px;background:linear-gradient(90deg,#fff,#ffb3f0 45%,#c58bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.aireq{display:inline-flex;align-items:flex-end;gap:3px;height:22px;width:26px;padding:6px;border-radius:12px;background:linear-gradient(135deg,#8a2be2,#ff4fd8);flex:none}
+.aireq i{flex:1;background:#fff;border-radius:2px;height:40%;animation:aireq 1s ease-in-out infinite}.aireq i:nth-child(2){animation-delay:-.3s}.aireq i:nth-child(3){animation-delay:-.6s}.aireq i:nth-child(4){animation-delay:-.15s}
+@keyframes aireq{0%,100%{height:30%}50%{height:100%}}
+.airchip{font-size:11px;font-weight:900;letter-spacing:1.5px;padding:5px 10px;border-radius:999px;border:1px solid #c58bff66;color:#e6d4ff;background:#ffffff0d}
+.airchip.on{color:#fff;border-color:transparent;background:linear-gradient(135deg,#ff2d55,#ff4fd8);animation:airpulse 1.6s ease-in-out infinite}
+@keyframes airpulse{0%,100%{box-shadow:0 0 0 0 #ff2d5566}50%{box-shadow:0 0 0 7px #ff2d5500}}
+.airrow{display:flex;align-items:center;gap:12px;padding:12px 10px;margin:0 -10px;border-top:1px solid #ffffff14;border-radius:12px;transition:background .2s}.airrow.on{background:linear-gradient(90deg,#ff4fd81f,transparent)}
+.airst{font-size:12px;font-weight:700;color:#bba6d6;margin-top:4px}.airst.live{color:#ff6b8b}.airq{font-size:12.5px;font-style:italic;color:#f3e6ff;opacity:.9;margin-top:3px;white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.airbtn{flex:none;border:1px solid #c58bff77;background:#ffffff0a;color:#fff;font:inherit;font-weight:800;font-size:14px;padding:9px 16px;border-radius:999px;cursor:pointer}
+.airbtn:not(:disabled):hover{background:#ffffff18}.airbtn:disabled{opacity:.55;cursor:default}.airbtn.on{border-color:transparent;background:linear-gradient(135deg,#8a2be2,#ff4fd8);box-shadow:0 4px 14px #ff4fd855}
+@media (prefers-reduced-motion:reduce){.aireq i,.airchip.on{animation:none}}
 .airi{flex:1;display:flex;flex-direction:column;min-width:0}
-.airteams{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px}.airtm{background:none;border:0;padding:2px 0;margin:0;font:inherit;font-weight:800;color:inherit;cursor:pointer;text-decoration:underline;text-decoration-color:#ff4fd866;text-underline-offset:3px}.airtm:hover,.airtm:focus-visible{color:#ff8fe6}.airi span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.airteams{display:flex;flex-direction:column;align-items:flex-start;gap:5px}.airtm{display:flex;align-items:center;gap:9px;background:none;border:0;padding:1px 0;margin:0;font:inherit;font-weight:800;font-size:15px;color:inherit;cursor:pointer;text-align:left;max-width:100%}
+.airtm .badge{width:30px!important;height:30px!important;min-width:30px;font-size:10px;border-radius:50%;object-fit:cover;flex:none;box-shadow:0 0 0 2px #ffffff14}.airtn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-bottom:1px dashed #ff4fd855}
+.airtm:hover .airtn,.airtm:focus-visible .airtn{color:#ff9ce9;border-bottom-color:#ff9ce9}.airi span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .airbar{position:fixed;left:8px;right:8px;bottom:calc(var(--navh) + var(--safe) + 8px);z-index:40;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;
  background:linear-gradient(135deg,#2a1145,#160a26);border:1px solid #ff4fd877;box-shadow:0 8px 24px #000a;max-width:560px;margin:0 auto}
 .airt{flex:1;display:flex;flex-direction:column;min-width:0}.airt span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.airic{font-size:18px}
@@ -4532,14 +4548,17 @@ function radioNext(){if(!RAD.gid||RAD.stream||(RAD.au&&!RAD.au.paused&&!RAD.au.e
 function airName(g){let T=g.teams||[];if(T.length!==2||!T[0]||!T[1]){const m=((D&&D.games)||[]).find(x=>String(x.id)===String(g.id));   // the site's own game: full team names right away
     T=m&&(m.teams||[]).length===2?(m.teams.some(t=>t.home)?[m.teams.find(t=>!t.home).name,m.teams.find(t=>t.home).name]:[m.teams[1].name,m.teams[0].name]):[];}   // ESPN order: home first
   if(T.length!==2||!T[0]||!T[1]||typeof openTeam!=='function')return el('b',g.name||'');   // fix525 (owner: tapping the teams in Mohjeta Live opens their card)
-  const b=el('b',null,'airteams');const mk=n=>{const t=el('button',n,'airtm');t.type='button';t.title='Open '+n;t.onclick=e=>{e.stopPropagation();openTeam(n,g.league);};return t;};
-  b.append(mk(T[0]),el('span',' @ ','hint'),mk(T[1]));return b;}
+  const b=el('div',null,'airteams');const mk=(n,at)=>{const t=el('button',null,'airtm');t.type='button';t.title='Open '+n;t.setAttribute('aria-label','Open '+n+' team card');
+      let bd=null;try{bd=teamBadge(n);}catch(e){}if(bd)t.append(bd);t.append(el('span',(at?'@ ':'')+n,'airtn'));t.onclick=e=>{e.stopPropagation();openTeam(n,g.league);};return t;};
+  b.append(mk(T[0]),mk(T[1],true));return b;}   // fix527: badges + names, one team per line
 function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.state==='LIVE'||g.state==='UPCOMING'||(g.lines||[]).length);
   for(const box of document.querySelectorAll('.mjair')){box.replaceChildren();if(!gs.length)continue;
-    const c=el('div',null,'card airc');const h=el('div',null,'row');h.append(el('b',(R.on_air?'🔴 ON AIR · ':'🎙 ')+'Mohjeta Live'),el('span',null,'sp'),el('span','Her call, in her voice','hint small'));c.append(h);
+    const c=el('div',null,'card airc'+(R.on_air?' onair':''));const h=el('div',null,'airhd');const eq=el('span',null,'aireq');eq.setAttribute('aria-hidden','true');eq.append(el('i'),el('i'),el('i'),el('i'));
+    const tt=el('div',null,'airtt');tt.append(el('b','Mohjeta Live','airlogo'),el('span','Her call, in her voice','hint small'));h.append(eq,tt,el('span',null,'sp'),el('span',R.on_air?'ON AIR':'TONIGHT','airchip'+(R.on_air?' on':'')));c.append(h);
     for(const g of gs){const r=el('div',null,'airrow'+(g.id===RAD.gid?' on':''));const info=el('div',null,'airi');info.append(airName(g),
-        el('span',g.state==='LIVE'?(g.why==='crunch'?'🔥 Crunch time':'Live now')+((g.lines||[]).length?' · “'+(g.lines[g.lines.length-1].text||'').slice(0,60)+'”':''):g.state==='UPCOMING'?'She calls this one tonight':'Final','hint small'));
-      const b=el('button',g.id===RAD.gid?'■ Stop':'▶ Listen','btn small'+(g.id===RAD.gid?'':' ghost'));b.type='button';b.disabled=g.state==='UPCOMING';b.onclick=()=>g.id===RAD.gid?radioStop():radioListen(g.id);r.append(info,b);c.append(r);}
+        el('span',g.state==='LIVE'?(g.why==='crunch'?'🔥 Crunch time':'● Live now'):g.state==='UPCOMING'?'She calls this one tonight':'Final','airst'+(g.state==='LIVE'?' live':'')));
+      if(g.state==='LIVE'&&(g.lines||[]).length)info.append(el('span','“'+(g.lines[g.lines.length-1].text||'').slice(0,90)+'”','airq'));
+      const b=el('button',g.id===RAD.gid?'■ Stop':'▶ Listen','airbtn'+(g.id===RAD.gid?' on':''));b.type='button';b.disabled=g.state==='UPCOMING';b.onclick=()=>g.id===RAD.gid?radioStop():radioListen(g.id);r.append(info,b);c.append(r);}
     box.append(c);}
   let bar=document.getElementById('airBar');if(!RAD.gid){if(bar)bar.remove();return;}
   if(!bar){bar=el('div',null,'airbar');bar.id='airBar';document.body.append(bar);}
