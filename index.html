@@ -4526,13 +4526,13 @@ function airCrowd(on){const C=(RAD.feed&&RAD.feed.crowd)||{};
   if(!on||RAD.stream||!C.bed){if(RAD.bed){try{RAD.bed.pause();}catch(e){}}RAD.bed=null;return;}
   if(!RAD.bed){const b=new Audio(C.bed);b.loop=true;b.volume=0.22;RAD.bed=b;b.play().catch(()=>{});}}
 function airRoar(){const C=(RAD.feed&&RAD.feed.crowd)||{};if(!C.roar||RAD.stream)return;try{if(!RAD.roar)RAD.roar=new Audio(C.roar);RAD.roar.volume=0.45;RAD.roar.currentTime=0;RAD.roar.play().catch(()=>{});}catch(e){}}
-function radioFeed(R){if(!R||!R.games)return;RAD.feed=R;if(RAD.gid&&!RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);if(g){for(const l of g.lines||[])if(!RAD.played.has(l.id)&&!RAD.q.some(x=>x.id===l.id))RAD.q.push(l);radioNext();}}
+function radioFeed(R){if(!R||!R.games)return;RAD.feed=R;if(RAD.gid&&!RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);if(g){for(const l of g.lines||[])if(!RAD.played.has(l.id)&&!RAD.q.some(x=>x.id===l.id)){if(l.url)RAD.q.push(l);else{RAD.played.add(l.id);RAD.last=l.text;}}radioNext();}}   // fix532: text-only lines show, nothing plays
   if(RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);const l=g&&(g.lines||[])[(g.lines||[]).length-1];if(l)RAD.last=l.text;}drawAir();}
 async function radioPoll(){try{const base=window.publicCdn?await publicCdn():null;if(!base)return;const r=await fetch(base+'/radio.json',{cache:'no-cache',signal:AbortSignal.timeout(6000)});if(r.ok)radioFeed(await r.json());}catch(e){}}
 function radioMeta(g){try{if(!('mediaSession' in navigator))return;navigator.mediaSession.metadata=new MediaMetadata({title:'Mohjeta Live',artist:(g&&g.name)||'Her call, in her voice',album:'Mohjeta',artwork:[{src:'icon-512.png',sizes:'512x512',type:'image/png'}]});
   navigator.mediaSession.setActionHandler('pause',()=>radioStop());navigator.mediaSession.setActionHandler('stop',()=>radioStop());}catch(e){}}
 function radioListen(gid){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===gid);if(!g)return;try{window.MJVoice&&MJVoice.stop();}catch(e){}
-  radioStop(true);RAD.gid=gid;RAD.stream=false;RAD.played=new Set();const L=g.lines||[];for(const l of L.slice(0,-2))RAD.played.add(l.id);RAD.q=L.slice(-2);   // catch up with the last two
+  radioStop(true);RAD.gid=gid;RAD.stream=false;RAD.played=new Set();const L=(g.lines||[]).filter(l=>l.url);for(const l of g.lines||[])RAD.played.add(l.id);RAD.q=L.slice(-2);for(const l of RAD.q)RAD.played.delete(l.id);   // catch up with the last two
   if(!RAD.q.length)toast('🎙 She’ll start talking when the game heats up. Keep this open, or tap 🔒 to listen with your phone locked.');
   clearInterval(RAD.poll);RAD.poll=setInterval(radioPoll,4000);radioPoll();radioMeta(g);airCrowd(true);radioNext();drawAir();}
 function radioLock(){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD.gid);if(!g)return;
