@@ -2778,6 +2778,7 @@ function gameView(g){const b=el('div');const ln=laneOf(g);
   const hero=el('div',null,'hero');const vs=el('div',null,'vs');
   g.teams.forEach((t,i)=>{const sd=el('div',null,'side tside');sd.setAttribute('role','button');sd.tabIndex=0;sd.title='Team schedule and synopsis';sd.onclick=()=>openTeam(t.name,g.league);const sc=g.state==='LIVE'||(g.state==='FINAL'&&t.score!=null);sd.append(teamBadge(t.name),teamPlate(t.name,!sc),el('span',t.record||'','hint small'));if(!sc)sd.append(el('small','📅 Team page','tsidehint'));vs.append(sd);if(i===0)vs.append(sc?scoreBug(g,true):el('span','vs','hint'));});
   hero.append(vs);if(g.state!=='LIVE'&&g.state!=='FINAL')hero.append(el('div',when(g.start),'hint'));b.append(hero);
+  try{const gl=gcLive(g);if(gl)b.append(gl);}catch(e){}   // fix564: the latest play, animated
   {const hub=el('div',null,'card hub');hub.append(el('div',null,'hubhead'));hub.firstChild.append(el('span','GAME HUB','hubeyebrow'),el('span','follow · watch · listen · save','hubsub'));   // fix401: one bold card
     hub.append(followRow(g));if(g.state!=='FINAL'){const wr=watchRow(g);if(wr)hub.append(wr);const rr=radioRow(g,false);if(rr)hub.append(rr);const cr=calRow(g);if(cr)hub.append(cr);}
     for(const f of [weatherRow,gameChatRow,ticketsRow]){try{const x=f(g);if(x)hub.append(x);}catch(e){}}b.append(hub);}   // fix413
@@ -4525,9 +4526,20 @@ function drResults(r){const out=el('div');const teams=DR.members.map(m=>{const p
 const RAD={feed:null,gid:null,q:[],played:new Set(),au:null,last:'',poll:null,stream:false,sa:null,bed:null,roar:null};
 // fix526 (owner: "add arena noise to her broadcast so it's like she's at the game"): the in-app player loops a quiet arena
 // murmur under her (feed.crowd.bed) and plays a crowd roar after her hype lines; the lock-screen stream has the crowd built in.
-function airCrowd(on){const C=(RAD.feed&&RAD.feed.crowd)||{};
-  if(!on||RAD.stream||!C.bed){if(RAD.bed){try{RAD.bed.pause();}catch(e){}}RAD.bed=null;return;}
-  if(!RAD.bed){const b=new Audio(C.bed);b.loop=true;b.volume=0.22;RAD.bed=b;b.play().catch(()=>{});}}
+function airGame(){return ((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD.gid)||{};}
+// fix563 (owner: crowd too loud + obvious loop, wants the sport's own sounds): the game's own beds (sneakers on the court,
+// stadium roar, skates), a different bed and starting point every 6-14 s; reactions (roar, DE-FENSE, groan) from line.fx.
+function airBeds(){const G=airGame().crowd,C=(RAD.feed&&RAD.feed.crowd)||{};return (G&&G.beds&&G.beds.length)?G.beds:(C.bed?[C.bed]:[]);}
+function airCrowd(on){const B=airBeds();clearTimeout(RAD.bedT);
+  if(!on||RAD.stream||!B.length){if(RAD.bed){try{RAD.bed.pause();}catch(e){}}RAD.bed=null;return;}
+  if(RAD.bed)return;const b=new Audio();b.loop=true;b.volume=0.18;RAD.bed=b;
+  const hop=()=>{if(RAD.bed!==b)return;const L=airBeds();if(!L.length)return;const u=L[Math.floor(Math.random()*L.length)];
+    if(b.src!==u){b.src=u;}b.onloadedmetadata=()=>{try{if(isFinite(b.duration)&&b.duration>2)b.currentTime=Math.random()*(b.duration-1);}catch(e){}};
+    try{if(isFinite(b.duration)&&b.duration>2)b.currentTime=Math.random()*(b.duration-1);}catch(e){}b.play().catch(()=>{});RAD.bedT=setTimeout(hop,6000+Math.random()*8000);};
+  hop();}
+function airFx(kind){const G=airGame().crowd||{},C=(RAD.feed&&RAD.feed.crowd)||{};if(RAD.stream)return;
+  const u=G[kind]||(kind==='groan'&&G.ooh)||(kind==='roar'&&C.roar);if(!u)return;
+  try{if(!RAD.fx)RAD.fx=new Audio();RAD.fx.src=u;RAD.fx.volume=0.4;RAD.fx.currentTime=0;RAD.fx.play().catch(()=>{});}catch(e){}}
 function airRoar(){const C=(RAD.feed&&RAD.feed.crowd)||{};if(!C.roar||RAD.stream)return;try{if(!RAD.roar)RAD.roar=new Audio(C.roar);RAD.roar.volume=0.45;RAD.roar.currentTime=0;RAD.roar.play().catch(()=>{});}catch(e){}}
 function radioFeed(R){if(!R||!R.games)return;RAD.feed=R;if(RAD.gid&&!RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);if(g){for(const l of g.lines||[])if(!RAD.played.has(l.id)&&!RAD.q.some(x=>x.id===l.id)){if(l.url)RAD.q.push(l);else{RAD.played.add(l.id);RAD.last=l.text;}}radioNext();}}   // fix532: text-only lines show, nothing plays
   if(RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);const l=g&&(g.lines||[])[(g.lines||[]).length-1];if(l)RAD.last=l.text;}drawAir();}
@@ -4546,7 +4558,7 @@ function radioLock(){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD
 function radioStop(quiet){airCrowd(false);if(RAD.au){try{RAD.au.pause();}catch(e){}}if(RAD.sa){try{RAD.sa.pause();RAD.sa.removeAttribute('src');RAD.sa.load();}catch(e){}}RAD.au=null;RAD.sa=null;RAD.stream=false;RAD.q=[];
   if(!quiet){RAD.gid=null;clearInterval(RAD.poll);RAD.poll=null;drawAir();}}
 function radioNext(){if(!RAD.gid||RAD.stream||(RAD.au&&!RAD.au.paused&&!RAD.au.ended)||!RAD.q.length)return;const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;RAD.cur=l;
-  if(!RAD.au)RAD.au=new Audio();const a=RAD.au;a.src=l.url;a.onended=()=>{if(l.mood==='hype')airRoar();radioNext();};a.onerror=()=>radioNext();a.play().catch(()=>{});
+  if(!RAD.au)RAD.au=new Audio();const a=RAD.au;a.src=l.url;a.onended=()=>{if(l.fx)airFx(l.fx);else if(l.mood==='hype')airFx('roar');radioNext();};a.onerror=()=>radioNext();a.play().catch(()=>{});
   if(!RAD.bed)airCrowd(true);drawAir();}   // one element, reused: keeps playing with the screen off on more phones
 function airName(g){let T=g.teams||[];if(T.length!==2||!T[0]||!T[1]){const m=((D&&D.games)||[]).find(x=>String(x.id)===String(g.id));   // the site's own game: full team names right away
     T=m&&(m.teams||[]).length===2?(m.teams.some(t=>t.home)?[m.teams.find(t=>!t.home).name,m.teams.find(t=>t.home).name]:[m.teams[1].name,m.teams[0].name]):[];}   // ESPN order: home first
@@ -4585,7 +4597,34 @@ function airViz(l){const v=l&&l.viz;if(!v)return null;const N=(x,d)=>{x=Number(x
       <line x1="${x}" y1="${y}" x2="${x}" y2="${y}" stroke="${c}" stroke-width="1.2" stroke-dasharray="3 2"><animate attributeName="x2" from="${x}" to="${gx}" dur="0.6s" fill="freeze"/><animate attributeName="y2" from="${y}" to="0" dur="0.6s" fill="freeze"/></line>
       <circle cx="${x}" cy="${y}" r="2.6" fill="#111"><animate attributeName="cx" from="${x}" to="${gx}" dur="0.6s" fill="freeze"/><animate attributeName="cy" from="${y}" to="0" dur="0.6s" fill="freeze"/></circle></svg>`;}
   if(!svg)return null;w.innerHTML=svg;w.append(el('span',(l.text||'').slice(0,80),'airvizl'));w.setAttribute('aria-hidden','false');return w;}
-function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.state==='LIVE'||g.state==='UPCOMING'||(g.lines||[]).length);
+// fix564 (owner: "Can we get that animation on all the cards"): every live game card shows its latest play, animated,
+// straight from ESPN's free game summary (read by the phone every 15 s while the card is open - no cost to us).
+const GC_PATH={NBA:'basketball/nba',WNBA:'basketball/wnba',NCAAB:'basketball/mens-college-basketball',NFL:'football/nfl',NCAAF:'football/college-football',NHL:'hockey/nhl'};
+function gcPlay(d,lg){const comp=((d.header||{}).competitions||[])[0]||{};const side={};for(const c of comp.competitors||[])side[String(c.id||(c.team||{}).id)]=c.homeAway==='home'?'h':'a';
+  const num=v=>typeof v==='number'&&isFinite(v)?v:null;
+  if(/^(NFL|NCAAF)$/.test(lg)){const dr=d.drives||{};let P=[];for(const x of dr.previous||[])P=P.concat(x.plays||[]);if(dr.current&&dr.current.plays){const k=new Set(P.map(x=>String(x.id)));P=P.concat(dr.current.plays.filter(x=>!k.has(String(x.id))));}
+    for(let i=P.length-1;i>=0;i--){const p=P[i],t=((p.type||{}).text||'').toLowerCase();if(/end of|timeout|coin|two-minute|end period/.test(t))continue;
+      const st=p.start||{},en=p.end||{};const tx=String(p.text||'').replace(/^\(\d+:\d+\)\s*/,'').replace(/#\d+\s+/g,'').replace(/^(No Huddle-)?Shotgun\s+/,'');const sid=String(((st.team||{}).id)||((p.team||{}).id)||'');const s=side[sid];const yte=num(st.yardsToEndzone);if(!s||yte==null)continue;
+      const f=100-yte;const eT=String(((en.team||{}).id)||sid);const eY=num(en.yardsToEndzone);let to=eY==null?f:(eT===sid?100-eY:eY);
+      const k=/touchdown/.test(t)||(/touchdown/i.test(p.text||'')&&p.scoringPlay)?'td':/interception/.test(t)?'int':/fumble/.test(t)?'fumble':/sack/.test(t)?'sack':/punt/.test(t)?'punt':/kickoff/.test(t)?'kickoff':/incomplet/.test(t)||/incomplete/i.test(p.text||'')?'incomplete':/field goal/.test(t)?'fg':/pass/.test(t)?'pass':/rush|run/.test(t)?'run':/penalty/.test(t)?'penalty':'play';
+      if(k==='td')to=100;return {id:String(p.id),text:tx,viz:{k:'fb',s,f,t:to,d:st.down,ds:st.distance,p:k}};}
+    return null;}
+  const P=d.plays||[];
+  if(/^(NBA|WNBA|NCAAB)$/.test(lg)){for(let i=P.length-1;i>=0;i--){const p=P[i],c=p.coordinate||{};if(!p.shootingPlay)continue;const x=num(c.x),y=num(c.y);
+      const ft=/free throw/i.test(((p.type||{}).text||'')+' '+(p.text||''));if(!ft&&(x==null||y==null||x<0||x>50||y<0||y>94))continue;
+      return {id:String(p.id),text:p.text||'',viz:{k:'bb',s:side[String((p.team||{}).id)]||'',x:ft?25:x,y:ft?19:y,m:!!p.scoringPlay,p:ft?'ft':'shot'}};}return null;}
+  if(lg==='NHL'){for(let i=P.length-1;i>=0;i--){const p=P[i],c=p.coordinate||{};const x=num(c.x),y=num(c.y);if(x==null||y==null||Math.abs(x)>100||Math.abs(y)>43)continue;
+      const t=((p.type||{}).text||'').toLowerCase();if(!/shot|goal/.test(t))continue;return {id:String(p.id),text:p.text||'',viz:{k:'hk',x,y,m:/goal/.test(t)&&!/no goal/.test(t),p:t}};}return null;}
+  return null;}
+function gcLive(g){const path=GC_PATH[g.league];if(!path||!g.id||g.state!=='LIVE')return null;const w=el('div',null,'card gclive');const hd=el('div',null,'row');hd.append(el('h4','📺 Latest play'),el('span',null,'sp'));
+  const fg=((RAD.feed&&RAD.feed.games)||[]).find(x=>String(x.id)===String(g.id));   // fix565: her call for this game (free voice or Mohjeta Live)
+  if(fg){const lb=el('button',RAD.gid===fg.id?'■ Stop':'▶ Listen','btn small');lb.type='button';lb.onclick=()=>{if(RAD.gid===fg.id){radioStop();lb.textContent='▶ Listen';}else{radioListen(fg.id);lb.textContent='■ Stop';}};hd.append(lb);}
+  w.append(hd);const box=el('div');box.append(el('p','Loading the latest play…','hint small'));w.append(box);
+  let lastId=null,tries=0;const tick=async()=>{if(!w.isConnected&&tries++>0)return;try{const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/'+path+'/summary?event='+encodeURIComponent(g.id),{cache:'no-cache',signal:AbortSignal.timeout(8000)});
+      if(r.ok){const pl=gcPlay(await r.json(),g.league);if(pl&&pl.id!==lastId){lastId=pl.id;const v=airViz(pl);box.replaceChildren(v||el('p',pl.text,'hint small'));}else if(!pl&&lastId===null){lastId='';box.replaceChildren(el('p','No play picture for this game yet.','hint small'));}}}catch(e){}
+    if(w.isConnected)setTimeout(tick,15000);};
+  setTimeout(tick,50);return w;}
+function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.why!=='free'&&(g.state==='LIVE'||g.state==='UPCOMING'||(g.lines||[]).length));   // fix565: free-voice games live on their game cards
   const ak=JSON.stringify([gs.map(g=>[g.id,g.state,g.why,(g.lines||[]).length,g.teams]),RAD.gid,!!(R&&R.on_air),RAD.cur&&RAD.cur.id]);   // fix541: redraw only when something changed (no flicker)
   const boxes=[...document.querySelectorAll('.mjair')].filter(b=>b.dataset.ak!==ak||!b.firstChild===!!gs.length);
   for(const box of boxes){box.dataset.ak=ak;box.replaceChildren();if(!gs.length)continue;
