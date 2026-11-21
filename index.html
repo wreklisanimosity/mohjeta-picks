@@ -918,7 +918,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
 .airchip{font-size:11px;font-weight:900;letter-spacing:1.5px;padding:5px 10px;border-radius:999px;border:1px solid #c58bff66;color:#e6d4ff;background:#ffffff0d}
 .airchip.on{color:#fff;border-color:transparent;background:linear-gradient(135deg,#ff2d55,#ff4fd8);animation:airpulse 1.6s ease-in-out infinite}
 @keyframes airpulse{0%,100%{box-shadow:0 0 0 0 #ff2d5566}50%{box-shadow:0 0 0 7px #ff2d5500}}
-.airrow{display:flex;align-items:center;gap:12px;padding:12px 10px;margin:0 -10px;border-top:1px solid #ffffff14;border-radius:12px;transition:background .2s}.airrow.on{background:linear-gradient(90deg,#ff4fd81f,transparent)}
+.airrow{display:flex;align-items:center;gap:12px;padding:12px 10px;margin:0 -10px;border-top:1px solid #ffffff14;border-radius:12px;transition:background .2s}.airrow.on{background:linear-gradient(90deg,#ff4fd81f,transparent)}.airrow.tap{cursor:pointer}.airrow.tap:hover,.airrow.tap:focus-visible{background:#ffffff0c;outline:none}.airrow.tap:active{background:#ffffff14}
 .airst{font-size:12px;font-weight:700;color:#bba6d6;margin-top:4px}.airst.live{color:#ff6b8b}.airq{font-size:12.5px;font-style:italic;color:#f3e6ff;opacity:.9;margin-top:3px;white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .airbtn{flex:none;border:1px solid #c58bff77;background:#ffffff0a;color:#fff;font:inherit;font-weight:800;font-size:14px;padding:9px 16px;border-radius:999px;cursor:pointer}
 .airbtn:not(:disabled):hover{background:#ffffff18}.airbtn:disabled{opacity:.55;cursor:default}.airbtn.on{border-color:transparent;background:linear-gradient(135deg,#8a2be2,#ff4fd8);box-shadow:0 4px 14px #ff4fd855}
@@ -4558,7 +4558,9 @@ function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.state==='L
     for(const g of gs){const r=el('div',null,'airrow'+(g.id===RAD.gid?' on':''));const info=el('div',null,'airi');info.append(airName(g),
         el('span',g.state==='LIVE'?(g.why==='crunch'?'🔥 Crunch time':'● Live now'):g.state==='UPCOMING'?'She calls this one tonight':'Final','airst'+(g.state==='LIVE'?' live':'')));
       if(g.state==='LIVE'&&(g.lines||[]).length)info.append(el('span','“'+(g.lines[g.lines.length-1].text||'').slice(0,90)+'”','airq'));
-      const b=el('button',g.id===RAD.gid?'■ Stop':'▶ Listen','airbtn'+(g.id===RAD.gid?' on':''));b.type='button';b.disabled=g.state==='UPCOMING';b.onclick=()=>g.id===RAD.gid?radioStop():radioListen(g.id);r.append(info,b);c.append(r);}
+      const b=el('button',g.id===RAD.gid?'■ Stop':'▶ Listen','airbtn'+(g.id===RAD.gid?' on':''));b.type='button';b.disabled=g.state==='UPCOMING';b.onclick=e=>{e.stopPropagation();g.id===RAD.gid?radioStop():radioListen(g.id);};r.append(info,b);
+      if(typeof openGame==='function'){r.classList.add('tap');r.tabIndex=0;r.setAttribute('role','button');r.setAttribute('aria-label','Open the game card: '+(g.name||''));   // fix528: tap the row -> game card
+        r.onclick=()=>openGame(g.id);r.onkeydown=e=>{if(e.target===r&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGame(g.id);}};}c.append(r);}
     box.append(c);}
   let bar=document.getElementById('airBar');if(!RAD.gid){if(bar)bar.remove();return;}
   if(!bar){bar=el('div',null,'airbar');bar.id='airBar';document.body.append(bar);}
