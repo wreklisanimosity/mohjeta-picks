@@ -4,7 +4,7 @@
    each game). One shared player: starting a clip stops the one before; tapping the playing button again stops it.
    The tour only talks when Sound is on (🔊 in the header); a How-to-play tap always plays (the person asked for it). */
 (()=>{
-  const V='v=2';   // fix538: clips remade in the voice actor's voice
+  const V='v=3';   // fix538: clips remade in the voice actor's voice
   let au=null,cur=null,curBtn=null;
   const soundOn=()=>{try{return localStorage.getItem('mohjeta.sound')!=='0';}catch(e){return true;}};
   function setBtn(b,on){if(!b)return;b.classList.toggle('playing',on);b.setAttribute('aria-pressed',String(on));
