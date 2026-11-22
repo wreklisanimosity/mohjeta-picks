@@ -4546,16 +4546,22 @@ function radioFeed(R){if(!R||!R.games)return;RAD.feed=R;if(RAD.gid&&!RAD.stream)
 async function radioPoll(){try{const base=window.publicCdn?await publicCdn():null;if(!base)return;const r=await fetch(base+'/radio.json',{cache:'no-cache',signal:AbortSignal.timeout(6000)});if(r.ok)radioFeed(await r.json());}catch(e){}}
 function radioMeta(g){try{if(!('mediaSession' in navigator))return;navigator.mediaSession.metadata=new MediaMetadata({title:'Mohjeta Live',artist:(g&&g.name)||'Her call, in her voice',album:'Mohjeta',artwork:[{src:'icon-512.png',sizes:'512x512',type:'image/png'}]});
   navigator.mediaSession.setActionHandler('pause',()=>radioStop());navigator.mediaSession.setActionHandler('stop',()=>radioStop());}catch(e){}}
+// fix569: while ▶ Listen is on, the phone checks in about every 45 s (random device code, no account) so her PC only spends
+// voice on games someone is actually hearing (Supabase rpc live_listen, supabase_live_listeners.sql).
+function radioPing(){if(!RAD.gid)return;let id='';try{id=localStorage.getItem('mjLid')||'';if(!/^[a-z0-9]{8,40}$/.test(id)){id=Math.random().toString(36).slice(2,12)+Date.now().toString(36);localStorage.setItem('mjLid',id);}}catch(e){id=RAD.lid||(RAD.lid=Math.random().toString(36).slice(2,12)+Date.now().toString(36));}
+  const go=c=>{if(c&&c.url&&c.anon_key)fetch(c.url+'/rest/v1/rpc/live_listen',{method:'POST',keepalive:true,headers:{apikey:c.anon_key,Authorization:'Bearer '+c.anon_key,'Content-Type':'application/json'},body:JSON.stringify({p_gid:String(RAD.gid),p_client:id,p_mode:RAD.stream?'lock':'app'})}).catch(()=>{});};
+  try{if(window._cfg)go(window._cfg);else fetch('live-config.json',{cache:'no-store'}).then(r=>r.json()).then(c=>{window._cfg=window._cfg||c;go(c);}).catch(()=>{});}catch(e){}}
+function radioPinging(on){clearInterval(RAD.pingT);RAD.pingT=null;if(on){radioPing();RAD.pingT=setInterval(radioPing,45000);}}
 function radioListen(gid){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===gid);if(!g)return;try{window.MJVoice&&MJVoice.stop();}catch(e){}
   radioStop(true);RAD.gid=gid;RAD.stream=false;RAD.played=new Set();const L=(g.lines||[]).filter(l=>l.url);for(const l of g.lines||[])RAD.played.add(l.id);RAD.q=L.slice(-2);for(const l of RAD.q)RAD.played.delete(l.id);   // catch up with the last two
-  if(!RAD.q.length)toast('🎙 She’ll start talking when the game heats up. Keep this open, or tap 🔒 to listen with your phone locked.');
-  clearInterval(RAD.poll);RAD.poll=setInterval(radioPoll,4000);radioPoll();radioMeta(g);airCrowd(true);radioNext();drawAir();}
+  if(!RAD.q.length)toast('🎙 She picks it up with the next play. Keep this open, or tap 🔒 to listen with your phone locked.');
+  clearInterval(RAD.poll);RAD.poll=setInterval(radioPoll,4000);radioPoll();radioMeta(g);airCrowd(true);radioNext();drawAir();radioPinging(true);}
 function radioLock(){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD.gid);if(!g)return;
   if(!g.stream){toast('Her lock-screen stream starts once the game is live.');return;}
   const a=document.createElement('audio');if(!a.canPlayType('application/vnd.apple.mpegurl')){toast('Lock-screen listening isn’t supported in this browser yet. Keep the page open, or try Safari.');return;}
-  if(RAD.au){try{RAD.au.pause();}catch(e){}}RAD.au=null;RAD.q=[];RAD.stream=true;airCrowd(false);a.src=g.stream;a.setAttribute('playsinline','');RAD.sa=a;
+  if(RAD.au){try{RAD.au.pause();}catch(e){}}RAD.au=null;RAD.q=[];RAD.stream=true;radioPing();airCrowd(false);a.src=g.stream;a.setAttribute('playsinline','');RAD.sa=a;
   a.play().then(()=>toast('🔒 You can lock your phone now. She keeps talking.')).catch(()=>toast('Tap ▶ again to start the stream.'));radioMeta(g);drawAir();}
-function radioStop(quiet){airCrowd(false);if(RAD.au){try{RAD.au.pause();}catch(e){}}if(RAD.sa){try{RAD.sa.pause();RAD.sa.removeAttribute('src');RAD.sa.load();}catch(e){}}RAD.au=null;RAD.sa=null;RAD.stream=false;RAD.q=[];
+function radioStop(quiet){radioPinging(false);airCrowd(false);if(RAD.au){try{RAD.au.pause();}catch(e){}}if(RAD.sa){try{RAD.sa.pause();RAD.sa.removeAttribute('src');RAD.sa.load();}catch(e){}}RAD.au=null;RAD.sa=null;RAD.stream=false;RAD.q=[];
   if(!quiet){RAD.gid=null;clearInterval(RAD.poll);RAD.poll=null;drawAir();}}
 function radioNext(){if(!RAD.gid||RAD.stream||(RAD.cur&&RAD.au&&!RAD.au.paused&&!RAD.au.ended)||!RAD.q.length)return;const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;RAD.cur=l;
   if(!RAD.au)RAD.au=new Audio();const a=RAD.au;a.src=l.url;clearTimeout(RAD.wd);
