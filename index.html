@@ -3255,6 +3255,7 @@ function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren
   try{B.twin=twinCard(d);}catch(e){}   // fix485
   try{txpFromPicks();B.favs=homeFavBlock();}catch(e){console.warn('home favs',e);}   // fix479
   try{B.today=homeTodayBlock(d);}catch(e){console.warn('home today',e);}try{B.bets=homeBetsBlock(d);}catch(e){console.warn('home bets',e);}   // fix476
+  try{B.asks=homeAskBlock();}catch(e){}   // fix591
   try{B.allteams=homeTeamsBlock();}catch(e){}   // fix473 (owner: "Put teams on the home page")
   try{B.live=homeLiveBlock(d,live);B.combos=homeCombosBlock(d);B.trades=homeTradesBlock(d);}catch(e){}   // fix420: extra blocks people can switch on   // fix410 (owner): leaderboard + winner on Home, free for everyone
   {const w=el('div');w.append(el('div','Go to','hsec'));const tiles=el('div',null,'htiles');for(const p of PAGES.slice(0,12))tiles.append(pageTile(p,d));w.append(tiles);
@@ -4727,7 +4728,7 @@ function gcLive(g){const path=GC_PATH[g.league];if(!path||!g.id||g.state!=='LIVE
     if(w.isConnected)setTimeout(tick,15000);};
   setTimeout(tick,50);return w;}
 function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.why!=='free'&&(g.state==='LIVE'||g.state==='UPCOMING'||(g.lines||[]).length));   // fix565: free-voice games live on their game cards
-  const ak=JSON.stringify([gs.map(g=>[g.id,g.state,g.why,((g.lines||[]).slice(-1)[0]||{}).id||'',g.teams]),RAD.gid,!!(R&&R.on_air),RAD.cur&&RAD.cur.id]);   // fix566: last line's id (the feed keeps 14 lines, so the count stopped changing and the box froze)   // fix541: redraw only when something changed (no flicker)
+  const ak=JSON.stringify([gs.map(g=>[g.id,g.state,g.why,((g.lines||[]).slice(-1)[0]||{}).id||'',g.teams,(g.take||{}).id||0]),RAD.gid,!!(R&&R.on_air),RAD.cur&&RAD.cur.id]);   // fix566: last line's id (the feed keeps 14 lines, so the count stopped changing and the box froze)   // fix541: redraw only when something changed (no flicker)
   const boxes=[...document.querySelectorAll('.mjair')].filter(b=>b.dataset.ak!==ak||!b.firstChild===!!gs.length);
   for(const box of boxes){box.dataset.ak=ak;box.replaceChildren();if(!gs.length)continue;
     const c=el('div',null,'card airc'+(R.on_air?' onair':''));const h=el('div',null,'airhd');const eq=el('span',null,'aireq');eq.setAttribute('aria-hidden','true');eq.append(el('i'),el('i'),el('i'),el('i'));
@@ -4738,7 +4739,8 @@ function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.why!=='fre
       if(g.state==='LIVE'){const vz=airViz(airVizLine(g),g.teams);if(vz)info.append(vz);}   // fix562: the play, animated
       const b=el('button',g.id===RAD.gid?'■ Stop':'▶ Listen','airbtn'+(g.id===RAD.gid?' on':''));b.type='button';b.disabled=g.state==='UPCOMING';b.onclick=e=>{e.stopPropagation();g.id===RAD.gid?radioStop():radioListen(g.id);};r.append(info,b);
       if(typeof openGame==='function'){r.classList.add('tap');r.tabIndex=0;r.setAttribute('role','button');r.setAttribute('aria-label','Open the game card: '+(g.name||''));   // fix528: tap the row -> game card
-        r.onclick=()=>openGame(g.id);r.onkeydown=e=>{if(e.target===r&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGame(g.id);}};}c.append(r);}
+        r.onclick=()=>openGame(g.id);r.onkeydown=e=>{if(e.target===r&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGame(g.id);}};}c.append(r);
+      if(g.take&&g.take.id){try{c.append(takeCard(g.take,{live:true}));}catch(e){}}}   // fix591: her live question
     box.append(c);}
   let bar=document.getElementById('airBar');if(!RAD.gid){if(bar)bar.remove();return;}
   if(!bar){bar=el('div',null,'airbar');bar.id='airBar';document.body.append(bar);}
@@ -4991,16 +4993,16 @@ function tradePopup(){if(document.querySelector('.trpop'))return;let seen=[];try
   setTimeout(()=>{p.classList.add('out');setTimeout(()=>p.remove(),400);},9000);}
 // ---------------- fix420 (owner: "give customers the option to customize their own home page" -> yes): ✏️ Edit Home.
 // Every Home section is a block people can show / hide and move; three presets; reset. Saved on this phone.
-const HOME_BLOCKS=[['twin','💵 Real vs paper','Real-money results next to the paper copy'],['favs','⭐ Your teams','Favorite team in each league + team rewards'],['today','🎯 Today’s picks','Every game she picks today'],['bets','💵 Her bets','Her open bets and what they pay'],['teams','⭐ My teams','Your followed teams tonight'],['voice','🎙 Her rundown','Her top picks in her own voice'],['stats','📊 Her numbers','Record, radio, tonight, combos'],
+const HOME_BLOCKS=[['twin','💵 Real vs paper','Real-money results next to the paper copy'],['favs','⭐ Your teams','Favorite team in each league + team rewards'],['asks','🗳 Mohjeta asks','Her question of the day: vote, see the split'],['today','🎯 Today’s picks','Every game she picks today'],['bets','💵 Her bets','Her open bets and what they pay'],['teams','⭐ My teams','Your followed teams tonight'],['voice','🎙 Her rundown','Her top picks in her own voice'],['stats','📊 Her numbers','Record, radio, tonight, combos'],
   ['next','⏰ Next up','Her next pick and the countdown'],['allteams','🏟 Teams','Every team by sport, with stats and rosters'],['live','● Live now','Every game being played right now'],['combos','🎟 Her open combos','Her combos waiting on results'],
   ['trades','🔁 Latest trades','New trades and her read'],['trivia','🧠 Daily trivia','5 quick questions a day'],['hub','🏟 Sports hub','Standings, trades, injuries, highlights'],
   ['board','🏆 Leaderboard','Pick’em leaders and the champion'],['tiles','🧭 Go to','Shortcuts to every page']];
-const HOME_DEFAULT={v:2,order:['favs','stats','twin','next','today','bets','teams','voice','allteams','live','combos','trades','trivia','hub','board','tiles'],hidden:['allteams','live','combos','trades','trivia','hub','board','tiles']};   // fix476 (owner): Home = today's picks and her bets; teams, hub, trivia, leaderboard live in Teams / All pages
+const HOME_DEFAULT={v:2,order:['favs','stats','asks','twin','next','today','bets','teams','voice','allteams','live','combos','trades','trivia','hub','board','tiles'],hidden:['allteams','live','combos','trades','trivia','hub','board','tiles']};   // fix476 (owner): Home = today's picks and her bets; teams, hub, trivia, leaderboard live in Teams / All pages
 const HOME_PRESETS={picks:['⚡ Picks first',['stats','next','combos','live','voice','tiles']],fan:['📺 Fan mode',['teams','live','stats','trades','hub','voice','tiles']],
   comp:['🏆 Competitor',['board','trivia','stats','combos','hub','tiles']]};
 let homeEditing=false;
 function homeLayout(){let L=null;try{L=JSON.parse(localStorage.getItem('mohjeta.homeLayout')||'null');}catch(e){}if(!L||!Array.isArray(L.order)||L.v!==2)L=JSON.parse(JSON.stringify(HOME_DEFAULT));
-  const ids=HOME_BLOCKS.map(b=>b[0]);L.order=L.order.filter(k=>ids.includes(k));for(const k of ids)if(!L.order.includes(k)){L.order.push(k);if(HOME_DEFAULT.hidden.includes(k))(L.hidden=L.hidden||[]).push(k);}L.hidden=(L.hidden||[]).filter(k=>ids.includes(k));return L;}
+  const ids=HOME_BLOCKS.map(b=>b[0]);L.order=L.order.filter(k=>ids.includes(k));for(const k of ids)if(!L.order.includes(k)){if(k==='asks'){const j=L.order.indexOf('stats');L.order.splice(j<0?1:j+1,0,k);}else L.order.push(k);if(HOME_DEFAULT.hidden.includes(k))(L.hidden=L.hidden||[]).push(k);}L.hidden=(L.hidden||[]).filter(k=>ids.includes(k));return L;}
 function homeLayoutSave(L){if(L)L.v=2;try{if(L)localStorage.setItem('mohjeta.homeLayout',JSON.stringify(L));else localStorage.removeItem('mohjeta.homeLayout');}catch(e){}}
 function homeLayoutApply(box,B){const L=homeLayout();if(homeEditing){box.append(homeEditor(L));return;}
   for(const k of L.order){if(L.hidden.includes(k))continue;const n=B[k];if(n)box.append(n);}
@@ -5506,6 +5508,42 @@ function favHero(t,lg,stage){const c=tfxColor(t),m=tfxMotif(t),xp=teamXP(t),tier
   const tp=el('button','Team ›','favbtn');tp.type='button';tp.onclick=e=>{e.stopPropagation();openTeam(t,lg);};const rw=el('button','Rewards ›','favbtn main');rw.type='button';rw.onclick=e=>{e.stopPropagation();openFavRewards(t,lg);};
   foot.append(tp,rw);h.append(foot);return h;}
 const pct0=v=>Math.round(v*100)+'%';
+// fix591 (owner: "it would be cool if she asked questions like that and let guests weigh in"; vote for everyone, written replies
+// for Premium members, "as long as there are no threats, shit talking is ok"): Mohjeta asks. Supabase takes / take_vote /
+// take_reply (supabase_takes.sql; threats and slurs are refused on the server). Daily question on Home, live ones in the
+// Mohjeta Live box during her featured game.
+const TK={daily:null,at:0,res:{}};
+function tkVoter(){try{let v=localStorage.getItem('mohjeta.voter');if(!v){v=('v'+Math.random().toString(36).slice(2)+Date.now().toString(36)).slice(0,24);localStorage.setItem('mohjeta.voter',v);}return v;}catch(e){return 'v'+Math.random().toString(36).slice(2,14);}}
+function tkMine(id){try{const v=localStorage.getItem('mohjeta.tk.'+id);return v==null?null:Number(v);}catch(e){return null;}}
+function tkStyle(){if(document.getElementById('tkcss'))return;const st=document.createElement('style');st.id='tkcss';st.textContent=
+  '.tkcard{border:1px solid color-mix(in srgb,var(--accent,#b44dff) 45%,transparent)}.tkq{font-size:1.05rem;font-weight:700;margin:.35rem 0 .6rem}'+
+  '.tkopts{display:grid;gap:.45rem}.tkopt{position:relative;overflow:hidden;text-align:left;padding:.65rem .8rem;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:inherit;font:inherit;cursor:pointer}'+
+  '.tkopt .tkbar{position:absolute;inset:0 auto 0 0;background:color-mix(in srgb,var(--accent,#b44dff) 30%,transparent);transition:width .5s}.tkopt span{position:relative}.tkopt b{position:relative;float:right}'+
+  '.tkopt.mine{border-color:var(--accent,#b44dff)}.tkher{margin-top:.5rem}.tkrep{margin-top:.7rem;display:grid;gap:.4rem}.tkrep .r{font-size:.9rem;padding:.4rem .6rem;border-radius:10px;background:rgba(255,255,255,.04)}'+
+  '.tkrep form{display:flex;gap:.4rem}.tkrep input{flex:1;min-width:0;padding:.55rem .7rem;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.25);color:inherit;font:inherit}';document.head.append(st);}
+async function tkResults(id){try{await supa();const {data}=await sb.rpc('take_results',{p_take:id});if(data)TK.res[id]=data;return data;}catch(e){return null;}}
+function takeCard(t,opt){tkStyle();opt=opt||{};const w=el('div',null,'card tkcard');w.append(el('small',opt.live?'🎙 She wants to know':'🗳 Mohjeta asks','hint small'),el('div',t.q,'tkq'));
+  const box=el('div',null,'tkopts');w.append(box);const her=el('div',null,'tkher hint small');w.append(her);const rep=el('div',null,'tkrep');w.append(rep);
+  const draw=r=>{const mine=tkMine(t.id),voted=mine!=null;box.replaceChildren();const tot=(r&&r.total)||0;
+    (t.options||[]).forEach((o,i)=>{const n=(r&&r.counts&&r.counts[i])||0,pc=tot?Math.round(100*n/tot):0;const b=el('button',null,'tkopt'+(mine===i?' mine':''));b.type='button';
+      const bar=el('i',null,'tkbar');bar.style.width=(voted?pc:0)+'%';b.append(bar,el('span',o+(mine===i?'  ✓':'')));if(voted)b.append(el('b',pc+'%'));
+      b.onclick=async()=>{try{await supa();const {data,error}=await sb.rpc('take_vote',{p_take:t.id,p_voter:tkVoter(),p_choice:i});if(error)throw error;try{localStorage.setItem('mohjeta.tk.'+t.id,String(i));}catch(e){}TK.res[t.id]=data;draw(data);}
+        catch(e){toast(String((e&&e.message)||'').includes('closed')?'Voting on this one is closed':'Could not vote right now');}};box.append(b);});
+    her.textContent=voted?((tot?tot+' vote'+(tot===1?'':'s')+' so far':'')+(t.her_take?' · Her take: '+t.her_take:'')):(opt.live?'Vote, and she reads the results on air next break.':'Tap your answer to see how everyone voted.');};
+  draw(TK.res[t.id]);if(tkMine(t.id)!=null)tkResults(t.id).then(r=>{if(r)draw(r);});
+  const loadReplies=async()=>{try{await supa();const {data}=await sb.from('take_replies').select('name,body,choice,at').eq('take_id',t.id).order('at',{ascending:false}).limit(opt.live?5:20);
+    rep.querySelectorAll('.r').forEach(x=>x.remove());for(const x of (data||[]).reverse()){const d=el('div',null,'r');d.append(el('b',(x.name||'Member')+(x.choice!=null&&t.options[x.choice]?' ('+t.options[x.choice]+')':'')+': '),document.createTextNode(x.body));rep.prepend(d);}}catch(e){}};
+  const prem=typeof ACCESS!=='undefined'&&ACCESS&&ACCESS.access;
+  if(prem){const f=document.createElement('form');const inp=el('input');inp.maxLength=160;inp.placeholder='Say your piece…';inp.title='Trash talk is fine. No threats.';const go=el('button','Post','btn small');go.type='submit';f.append(inp,go);
+    f.onsubmit=async e=>{e.preventDefault();const v=inp.value.trim();if(!v)return;go.disabled=true;try{await supa();const nm=(typeof myProfile!=='undefined'&&myProfile&&myProfile.display_name)||null;
+      const {error}=await sb.rpc('take_reply',{p_take:t.id,p_body:v,p_name:nm});if(error)throw error;inp.value='';loadReplies();}
+      catch(err){const m=String((err&&err.message)||'');toast(m.includes('not allowed')?'Trash talk is fine. Threats and slurs are not.':m.includes('slow')?'Easy, one every 20 seconds':m.includes('limit')?'That\'s 5 replies on this one':'Could not post that');}finally{go.disabled=false;}};rep.append(f);}
+  else{const b=el('button','💬 Members can reply ›','btn ghost small');b.type='button';b.onclick=()=>{if(typeof me!=='undefined'&&!me){show('chat');toast('Sign in first, then go Premium to reply');}else openMembership();};rep.append(b);}
+  loadReplies();return w;}
+async function tkDaily(){if(TK.daily&&Date.now()-TK.at<300000)return TK.daily;try{await supa();const {data}=await sb.from('takes').select('id,q,options,her_take,closes_at').eq('kind','daily').gt('closes_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(1);
+  TK.daily=(data||[])[0]||null;TK.at=Date.now();}catch(e){}return TK.daily;}
+function homeAskBlock(){const w=el('div',null,'tkhome');if(TK.daily)w.append(takeCard(TK.daily));
+  tkDaily().then(t=>{if(t&&w.isConnected&&!w.firstChild)w.append(takeCard(t));});return w;}
 function homeFavBlock(){const L=favList();const w=el('div',null,'favblock');
   const hd=el('div',null,'favhd');hd.append(el('b','Your teams'),el('button',L.length?'Edit':'Pick','favedit'));hd.lastChild.type='button';hd.lastChild.onclick=openFavPicker;w.append(hd);
   if(!L.length){const e=el('button',null,'favhero empty no-icons');e.type='button';e.onclick=openFavPicker;e.append(tfxIcon('bolt','favbig','#58a6ff'));
