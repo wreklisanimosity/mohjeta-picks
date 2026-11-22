@@ -4693,8 +4693,10 @@ function gcPlay(d,lg){const comp=((d.header||{}).competitions||[])[0]||{};const 
       const t=((p.type||{}).text||'').toLowerCase();if(!/shot|goal/.test(t))continue;return {id:String(p.id),text:p.text||'',viz:{k:'hk',x,y,m:/goal/.test(t)&&!/no goal/.test(t),p:t}};}return null;}
   return null;}
 function gcLive(g){const path=GC_PATH[g.league];if(!path||!g.id||g.state!=='LIVE')return null;const w=el('div',null,'card gclive');const hd=el('div',null,'row');hd.append(el('h4','📺 Latest play'),el('span',null,'sp'));
-  const fg=((RAD.feed&&RAD.feed.games)||[]).find(x=>String(x.id)===String(g.id));   // fix565: her call for this game (free voice or Mohjeta Live)
-  if(fg){const lb=el('button',RAD.gid===fg.id?'■ Stop':'▶ Listen','btn small');lb.type='button';lb.onclick=()=>{if(RAD.gid===fg.id){radioStop();lb.textContent='▶ Listen';}else{radioListen(fg.id);lb.textContent='■ Stop';}};hd.append(lb);}
+  // fix565/575: her call for this game (free voice or Mohjeta Live). The button is always there; it works as soon as the game is in her feed.
+  const lb=el('button',RAD.gid&&String(RAD.gid)===String(g.id)?'■ Stop':'▶ Listen','btn small');lb.type='button';
+  lb.onclick=()=>{const fg=((RAD.feed&&RAD.feed.games)||[]).find(x=>String(x.id)===String(g.id));if(RAD.gid&&String(RAD.gid)===String(g.id)){radioStop();lb.textContent='▶ Listen';return;}
+    if(!fg){toast('🎙 She’s getting set up on this game. Try again in a few seconds.');try{radioPoll();}catch(e){}return;}radioListen(fg.id);lb.textContent='■ Stop';};hd.append(lb);
   w.append(hd);const box=el('div');box.append(el('p','Loading the latest play…','hint small'));w.append(box);w.dataset.gid=String(g.id);
   const tm=(g.teams||[]).length===2?(g.teams.some(t=>t.home)?[g.teams.find(t=>!t.home).name,g.teams.find(t=>t.home).name]:[g.teams[1].name,g.teams[0].name]):[];
   w._follow=l=>{const v=airViz(l,tm);if(v){box.replaceChildren(v);}};   // fix572: while you listen, the picture follows HER call (same play she's saying)
