@@ -1159,7 +1159,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
   </section>
 </main>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Game details">
-  <div class="sheethead"><button class="back" id="sheetBack">‹ Back</button><span class="sp"></span><button class="share" id="sheetShare">Share</button></div>
+  <div class="sheethead"><button class="back" id="sheetBack">‹ Back</button><span class="sp"></span><button class="share" id="sheetRefresh" hidden aria-label="Refresh this game">↻ Refresh</button><button class="share" id="sheetShare">Share</button></div>
   <div class="sheetbody" id="sheetBody"></div>
 </div>
 <footer id="disclaimer">Entertainment only. Model estimates, not betting advice.</footer>
@@ -2596,11 +2596,21 @@ function pickCard(g,opts){opts=opts||{};const c=el('article',null,'card tap');if
 // ---------------- game sheet
 let sheetGame=null;
 function openSheet(build,title){const s=$('sheet');$('sheetBody').replaceChildren(build());s.classList.add('on');s.scrollTop=0;document.body.style.overflow='hidden';
-  $('sheetShare').hidden=!title||title==='Install';}
+  $('sheetShare').hidden=!title||title==='Install';$('sheetRefresh').hidden=title!=='Game';}
 function closeSheet(silent){const s=$('sheet');if(!s.classList.contains('on'))return;s.classList.remove('on');document.body.style.overflow='';sheetGame=null;
   if(!silent&&location.hash.startsWith('#game/'))history.back();}
 $('sheetBack').onclick=()=>{if(location.hash.startsWith('#game/'))history.back();else closeSheet(true);};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')$('sheetBack').click();});
+// fix576 (owner: "when you click on the game card there should be a way to refresh that page, it only scrolls"): ↻ Refresh
+// in the game card's header, or pull down at the top of the card - fresh picks/scores/breakdown, same spot on the page.
+async function refreshGameSheet(){const g=sheetGame;if(!g||refreshGameSheet.busy)return;refreshGameSheet.busy=true;const b=$('sheetRefresh');b.textContent='↻ …';
+  try{await load();}catch(e){}try{detAt=0;needDet();}catch(e){}try{radioPoll();}catch(e){}
+  const s=$('sheet'),y=s.scrollTop,id=g.id||g.name;try{if(sheetGame===g){$('sheetBody').replaceChildren(gameView(D.games.find(x=>String(x.id||x.name)===String(id))||g));s.scrollTop=y;}}catch(e){}
+  b.textContent='↻ Refresh';refreshGameSheet.busy=false;toast('Updated ✓');}
+$('sheetRefresh').onclick=refreshGameSheet;
+{const s=$('sheet');let y0=null,dd=0;s.addEventListener('touchstart',e=>{y0=(s.scrollTop<=0&&sheetGame)?e.touches[0].clientY:null;dd=0;},{passive:true});
+  s.addEventListener('touchmove',e=>{if(y0!=null)dd=e.touches[0].clientY-y0;},{passive:true});
+  s.addEventListener('touchend',()=>{if(y0!=null&&dd>90)refreshGameSheet();y0=null;},{passive:true});}
 $('sheetShare').onclick=async()=>{const g=sheetGame;   // a game: her pick + its link; any other sheet: the page link
   const text=g?(g.pick?'Mohjeta picks '+g.pick.team+' ('+pct(g.pick.chance)+') in '+(g.name||''):(g.name||'Mohjeta'))+'.':'Mohjeta: her picks, her record, all public.';
   shareIt({title:'Mohjeta Picks',text,url:g?siteLink('#game/'+encodeURIComponent(g.id||g.name)):siteLink('')});};
