@@ -932,6 +932,10 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
 .airtm:hover .airtn,.airtm:focus-visible .airtn{color:#ff9ce9;border-bottom-color:#ff9ce9}.airi span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .airbar{position:fixed;left:8px;right:8px;bottom:calc(var(--navh) + var(--safe) + 8px);z-index:40;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;
  background:linear-gradient(135deg,#2a1145,#160a26);border:1px solid #ff4fd877;box-shadow:0 8px 24px #000a;max-width:560px;margin:0 auto}
+.airbar.min{left:auto;right:12px;padding:0;border-radius:50%;width:52px;height:52px;margin:0;justify-content:center;background:none;border:0;box-shadow:none}
+.airmini{position:relative;width:52px;height:52px;border-radius:50%;border:1px solid #ff4fd8aa;background:linear-gradient(135deg,#3a1660,#1a0b2c);box-shadow:0 6px 18px #000b;font-size:22px;color:#fff;cursor:pointer;display:grid;place-items:center}
+.airmdot{position:absolute;top:6px;right:6px;width:10px;height:10px;border-radius:50%;background:#888}.airmdot.on{background:#ff4fd8;box-shadow:0 0 8px #ff4fd8;animation:airpulse 1.4s infinite}
+@keyframes airpulse{50%{opacity:.35}}.airmin{font-size:18px;line-height:1;padding:4px 10px}
 .airt{flex:1;display:flex;flex-direction:column;min-width:0}.airt span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.airic{font-size:18px}
 </style>
 </head>
@@ -4747,7 +4751,15 @@ function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.why!=='fre
   const g=(gs.find(x=>x.id===RAD.gid)||{});bar.replaceChildren();const t=el('div',null,'airt');t.append(el('b','🎙 '+(g.name||'Mohjeta Live')+(RAD.stream?' · 🔒':'')),el('span',RAD.last||'Waiting for the next big moment…','hint small'));
   const lk=el('button','🔒','btn small ghost');lk.type='button';lk.title='Keep playing with your phone locked';lk.setAttribute('aria-label','Lock-screen mode');lk.hidden=RAD.stream;lk.onclick=radioLock;
   const x=el('button','■','btn small');x.type='button';x.setAttribute('aria-label','Stop Mohjeta Live');x.onclick=()=>radioStop();
-  bar.append(el('span',RAD.stream||(RAD.au&&!RAD.au.paused)?'🔊':'⏳','airic'),t,lk,x);}
+  // fix592 (owner: "I'd like the guest to have ability to collapse the mohjeta live tool bar it get in the way when scrolling"):
+  // ⌄ shrinks it to a small round button in the corner (she keeps talking); tap it to open the bar again. Remembered on this phone.
+  let mini=false;try{mini=localStorage.getItem('mohjeta.airMin')==='1';}catch(e){}
+  const setMin=v=>{try{localStorage.setItem('mohjeta.airMin',v?'1':'0');}catch(e){}drawAir();};
+  bar.classList.toggle('min',mini);bar.onclick=null;
+  if(mini){const play=RAD.stream||(RAD.au&&!RAD.au.paused);const o=el('button',null,'airmini');o.type='button';o.setAttribute('aria-label','Open the Mohjeta Live bar');o.title='Mohjeta Live: tap to open';
+    o.append(el('span','🎙'),el('i',null,'airmdot'+(play?' on':'')));o.onclick=()=>setMin(false);bar.append(o);return;}
+  const mn=el('button','⌄','btn small ghost airmin');mn.type='button';mn.title='Hide the bar (she keeps talking)';mn.setAttribute('aria-label','Collapse the Mohjeta Live bar');mn.onclick=()=>setMin(true);
+  bar.append(el('span',RAD.stream||(RAD.au&&!RAD.au.paused)?'🔊':'⏳','airic'),t,lk,mn,x);}
 // ---------------- Prop Pick'em (fix372, owner: "can we add props to pickem" -> a daily featured 10 on its own record and
 // leaderboard). prop_pickem.py features the props and grades them from Kalshi; picks lock at tip-off (database rule).
 const PPK='mohjeta.propPicks';let PPROPS=null,ppAt=0,PPBOARD=null,ppBoardAt=0;
