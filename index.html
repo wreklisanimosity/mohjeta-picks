@@ -3011,9 +3011,15 @@ function renderRecord(d){const b=d.bets;if(!b)return;
   $('barsNote').textContent=keys.length?keys.length+' days · best '+signed(Math.max(...keys.map(k=>days[k])))+' · worst '+signed(Math.min(...keys.map(k=>days[k]))):'';
   // yesterday
   const dc=$('dayCard');dc.replaceChildren();const c=d.daily;
-  if(c&&(c.placed||c.finished)){const box=el('div',null,'card');box.append(el('h4',"Yesterday's report card · "+c.day));const tl=el('div',null,'tiles');const t=(l,v,k)=>{const x=el('div',null,'tile');x.append(l,el('b',v,k||''));tl.append(x);};
-    t('Picks',String(c.placed));t('Finished',c.wins+' won · '+c.losses+' lost');if(c.beat_price)t('Beat the later price',Math.round(c.beat_price.beat*100)+'%');box.append(tl);
-    dc.append(box);}
+  // fix584 (owner: "How is this her report card when she went 68 and 26"): the card counted only her BETS (8). It now counts
+  // every pick from yesterday's 6 AM-6 AM day, the same picks her record counts (bets + the picks she didn't bet).
+  {const now=new Date(),st=new Date(now);st.setHours(6,0,0,0);if(now<st)st.setDate(st.getDate()-1);const t1=st.getTime(),t0=t1-864e5;
+   let W=0,Lo=0,O=0;const seen=new Set();
+   for(const r of (b.rows||[])){if(r.carried)continue;const t=Date.parse(r.opened);if(!(t>=t0&&t<t1))continue;if(r.event)seen.add(r.event);if(r.pnl==null)O++;else if(r.pnl>0)W++;else if(r.pnl<0)Lo++;}
+   for(const x of ((d.skipped&&d.skipped.rows)||[])){const t=(x.at||0)*1000;if(!(t>=t0&&t<t1)||(x.event&&seen.has(x.event)))continue;if(x.result==='WON')W++;else if(x.result==='LOST')Lo++;else O++;}
+   const day=new Date(t0+12*36e5).toLocaleDateString('en-CA');
+   if(W+Lo+O){const box=el('div',null,'card');box.append(el('h4',"Yesterday's report card · "+day));const tl=el('div',null,'tiles');const t=(l,v,k)=>{const x=el('div',null,'tile');x.append(l,el('b',v,k||''));tl.append(x);};
+    t('Picks',String(W+Lo+O));t('Finished',W+' won · '+Lo+' lost');if(W+Lo)t('Win rate',pct(W/(W+Lo)));box.append(tl);dc.append(box);}}
   // by sport (in the window)
   const src=w?w.rows:b.rows.filter(r=>r.pnl!=null&&!r.carried);const m={};for(const r of src){const g=m[r.league]=m[r.league]||{league:r.league,n:0,won:0,net:0,spent:0};g.n++;g.spent+=r.paid||0;g.net+=r.pnl;if(r.pnl>0)g.won++;}
   if(period!=='today'){if(w){for(const x of skipWin(D,period).rows){const g=m[x.league]=m[x.league]||{league:x.league,n:0,won:0,net:0,spent:0};g.n++;if(x.result==='WON')g.won++;}}   // fix508
