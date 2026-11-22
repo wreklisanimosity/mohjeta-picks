@@ -4620,6 +4620,161 @@ function airVizLine(g){const L=(g.lines||[]);if(g.id===RAD.gid&&!RAD.stream&&RAD
 // fix570 (owner: "more details to the animation, add players and have them actually react to the game"): both teams on
 // the field / court / ice in their team colors; each play is acted out - the line pushes, the back runs, receivers run
 // routes, the ball flies, defenders chase and tackle, shooters rise, the crowd of players reacts to a score.
+// fix594 (owner: "more detail to the animations ... the dots are not accurate, use some game samples to come up with a much more
+// accurate model"; "I'd like the dots ... to depict what the text says"): the picture acts out ESPN's play text.
+// Football: formation (shotgun / under center), pass depth + side (short/deep left/middle/right), the receiver, run gap
+// (left end ... right end), pushed out of bounds, sacks, scrambles, kneels, spikes, kick distance / touchback / return.
+// Basketball: shot spot (ESPN feet from the rim), drive / cut / pull-up / step-back, assists (the pass comes from a
+// teammate at a real spot), blocks, and who got the rebound (the next play). Spacing and rebound odds from 14 NBA games
+// (2,290 shots, Nov 18-21 2026): corners / wings / slots / top / dunker spots; misses rebounded by the offense 26%
+// (31% on close misses); 86% of made threes and 57% of made twos assisted.
+function vizText(tx){const t=String(tx||''),L=t.toLowerCase();let m;const o={sg:/shotgun/.test(L),pistol:/pistol/.test(L)};
+  if((m=L.match(/pass (?:incomplete )?(short|deep) (left|middle|right)/)))o.dep=m[1][0],o.dir=m[2][0];
+  if(/up the middle/.test(L))o.gap='m';else if((m=L.match(/(left|right) (end|tackle|guard)/)))o.gap=m[1][0]+m[2][0];
+  o.ob=/pushed ob|ran ob|out of bounds/.test(L);o.scr=/scrambles/.test(L);o.kneel=/kneels/.test(L);o.spike=/spiked? the ball/.test(L);
+  if((m=L.match(/(?:kicks|punts) (\d+) yards/)))o.kd=+m[1];o.tb=/touchback/.test(L);o.fc=/fair catch/.test(L);o.onside=/onside/.test(L);
+  if((m=t.match(/(?:short|deep) (?:left|middle|right) to ([A-Z][A-Za-z.' -]*?)(?= to | for |\.|,| \(|$)/)))o.to=m[1].trim();
+  if((m=t.match(/\(([A-Z][A-Za-z.' -]+?)(?:;|\))/)))o.tk=m[1].trim();
+  return o;}
+function vizFb(v,A,H,u){const {N,dot,mv,path,r2}=u;const off=v.s==='a'?A:H,def=v.s==='a'?H:A,d=v.s==='a'?1:-1,R=1.2;
+  const X=y=>10+(d===1?Math.max(0,Math.min(100,y)):100-Math.max(0,Math.min(100,y)));const tx=vizText(v.tx);
+  const p=String(v.p||'play'),f=X(N(v.f)),td=/td/.test(p),gain=N(v.t,v.f)-N(v.f);let t=X(N(v.t,v.f));
+  const Y=lat=>Math.max(1.5,Math.min(34.5,18-d*lat*0.675));const P=(dx,lat)=>[f+d*dx,Y(lat)];   // dx yards past the line, lat yards to the offense's left
+  let lines='',out='',ball='',txt='',extra=[];
+  for(let y=10;y<=110;y+=10)lines+=`<line x1="${y}" y1="1" x2="${y}" y2="35" stroke="#ffffff38" stroke-width="${y===60?0.8:0.35}"/>`;
+  for(let y=15;y<110;y+=10)lines+=`<line x1="${y}" y1="1" x2="${y}" y2="2.2" stroke="#ffffff30" stroke-width=".3"/><line x1="${y}" y1="33.8" x2="${y}" y2="35" stroke="#ffffff30" stroke-width=".3"/>`;
+  for(let y=11;y<110;y++)if(y%5)lines+=`<line x1="${y}" y1="13.5" x2="${y}" y2="14.2" stroke="#ffffff22" stroke-width=".2"/><line x1="${y}" y1="21.8" x2="${y}" y2="22.5" stroke="#ffffff22" stroke-width=".2"/>`;   // hash marks
+  const fd=N(v.ds)>0&&N(v.ds)<40&&!td&&!/kick|punt/.test(p)?`<line x1="${X(N(v.f)+N(v.ds))}" y1="1" x2="${X(N(v.f)+N(v.ds))}" y2="35" stroke="#ffd400" stroke-width=".8"/>`:'';
+  const B=(x,y,an)=>`<ellipse cx="${r2(x)}" cy="${r2(y)}" rx="1.05" ry=".68" fill="#8b4a1f" stroke="#fff" stroke-width=".28">${an||''}</ellipse>`;
+  const pa=(pts,b,dur)=>path(pts.map(q=>[q[0],q[1]]),b,dur);
+  if(p==='fg'){const hold=f-d*7,post=d===1?119:1;
+    [4,2,0,-2,-4,-6,6].forEach(l=>{const q=P(-1,l);out+=dot(q[0],q[1],off,R,'');});[5,2,-2,-5,7,-7].forEach(l=>{const q=P(1.5,l);out+=dot(q[0],q[1],def,R,mv(q[0],q[1],q[0]-d*1,q[1],0.1,0.5));});
+    out+=dot(hold,18,off,R,'')+dot(hold-d*2.5,16.5,off,R,mv(hold-d*2.5,16.5,hold-d*0.5,17.6,0,0.35));
+    lines+=`<line x1="${post}" y1="14.5" x2="${post}" y2="21.5" stroke="#ffd400" stroke-width=".9"/>`;
+    ball=B(hold,18,pa([[hold,18],[post,18]],0.35,1.2)+`<animate attributeName="rx" values="1.05;2;1.3" begin="0.35s" dur="1.2s" fill="freeze"/><animate attributeName="ry" values=".68;1.3;.85" begin="0.35s" dur="1.2s" fill="freeze"/>`);txt=/no good|blocked/i.test(v.tx||'')?'NO GOOD':'GOOD!';t=post;}
+  else if(/kick|punt/.test(p)){   // the kick lands where the text says, the returner brings it back to where the play ended
+    const kick=p==='kickoff',kd=tx.kd||(kick?62:45),from=kick?f:f-d*14,land=tx.tb?X(kick?110:105):Math.max(1,Math.min(119,from+d*kd));
+    const end=tx.tb||tx.fc?land:t;const cover=[-22,-15,-9,-4,4,9,15,22,-27,27];
+    if(!kick){[4,2,0,-2,-4].forEach(l=>{const q=P(-1,l);out+=dot(q[0],q[1],off,R,mv(q[0],q[1],end-d*3,q[1]*0.6+18*0.4,0.6,1.6));});out+=dot(from,18,off,R,'');}
+    cover.forEach((l,i)=>{const q=kick?P(-1,l):P(-1,l*1.3);if(!kick&&Math.abs(l)<5)return;out+=dot(q[0],q[1],off,R,mv(q[0],q[1],end-d*(1.5+(i%3)),18+l*0.18,0.25,1.7));});
+    [-12,0,12,-6,6].forEach((l,i)=>{const q=[land-d*(10+(i%2)*4),Y(-d*l)];out+=dot(q[0],q[1],def,R,mv(q[0],q[1],end+d*(2+i%2),18+l*0.25,0.9,1.0));});
+    out+=dot(land,18,def,R+0.1,tx.tb||tx.fc?'':mv(land,18,end,18,1.6,0.9));
+    ball=B(from,18,pa([[from,18],[(from+land)/2,18],[land,18]].concat(tx.tb||tx.fc?[]:[[end,18]]),0.2,tx.tb||tx.fc?1.4:2.3)+`<animate attributeName="rx" values="1.05;2.1;1.05" begin="0.2s" dur="1.2s" fill="freeze"/><animate attributeName="ry" values=".68;1.4;.68" begin="0.2s" dur="1.2s" fill="freeze"/>`);   // top-down: hang time shows as the ball growing
+    txt=tx.tb?'TOUCHBACK':tx.fc?'FAIR CATCH':kick?'KICKOFF':'PUNT';t=end;extra=[from,land];}
+  else{   // a snap: 11 on 11 in the formation the text names
+    const uc=!tx.sg&&!tx.pistol,qb0=uc?P(-1.2,0):P(tx.pistol?-4:-5,0),rb0=uc||tx.pistol?P(-7,0):P(-5,-2.3);
+    const OL=[4,2,0,-2,-4].map(l=>P(-1,l)),TE=P(-1,-6.5),WRL=P(-1,20),WRR=P(-1,-20),SLOT=P(-1.5,12);
+    const nickel=N(v.ds,10)>=7||!!tx.dep,DL=[5,1.5,-1.5,-5].map(l=>P(1,l)),LB=(nickel?[4,-4]:[6,0,-6]).map(l=>P(5,l)),CB=[P(6,20),P(6,-20)],NB=P(5,12),
+          S=N(v.ds,10)<=2&&!tx.dep?[P(13,0),P(7,-8)]:[P(12,10),P(12,-10)];
+    const pass=/pass|incomplete|int/.test(p)||!!tx.dep||(td&&/pass/i.test(v.tx||''));const sack=p==='sack'||/sacked/i.test(v.tx||'');
+    const kneel=tx.kneel,spike=tx.spike,scr=tx.scr&&!pass;const end=td?X(100)-d*1:t;
+    const gl={le:9,lt:4.5,lg:2,m:0,rg:-2,rt:-4.5,re:-9}[tx.gap]??(Math.random()<.5?2:-2);
+    if(kneel||spike){OL.forEach(q=>out+=dot(q[0],q[1],off,R,''));DL.forEach(q=>out+=dot(q[0],q[1],def,R,''));[TE,WRL,WRR,rb0].forEach(q=>out+=dot(q[0],q[1],off,R,''));LB.concat(CB,S).forEach(q=>out+=dot(q[0],q[1],def,R,''));
+      out+=dot(qb0[0],qb0[1],off,R,kneel?`<animate attributeName="r" values="${R};${R*0.6}" begin=".5s" dur=".3s" fill="freeze"/>`:'');
+      ball=B(f,18,kneel?mv(f,18,qb0[0],18,0.2,0.3):pa([[f,18],[qb0[0],18],[qb0[0]+d*1,18]],0.2,0.6));txt=kneel?'KNEEL':'SPIKE';}
+    else if(sack||scr){const drop=uc?P(-6,0):P(-6.5,0);const sx=sack?end:drop[0];const side=Math.random()<.5?1:-1;
+      OL.forEach((q,i)=>out+=dot(q[0],q[1],off,R,mv(q[0],q[1],q[0]-d*1.6,q[1]+(i-2)*0.3,0.15,0.6)));
+      DL.forEach((q,i)=>out+=dot(q[0],q[1],def,R,i===(side>0?0:3)&&sack?pa([q,[q[0]-d*1,q[1]+side*-3],[sx+d*0.5,18]],0.2,1.4):mv(q[0],q[1],q[0]-d*1.5,q[1],0.2,0.8)));
+      if(scr){const lat=tx.gap?gl*1.6:side*8;out+=dot(qb0[0],qb0[1],off,R+0.1,pa([qb0,drop,[drop[0],Y(lat*0.5)],[end,Y(lat)]],0.1,2.0));ball=B(f,18,pa([[f,18],qb0,drop,[drop[0],Y(lat*0.5)],[end,Y(lat)]],0,2.1));
+        LB.forEach((q,i)=>out+=dot(q[0],q[1],def,R,mv(q[0],q[1],end+d*(1+i),Y(lat)+(i-1)*2,0.8,1.3)));txt='SCRAMBLE';}
+      else{out+=dot(qb0[0],qb0[1],off,R+0.1,pa([qb0,drop,[sx,18]],0.1,1.6));ball=B(f,18,pa([[f,18],qb0,drop,[sx,18]],0,1.6));txt='SACK';
+        LB.forEach((q,i)=>out+=dot(q[0],q[1],def,R,mv(q[0],q[1],sx+d*(2+i),18+(i-1)*3,0.6,1.1)));}
+      [TE,WRL,WRR,SLOT].forEach((q,i)=>out+=dot(q[0],q[1],off,R,mv(q[0],q[1],q[0]+d*(6+i*2),q[1],0.2,1.4)));out+=dot(rb0[0],rb0[1],off,R,mv(rb0[0],rb0[1],f-d*2,Y(-3),0.2,0.6));
+      CB.concat([NB],S).forEach((q,i)=>out+=dot(q[0],q[1],def,R,mv(q[0],q[1],q[0]+d*(3+i),q[1],0.2,1.4)));}
+    else if(pass){   // the pass goes where the text says: short / deep, left / middle / right, to the named receiver's spot
+      const dir=tx.dir||'m',dep=tx.dep||(Math.abs(gain)>=16?'d':'s'),inc=p==='incomplete'||/incomplete/i.test(v.tx||''),int=p==='int'||/intercept/i.test(v.tx||'');
+      const tgt=dir==='l'?(dep==='d'?WRL:SLOT):dir==='r'?(dep==='d'?WRR:TE):(dep==='d'?SLOT:TE);
+      const clat=dir==='l'?(dep==='d'?17:12):dir==='r'?(dep==='d'?-17:-11):(dep==='d'?3:-2);
+      let air=inc||int?(dep==='d'?24:7):(dep==='d'?Math.max(16,Math.min(gain,gain-3)):Math.max(1,Math.min(gain,3+Math.random()*4)));if(td&&!inc)air=Math.min(air,N(100)-N(v.f));
+      const cp=P(air,clat),drop=uc?P(-7,0):P(-6.5,0),rel=0.95,arr=dep==='d'?1.85:1.45;
+      OL.forEach((q,i)=>out+=dot(q[0],q[1],off,R,mv(q[0],q[1],q[0]-d*1.8,q[1]+(i-2)*0.2,0.15,0.7)));
+      DL.forEach((q,i)=>out+=dot(q[0],q[1],def,R,mv(q[0],q[1],drop[0]+d*(2.5+(i%2)),18+(i-1.5)*2.4,0.2,1.4)));
+      out+=dot(qb0[0],qb0[1],off,R+0.1,mv(qb0[0],qb0[1],drop[0],18,0.1,0.75));out+=dot(rb0[0],rb0[1],off,R,mv(rb0[0],rb0[1],f-d*2.5,Y(-3),0.2,0.7));   // back stays in to block
+      const yac=inc||int?cp:[end,tx.ob?(cp[1]<18?1.8:34.2):cp[1]+(18-cp[1])*0.25];
+      [WRL,WRR,SLOT,TE].forEach(q=>{if(q===tgt){out+=dot(q[0],q[1],off,R+0.12,pa(inc||int?[q,cp]:[q,cp,yac],0.15,inc||int?arr:arr+0.8));return;}
+        const go=[q[0]+d*(10+Math.random()*6),q[1]+(q===TE?-d*2:0)];out+=dot(q[0],q[1],off,R,mv(q[0],q[1],go[0],go[1],0.15,1.6));});
+      const dbs=[CB[0],CB[1],NB,S[0],S[1]].filter(Boolean);const cover=dbs.reduce((a,b)=>Math.hypot(b[0]-cp[0],b[1]-cp[1])<Math.hypot(a[0]-cp[0],a[1]-cp[1])?b:a);
+      dbs.forEach((q,i)=>{if(q===cover){const at=int?cp:[cp[0]+d*(inc?0.4:1.4),cp[1]+(inc?0.6:1)];out+=dot(q[0],q[1],def,R+0.05,int?pa([q,at,[at[0]-d*Math.max(3,Math.abs(gain)||6),at[1]]],0.2,arr+0.9):inc?mv(q[0],q[1],at[0],at[1],0.2,arr-0.15):pa([q,at,[yac[0]+d*1.2,yac[1]]],0.2,arr+0.8));return;}
+        out+=dot(q[0],q[1],def,R,mv(q[0],q[1],(inc||int?q[0]:yac[0]+d*(2+i))-(inc||int?0:0),inc||int?q[1]+(cp[1]-q[1])*0.3:yac[1]+(i-2)*2.2,0.35,inc||int?1.2:arr+0.8));});
+      LB.forEach((q,i)=>out+=dot(q[0],q[1],def,R,mv(q[0],q[1],q[0]+d*4,q[1]+(cp[1]-q[1])*0.25,0.3,1.0)));
+      const bx=int?[cp[0]-d*Math.max(3,Math.abs(gain)||6),cp[1]]:yac;
+      ball=B(f,18,pa(inc?[[f,18],qb0,drop,cp,[cp[0]+d*2,cp[1]+1]]:int?[[f,18],qb0,drop,cp,bx]:[[f,18],qb0,drop,cp,yac],0,inc?arr+0.3:arr+0.85));
+      if(inc)txt='INCOMPLETE';if(int)txt='PICKED OFF';extra=[cp[0]];}
+    else{   // run: the back takes it through the gap the text names (left end ... right end), pushed out of bounds goes to the sideline
+      const hole=P(0,gl),lat=tx.ob?(gl>=0?24:-24):gl*1.25,fin=[end,Y(lat)];
+      OL.forEach((q,i)=>{const push=[q[0]+d*1.6,q[1]-d*(gl>0?0.5:gl<0?-0.5:0)*0.675];out+=dot(q[0],q[1],off,R,mv(q[0],q[1],push[0],push[1],0.15,0.6));});
+      out+=dot(TE[0],TE[1],off,R,mv(TE[0],TE[1],TE[0]+d*1.5,TE[1],0.15,0.6));
+      DL.forEach((q,i)=>out+=dot(q[0],q[1],def,R,mv(q[0],q[1],q[0]+d*0.4,q[1],0.15,0.6)));
+      out+=dot(qb0[0],qb0[1],off,R,mv(qb0[0],qb0[1],qb0[0]-d*1,Y(-gl*0.4),0.15,0.6));
+      out+=dot(rb0[0],rb0[1],off,R+0.12,pa([rb0,[qb0[0]-d*0.5,Y(gl*0.3)],hole,fin],0.15,1.9),'rb');
+      ball=B(f,18,pa([[f,18],qb0,[qb0[0]-d*0.5,Y(gl*0.3)],hole,fin],0,1.95));
+      const near=LB.reduce((a,b)=>Math.abs(b[1]-hole[1])<Math.abs(a[1]-hole[1])?b:a);
+      LB.forEach((q,i)=>out+=dot(q[0],q[1],def,R,q===near&&!td?pa([q,[hole[0]+d*2,hole[1]],[fin[0]+d*0.8,fin[1]]],0.3,1.75):mv(q[0],q[1],fin[0]+d*(2+i),fin[1]+(i-1)*2.5,0.35,1.7)));
+      [WRL,WRR,SLOT].forEach(q=>out+=dot(q[0],q[1],off,R,mv(q[0],q[1],q[0]+d*4,q[1]+(18-q[1])*0.08,0.2,1.2)));
+      CB.concat([NB],S).forEach((q,i)=>{if(!nickel&&q===NB)return;out+=dot(q[0],q[1],def,R,mv(q[0],q[1],fin[0]+d*(td?3:2.5+i),fin[1]+(q[1]<18?-3:3),0.4,1.6));});
+      if(gain<=0&&!td)txt='STUFFED';}
+    if(p==='fumble')txt='FUMBLE';}
+  if(td)txt='TOUCHDOWN';if(p==='penalty')txt='FLAG';
+  const flag=p==='penalty'?`<path d="M${f} 18 l0 -5 l3 1.2 l-3 1.2" fill="#ffd400" stroke="#ffd400" stroke-width=".3"><animateTransform attributeName="transform" type="rotate" values="0 ${f} 18;8 ${f} 18;0 ${f} 18" dur=".6s" repeatCount="3"/></path>`:'';
+  const tcol=td?'#39ff8f':/INCOMPLETE|PICKED|SACK|STUFFED|FUMBLE|NO GOOD/.test(txt)?'#ff5a6a':'#ffd400';
+  const xs=[f,t].concat(extra).filter(isFinite);let lo=Math.min(...xs)-12,hi=Math.max(...xs)+12;if(hi-lo<64){const c=(lo+hi)/2;lo=c-32;hi=c+32;}lo=Math.max(0,Math.min(lo,120-(hi-lo)));hi=Math.min(120,lo+Math.max(64,hi-lo));const cx=r2((lo+hi)/2);
+  return `<svg viewBox="${r2(lo)} 0 ${r2(hi-lo)} 36" role="img" aria-label="Field: the play"><rect width="120" height="36" fill="#166534"/><rect width="10" height="36" fill="${d===1?def:off}" opacity=".35"/><rect x="110" width="10" height="36" fill="${d===1?off:def}" opacity=".35"/>${lines}${fd}
+    <line x1="${f}" y1="1" x2="${f}" y2="35" stroke="#5ab4ff" stroke-width=".8"/>${out}${ball}${flag}
+    ${txt?`<text x="${cx}" y="7" font-size="4.6" text-anchor="middle" fill="${tcol}" font-weight="800" opacity="0" stroke="#000" stroke-width=".25">${txt}<animate attributeName="opacity" from="0" to="1" begin="1.7s" dur=".3s" fill="freeze"/></text>`:''}</svg>`;}
+function vizBb(v,A,H,u){const {N,dot,mv,path,hop,r2}=u;const off=v.s==='h'?H:A,def=v.s==='h'?A:H,R=1.55;const T=String(v.tx||''),L=T.toLowerCase(),NX=String(v.nx||'').toLowerCase();
+  const ft=v.p==='ft'||/free throw/.test(L),m=!!v.m;const Z=5.25;   // ESPN x 0-50, y feet out from the rim; screen y = y + 5.25 (rim 5.25 ft off the baseline)
+  let ex=Math.max(0.8,Math.min(49.2,N(v.x,25))),ey=N(v.y,10);if(ey>47)ey=94-ey;ey=Math.max(0,Math.min(30,ey));if(ft){ex=25;ey=13.75;}
+  const S=(x,y)=>[x,y+Z],rim=S(25,0),sh=S(ex,ey),dist=Math.hypot(ex-25,ey);
+  const three=/three point/.test(L)||(!ft&&dist>22.3),close=dist<8,dunk=/dunk|alley oop/.test(L),drive=/driving|running/.test(L),cut=/cutting|alley oop/.test(L),
+        pull=/pullup|step back|fadeaway|turnaround/.test(L),put=/putback|tip/.test(L),ast=(T.match(/\(([^()]+?) assists\)/)||[])[1],blk=/block/.test(L+' '+NX);
+  const SP={cL:[1.5,1.5],cR:[48.5,1.5],wL:[8,18.5],wR:[42,18.5],sL:[16,24],sR:[34,24],top:[25,27],dL:[20,2],dR:[30,2],eL:[19,13],eR:[31,13]};
+  let out='',c=m?'#39ff8f':'#ff5a6a',landAt=1.6;const toward=(q,k)=>[q[0]+(rim[0]-q[0])*k,q[1]+(rim[1]-q[1])*k];
+  if(ft){const lane=[[17.6,12],[32.4,12],[17.6,15.5],[32.4,15.5],[17.6,19],[32.4,19]].map(q=>[q[0],q[1]]);
+    lane.forEach((q,i)=>out+=dot(q[0],q[1],i<4?def:off,R,m?'':mv(q[0],q[1],q[0]+(25-q[0])*0.45,q[1]-3,1.35,0.4)));out+=dot(sh[0],sh[1],off,R+0.15,'');
+    [[13,26],[37,26]].forEach((q,i)=>out+=dot(q[0],q[1],i?def:off,R,''));}
+  else{
+    // start spot: drives start out on the perimeter, cuts from the corner / dunker, pull-ups a step away
+    const ang=Math.atan2(ey,ex-25),start=drive&&!put?S(25+Math.cos(ang)*24,Math.max(3,Math.sin(ang)*24)):cut?S(ex<25?8:42,ex<25?16:16):pull?S(ex+(ex<25?3:-3),ey+2):sh;
+    // the other four take the real spacing spots (farthest from the ball first, one big on the far dunker spot most of the time)
+    let pool=Object.values(SP).map(q=>S(q[0],q[1]));const far=(ex<25?SP.dR:SP.dL);const big=S(far[0],far[1]);const team=[];if(!close||Math.random()<.5)team.push(big);
+    pool=pool.filter(q=>Math.hypot(q[0]-sh[0],q[1]-sh[1])>9&&Math.hypot(q[0]-start[0],q[1]-start[1])>8&&q!==big&&!(q[1]<Z+4&&team.length&&Math.abs(q[0]-25)<8));
+    while(team.length<4&&pool.length){pool.sort((a,b)=>Math.min(...[sh].concat(team).map(t=>Math.hypot(b[0]-t[0],b[1]-t[1])))-Math.min(...[sh].concat(team).map(t=>Math.hypot(a[0]-t[0],a[1]-t[1]))));team.push(pool.shift());}
+    // the assist: a teammate at a real spot gets it to the shooter (kick-out from a drive for corner threes, otherwise the nearest wing / slot / top)
+    let passer=null;if(ast){passer=three&&ey<6&&Math.random()<.4?S(25,6):team.filter(q=>q!==big).reduce((a,b)=>Math.hypot(b[0]-sh[0],b[1]-sh[1])<Math.hypot(a[0]-sh[0],a[1]-sh[1])?b:a,team[0]);}
+    const rel_=0;const rel=ast?(drive||cut?1.25:0.9):drive||cut?1.05:pull?0.75:0.65,shotT=rel,land=rel+(close?0.45:0.75);landAt=land;   // the pass lands (0.35-0.73 s) before the shot goes up
+    // rebound: who got it comes from the next play (else the real odds), long off threes, short off close misses
+    const orb=/offensive/.test(NX)?true:/defensive/.test(NX)?false:Math.random()<(close?0.31:0.26);
+    const rb=m?null:(()=>{const a=Math.atan2(sh[1]-rim[1],sh[0]-rim[0])+Math.PI+(Math.random()-.5)*1.6,r=three?9+Math.random()*4:close?2.5+Math.random()*2.5:5+Math.random()*4;return [Math.max(2,Math.min(48,25+Math.cos(a)*r)),Math.max(1.5,Math.min(28,Z+Math.abs(Math.sin(a))*r))];})();
+    const offs=team.map(q=>q===passer&&passer[1]===Z+6?S(ex<25?16:34,24):q);
+    let mine=null,theirs=null;if(rb){const all=offs.concat([sh]);mine=all.reduce((a,b)=>Math.hypot(b[0]-rb[0],b[1]-rb[1])<Math.hypot(a[0]-rb[0],a[1]-rb[1])?b:a);}
+    offs.forEach((q,i)=>{let an='';const st=q===offs[team.indexOf(passer)]&&passer&&passer[1]===Z+6?passer:q;
+      if(rb&&orb&&q===mine)an=mv(q[0],q[1],rb[0],rb[1],land,0.5);else if(m&&i===0)an=hop(q[1],land+0.2);else if(st!==q)an=mv(st[0],st[1],q[0],q[1],shotT-0.35,0.3);
+      out+=dot(st===q?q[0]:st[0],st===q?q[1]:st[1],off,R,an);
+      // his defender: a third of the way to the rim, help side sags toward the paint
+      const help=Math.hypot(q[0]-sh[0],q[1]-sh[1])>20,dq=toward(q,help?0.45:0.3),hx=help?dq[0]+(25-dq[0])*0.25:dq[0];
+      theirs=rb&&!orb?offs.concat([sh]).map(z=>toward(z,0.3)).reduce((a,b)=>Math.hypot(b[0]-rb[0],b[1]-rb[1])<Math.hypot(a[0]-rb[0],a[1]-rb[1])?b:a):null;
+      const amI=theirs&&Math.abs(theirs[0]-dq[0])<0.01&&Math.abs(theirs[1]-dq[1])<0.01;
+      out+=dot(hx,dq[1],def,R,amI?mv(hx,dq[1],rb[0]+0.4,rb[1]-0.6,land,0.5):mv(hx,dq[1],hx+(sh[0]-hx)*0.12,dq[1]+(sh[1]-dq[1])*0.12,0.3,0.6));});
+    // the shooter and his man: closeout on jumpers, rim protector on drives, the block if the text says so
+    const dS=drive||cut||close?[rim[0]+(sh[0]-rim[0])*0.4,rim[1]+Math.max(1,(sh[1]-rim[1])*0.4)]:toward(sh,0.22);
+    const dStart=drive||cut?toward(start,0.3):toward(sh,0.45);
+    out+=dot(dStart[0],dStart[1],def,R+0.05,mv(dStart[0],dStart[1],dS[0],dS[1],0.1,rel-0.1)+(blk?`<animate attributeName="r" values="${R};${R+0.7};${R}" begin="${rel}s" dur=".35s" fill="freeze"/>`:''));
+    out+=dot(start[0],start[1],off,R+0.18,(start!==sh?mv(start[0],start[1],sh[0],sh[1],passer?0.75:0.15,rel-(passer?0.7:0.15)):'')+`<animate attributeName="r" values="${R+0.18};${R+0.6};${R+0.18}" begin="${rel}s" dur=".4s" fill="freeze"/>`+(rb&&orb&&mine===sh?mv(sh[0],sh[1],rb[0],rb[1],land,0.5):''));
+    // the ball: pass (assist) -> shot arc to the rim -> rebound to where it lands
+    const b0=passer?passer:start;
+    const seq=[];if(passer)seq.push(`<animate attributeName="cx" values="${r2(b0[0])};${r2(sh[0])}" begin="0.35s" dur=".38s" fill="freeze"/><animate attributeName="cy" values="${r2(b0[1])};${r2(sh[1])}" begin="0.35s" dur=".38s" fill="freeze"/>`);
+    else if(start!==sh)seq.push(`<animate attributeName="cx" values="${r2(start[0])};${r2(sh[0])}" begin="0.15s" dur="${r2(rel-0.15)}s" fill="freeze"/><animate attributeName="cy" values="${r2(start[1])};${r2(sh[1])}" begin="0.15s" dur="${r2(rel-0.15)}s" fill="freeze"/>`);
+    const mx=(sh[0]+rim[0])/2,blkTo=[sh[0]+(sh[0]-25)*0.3+3,sh[1]+4];
+    seq.push(blk&&!m?`<animate attributeName="cx" values="${r2(sh[0])};${r2(blkTo[0])}" begin="${rel}s" dur=".45s" fill="freeze"/><animate attributeName="cy" values="${r2(sh[1])};${r2(blkTo[1])}" begin="${rel}s" dur=".45s" fill="freeze"/>`
+      :`<animate attributeName="cx" values="${r2(sh[0])};${r2(rim[0])}" begin="${rel}s" dur="${r2(land-rel)}s" fill="freeze"/><animate attributeName="cy" values="${r2(sh[1])};${r2(rim[1])}" begin="${rel}s" dur="${r2(land-rel)}s" fill="freeze"/><animate attributeName="r" values=".72;${close?1:1.35};.8" begin="${rel}s" dur="${r2(land-rel)}s" fill="freeze"/>`);   // top-down: height shows as the ball swelling
+    if(rb&&!blk)seq.push(`<animate attributeName="cx" values="${r2(rim[0])};${r2(rb[0])}" begin="${land}s" dur=".5s" fill="freeze"/><animate attributeName="cy" values="${r2(rim[1])};${r2(rb[1])}" begin="${land}s" dur=".5s" fill="freeze"/>`);
+    out+=`<circle cx="${r2(b0[0])}" cy="${r2(b0[1])}" r=".72" fill="#ff8a00" stroke="#000" stroke-width=".15">${seq.join('')}</circle>`;
+    if(blk&&!m)c='#ffd400';}
+  const word=ft?(m?'GOOD':'MISS'):m?(dunk?'SLAM!':three?'THREE!':'BUCKET'):blk?'BLOCKED':'NO GOOD';
+  return `<svg viewBox="0 -1 50 38.5" role="img" aria-label="Court: the shot"><rect y="-1" width="50" height="40" fill="#7a4a22"/><g fill="none" stroke="#ffffff90" stroke-width=".3"><rect x="17" y="0" width="16" height="19" fill="${off}" fill-opacity=".12"/><circle cx="25" cy="19" r="6"/><path d="M3 0 V14 A23.75 23.75 0 0 0 47 14 V0"/><path d="M21 5.25 A4 4 0 0 0 29 5.25"/><line x1="22" y1="4" x2="28" y2="4" stroke="#fff"/></g>
+    <circle cx="25" cy="5.25" r=".9" fill="none" stroke="#ff8a00" stroke-width=".4"/>${out}
+    <circle cx="25" cy="5.25" r="2.2" fill="none" stroke="${c}" stroke-width=".5" opacity="0"><animate attributeName="opacity" values="0;1;0" begin="${ft?1.3:r2(landAt)}s" dur=".6s" fill="freeze"/></circle>
+    <text x="25" y="36.6" font-size="2.8" text-anchor="middle" fill="${c}" font-weight="800" opacity="0" stroke="#000" stroke-width=".15">${word}<animate attributeName="opacity" from="0" to="1" begin="${r2(landAt+0.1)}s" dur=".3s" fill="freeze"/></text></svg>`;}
 function airViz(l,teams){const v=l&&l.viz;if(!v)return null;const N=(x,d)=>{x=Number(x);return isFinite(x)?x:(d||0);};
   const tc=n=>{try{return n&&simColor(n);}catch(e){return null;}};const T=teams||[];let A=tc(T[0])||'#ffd400',H=tc(T[1])||'#ff4fd8';const rgb=c=>{c=String(c).replace('#','');if(c.length===3)c=c.split('').map(x=>x+x).join('');const n=parseInt(c,16);return [n>>16&255,n>>8&255,n&255];};
   try{const a=rgb(A),h=rgb(H);if(Math.hypot(a[0]-h[0],a[1]-h[1],a[2]-h[2])<120)A='#ffffff';}catch(e){if(A.toLowerCase()===H.toLowerCase())A='#ffffff';}   // fix582: look-alike colors (Blackhawks/Flames reds) -> away team in white
@@ -4629,65 +4784,15 @@ function airViz(l,teams){const v=l&&l.viz;if(!v)return null;const N=(x,d)=>{x=Nu
   const hop=(y,b)=>`<animate attributeName="cy" values="${r2(y)};${r2(y-1.6)};${r2(y)};${r2(y-1.6)};${r2(y)}" begin="${b}s" dur="0.9s" fill="freeze"/>`;
   const dot=(x,y,c,r,an,id)=>`<circle cx="${r2(x)}" cy="${r2(y)}" r="${r}" fill="${c}" stroke="#000" stroke-opacity=".55" stroke-width="${r/4}"${id?` id="${id}"`:''}>${an||''}</circle>`;
   const w=el('div',null,'airviz '+v.k);let svg='';
-  if(v.k==='fb'){const off=v.s==='a'?A:H,def=v.s==='a'?H:A,d=v.s==='a'?1:-1,X=y=>10+(d===1?Math.max(0,Math.min(100,y)):100-Math.max(0,Math.min(100,y)));
-    const p=v.p||'play',f=X(N(v.f)),t=v.p==='fg'?(d===1?119:1):X(N(v.t,v.f)),td=/td/.test(p),gain=N(v.t,v.f)-N(v.f),R=1.25;let lines='',out='',ball='',txt='';
-    for(let y=10;y<=110;y+=10)lines+=`<line x1="${y}" y1="1" x2="${y}" y2="35" stroke="#ffffff38" stroke-width="${y===60?0.8:0.35}"/>`;
-    for(let y=15;y<110;y+=10)lines+=`<line x1="${y}" y1="1" x2="${y}" y2="2.2" stroke="#ffffff30" stroke-width=".3"/><line x1="${y}" y1="33.8" x2="${y}" y2="35" stroke="#ffffff30" stroke-width=".3"/>`;
-    const fd=N(v.ds)>0&&N(v.ds)<40&&!td&&!/kick|punt/.test(p)?`<line x1="${X(N(v.f)+N(v.ds))}" y1="1" x2="${X(N(v.f)+N(v.ds))}" y2="35" stroke="#ffd400" stroke-width=".8"/>`:'';
-    const OL=[14,16,18,20,22],DL=[14.5,17,19.5,22],LB=[11,18,25];const kick=/punt|kickoff/.test(p);
-    const tackle=(x,y)=>[x+d*1.2,y+(Math.random()-.5)*3];
-    if(p==='fg'){const hold=f-d*7,post=d===1?119:1;   /* fix582: field goals - the kick sails through the uprights */
-      OL.forEach(y=>out+=dot(f-d*1,y,off,R,''));DL.forEach((y,i)=>out+=dot(f+d*1.5,y,def,R,mv(f+d*1.5,y,f+d*0.5,y+(i-1.5)*0.6,0.1,0.5)));
-      out+=dot(hold,19.5,off,R,'')+dot(hold-d*2.5,17,off,R,mv(hold-d*2.5,17,hold-d*0.5,17.5,0,0.35));
-      lines+=`<line x1="${post}" y1="14.5" x2="${post}" y2="21.5" stroke="#ffd400" stroke-width=".9"/>`;
-      ball=`<ellipse cx="${hold}" cy="18.5" rx="1.1" ry=".7" fill="#8b4a1f" stroke="#fff" stroke-width=".3">${path([[hold,18.5],[(hold+post)/2,3],[post,18]],0.35,1.2)}</ellipse>`;txt='GOOD!';
-    }else if(kick){const ret=t-d*2;   // kicking team covers downfield, returner catches and runs into them
-      [6,11,16,20,24,29].forEach((y,i)=>{out+=dot(f-d*1,y,off,R,mv(f-d*1,y,ret+d*(1+i%2),y*.4+18*.6,0.2,1.5));});
-      [8,18,28].forEach((y,i)=>{out+=dot(t+d*6,y,def,R,mv(t+d*6,y,ret-d*1.5,18+(i-1)*2,0.6,1.1));});
-      out+=dot(t+d*3,18,def,R,mv(t+d*3,18,ret,18,1.1,0.6));
-      ball=`<ellipse cx="${f}" cy="18" rx="1.5" ry="1" fill="#8b4a1f" stroke="#fff" stroke-width=".3">${path([[f,18],[(f+t)/2,4],[t+d*3,18],[ret,18]],0.1,1.6)}</ellipse>`;
-    }else{const qb=f-d*4,rb=f-d*7;const pass=/pass|incomplete|int|sack/.test(p)||(td&&/pass/.test(String(v.p)));
-      OL.forEach((y,i)=>out+=dot(f-d*1,y,off,R,mv(f-d*1,y,f-d*1+(pass?-d*1.2:d*1.6),y,0.15,0.6)));
-      DL.forEach((y,i)=>out+=dot(f+d*1.5,y,def,R,p==='sack'?mv(f+d*1.5,y,qb-d*3+d*1.2*(i%2),18+(i-1.5)*1.4,0.3,1.2):mv(f+d*1.5,y,f+d*(pass?0.4:2.4),y,0.15,0.6)));
-      if(p==='sack'){out+=dot(qb,18,off,R,mv(qb,18,qb-d*3,18,0.1,0.8));ball=`<ellipse cx="${qb}" cy="18" rx="1" ry=".65" fill="#8b4a1f">${mv(qb,18,qb-d*3,18,0.1,0.8)}</ellipse>`;txt='SACK';
-        LB.forEach(y=>out+=dot(f+d*5,y,def,R,mv(f+d*5,y,qb-d*1,y*.3+18*.7,0.4,1.2)));out+=dot(rb,18,off,R,mv(rb,18,f-d*2,24,0.2,0.8));}
-      else if(pass){const wy=gain>12?6:10,catchX=p==='incomplete'?Math.max(f+d*6,Math.min(110,f+d*Math.max(6,N(v.ds,10)))):(td?X(100)-d*3:t);
-        out+=dot(qb,18,off,R,mv(qb,18,qb-d*3,18,0.1,0.6));out+=dot(rb,18,off,R,mv(rb,18,f-d*1,24,0.2,0.8));
-        const wr=[[f-d*1,5],[f-d*1,31],[f-d*2,9]];wr.forEach(([x,y],i)=>{const tx=i===0?catchX:f+d*(8+i*3),ty=i===0?wy:y+(i===1?-4:3);out+=dot(x,y,off,R,i===0&&p!=='incomplete'?path([[x,y],[tx,ty],[i===0?t:tx,ty+(t-tx)*0]],0.15,i===0?1.7:1.2):mv(x,y,tx,ty,0.15,1.2));});
-        [[f+d*7,5],[f+d*7,31]].forEach(([x,y],i)=>out+=dot(x,y,def,R,mv(x,y,(i===0?catchX:f+d*10)+d*(p==='int'?0:1.5),i===0?wy+1.5:y-3,0.2,1.2)));
-        [[f+d*12,12],[f+d*12,24]].forEach(([x,y],i)=>out+=dot(x,y,def,R,mv(x,y,(i===0?t:f+d*13)+d*1.3,i===0?wy+3:y,0.7,1.1)));
-        LB.forEach(y=>out+=dot(f+d*5,y,def,R,mv(f+d*5,y,f+d*5+d*1.5,y,0.3,0.8)));
-        const bx=p==='int'?catchX+d*1.5:catchX;ball=`<ellipse cx="${qb-d*3}" cy="18" rx="1.1" ry=".7" fill="#8b4a1f" stroke="#fff" stroke-width=".3"><animate attributeName="cx" values="${qb};${qb-d*3};${r2((qb-d*3+bx)/2)};${r2(bx)}${p==='incomplete'?';'+r2(bx+d*2):p==='int'?';'+r2(bx-d*4):';'+r2(td?X(100)-d*1:t)}" keyTimes="0;.3;.55;.75;1" begin="0.1s" dur="1.9s" fill="freeze"/><animate attributeName="cy" values="18;18;${r2(Math.min(18,wy)-5)};${wy}${p==='incomplete'?';'+(wy+3):';'+wy}" keyTimes="0;.3;.55;.75;1" begin="0.1s" dur="1.9s" fill="freeze"/>${p==='incomplete'?'<animate attributeName="opacity" values="1;1;.35" keyTimes="0;.8;1" begin="0.1s" dur="1.9s" fill="freeze"/>':''}</ellipse>`;
-        if(p==='incomplete')txt='INCOMPLETE';if(p==='int')txt='PICKED OFF';}
-      else{const end=td?X(100)-d*1:t,hole=18+(Math.random()<.5?-2:2);   // run: the back takes it through the hole, linebackers fill, someone brings him down
-        out+=dot(qb,18,off,R,mv(qb,18,qb-d*1,19,0.1,0.4));out+=dot(rb,18,off,R+0.1,path([[rb,18],[f-d*1,hole],[end,hole]],0.2,1.5),'rb');
-        ball=`<ellipse cx="${qb}" cy="18" rx="1" ry=".65" fill="#8b4a1f" stroke="#fff" stroke-width=".25">${path([[qb,18],[rb+d*1,18],[f-d*1,hole],[end,hole]],0.1,1.6)}</ellipse>`;
-        LB.forEach((y,i)=>{const tk=tackle(end,hole);out+=dot(f+d*5,y,def,R,mv(f+d*5,y,i===1&&!td?tk[0]:end+d*(2+i),i===1?tk[1]:hole+(i-1)*2.5,0.4,1.3));});
-        [[f-d*1,5],[f-d*1,31]].forEach(([x,y])=>out+=dot(x,y,off,R,mv(x,y,x+d*4,y+(y<18?3:-3),0.2,1)));
-        [[f+d*7,5],[f+d*7,31],[f+d*12,12],[f+d*12,24]].forEach(([x,y])=>out+=dot(x,y,def,R,mv(x,y,end+d*(td?3:2.5),hole+(y<18?-3:3),0.4,1.3)));
-        if(gain<=0&&!td)txt='STUFFED';}
-    }
-    if(td){txt='TOUCHDOWN';}if(p==='penalty')txt='FLAG';
-    const flag=p==='penalty'?`<path d="M${f} 18 l0 -5 l3 1.2 l-3 1.2" fill="#ffd400" stroke="#ffd400" stroke-width=".3"><animateTransform attributeName="transform" type="rotate" values="0 ${f} 18;8 ${f} 18;0 ${f} 18" dur=".6s" repeatCount="3"/></path>`:'';
-    const tcol=td?'#39ff8f':/INCOMPLETE|PICKED|SACK|STUFFED/.test(txt)?'#ff5a6a':'#ffd400';
-    let lo=Math.min(f,t)-14,hi=Math.max(f,t)+14;if(hi-lo<72){const c=(lo+hi)/2;lo=c-36;hi=c+36;}lo=Math.max(0,Math.min(lo,120-(hi-lo)));hi=Math.min(120,lo+Math.max(72,hi-lo));const cx=r2((lo+hi)/2);   // zoom in on the play
-    svg=`<svg viewBox="${r2(lo)} 0 ${r2(hi-lo)} 36" role="img" aria-label="Field: the play"><rect width="120" height="36" fill="#166534"/><rect width="10" height="36" fill="${d===1?def:off}" opacity=".35"/><rect x="110" width="10" height="36" fill="${d===1?off:def}" opacity=".35"/>${lines}${fd}
-      <line x1="${f}" y1="1" x2="${f}" y2="35" stroke="#5ab4ff" stroke-width=".8"/>${out}${ball}${flag}
-      ${txt?`<text x="${cx}" y="8" font-size="5" text-anchor="middle" fill="${tcol}" font-weight="800" opacity="0" stroke="#000" stroke-width=".25">${txt}<animate attributeName="opacity" from="0" to="1" begin="1.5s" dur=".3s" fill="freeze"/></text>`:''}</svg>`;}
-  else if(v.k==='bb'){let x=Math.max(1,Math.min(49,N(v.x,25))),y=N(v.y,10);if(y>47)y=94-y;if(v.p!=='ft')y+=5.25;y=Math.max(1,Math.min(25,y));   /* fix574: ESPN's y is feet from the RIM, not the baseline (shots were drawn behind the basket) */const m=!!v.m,ft=v.p==='ft',off=v.s==='h'?H:A,def=v.s==='h'?A:H,c=m?'#39ff8f':'#ff5a6a',R=1.1;
-    const rim=[25,5.25],toward=(px,py,k)=>[px+(rim[0]-px)*k,py+(rim[1]-py)*k];let out='';
-    const spots=ft?[[17.5,9],[32.5,9],[17.5,13],[32.5,13]]:[[5,3],[45,3],[12,18],[38,18],[25,22]].filter(s=>Math.hypot(s[0]-x,s[1]-y)>6).slice(0,4);
-    const reb=m?[25,7]:[25+(Math.random()-.5)*14,8+Math.random()*5];
-    spots.forEach(([sx,sy],i)=>{const dd=toward(sx,sy,0.25);out+=dot(sx,sy,off,R,ft?'':(m?hop(sy,1.3):mv(sx,sy,i<2?reb[0]+(i?2:-2):sx,i<2?reb[1]+1.5:sy,1.0,0.6)));
-      out+=dot(dd[0],dd[1],def,R,ft?'':mv(dd[0],dd[1],i<2&&!m?reb[0]+(i?-1:1):dd[0],i<2&&!m?reb[1]:dd[1],1.0,0.6));});
-    const cd=toward(x,y,0.3);out+=dot(cd[0],cd[1],def,R,ft?'':mv(cd[0]+(cd[0]-x)*0.6,cd[1]+(cd[1]-y)*0.6,x+(rim[0]-x)*0.12,y+(rim[1]-y)*0.12,0,0.5));
-    out+=dot(x,y,off,R+0.15,`<animate attributeName="r" values="${R+0.15};${R+0.6};${R+0.15}" begin="0.25s" dur="0.5s" fill="freeze"/>`+(m&&!ft?hop(y,1.4):''));
-    const mx=(x+25)/2,my=Math.min(y,5.25)-8;const bounce=m?'':`<animate attributeName="cx" values="25;${r2(reb[0])}" begin="1.2s" dur=".45s" fill="freeze"/><animate attributeName="cy" values="5.25;${r2(reb[1])}" begin="1.2s" dur=".45s" fill="freeze"/>`;
-    out+=`<circle cx="${x}" cy="${y}" r=".7" fill="#ff8a00" stroke="#000" stroke-width=".15"><animateMotion path="M0 0 Q${r2(mx-x)} ${r2(my-y)} ${r2(25-x)} ${r2(5.25-y)}" begin="0.35s" dur=".85s" fill="freeze"/>${m?'':`<animateMotion path="M${r2(25-x)} ${r2(5.25-y)} L${r2(reb[0]-x)} ${r2(reb[1]-y)}" begin="1.2s" dur=".45s" fill="freeze"/>`}</circle>`;
-    svg=`<svg viewBox="0 -1 50 27" role="img" aria-label="Court: the shot"><rect y="-1" width="50" height="28" fill="#7a4a22"/><g fill="none" stroke="#ffffff90" stroke-width=".3"><rect x="17" y="0" width="16" height="19" fill="${off}" fill-opacity=".12"/><circle cx="25" cy="19" r="6"/><path d="M3 0 V14 A22 22 0 0 0 47 14 V0"/><line x1="22" y1="4" x2="28" y2="4" stroke="#fff"/></g>
-      <path d="M23.6 5.6 L24.3 7.6 L25.7 7.6 L26.4 5.6" fill="none" stroke="#fff" stroke-width=".2" opacity=".8"/><circle cx="25" cy="5.25" r=".9" fill="none" stroke="#ff8a00" stroke-width=".4"/>
-      ${out}<circle cx="25" cy="5.25" r="2.2" fill="none" stroke="${c}" stroke-width=".5" opacity="0"><animate attributeName="opacity" values="0;1;0" begin="1.15s" dur=".6s" fill="freeze"/></circle>
-      <text x="25" y="25" font-size="3" text-anchor="middle" fill="${c}" font-weight="800" opacity="0" stroke="#000" stroke-width=".15">${m?(ft?'GOOD':(v.p==='three'||Math.hypot(x-25,y-5.25)>22.5?'THREE!':'BUCKET')):'NO GOOD'}<animate attributeName="opacity" from="0" to="1" begin="1.3s" dur=".3s" fill="freeze"/></text></svg>`;}
+  // fix594: team art tokens (her own team portraits, never the official logos): every player on the court, the players who make
+  // the play on the field (receiver / ball carrier, QB, the defender on him); the rest stay team-colored dots
+  const uid='p'+Math.random().toString(36).slice(2,8),art={};[[A,T[0]],[H,T[1]]].forEach(([c,n],i)=>{try{if(n&&teamPortraits.has(n))art[c]={id:uid+i,src:'portraits/'+teamPortraits.file(n)+'?v=2'};}catch(e){}});
+  const defs='<defs>'+Object.entries(art).map(([c,a])=>`<pattern id="${a.id}" width="1" height="1" patternContentUnits="objectBoundingBox"><rect width="1" height="1" fill="${c}"/><image href="${a.src}" width="1" height="1" preserveAspectRatio="xMidYMid slice"/></pattern>`).join('')+'</defs>';
+  const tok=all=>(x,y,c,r,an,id)=>{const a=art[c];if(!a||(!all&&r<1.24))return dot(x,y,c,r,an,id);const rr=all?r:2.15;
+    return `<circle cx="${r2(x)}" cy="${r2(y)}" r="${rr}" fill="url(#${a.id})" stroke="${c}" stroke-width="${rr/4.5}"${id?` id="${id}"`:''}>${(an||'').replace(/attributeName="r" values="[^"]*"/,m=>m)}</circle>`;};
+  const U=all=>({N,dot:tok(all),mv,path,hop,r2});const withDefs=x=>x?x.replace(/^(<svg[^>]*>)/,'$1'+defs):x;
+  if(v.k==='fb'){svg=withDefs(vizFb(v,A,H,U(false)));}
+  else if(v.k==='bb'){svg=withDefs(vizBb(v,A,H,U(true)));}
   else if(v.k==='hk'){const x=Math.max(-95,Math.min(95,N(v.x))),y=Math.max(-40,Math.min(40,N(v.y))),gx=x>=0?89:-89,s=gx>0?1:-1,m=!!v.m,off=v.s==='h'?H:A,def=v.s==='h'?A:H,R=2.6;let out='';
     const gk=[gx-s*3,0];const aim=[gx,(Math.random()-.5)*3];
     out+=dot(gk[0],gk[1],def,R+0.4,mv(gk[0],0,gk[0]-s*1.5,y*0.15,0,0.4)+(m?'':`<animate attributeName="r" values="${R+0.4};${R+1.3};${R+0.4}" begin=".45s" dur=".4s" fill="freeze"/>`));
@@ -4713,12 +4818,12 @@ function gcPlay(d,lg){const comp=((d.header||{}).competitions||[])[0]||{};const 
       const st=p.start||{},en=p.end||{};const tx=String(p.text||'').replace(/^\(\d+:\d+\)\s*/,'').replace(/#\d+\s+/g,'').replace(/^(No Huddle-)?Shotgun\s+/,'');const sid=String(((st.team||{}).id)||((p.team||{}).id)||'');const s=side[sid];const yte=num(st.yardsToEndzone);if(!s||yte==null)continue;
       const f=100-yte;const eT=String(((en.team||{}).id)||sid);const eY=num(en.yardsToEndzone);let to=eY==null?f:(eT===sid?100-eY:eY);
       const k=/touchdown/.test(t)||(/touchdown/i.test(p.text||'')&&p.scoringPlay)?'td':/interception/.test(t)?'int':/fumble/.test(t)?'fumble':/sack/.test(t)?'sack':/punt/.test(t)?'punt':/kickoff/.test(t)?'kickoff':/incomplet/.test(t)||/incomplete/i.test(p.text||'')?'incomplete':/field goal/.test(t)?'fg':/pass/.test(t)?'pass':/rush|run/.test(t)?'run':/penalty/.test(t)?'penalty':'play';
-      if(k==='td')to=100;return {id:String(p.id),text:tx,viz:{k:'fb',s,f,t:to,d:st.down,ds:st.distance,p:k}};}
+      if(k==='td')to=100;return {id:String(p.id),text:tx,viz:{k:'fb',s,f,t:to,d:st.down,ds:st.distance,p:k,tx:String(p.text||'').slice(0,220)}};}
     return null;}
   const P=d.plays||[];
   if(/^(NBA|WNBA|NCAAB)$/.test(lg)){for(let i=P.length-1;i>=0;i--){const p=P[i],c=p.coordinate||{};if(!p.shootingPlay)continue;const x=num(c.x),y=num(c.y);
       const ft=/free throw/i.test(((p.type||{}).text||'')+' '+(p.text||''));if(!ft&&(x==null||y==null||x<0||x>50||y<0||y>94))continue;
-      return {id:String(p.id),text:p.text||'',viz:{k:'bb',s:side[String((p.team||{}).id)]||'',x:ft?25:x,y:ft?19:y,m:!!p.scoringPlay,p:ft?'ft':'shot'}};}return null;}
+      return {id:String(p.id),text:p.text||'',viz:{k:'bb',s:side[String((p.team||{}).id)]||'',x:ft?25:x,y:ft?19:y,m:!!p.scoringPlay,p:ft?'ft':'shot',tx:String(p.text||'').slice(0,160),nx:String((P[i+1]||{}).text||'').slice(0,120)}};}return null;}
   if(lg==='NHL'){for(let i=P.length-1;i>=0;i--){const p=P[i],c=p.coordinate||{};const x=num(c.x),y=num(c.y);if(x==null||y==null||Math.abs(x)>100||Math.abs(y)>43)continue;
       const t=((p.type||{}).text||'').toLowerCase();if(!/shot|goal/.test(t))continue;return {id:String(p.id),text:p.text||'',viz:{k:'hk',x,y,m:/goal/.test(t)&&!/no goal/.test(t),p:t}};}return null;}
   return null;}
