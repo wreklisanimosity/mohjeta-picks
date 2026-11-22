@@ -4573,6 +4573,7 @@ function radioLock(){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD
 function radioStop(quiet){radioPinging(false);airCrowd(false);if(RAD.au){try{RAD.au.pause();}catch(e){}}if(RAD.sa){try{RAD.sa.pause();RAD.sa.removeAttribute('src');RAD.sa.load();}catch(e){}}RAD.au=null;RAD.sa=null;RAD.stream=false;RAD.q=[];
   if(!quiet){RAD.gid=null;clearInterval(RAD.poll);RAD.poll=null;drawAir();}}
 function radioNext(){if(!RAD.gid||RAD.stream||(RAD.cur&&RAD.au&&!RAD.au.paused&&!RAD.au.ended))return;if(!RAD.q.length){radioEndCheck();return;}const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;RAD.cur=l;
+  if(l.viz)try{for(const c of document.querySelectorAll('.gclive'))if(c.dataset.gid===String(RAD.gid)&&c._follow)c._follow(l);}catch(e){}   // fix572
   if(!RAD.au)RAD.au=new Audio();const a=RAD.au;a.src=l.url;clearTimeout(RAD.wd);
   let started=false,fin=false;   // fix567: switching src fires the OLD clip's 'ended' on the new one - only an ended after this clip played counts
   const done=()=>{if(fin)return;fin=true;clearTimeout(RAD.wd);if(RAD.cur===l)RAD.cur=null;if(l.fx)airFx(l.fx);else if(l.mood==='hype')airFx('roar');radioNext();};
@@ -4694,9 +4695,11 @@ function gcPlay(d,lg){const comp=((d.header||{}).competitions||[])[0]||{};const 
 function gcLive(g){const path=GC_PATH[g.league];if(!path||!g.id||g.state!=='LIVE')return null;const w=el('div',null,'card gclive');const hd=el('div',null,'row');hd.append(el('h4','📺 Latest play'),el('span',null,'sp'));
   const fg=((RAD.feed&&RAD.feed.games)||[]).find(x=>String(x.id)===String(g.id));   // fix565: her call for this game (free voice or Mohjeta Live)
   if(fg){const lb=el('button',RAD.gid===fg.id?'■ Stop':'▶ Listen','btn small');lb.type='button';lb.onclick=()=>{if(RAD.gid===fg.id){radioStop();lb.textContent='▶ Listen';}else{radioListen(fg.id);lb.textContent='■ Stop';}};hd.append(lb);}
-  w.append(hd);const box=el('div');box.append(el('p','Loading the latest play…','hint small'));w.append(box);
-  let lastId=null,tries=0;const tick=async()=>{if(!w.isConnected&&tries++>0)return;try{const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/'+path+'/summary?event='+encodeURIComponent(g.id),{cache:'no-cache',signal:AbortSignal.timeout(8000)});
-      if(r.ok){const pl=gcPlay(await r.json(),g.league);if(pl&&pl.id!==lastId){lastId=pl.id;const tm=(g.teams||[]).length===2?(g.teams.some(t=>t.home)?[g.teams.find(t=>!t.home).name,g.teams.find(t=>t.home).name]:[g.teams[1].name,g.teams[0].name]):[];const v=airViz(pl,tm);box.replaceChildren(v||el('p',pl.text,'hint small'));}else if(!pl&&lastId===null){lastId='';box.replaceChildren(el('p','No play picture for this game yet.','hint small'));}}}catch(e){}
+  w.append(hd);const box=el('div');box.append(el('p','Loading the latest play…','hint small'));w.append(box);w.dataset.gid=String(g.id);
+  const tm=(g.teams||[]).length===2?(g.teams.some(t=>t.home)?[g.teams.find(t=>!t.home).name,g.teams.find(t=>t.home).name]:[g.teams[1].name,g.teams[0].name]):[];
+  w._follow=l=>{const v=airViz(l,tm);if(v){box.replaceChildren(v);}};   // fix572: while you listen, the picture follows HER call (same play she's saying)
+  let lastId=null,tries=0;const tick=async()=>{if(!w.isConnected&&tries++>0)return;if(RAD.gid&&String(RAD.gid)===String(g.id)&&!RAD.stream){if(w.isConnected)setTimeout(tick,15000);return;}try{const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/'+path+'/summary?event='+encodeURIComponent(g.id),{cache:'no-cache',signal:AbortSignal.timeout(8000)});
+      if(r.ok){const pl=gcPlay(await r.json(),g.league);if(pl&&pl.id!==lastId){lastId=pl.id;const v=airViz(pl,tm);box.replaceChildren(v||el('p',pl.text,'hint small'));}else if(!pl&&lastId===null){lastId='';box.replaceChildren(el('p','No play picture for this game yet.','hint small'));}}}catch(e){}
     if(w.isConnected)setTimeout(tick,15000);};
   setTimeout(tick,50);return w;}
 function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.why!=='free'&&(g.state==='LIVE'||g.state==='UPCOMING'||(g.lines||[]).length));   // fix565: free-voice games live on their game cards
