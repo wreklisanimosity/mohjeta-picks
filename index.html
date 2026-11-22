@@ -4775,7 +4775,13 @@ function vizBb(v,A,H,u){const {N,dot,mv,path,hop,r2}=u;const off=v.s==='h'?H:A,d
     <circle cx="25" cy="5.25" r=".9" fill="none" stroke="#ff8a00" stroke-width=".4"/>${out}
     <circle cx="25" cy="5.25" r="2.2" fill="none" stroke="${c}" stroke-width=".5" opacity="0"><animate attributeName="opacity" values="0;1;0" begin="${ft?1.3:r2(landAt)}s" dur=".6s" fill="freeze"/></circle>
     <text x="25" y="36.6" font-size="2.8" text-anchor="middle" fill="${c}" font-weight="800" opacity="0" stroke="#000" stroke-width=".15">${word}<animate attributeName="opacity" from="0" to="1" begin="${r2(landAt+0.1)}s" dur=".3s" fill="freeze"/></text></svg>`;}
-function airViz(l,teams){const v=l&&l.viz;if(!v)return null;const N=(x,d)=>{x=Number(x);return isFinite(x)?x:(d||0);};
+// fix595 (owner: "The animations keep loading"): the Live box redraws on every new line she says, which restarted the same play's
+// animation and reloaded the team art each time. Same play in the same spot -> the same picture keeps playing (no restart).
+const VIZC=new Map();
+function airViz(l,teams,slot){const v=l&&l.viz;if(!v)return null;const ck=(slot||'x')+'|'+JSON.stringify(v)+'|'+(teams||[]).join(',');
+  {const hit=VIZC.get(ck);if(hit){const lb=hit.querySelector('.airvizl');if(lb)lb.textContent=(l.text||'').slice(0,80);return hit;}}
+  const w0=airViz0(l,teams);if(w0){VIZC.set(ck,w0);if(VIZC.size>40)VIZC.delete(VIZC.keys().next().value);}return w0;}
+function airViz0(l,teams){const v=l&&l.viz;if(!v)return null;const N=(x,d)=>{x=Number(x);return isFinite(x)?x:(d||0);};
   const tc=n=>{try{return n&&simColor(n);}catch(e){return null;}};const T=teams||[];let A=tc(T[0])||'#ffd400',H=tc(T[1])||'#ff4fd8';const rgb=c=>{c=String(c).replace('#','');if(c.length===3)c=c.split('').map(x=>x+x).join('');const n=parseInt(c,16);return [n>>16&255,n>>8&255,n&255];};
   try{const a=rgb(A),h=rgb(H);if(Math.hypot(a[0]-h[0],a[1]-h[1],a[2]-h[2])<120)A='#ffffff';}catch(e){if(A.toLowerCase()===H.toLowerCase())A='#ffffff';}   // fix582: look-alike colors (Blackhawks/Flames reds) -> away team in white
   const r2=x=>Math.round(x*10)/10;
@@ -4834,21 +4840,21 @@ function gcLive(g){const path=GC_PATH[g.league];if(!path||!g.id||g.state!=='LIVE
     if(!fg){toast('🎙 She’s getting set up on this game. Try again in a few seconds.');try{radioPoll();}catch(e){}return;}radioListen(fg.id);lb.textContent='■ Stop';};hd.append(lb);
   w.append(hd);const box=el('div');box.append(el('p','Loading the latest play…','hint small'));w.append(box);w.dataset.gid=String(g.id);
   const tm=(g.teams||[]).length===2?(g.teams.some(t=>t.home)?[g.teams.find(t=>!t.home).name,g.teams.find(t=>t.home).name]:[g.teams[1].name,g.teams[0].name]):[];
-  w._follow=l=>{const v=airViz(l,tm);if(v){box.replaceChildren(v);}};   // fix572: while you listen, the picture follows HER call (same play she's saying)
+  w._follow=l=>{const v=airViz(l,tm,'gc'+g.id);if(v&&v.parentNode!==box){box.replaceChildren(v);}};   // fix572: while you listen, the picture follows HER call (same play she's saying)
   let lastId=null,tries=0;const tick=async()=>{if(!w.isConnected&&tries++>0)return;if(RAD.gid&&String(RAD.gid)===String(g.id)&&!RAD.stream){if(w.isConnected)setTimeout(tick,15000);return;}try{const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/'+path+'/summary?event='+encodeURIComponent(g.id),{cache:'no-cache',signal:AbortSignal.timeout(8000)});
-      if(r.ok){const pl=gcPlay(await r.json(),g.league);if(pl&&pl.id!==lastId){lastId=pl.id;const v=airViz(pl,tm);box.replaceChildren(v||el('p',pl.text,'hint small'));}else if(!pl&&lastId===null){lastId='';box.replaceChildren(el('p','No play picture for this game yet.','hint small'));}}}catch(e){}
+      if(r.ok){const pl=gcPlay(await r.json(),g.league);if(pl&&pl.id!==lastId){lastId=pl.id;const v=airViz(pl,tm,'gc'+g.id);if(!v||v.parentNode!==box)box.replaceChildren(v||el('p',pl.text,'hint small'));}else if(!pl&&lastId===null){lastId='';box.replaceChildren(el('p','No play picture for this game yet.','hint small'));}}}catch(e){}
     if(w.isConnected)setTimeout(tick,15000);};
   setTimeout(tick,50);return w;}
 function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.why!=='free'&&(g.state==='LIVE'||g.state==='UPCOMING'||(g.lines||[]).length));   // fix565: free-voice games live on their game cards
   const ak=JSON.stringify([gs.map(g=>[g.id,g.state,g.why,((g.lines||[]).slice(-1)[0]||{}).id||'',g.teams,(g.take||{}).id||0]),RAD.gid,!!(R&&R.on_air),RAD.cur&&RAD.cur.id]);   // fix566: last line's id (the feed keeps 14 lines, so the count stopped changing and the box froze)   // fix541: redraw only when something changed (no flicker)
   const boxes=[...document.querySelectorAll('.mjair')].filter(b=>b.dataset.ak!==ak||!b.firstChild===!!gs.length);
-  for(const box of boxes){box.dataset.ak=ak;box.replaceChildren();if(!gs.length)continue;
+  for(const box of boxes){const bi=[...document.querySelectorAll('.mjair')].indexOf(box);box.dataset.ak=ak;box.replaceChildren();if(!gs.length)continue;
     const c=el('div',null,'card airc'+(R.on_air?' onair':''));const h=el('div',null,'airhd');const eq=el('span',null,'aireq');eq.setAttribute('aria-hidden','true');eq.append(el('i'),el('i'),el('i'),el('i'));
     const tt=el('div',null,'airtt');tt.append(el('b','Mohjeta Live','airlogo'),el('span','Her call, in her voice','hint small'));h.append(eq,tt,el('span',null,'sp'),el('span',R.on_air?'ON AIR':'TONIGHT','airchip'+(R.on_air?' on':'')));c.append(h);
     for(const g of gs){const r=el('div',null,'airrow'+(g.id===RAD.gid?' on':''));const info=el('div',null,'airi');info.append(airName(g),
         el('span',g.state==='LIVE'?(g.why==='crunch'?'🔥 Crunch time':'● Live now'):g.state==='UPCOMING'?'She calls this one tonight':'Final','airst'+(g.state==='LIVE'?' live':'')));
       if(g.state==='LIVE'&&(g.lines||[]).length)info.append(el('span','“'+(g.lines[g.lines.length-1].text||'').slice(0,90)+'”','airq'));
-      if(g.state==='LIVE'){const vz=airViz(airVizLine(g),g.teams);if(vz)info.append(vz);}   // fix562: the play, animated
+      if(g.state==='LIVE'){const vz=airViz(airVizLine(g),g.teams,'air'+bi+'|'+g.id);if(vz)info.append(vz);}   // fix562: the play, animated
       const b=el('button',g.id===RAD.gid?'■ Stop':'▶ Listen','airbtn'+(g.id===RAD.gid?' on':''));b.type='button';b.disabled=g.state==='UPCOMING';b.onclick=e=>{e.stopPropagation();g.id===RAD.gid?radioStop():radioListen(g.id);};r.append(info,b);
       if(typeof openGame==='function'){r.classList.add('tap');r.tabIndex=0;r.setAttribute('role','button');r.setAttribute('aria-label','Open the game card: '+(g.name||''));   // fix528: tap the row -> game card
         r.onclick=()=>openGame(g.id);r.onkeydown=e=>{if(e.target===r&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGame(g.id);}};}c.append(r);
