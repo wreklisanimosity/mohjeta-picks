@@ -4563,14 +4563,16 @@ function airFx(kind){const G=airGame().crowd||{},C=(RAD.feed&&RAD.feed.crowd)||{
   const u=G[kind]||(kind==='groan'&&G.ooh)||(kind==='roar'&&C.roar);if(!u)return;
   try{if(!RAD.fx)RAD.fx=new Audio();RAD.fx.src=u;RAD.fx.volume=0.4;RAD.fx.currentTime=0;RAD.fx.play().catch(()=>{});}catch(e){}}
 function airRoar(){const C=(RAD.feed&&RAD.feed.crowd)||{};if(!C.roar||RAD.stream)return;try{if(!RAD.roar)RAD.roar=new Audio(C.roar);RAD.roar.volume=0.45;RAD.roar.currentTime=0;RAD.roar.play().catch(()=>{});}catch(e){}}
-function radioFeed(R){if(!R||!R.games)return;RAD.feed=R;if(RAD.gid&&!RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);if(g){for(const l of g.lines||[])if(!RAD.played.has(l.id)&&!RAD.q.some(x=>x.id===l.id)){if(l.url)RAD.q.push(l);else{RAD.played.add(l.id);RAD.last=l.text;}}radioNext();}else radioEndCheck();}   // fix532: text-only lines show, nothing plays
+function radioFeed(R){if(!R||!R.games)return;RAD.feed=R;if(RAD.gid&&Date.now()-(RAD.pingAt||0)>(RAD.mute?10000:40000))radioPing();   // fix593: check-in rides the 4 s poll too (iPhones throttle the 45 s timer)
+  if(!RAD.gid&&!RAD.resumeSeen){RAD.resumeSeen=true;try{const sv=JSON.parse(localStorage.getItem('mohjeta.listen')||'null');const g0=sv&&(R.games||[]).find(x=>x.id===sv.gid&&x.state==='LIVE');if(g0&&Date.now()-sv.t<15*60000){RAD.resume=sv.gid;drawAir();}}catch(e){}}
+  if(RAD.gid&&!RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);if(g){RAD.missAt=0;let mute=false;for(const l of g.lines||[])if(!RAD.played.has(l.id)&&!RAD.q.some(x=>x.id===l.id)){if(l.url)RAD.q.push(l);else{RAD.played.add(l.id);RAD.last=l.text;mute=true;}}RAD.mute=mute;radioNext();}else radioEndCheck();}   // fix532: text-only lines show, nothing plays
   if(RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);const l=g&&(g.lines||[])[(g.lines||[]).length-1];if(l)RAD.last=l.text;}drawAir();}
 async function radioPoll(){try{const base=window.publicCdn?await publicCdn():null;if(!base)return;const r=await fetch(base+'/radio.json',{cache:'no-cache',signal:AbortSignal.timeout(6000)});if(r.ok)radioFeed(await r.json());}catch(e){}}
 function radioMeta(g){try{if(!('mediaSession' in navigator))return;navigator.mediaSession.metadata=new MediaMetadata({title:'Mohjeta Live',artist:(g&&g.name)||'Her call, in her voice',album:'Mohjeta',artwork:[{src:'icon-512.png',sizes:'512x512',type:'image/png'}]});
   navigator.mediaSession.setActionHandler('pause',()=>radioStop());navigator.mediaSession.setActionHandler('stop',()=>radioStop());}catch(e){}}
 // fix569: while ▶ Listen is on, the phone checks in about every 45 s (random device code, no account) so her PC only spends
 // voice on games someone is actually hearing (Supabase rpc live_listen, supabase_live_listeners.sql).
-function radioPing(){if(!RAD.gid)return;let id='';try{id=localStorage.getItem('mjLid')||'';if(!/^[a-z0-9]{8,40}$/.test(id)){id=Math.random().toString(36).slice(2,12)+Date.now().toString(36);localStorage.setItem('mjLid',id);}}catch(e){id=RAD.lid||(RAD.lid=Math.random().toString(36).slice(2,12)+Date.now().toString(36));}
+function radioPing(){if(!RAD.gid)return;RAD.pingAt=Date.now();try{localStorage.setItem('mohjeta.listen',JSON.stringify({gid:RAD.gid,t:Date.now()}));}catch(e){}let id='';try{id=localStorage.getItem('mjLid')||'';if(!/^[a-z0-9]{8,40}$/.test(id)){id=Math.random().toString(36).slice(2,12)+Date.now().toString(36);localStorage.setItem('mjLid',id);}}catch(e){id=RAD.lid||(RAD.lid=Math.random().toString(36).slice(2,12)+Date.now().toString(36));}
   const go=c=>{if(c&&c.url&&c.anon_key)fetch(c.url+'/rest/v1/rpc/live_listen',{method:'POST',keepalive:true,headers:{apikey:c.anon_key,Authorization:'Bearer '+c.anon_key,'Content-Type':'application/json'},body:JSON.stringify({p_gid:String(RAD.gid),p_client:id,p_mode:RAD.stream?'lock':'app'})}).catch(()=>{});};
   try{if(window._cfg)go(window._cfg);else fetch('live-config.json',{cache:'no-store'}).then(r=>r.json()).then(c=>{window._cfg=window._cfg||c;go(c);}).catch(()=>{});}catch(e){}}
 // fix571: back to the app after the phone slept or another app: catch up right away (new lines, check-in, next clip)
@@ -4579,11 +4581,12 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden||!RAD.gid||
 // fix571 (owner: "once the game is over she never finishes her broadcast, it just hangs"): after the final call plays,
 // she signs off and the player stops; same if the game drops off the feed.
 function radioEndCheck(){if(!RAD.gid||RAD.stream||RAD.cur||RAD.q.length)return;const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD.gid);
-  if(!g||g.state==='FINAL'){clearTimeout(RAD.endT);RAD.endT=setTimeout(()=>{const g2=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD.gid);
-    if(RAD.gid&&!RAD.cur&&!RAD.q.length&&(!g2||g2.state==='FINAL')){radioStop();toast('🎙 That’s the final. Thanks for listening with Mohjeta!');}},g?8000:20000);}}
+  if(!g&&!RAD.missAt)RAD.missAt=Date.now();   // fix593: missing from the feed for a moment (her PC busy) is not the final
+  if((g&&g.state==='FINAL')||(!g&&Date.now()-RAD.missAt>5*60000)){clearTimeout(RAD.endT);RAD.endT=setTimeout(()=>{const g2=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD.gid);
+    if(RAD.gid&&!RAD.cur&&!RAD.q.length&&(!g2||g2.state==='FINAL')){radioStop();toast(g2?'🎙 That’s the final. Thanks for listening with Mohjeta!':'🎙 Mohjeta Live went quiet on this game. Tap Listen to try again.');}},g?8000:20000);}}
 function radioPinging(on){clearInterval(RAD.pingT);RAD.pingT=null;if(on){radioPing();RAD.pingT=setInterval(radioPing,45000);}}
 function radioListen(gid){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===gid);if(!g)return;try{window.MJVoice&&MJVoice.stop();}catch(e){}
-  radioStop(true);RAD.gid=gid;RAD.stream=false;RAD.played=new Set();const L=(g.lines||[]).filter(l=>l.url);for(const l of g.lines||[])RAD.played.add(l.id);RAD.q=L.slice(-2);for(const l of RAD.q)RAD.played.delete(l.id);   // catch up with the last two
+  radioStop(true);RAD.gid=gid;RAD.resume=null;RAD.missAt=0;RAD.stream=false;RAD.played=new Set();const L=(g.lines||[]).filter(l=>l.url);for(const l of g.lines||[])RAD.played.add(l.id);RAD.q=L.slice(-2);for(const l of RAD.q)RAD.played.delete(l.id);   // catch up with the last two
   if(!RAD.q.length)toast('🎙 She picks it up with the next play. Keep this open, or tap 🔒 to listen with your phone locked.');
   clearInterval(RAD.poll);RAD.poll=setInterval(radioPoll,4000);radioPoll();radioMeta(g);airCrowd(true);radioNext();drawAir();radioPinging(true);}
 function radioLock(){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD.gid);if(!g)return;
@@ -4592,7 +4595,7 @@ function radioLock(){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD
   if(RAD.au){try{RAD.au.pause();}catch(e){}}RAD.au=null;RAD.q=[];RAD.stream=true;radioPing();airCrowd(false);a.src=g.stream;a.setAttribute('playsinline','');RAD.sa=a;
   a.play().then(()=>toast('🔒 You can lock your phone now. She keeps talking.')).catch(()=>toast('Tap ▶ again to start the stream.'));radioMeta(g);drawAir();}
 function radioStop(quiet){radioPinging(false);airCrowd(false);if(RAD.au){try{RAD.au.pause();}catch(e){}}if(RAD.sa){try{RAD.sa.pause();RAD.sa.removeAttribute('src');RAD.sa.load();}catch(e){}}RAD.au=null;RAD.sa=null;RAD.stream=false;RAD.q=[];
-  if(!quiet){RAD.gid=null;clearInterval(RAD.poll);RAD.poll=null;drawAir();}}
+  if(!quiet){RAD.gid=null;clearInterval(RAD.poll);RAD.poll=null;try{localStorage.removeItem('mohjeta.listen');}catch(e){}drawAir();}}
 function radioNext(){if(!RAD.gid||RAD.stream||(RAD.cur&&RAD.au&&!RAD.au.paused&&!RAD.au.ended))return;if(!RAD.q.length){radioEndCheck();return;}const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;RAD.cur=l;
   if(l.viz)try{for(const c of document.querySelectorAll('.gclive'))if(c.dataset.gid===String(RAD.gid)&&c._follow)c._follow(l);}catch(e){}   // fix572
   if(!RAD.au)RAD.au=new Audio();const a=RAD.au;a.src=l.url;clearTimeout(RAD.wd);
@@ -4746,7 +4749,13 @@ function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.why!=='fre
         r.onclick=()=>openGame(g.id);r.onkeydown=e=>{if(e.target===r&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGame(g.id);}};}c.append(r);
       if(g.take&&g.take.id){try{c.append(takeCard(g.take,{live:true}));}catch(e){}}}   // fix591: her live question
     box.append(c);}
-  let bar=document.getElementById('airBar');if(!RAD.gid){if(bar)bar.remove();return;}
+  let bar=document.getElementById('airBar');
+  if(!RAD.gid&&RAD.resume){const gr=((R&&R.games)||[]).find(x=>x.id===RAD.resume&&x.state==='LIVE');if(gr){if(!bar){bar=el('div',null,'airbar');bar.id='airBar';document.body.append(bar);}bar.classList.remove('min');bar.replaceChildren();
+    // fix593: the page reloaded (phone slept, app reopened) while she was on: one tap brings her back (phones need a tap to play sound)
+    const t=el('div',null,'airt');t.append(el('b','🎙 '+(gr.name||'Mohjeta Live')),el('span','You were listening. Tap to pick it back up.','hint small'));
+    const go=el('button','▶ Resume','btn small');go.type='button';go.onclick=()=>radioListen(gr.id);const no=el('button','✕','btn small ghost');no.type='button';no.setAttribute('aria-label','Dismiss');no.onclick=()=>{RAD.resume=null;try{localStorage.removeItem('mohjeta.listen');}catch(e){}drawAir();};
+    bar.append(el('span','⏸','airic'),t,go,no);return;}}
+  if(!RAD.gid){if(bar)bar.remove();return;}
   if(!bar){bar=el('div',null,'airbar');bar.id='airBar';document.body.append(bar);}
   const g=(gs.find(x=>x.id===RAD.gid)||{});bar.replaceChildren();const t=el('div',null,'airt');t.append(el('b','🎙 '+(g.name||'Mohjeta Live')+(RAD.stream?' · 🔒':'')),el('span',RAD.last||'Waiting for the next big moment…','hint small'));
   const lk=el('button','🔒','btn small ghost');lk.type='button';lk.title='Keep playing with your phone locked';lk.setAttribute('aria-label','Lock-screen mode');lk.hidden=RAD.stream;lk.onclick=radioLock;
