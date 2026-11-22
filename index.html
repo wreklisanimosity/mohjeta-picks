@@ -3650,7 +3650,8 @@ let pageTag=null,newPage=false,lastTouch=Date.now();
 ['touchstart','keydown','scroll','pointerdown'].forEach(ev=>addEventListener(ev,()=>{lastTouch=Date.now();},{passive:true}));
 function quiet(){const a=document.activeElement;return Date.now()-lastTouch>45000&&!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))&&
   !(typeof chatOpen==='function'&&chatOpen())&&!(typeof propLegs!=='undefined'&&propLegs.length)&&!document.querySelector('#sheet.on,.sheet.open');}
-function maybeReload(){if(newPage&&(document.hidden||quiet()))location.reload();}
+function maybeReload(){if(typeof RAD!=='undefined'&&RAD.gid)return;   // fix571: never reload the page while someone is listening to her (this cut her off every time the site updated)
+  if(newPage&&(document.hidden||quiet()))location.reload();}
 // fix354 (owner: "screen keeps going black"): GitHub Pages' ETag is <deploy time>-<size> and every deploy (voice clip,
 // ratings, sim files: several an hour) gives every file a new time, so the page reloaded itself (a black flash) after
 // each deploy even when index.html had not changed. Compare only the size part: a real page change changes its size.
@@ -4541,7 +4542,7 @@ function airFx(kind){const G=airGame().crowd||{},C=(RAD.feed&&RAD.feed.crowd)||{
   const u=G[kind]||(kind==='groan'&&G.ooh)||(kind==='roar'&&C.roar);if(!u)return;
   try{if(!RAD.fx)RAD.fx=new Audio();RAD.fx.src=u;RAD.fx.volume=0.4;RAD.fx.currentTime=0;RAD.fx.play().catch(()=>{});}catch(e){}}
 function airRoar(){const C=(RAD.feed&&RAD.feed.crowd)||{};if(!C.roar||RAD.stream)return;try{if(!RAD.roar)RAD.roar=new Audio(C.roar);RAD.roar.volume=0.45;RAD.roar.currentTime=0;RAD.roar.play().catch(()=>{});}catch(e){}}
-function radioFeed(R){if(!R||!R.games)return;RAD.feed=R;if(RAD.gid&&!RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);if(g){for(const l of g.lines||[])if(!RAD.played.has(l.id)&&!RAD.q.some(x=>x.id===l.id)){if(l.url)RAD.q.push(l);else{RAD.played.add(l.id);RAD.last=l.text;}}radioNext();}}   // fix532: text-only lines show, nothing plays
+function radioFeed(R){if(!R||!R.games)return;RAD.feed=R;if(RAD.gid&&!RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);if(g){for(const l of g.lines||[])if(!RAD.played.has(l.id)&&!RAD.q.some(x=>x.id===l.id)){if(l.url)RAD.q.push(l);else{RAD.played.add(l.id);RAD.last=l.text;}}radioNext();}else radioEndCheck();}   // fix532: text-only lines show, nothing plays
   if(RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);const l=g&&(g.lines||[])[(g.lines||[]).length-1];if(l)RAD.last=l.text;}drawAir();}
 async function radioPoll(){try{const base=window.publicCdn?await publicCdn():null;if(!base)return;const r=await fetch(base+'/radio.json',{cache:'no-cache',signal:AbortSignal.timeout(6000)});if(r.ok)radioFeed(await r.json());}catch(e){}}
 function radioMeta(g){try{if(!('mediaSession' in navigator))return;navigator.mediaSession.metadata=new MediaMetadata({title:'Mohjeta Live',artist:(g&&g.name)||'Her call, in her voice',album:'Mohjeta',artwork:[{src:'icon-512.png',sizes:'512x512',type:'image/png'}]});
@@ -4551,6 +4552,14 @@ function radioMeta(g){try{if(!('mediaSession' in navigator))return;navigator.med
 function radioPing(){if(!RAD.gid)return;let id='';try{id=localStorage.getItem('mjLid')||'';if(!/^[a-z0-9]{8,40}$/.test(id)){id=Math.random().toString(36).slice(2,12)+Date.now().toString(36);localStorage.setItem('mjLid',id);}}catch(e){id=RAD.lid||(RAD.lid=Math.random().toString(36).slice(2,12)+Date.now().toString(36));}
   const go=c=>{if(c&&c.url&&c.anon_key)fetch(c.url+'/rest/v1/rpc/live_listen',{method:'POST',keepalive:true,headers:{apikey:c.anon_key,Authorization:'Bearer '+c.anon_key,'Content-Type':'application/json'},body:JSON.stringify({p_gid:String(RAD.gid),p_client:id,p_mode:RAD.stream?'lock':'app'})}).catch(()=>{});};
   try{if(window._cfg)go(window._cfg);else fetch('live-config.json',{cache:'no-store'}).then(r=>r.json()).then(c=>{window._cfg=window._cfg||c;go(c);}).catch(()=>{});}catch(e){}}
+// fix571: back to the app after the phone slept or another app: catch up right away (new lines, check-in, next clip)
+document.addEventListener('visibilitychange',()=>{if(document.hidden||!RAD.gid||RAD.stream)return;try{radioPoll();radioPing();
+  if(RAD.cur&&RAD.au&&(RAD.au.paused||RAD.au.ended)){const l=RAD.cur;RAD.cur=null;clearTimeout(RAD.wd);}radioNext();}catch(e){}});
+// fix571 (owner: "once the game is over she never finishes her broadcast, it just hangs"): after the final call plays,
+// she signs off and the player stops; same if the game drops off the feed.
+function radioEndCheck(){if(!RAD.gid||RAD.stream||RAD.cur||RAD.q.length)return;const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD.gid);
+  if(!g||g.state==='FINAL'){clearTimeout(RAD.endT);RAD.endT=setTimeout(()=>{const g2=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD.gid);
+    if(RAD.gid&&!RAD.cur&&!RAD.q.length&&(!g2||g2.state==='FINAL')){radioStop();toast('🎙 That’s the final. Thanks for listening with Mohjeta!');}},g?8000:20000);}}
 function radioPinging(on){clearInterval(RAD.pingT);RAD.pingT=null;if(on){radioPing();RAD.pingT=setInterval(radioPing,45000);}}
 function radioListen(gid){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===gid);if(!g)return;try{window.MJVoice&&MJVoice.stop();}catch(e){}
   radioStop(true);RAD.gid=gid;RAD.stream=false;RAD.played=new Set();const L=(g.lines||[]).filter(l=>l.url);for(const l of g.lines||[])RAD.played.add(l.id);RAD.q=L.slice(-2);for(const l of RAD.q)RAD.played.delete(l.id);   // catch up with the last two
@@ -4563,7 +4572,7 @@ function radioLock(){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD
   a.play().then(()=>toast('🔒 You can lock your phone now. She keeps talking.')).catch(()=>toast('Tap ▶ again to start the stream.'));radioMeta(g);drawAir();}
 function radioStop(quiet){radioPinging(false);airCrowd(false);if(RAD.au){try{RAD.au.pause();}catch(e){}}if(RAD.sa){try{RAD.sa.pause();RAD.sa.removeAttribute('src');RAD.sa.load();}catch(e){}}RAD.au=null;RAD.sa=null;RAD.stream=false;RAD.q=[];
   if(!quiet){RAD.gid=null;clearInterval(RAD.poll);RAD.poll=null;drawAir();}}
-function radioNext(){if(!RAD.gid||RAD.stream||(RAD.cur&&RAD.au&&!RAD.au.paused&&!RAD.au.ended)||!RAD.q.length)return;const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;RAD.cur=l;
+function radioNext(){if(!RAD.gid||RAD.stream||(RAD.cur&&RAD.au&&!RAD.au.paused&&!RAD.au.ended))return;if(!RAD.q.length){radioEndCheck();return;}const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;RAD.cur=l;
   if(!RAD.au)RAD.au=new Audio();const a=RAD.au;a.src=l.url;clearTimeout(RAD.wd);
   let started=false,fin=false;   // fix567: switching src fires the OLD clip's 'ended' on the new one - only an ended after this clip played counts
   const done=()=>{if(fin)return;fin=true;clearTimeout(RAD.wd);if(RAD.cur===l)RAD.cur=null;if(l.fx)airFx(l.fx);else if(l.mood==='hype')airFx('roar');radioNext();};
