@@ -4558,7 +4558,11 @@ function radioLock(){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD
 function radioStop(quiet){airCrowd(false);if(RAD.au){try{RAD.au.pause();}catch(e){}}if(RAD.sa){try{RAD.sa.pause();RAD.sa.removeAttribute('src');RAD.sa.load();}catch(e){}}RAD.au=null;RAD.sa=null;RAD.stream=false;RAD.q=[];
   if(!quiet){RAD.gid=null;clearInterval(RAD.poll);RAD.poll=null;drawAir();}}
 function radioNext(){if(!RAD.gid||RAD.stream||(RAD.au&&!RAD.au.paused&&!RAD.au.ended)||!RAD.q.length)return;const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;RAD.cur=l;
-  if(!RAD.au)RAD.au=new Audio();const a=RAD.au;a.src=l.url;a.onended=()=>{if(l.fx)airFx(l.fx);else if(l.mood==='hype')airFx('roar');radioNext();};a.onerror=()=>radioNext();a.play().catch(()=>{});
+  if(!RAD.au)RAD.au=new Audio();const a=RAD.au;a.src=l.url;clearTimeout(RAD.wd);
+  const done=()=>{clearTimeout(RAD.wd);if(RAD.cur!==l)return;RAD.cur=null;if(l.fx)airFx(l.fx);else if(l.mood==='hype')airFx('roar');radioNext();};
+  a.onended=done;a.onerror=done;a.play().catch(()=>{RAD.wd=setTimeout(done,1500);});
+  RAD.wd=setTimeout(()=>{try{a.pause();}catch(e){}done();},((Number(l.sec)||4)+8)*1000);   // fix566: a clip that never finishes (network stall, blocked play) can't freeze her
+  if(RAD.q.length>6)RAD.q=RAD.q.slice(-4);   // fix566: fell far behind (phone was asleep) -> jump to the newest calls
   if(!RAD.bed)airCrowd(true);drawAir();}   // one element, reused: keeps playing with the screen off on more phones
 function airName(g){let T=g.teams||[];if(T.length!==2||!T[0]||!T[1]){const m=((D&&D.games)||[]).find(x=>String(x.id)===String(g.id));   // the site's own game: full team names right away
     T=m&&(m.teams||[]).length===2?(m.teams.some(t=>t.home)?[m.teams.find(t=>!t.home).name,m.teams.find(t=>t.home).name]:[m.teams[1].name,m.teams[0].name]):[];}   // ESPN order: home first
@@ -4625,7 +4629,7 @@ function gcLive(g){const path=GC_PATH[g.league];if(!path||!g.id||g.state!=='LIVE
     if(w.isConnected)setTimeout(tick,15000);};
   setTimeout(tick,50);return w;}
 function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.why!=='free'&&(g.state==='LIVE'||g.state==='UPCOMING'||(g.lines||[]).length));   // fix565: free-voice games live on their game cards
-  const ak=JSON.stringify([gs.map(g=>[g.id,g.state,g.why,(g.lines||[]).length,g.teams]),RAD.gid,!!(R&&R.on_air),RAD.cur&&RAD.cur.id]);   // fix541: redraw only when something changed (no flicker)
+  const ak=JSON.stringify([gs.map(g=>[g.id,g.state,g.why,((g.lines||[]).slice(-1)[0]||{}).id||'',g.teams]),RAD.gid,!!(R&&R.on_air),RAD.cur&&RAD.cur.id]);   // fix566: last line's id (the feed keeps 14 lines, so the count stopped changing and the box froze)   // fix541: redraw only when something changed (no flicker)
   const boxes=[...document.querySelectorAll('.mjair')].filter(b=>b.dataset.ak!==ak||!b.firstChild===!!gs.length);
   for(const box of boxes){box.dataset.ak=ak;box.replaceChildren();if(!gs.length)continue;
     const c=el('div',null,'card airc'+(R.on_air?' onair':''));const h=el('div',null,'airhd');const eq=el('span',null,'aireq');eq.setAttribute('aria-hidden','true');eq.append(el('i'),el('i'),el('i'),el('i'));
