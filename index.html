@@ -5473,6 +5473,19 @@ function tfxApply(){const b=document.body;b.classList.remove('tfx1','tfx2','tfx3
 // between them): team-color stage with its big symbol slowly turning behind it, the evolved badge, record, a live score or
 // her pick for the next game, and a tier ring with what unlocks next.
 function favNext(t,lg){return ((D&&D.games)||[]).filter(g=>g.state!=='FINAL'&&(!lg||g.league===lg)&&(g.teams||[]).some(x=>tsame(x.name,t))).sort((a,b)=>(a.state==='LIVE'?0:1)-(b.state==='LIVE'?0:1)||String(a.start).localeCompare(String(b.start)))[0]||null;}
+// fix586 (owner: "It's say no games in the next couple of days can we make sure these things work"): the card only looked at
+// tonight's slate, so a team playing in 2 days (Howard, Sun vs Notre Dame MD) showed "No game". Falls back to the team page
+// schedule (teams.json), then ESPN's own team schedule by id (fresh; teams.json rebuilds every few hours).
+function favUpcoming(tm){const now=new Date().toISOString();const r=((tm&&tm.g)||[]).find(x=>!x[4]&&String(x[0])>=now.slice(0,13));return r?{start:r[0],opp:r[2]||r[1],home:!!r[3]}:null;}
+function favSchedLine(line,u,t,lg){line.append(el('span',(u.home?'vs ':'at ')+teamNick(u.opp)+' · '+when(u.start),'favg1'),el('b','Her pick soon'));
+  line.classList.add('tap');line.onclick=e=>{e.stopPropagation();openTeam(t,lg);};}
+const FAV_ESPN={};
+async function favEspnNext(t,lg,tm){const path=ESPN_PATH[lg],id=tm&&tm.id;if(!path||!id)return null;const k=lg+'|'+id;if(FAV_ESPN[k]&&Date.now()-FAV_ESPN[k].at<1800000)return FAV_ESPN[k].v;
+  let v=null;try{const s=await fetch('https://site.api.espn.com/apis/site/v2/sports/'+path+'/teams/'+id+'/schedule',{signal:AbortSignal.timeout(9000)}).then(r=>r.ok?r.json():null).catch(()=>null);
+    const ev=((s||{}).events||[]).filter(e=>((((e.competitions||[])[0]||{}).status||{}).type||{}).state!=='post'&&String(e.date)>=new Date(Date.now()-3*3600e3).toISOString()).sort((a,b)=>String(a.date).localeCompare(String(b.date)))[0];
+    if(ev){const cs=(ev.competitions[0].competitors)||[];const us=cs.find(c=>String((c.team||{}).id)===String(id))||{};const op=cs.find(c=>c!==us)||{};
+      v={start:ev.date,opp:(op.team||{}).displayName||'TBD',home:us.homeAway==='home'};}}catch(e){}
+  FAV_ESPN[k]={at:Date.now(),v};return v;}
 function favRing(pct,label){const s=document.createElement('span');s.className='favring';const r=22,c=2*Math.PI*r;
   s.innerHTML='<svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="'+r+'" class="rt"/><circle cx="26" cy="26" r="'+r+'" class="rf" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+(c*(1-pct)).toFixed(1)+'"/></svg>';
   s.append(el('b',label));return s;}
@@ -5486,7 +5499,8 @@ function favHero(t,lg,stage){const c=tfxColor(t),m=tfxMotif(t),xp=teamXP(t),tier
   const g=favNext(t,lg);const line=el('div',null,'favgame');
   if(g&&g.state==='LIVE'){const ts=g.teams||[];line.classList.add('live');line.append(el('i',null,'favdot'),el('b',ts.map(x=>teamNick(x.name)+' '+(x.score??0)).join('  –  ')),el('span',String(g.detail||'Live'),'hint small'));}
   else if(g){const p=g.pick||{};line.append(el('span',(g.teams||[]).map(x=>teamNick(x.name)).join(' vs ')+' · '+when(g.start),'favg1'),el('b',p.team?'Her pick: '+teamNick(p.team)+(typeof p.chance==='number'?' '+pct0(p.chance):''):'Her pick soon'));}
-  else line.append(el('span','No game in the next few days','hint small'));
+  else{const up=favUpcoming(tm);if(up)favSchedLine(line,up,t,lg);else line.append(el('span','Checking the schedule…','hint small'));
+    favEspnNext(t,lg,tm).then(e=>{if(e&&(!up||e.start<up.start)){line.textContent='';favSchedLine(line,e,t,lg);}else if(!up){line.textContent='';line.append(el('span','No game on the schedule yet','hint small'));}});}
   if(g){line.onclick=e=>{e.stopPropagation();openGame(g.id||g.name);};line.classList.add('tap');}h.append(line);
   const foot=el('div',null,'favfoot');foot.append(el('span',next?(next[0]-xp)+' XP to '+next[1]+' · unlocks '+(tier===0?'the '+TFX_WORD[m]+' border':tier===1?'the stadium scoreboard':'the full storm'):'Every unlock earned','favnext'));
   const tp=el('button','Team ›','favbtn');tp.type='button';tp.onclick=e=>{e.stopPropagation();openTeam(t,lg);};const rw=el('button','Rewards ›','favbtn main');rw.type='button';rw.onclick=e=>{e.stopPropagation();openFavRewards(t,lg);};
