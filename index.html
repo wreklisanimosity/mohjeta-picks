@@ -4924,8 +4924,11 @@ function gcLive(g){const path=GC_PATH[g.league];if(!path||!g.id||g.state!=='LIVE
     if(!fg){toast('🎙 She’s getting set up on this game. Try again in a few seconds.');try{radioPoll();}catch(e){}return;}radioListen(fg.id);lb.textContent='■ Stop';};hd.append(lb);
   w.append(hd);const box=el('div');box.append(el('p','Loading the latest play…','hint small'));w.append(box);w.dataset.gid=String(g.id);
   const tm=(g.teams||[]).length===2?(g.teams.some(t=>t.home)?[g.teams.find(t=>!t.home).name,g.teams.find(t=>t.home).name]:[g.teams[1].name,g.teams[0].name]):[];
-  w._follow=l=>{const v=airViz(Object.assign({},l,{league:g.league}),tm,'gc'+g.id);if(v&&v.parentNode!==box){box.replaceChildren(v);}};   // fix572: while you listen, the picture follows HER call (same play she's saying)
-  let lastId=null,tries=0;const tick=async()=>{if(!w.isConnected&&tries++>0)return;if(RAD.gid&&String(RAD.gid)===String(g.id)&&!RAD.stream){if(w.isConnected)setTimeout(tick,15000);return;}try{const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/'+path+'/summary?event='+encodeURIComponent(g.id),{cache:'no-cache',signal:AbortSignal.timeout(8000)});
+  w._follow=l=>{const v=airViz(Object.assign({},l,{league:g.league}),tm,'gc'+g.id);if(v){w._fat=Date.now();if(v.parentNode!==box)box.replaceChildren(v);}};   // fix572: while you listen, the picture follows HER call (same play she's saying)
+  let lastId=null,tries=0;const tick=async()=>{if(!w.isConnected&&tries++>0)return;
+    // fix601 (owner screenshot: "Loading the latest play…" stuck while listening): her calls drive the picture only once one has shown it;
+    // until then (or if hers go 60 s without a picture) the card keeps showing ESPN's latest play
+    if(RAD.gid&&String(RAD.gid)===String(g.id)&&!RAD.stream&&box.querySelector('.airviz')&&Date.now()-(w._fat||0)<60000){if(w.isConnected)setTimeout(tick,15000);return;}try{const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/'+path+'/summary?event='+encodeURIComponent(g.id),{cache:'no-cache',signal:AbortSignal.timeout(8000)});
       if(r.ok){const pl=gcPlay(await r.json(),g.league);if(pl&&pl.id!==lastId){lastId=pl.id;const v=airViz(Object.assign({},pl,{league:g.league}),tm,'gc'+g.id);if(!v||v.parentNode!==box)box.replaceChildren(v||el('p',pl.text,'hint small'));}else if(!pl&&lastId===null){lastId='';box.replaceChildren(el('p','No play picture for this game yet.','hint small'));}}}catch(e){}
     if(w.isConnected)setTimeout(tick,15000);};
   setTimeout(tick,50);return w;}
