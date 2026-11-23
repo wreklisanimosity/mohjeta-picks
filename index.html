@@ -932,6 +932,9 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
 .airtm:hover .airtn,.airtm:focus-visible .airtn{color:#ff9ce9;border-bottom-color:#ff9ce9}.airi span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .airbar{position:fixed;left:8px;right:8px;bottom:calc(var(--navh) + var(--safe) + 8px);z-index:40;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;
  background:linear-gradient(135deg,#2a1145,#160a26);border:1px solid #ff4fd877;box-shadow:0 8px 24px #000a;max-width:560px;margin:0 auto}
+.airclip{margin-top:8px;display:flex;flex-direction:column;gap:4px}.airclipv{position:relative;width:min(220px,62vw);aspect-ratio:9/16;border-radius:12px;overflow:hidden;background:#000;border:1px solid #ff4fd855}
+.airclipv video{width:100%;height:100%;object-fit:cover;display:block}.airclipv video::cue{font-size:13px;background:#000a}
+.airclipsnd{position:absolute;right:6px;bottom:6px;border:0;border-radius:999px;padding:4px 9px;font:inherit;font-size:11px;font-weight:700;background:#000b;color:#fff;cursor:pointer}
 .airbar.min{left:auto;right:12px;padding:0;border-radius:50%;width:52px;height:52px;margin:0;justify-content:center;background:none;border:0;box-shadow:none}
 .airmini{position:relative;width:52px;height:52px;border-radius:50%;border:1px solid #ff4fd8aa;background:linear-gradient(135deg,#3a1660,#1a0b2c);box-shadow:0 6px 18px #000b;font-size:22px;color:#fff;cursor:pointer;display:grid;place-items:center}
 .airmdot{position:absolute;top:6px;right:6px;width:10px;height:10px;border-radius:50%;background:#888}.airmdot.on{background:#ff4fd8;box-shadow:0 0 8px #ff4fd8;animation:airpulse 1.4s infinite}
@@ -4845,8 +4848,22 @@ function gcLive(g){const path=GC_PATH[g.league];if(!path||!g.id||g.state!=='LIVE
       if(r.ok){const pl=gcPlay(await r.json(),g.league);if(pl&&pl.id!==lastId){lastId=pl.id;const v=airViz(pl,tm,'gc'+g.id);if(!v||v.parentNode!==box)box.replaceChildren(v||el('p',pl.text,'hint small'));}else if(!pl&&lastId===null){lastId='';box.replaceChildren(el('p','No play picture for this game yet.','hint small'));}}}catch(e){}
     if(w.isConnected)setTimeout(tick,15000);};
   setTimeout(tick,50);return w;}
+// fix596 (owner: "Maybe play some tutorial and some of her social media videos" -> in the Live box during breaks, muted with
+// captions): at halftime / a timeout / a review her app tour or a highlight reel plays under the game, silently with captions;
+// tap for sound. Clips: clips.json on the site (a list of {src, poster, vtt, title}); the two built-in ones if it's missing.
+let CLIPS=[{src:'clip-tour.mp4',poster:'clip-tour.jpg',title:'Quick tour of the app'},{src:'clip-calls.mp4',poster:'clip-calls.jpg',vtt:'clip-calls.vtt',title:'Her calls of the night'}];
+fetch('clips.json?t='+Math.floor(Date.now()/3e5)).then(r=>r.ok?r.json():null).then(x=>{if(Array.isArray(x)&&x.length)CLIPS=x;}).catch(()=>{});
+const CLIPC={};let clipTurn=0;try{clipTurn=Number(localStorage.getItem('mohjeta.clipTurn')||0)||0;}catch(e){}
+function airClip(g){const key=g.id+'|'+g.vbrk,have=CLIPC[g.id];if(have&&have.key===key){setTimeout(()=>{const v=have.el.querySelector('video');if(v&&v.isConnected&&v.paused)v.play().catch(()=>{});},0);return have.el;}   // the box redraws often: a moved video pauses, so it picks back up where it wasif(!CLIPS.length)return null;
+  const c=CLIPS[clipTurn++%CLIPS.length];try{localStorage.setItem('mohjeta.clipTurn',String(clipTurn));}catch(e){}
+  const w=el('div',null,'airclip');w.append(el('small',(g.vbrk==='half'?'Halftime':'Timeout')+' · '+(c.title||'From Mohjeta'),'hint small'));
+  const v=document.createElement('video');v.muted=true;v.defaultMuted=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');v.autoplay=true;v.preload='metadata';v.loop=true;
+  if(c.poster)v.poster=c.poster;v.src=c.src;if(c.vtt){const tr=document.createElement('track');tr.kind='captions';tr.srclang='en';tr.label='English';tr.src=c.vtt;tr.default=true;v.append(tr);v.addEventListener('loadedmetadata',()=>{try{for(const t of v.textTracks)t.mode='showing';}catch(e){}});}
+  const snd=el('button','🔇 Tap for sound','airclipsnd');snd.type='button';snd.onclick=e=>{e.stopPropagation();v.muted=!v.muted;snd.textContent=v.muted?'🔇 Tap for sound':'🔊 Sound on';if(!v.muted)v.play().catch(()=>{});};
+  v.onclick=e=>{e.stopPropagation();snd.click();};w.onclick=e=>e.stopPropagation();
+  const box=el('div',null,'airclipv');box.append(v,snd);w.append(box);v.play().catch(()=>{});CLIPC[g.id]={key,el:w};return w;}
 function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.why!=='free'&&(g.state==='LIVE'||g.state==='UPCOMING'||(g.lines||[]).length));   // fix565: free-voice games live on their game cards
-  const ak=JSON.stringify([gs.map(g=>[g.id,g.state,g.why,((g.lines||[]).slice(-1)[0]||{}).id||'',g.teams,(g.take||{}).id||0]),RAD.gid,!!(R&&R.on_air),RAD.cur&&RAD.cur.id]);   // fix566: last line's id (the feed keeps 14 lines, so the count stopped changing and the box froze)   // fix541: redraw only when something changed (no flicker)
+  const ak=JSON.stringify([gs.map(g=>[g.id,g.state,g.why,((g.lines||[]).slice(-1)[0]||{}).id||'',g.teams,(g.take||{}).id||0,g.vbrk||'']),RAD.gid,!!(R&&R.on_air),RAD.cur&&RAD.cur.id]);   // fix566: last line's id (the feed keeps 14 lines, so the count stopped changing and the box froze)   // fix541: redraw only when something changed (no flicker)
   const boxes=[...document.querySelectorAll('.mjair')].filter(b=>b.dataset.ak!==ak||!b.firstChild===!!gs.length);
   for(const box of boxes){const bi=[...document.querySelectorAll('.mjair')].indexOf(box);box.dataset.ak=ak;box.replaceChildren();if(!gs.length)continue;
     const c=el('div',null,'card airc'+(R.on_air?' onair':''));const h=el('div',null,'airhd');const eq=el('span',null,'aireq');eq.setAttribute('aria-hidden','true');eq.append(el('i'),el('i'),el('i'),el('i'));
@@ -4854,7 +4871,8 @@ function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.why!=='fre
     for(const g of gs){const r=el('div',null,'airrow'+(g.id===RAD.gid?' on':''));const info=el('div',null,'airi');info.append(airName(g),
         el('span',g.state==='LIVE'?(g.why==='crunch'?'🔥 Crunch time':'● Live now'):g.state==='UPCOMING'?'She calls this one tonight':'Final','airst'+(g.state==='LIVE'?' live':'')));
       if(g.state==='LIVE'&&(g.lines||[]).length)info.append(el('span','“'+(g.lines[g.lines.length-1].text||'').slice(0,90)+'”','airq'));
-      if(g.state==='LIVE'){const vz=airViz(airVizLine(g),g.teams,'air'+bi+'|'+g.id);if(vz)info.append(vz);}   // fix562: the play, animated
+      if(g.state==='LIVE'){const vz=airViz(airVizLine(g),g.teams,'air'+bi+'|'+g.id);if(vz)info.append(vz);}
+      if(g.state==='LIVE'&&g.vbrk&&bi===0){try{const cv=airClip(g);if(cv)info.append(cv);}catch(e){}}   // fix596: her videos during breaks (one box only, so it never plays twice)   // fix562: the play, animated
       const b=el('button',g.id===RAD.gid?'■ Stop':'▶ Listen','airbtn'+(g.id===RAD.gid?' on':''));b.type='button';b.disabled=g.state==='UPCOMING';b.onclick=e=>{e.stopPropagation();g.id===RAD.gid?radioStop():radioListen(g.id);};r.append(info,b);
       if(typeof openGame==='function'){r.classList.add('tap');r.tabIndex=0;r.setAttribute('role','button');r.setAttribute('aria-label','Open the game card: '+(g.name||''));   // fix528: tap the row -> game card
         r.onclick=()=>openGame(g.id);r.onkeydown=e=>{if(e.target===r&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGame(g.id);}};}c.append(r);
