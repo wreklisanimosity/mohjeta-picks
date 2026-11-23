@@ -4599,13 +4599,17 @@ function radioLock(){const g=((RAD.feed&&RAD.feed.games)||[]).find(x=>x.id===RAD
   a.play().then(()=>toast('🔒 You can lock your phone now. She keeps talking.')).catch(()=>toast('Tap ▶ again to start the stream.'));radioMeta(g);drawAir();}
 function radioStop(quiet){radioPinging(false);airCrowd(false);if(RAD.au){try{RAD.au.pause();}catch(e){}}if(RAD.sa){try{RAD.sa.pause();RAD.sa.removeAttribute('src');RAD.sa.load();}catch(e){}}RAD.au=null;RAD.sa=null;RAD.stream=false;RAD.q=[];
   if(!quiet){RAD.gid=null;clearInterval(RAD.poll);RAD.poll=null;try{localStorage.removeItem('mohjeta.listen');}catch(e){}drawAir();}}
-function radioNext(){if(!RAD.gid||RAD.stream||(RAD.cur&&RAD.au&&!RAD.au.paused&&!RAD.au.ended))return;if(!RAD.q.length){radioEndCheck();return;}const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;RAD.cur=l;
+function radioUnlock(){RAD.blocked=false;RAD.fails=0;try{if(!RAD.au)RAD.au=new Audio();}catch(e){}radioNext();drawAir();}
+function radioNext(){if(!RAD.gid||RAD.stream||RAD.blocked||(RAD.cur&&RAD.au&&!RAD.au.paused&&!RAD.au.ended))return;if(!RAD.q.length){radioEndCheck();return;}const l=RAD.q.shift();RAD.played.add(l.id);RAD.last=l.text;RAD.cur=l;
   if(l.viz)try{for(const c of document.querySelectorAll('.gclive'))if(c.dataset.gid===String(RAD.gid)&&c._follow)c._follow(l);}catch(e){}   // fix572
   if(!RAD.au)RAD.au=new Audio();const a=RAD.au;a.src=l.url;clearTimeout(RAD.wd);
   let started=false,fin=false;   // fix567: switching src fires the OLD clip's 'ended' on the new one - only an ended after this clip played counts
   const done=()=>{if(fin)return;fin=true;clearTimeout(RAD.wd);if(RAD.cur===l)RAD.cur=null;if(l.fx)airFx(l.fx);else if(l.mood==='hype')airFx('roar');radioNext();};
-  a.onplaying=()=>{started=true;};a.onended=()=>{if(started)done();};a.onerror=()=>{if(a.src&&a.src.indexOf(l.url)>=0||started)done();};
-  a.play().catch(()=>{setTimeout(done,1500);});
+  a.onplaying=()=>{started=true;RAD.fails=0;if(RAD.blocked){RAD.blocked=false;drawAir();}};a.onended=()=>{if(started)done();};a.onerror=()=>{if(a.src&&a.src.indexOf(l.url)>=0||started)done();};
+  // fix597 (owner: "She stop talking for a while"): when the phone blocks sound (another app / video took the audio, the page went to the
+  // background), every play() failed and the player quietly skipped line after line while the text kept coming. Two failures in a row ->
+  // stop skipping, keep her newest lines, and show "Tap to hear her" (a tap is what phones need to allow sound again).
+  a.play().catch(()=>{RAD.fails=(RAD.fails||0)+1;if(RAD.fails>=2&&!fin){fin=true;clearTimeout(RAD.wd);RAD.cur=null;RAD.q.unshift(l);RAD.q=RAD.q.slice(-3);RAD.blocked=true;drawAir();return;}setTimeout(done,1500);});
   RAD.wd=setTimeout(()=>{try{a.pause();}catch(e){}done();},((Number(l.sec)||4)+8)*1000);   // fix566: a clip that never finishes (network stall, blocked play) can't freeze her
   if(RAD.q.length>6)RAD.q=RAD.q.slice(-4);   // fix566: fell far behind (phone was asleep) -> jump to the newest calls
   if(!RAD.bed)airCrowd(true);drawAir();}   // one element, reused: keeps playing with the screen off on more phones
@@ -4893,10 +4897,12 @@ function drawAir(){const R=RAD.feed,gs=((R&&R.games)||[]).filter(g=>g.why!=='fre
   // ⌄ shrinks it to a small round button in the corner (she keeps talking); tap it to open the bar again. Remembered on this phone.
   let mini=false;try{mini=localStorage.getItem('mohjeta.airMin')==='1';}catch(e){}
   const setMin=v=>{try{localStorage.setItem('mohjeta.airMin',v?'1':'0');}catch(e){}drawAir();};
-  bar.classList.toggle('min',mini);bar.onclick=null;
+  if(RAD.blocked)mini=false;bar.classList.toggle('min',mini);bar.onclick=null;
   if(mini){const play=RAD.stream||(RAD.au&&!RAD.au.paused);const o=el('button',null,'airmini');o.type='button';o.setAttribute('aria-label','Open the Mohjeta Live bar');o.title='Mohjeta Live: tap to open';
     o.append(el('span','🎙'),el('i',null,'airmdot'+(play?' on':'')));o.onclick=()=>setMin(false);bar.append(o);return;}
   const mn=el('button','⌄','btn small ghost airmin');mn.type='button';mn.title='Hide the bar (she keeps talking)';mn.setAttribute('aria-label','Collapse the Mohjeta Live bar');mn.onclick=()=>setMin(true);
+  if(RAD.blocked){const ub=el('button','🔊 Tap to hear her','btn small airunlock');ub.type='button';ub.onclick=e=>{e.stopPropagation();radioUnlock();};
+    t.querySelector('span').textContent='Your phone paused the sound. One tap brings her back.';bar.append(el('span','🔇','airic'),t,ub,x);return;}
   bar.append(el('span',RAD.stream||(RAD.au&&!RAD.au.paused)?'🔊':'⏳','airic'),t,lk,mn,x);}
 // ---------------- Prop Pick'em (fix372, owner: "can we add props to pickem" -> a daily featured 10 on its own record and
 // leaderboard). prop_pickem.py features the props and grades them from Kalshi; picks lock at tip-off (database rule).
