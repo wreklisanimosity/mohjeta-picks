@@ -1318,7 +1318,8 @@ function homeDeckBlock(d){const gs0=(d.games||[]).filter(g=>(g.state==='LIVE'||g
     pd.append(lg,el('b',(g.teams||[]).map(t=>teamNick(t.name)).join(' vs ')),el('small','Opening the game…'));bk.append(pd);
     const inn=el('div',null,'in');inn.append(fr,bk);c.append(inn);deck.append(c);dots.append(el('i'));return c;});
   let order=cards.map((_,i)=>i);
-  function lay(){order.forEach((ci,pos)=>{const c=cards[ci];c.style.zIndex=20-pos;c.style.opacity=pos>2?0:1;c.style.pointerEvents=pos?'none':'auto';
+  {const k=cards.findIndex(c=>c._gid===window.__mjDeckTop);if(k>0)order=order.slice(k).concat(order.slice(0,k));}   // fix611: keep your place when Home refreshes
+  function lay(){window.__mjDeckTop=cards[order[0]]._gid;order.forEach((ci,pos)=>{const c=cards[ci];c.style.zIndex=20-pos;c.style.opacity=pos>2?0:1;c.style.pointerEvents=pos?'none':'auto';
       c.style.transform=pos?`translate3d(0,${pos*24}px,${-pos*80}px) rotateX(${pos*4}deg) scale(${1-pos*.05})`:'';if(pos)c.classList.remove('flip');
       for(const v of c.querySelectorAll('video')){if(pos===0){v.play().catch(()=>{});}else v.pause();}});
     [...dots.children].forEach((x,i)=>x.classList.toggle('on',i===order[0]));const b=cards[order[0]].querySelector('.bar i');requestAnimationFrame(()=>{b.style.width=b.dataset.w+'%';});}
@@ -1328,7 +1329,7 @@ function homeDeckBlock(d){const gs0=(d.games||[]).filter(g=>(g.state==='LIVE'||g
   // and leaves the card alone; a tap (no movement) turns the card over. Mouse keeps pointer events + the tilt.
   let sx=0,sy=0,dx=0,dragging=false,moved=false,lock=null,tapOk=false;
   const top=()=>cards[order[0]];
-  const drag=x=>{dx=x;top().style.transform=`translate3d(${dx}px,0,0) rotateZ(${dx/20}deg)`;};
+  const drag=x=>{window.__mjDeckTouch=Date.now();dx=x;top().style.transform=`translate3d(${dx}px,0,0) rotateZ(${dx/20}deg)`;};
   const release=()=>{const t=top();t.classList.remove('drag');
     if(Math.abs(dx)>70){t.style.transform=`translate3d(${dx<0?-520:520}px,40px,0) rotateZ(${dx<0?-24:24}deg)`;t.style.opacity=0;setTimeout(()=>{order.push(order.shift());lay();},240);}
     else t.style.transform='';};
@@ -1336,7 +1337,7 @@ function homeDeckBlock(d){const gs0=(d.games||[]).filter(g=>(g.state==='LIVE'||g
   const flip=()=>{const t=top();if(t._opening)return;t._opening=true;t.classList.add('flip');
     setTimeout(()=>{try{openGame(t._gid,true);}catch(e){}setTimeout(()=>{t.classList.remove('flip');t._opening=false;},400);},430);};
   deck.addEventListener('touchstart',e=>{const t=top();if(!t.contains(e.target)||e.target.closest('button')||e.touches.length>1){tapOk=false;return;}
-    sx=e.touches[0].clientX;sy=e.touches[0].clientY;dx=0;lock=null;tapOk=true;},{passive:true});
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;dx=0;lock=null;tapOk=true;window.__mjDeckTouch=Date.now();},{passive:true});
   deck.addEventListener('touchmove',e=>{if(!tapOk&&lock!=='x')return;const x=e.touches[0].clientX-sx,y=e.touches[0].clientY-sy;
     if(lock===null&&(Math.abs(x)>8||Math.abs(y)>8)){lock=Math.abs(x)>Math.abs(y)?'x':'y';tapOk=false;if(lock==='x')top().classList.add('drag');}
     if(lock==='x'){e.preventDefault();drag(x);}},{passive:false});
@@ -3338,7 +3339,9 @@ function pageCount(k,d){d=d||D;if(!d)return '';const gs=d.games||[];const t=d.be
   return '';}
 function pageTile(p,d){const [k,ic,t,sub,tc]=p;const b=el('button',null,'htile');b.type='button';b.style.setProperty('--tc',tc);
   const c=pageCount(k,d);b.append(iel('span',ic),el('b',t),el('small',c||sub));b.onclick=()=>goPage(k);return b;}
-function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren();const hr=new Date().getHours();
+function renderHome(d){const box=$('homeBox');if(!box)return;
+  if(Date.now()-(window.__mjDeckTouch||0)<2500){clearTimeout(window.__mjHomeLater);window.__mjHomeLater=setTimeout(()=>{try{renderHome(D||d);}catch(e){}},2600);return;}   // fix611: no refresh mid-swipe
+box.replaceChildren();const hr=new Date().getHours();
   const hh=el('div',null,'hhead');hh.append(el('h2',hr<5?'Late night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening'),el('p','Her picks for today. Teams, players and props are in Teams below.','hint small'));box.append(hh);
   const B={};try{if(myTeams().length)B.teams=myTeamsSection(d);}catch(e){}   // fix402: trophy row + tester panel moved to My Mohjeta
   {const dv=d.voice&&d.voice.daily;if(dv){const b=el('button',null,'hvoice');b.type='button';const im=el('img');im.src='logo-cut.webp?v=2';im.alt='';
