@@ -1276,9 +1276,13 @@ function deckCss(){if(document.getElementById('mjdeckcss'))return;const s=docume
 .mjdeck .sd{display:flex;flex-direction:column;align-items:center;gap:5px;transform:translateZ(60px);min-width:0;padding:0 6px}
 .mjdeck .pf{width:min(150px,37vw);aspect-ratio:1;border-radius:22px;overflow:hidden;background:#0e0816;box-shadow:0 20px 28px -10px rgba(0,0,0,.8),0 0 0 2px var(--tc,#444),0 0 24px -4px var(--tc,#444)}
 .mjdeck .pf .badge{width:100%!important;height:100%!important;object-fit:cover;display:block;border-radius:0;margin:0}
-.mjdeck .sd span{font-weight:800;font-size:14px;text-align:center;line-height:1.15}
-.mjdeck .sd small{color:var(--dim,#9d8fb5);font-size:11.5px}
-.mjdeck .vs{font-family:Georgia,serif;font-size:18px;color:var(--dim,#9d8fb5);transform:translateZ(36px)}
+.mjdeck .nm{display:flex;flex-direction:column;align-items:center;text-align:center;margin-top:6px;max-width:100%}
+.mjdeck .nm i{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#cbbfe0;opacity:.85;line-height:1.3}
+.mjdeck .nm b{font-family:'DIN Condensed','Bahnschrift','Roboto Condensed','Arial Narrow',sans-serif-condensed,system-ui,sans-serif;font-stretch:condensed;font-weight:800;font-size:clamp(20px,5.6vw,30px);line-height:1.02;letter-spacing:.02em;text-transform:uppercase;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.55),0 0 18px var(--tc,#5a2d81);overflow-wrap:anywhere}
+.mjdeck .nm::after{content:'';display:block;width:38px;height:3px;border-radius:2px;margin-top:6px;background:linear-gradient(90deg,transparent,var(--tc,#5a2d81),transparent);filter:brightness(1.8) saturate(1.3)}
+.mjdeck .sd small{color:var(--dim,#9d8fb5);font-size:11.5px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;gap:6px}
+.mjdeck .sd small .hp{font-style:normal;font-size:9.5px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;border-radius:999px;color:#fff;background:linear-gradient(90deg,#b44dff,#ff4fd8);box-shadow:0 0 10px #ff4fd855}
+.mjdeck .vs{font-family:'DIN Condensed','Bahnschrift','Roboto Condensed','Arial Narrow',sans-serif;font-weight:800;font-style:italic;font-size:22px;letter-spacing:.06em;color:#ffffffb0;text-shadow:0 0 14px #ff4fd866;transform:translateZ(36px)}
 .mjdeck .pk{position:absolute;left:14px;right:14px;bottom:14px;padding:14px;border-radius:18px;background:rgba(10,6,16,.74);border:1px solid rgba(255,255,255,.07);transform:translateZ(40px)}
 .mjdeck .pk .w{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted,#cbbfe0);letter-spacing:.06em;text-transform:uppercase;font-weight:700}
 .mjdeck .pk .w img{width:20px;height:20px}
@@ -1306,7 +1310,11 @@ function homeDeckBlock(d){const gs0=(d.games||[]).filter(g=>(g.state==='LIVE'||g
   const cards=gs.map((g,i)=>{const [a,h]=g.teams;const c=el('div',null,'dk');c.tabIndex=0;c._gid=g.id||g.name;c.style.setProperty('--c1',col(a.name)+'55');c.style.setProperty('--c2',col(h.name)+'55');
     const chance=Math.round((g.pick.chance>1?g.pick.chance:g.pick.chance*100)||0);
     const side=t=>{const s=el('div',null,'sd');const pf=el('div',null,'pf');pf.style.setProperty('--tc',col(t.name));pf.append(teamLive(t.name));
-      s.append(pf,el('span',t.name),el('small',(t.record||'')+(t.name===g.pick.team?(t.record?' · ':'')+'her pick':'')));return s;};
+      // fix613 (owner: "better text for the team names"): city small and spaced, nickname big and bold with a team-color bar
+      const pro=/^(NBA|NFL|NHL|MLB|WNBA)$/.test(String(g.league||''));const nk=pro?teamNick(t.name):'';const city=nk&&t.name.endsWith(nk)?t.name.slice(0,-nk.length).trim():'';
+      const nm=el('div',null,'nm');nm.style.setProperty('--tc',col(t.name));if(city)nm.append(el('i',city));nm.append(el('b',city?nk:t.name));
+      const mine=t.name===g.pick.team;const rec=el('small',t.record||'');if(mine)rec.append(el('em','Her pick','hp'));
+      s.append(pf,nm,rec);return s;};
     const fr=el('div',null,'fc fr');const tl=el('div',null,'tl');const mt=el('div',null,'mt');
     mt.append(el('span',sname(g.league)),g.state==='LIVE'?el('b','● LIVE','lv'):el('b',hm(g.start)));
     const ar=el('div',null,'ar');ar.append(side(a),el('div','VS','vs'),side(h));
