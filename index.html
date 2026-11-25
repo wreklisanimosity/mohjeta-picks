@@ -1260,14 +1260,15 @@ function deckCss(){if(document.getElementById('mjdeckcss'))return;const s=docume
 .mjdeck{position:relative;height:min(470px,64vh);min-height:400px;perspective:1100px;margin:6px 0 40px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .mjdeck .dk{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1),opacity .35s;cursor:grab;outline:none}
 .mjdeck .dk.drag{transition:none}
-.mjdeck .in{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.8,.2,1)}
+.mjdeck .in{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.3,.7,.2,1)}
+.mjdeck .dk.flip .in{animation:mjlift .6s ease}@keyframes mjlift{50%{scale:1.04}}
 .mjdeck .dk.flip .in{transform:rotateY(180deg)}
-.mjdeck .fc{position:absolute;inset:0;border-radius:24px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+.mjdeck .fc{position:absolute;inset:0;border-radius:24px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform-style:flat;-webkit-transform:translateZ(.1px);
   background:linear-gradient(160deg,var(--c1,#22103a) 0%,transparent 55%),linear-gradient(#120a1c,#0c0714);border:1px solid rgba(255,255,255,.08);
   box-shadow:0 26px 50px -16px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.12)}
 .mjdeck .fc::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 40% at var(--gx,50%) var(--gy,0%),rgba(255,255,255,.14),transparent 70%)}
-.mjdeck .bk{transform:rotateY(180deg);background:linear-gradient(200deg,var(--c2,#14243c) 0%,transparent 60%),linear-gradient(#120a1c,#0c0714)}
-.mjdeck .tl{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .25s ease-out}
+.mjdeck .bk{transform:rotateY(180deg) translateZ(.1px);-webkit-transform:rotateY(180deg) translateZ(.1px);background:linear-gradient(200deg,var(--c2,#14243c) 0%,transparent 60%),linear-gradient(#120a1c,#0c0714)}
+.mjdeck .tl{position:absolute;inset:0;transition:transform .25s ease-out}
 .mjdeck .mt{position:absolute;top:16px;left:18px;right:18px;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#cbbfe0);transform:translateZ(30px)}
 .mjdeck .mt b{color:var(--text,#fff);background:rgba(255,255,255,.08);padding:4px 9px;border-radius:99px}
 .mjdeck .mt .lv{color:#ff4fd8}
@@ -1319,16 +1320,30 @@ function homeDeckBlock(d){const gs=(d.games||[]).filter(g=>(g.state==='LIVE'||g.
       for(const v of c.querySelectorAll('video')){if(pos===0){v.play().catch(()=>{});}else v.pause();}});
     [...dots.children].forEach((x,i)=>x.classList.toggle('on',i===order[0]));const b=cards[order[0]].querySelector('.bar i');requestAnimationFrame(()=>{b.style.width=b.dataset.w+'%';});}
   function next(dir){const top=cards[order[0]];top.style.transform=`translate3d(${dir*-520}px,30px,0) rotateZ(${dir*-22}deg)`;top.style.opacity=0;setTimeout(()=>{order.push(order.shift());lay();},240);}
-  let sx=0,dx=0,dragging=false,moved=false;
-  deck.addEventListener('pointerdown',e=>{const top=cards[order[0]];if(!top.contains(e.target)||e.target.closest('button'))return;dragging=true;moved=false;sx=e.clientX;dx=0;top.classList.add('drag');try{top.setPointerCapture(e.pointerId);}catch(_){}});
-  deck.addEventListener('pointermove',e=>{const top=cards[order[0]];if(!top.classList.contains('flip')&&e.pointerType==='mouse'){const r=top.getBoundingClientRect();const px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
-      top.querySelector('.tl').style.transform=`rotateY(${(px-.5)*12}deg) rotateX(${(.5-py)*10}deg)`;const f=top.querySelector('.fr');f.style.setProperty('--gx',px*100+'%');f.style.setProperty('--gy',py*100+'%');}
-    if(!dragging)return;dx=e.clientX-sx;if(Math.abs(dx)>6)moved=true;top.style.transform=`translate3d(${dx}px,0,0) rotateZ(${dx/18}deg) rotateY(${dx/10}deg)`;});
-  const end=()=>{if(!dragging)return;dragging=false;const top=cards[order[0]];top.classList.remove('drag');
-    if(Math.abs(dx)>80){const dir=dx<0?1:-1;top.style.transform=`translate3d(${dx<0?-520:520}px,40px,0) rotateZ(${dx<0?-24:24}deg)`;top.style.opacity=0;setTimeout(()=>{order.push(order.shift());lay();},240);}
-    else{top.style.transform='';if(!moved)top.classList.toggle('flip');}};
-  deck.addEventListener('pointerup',end);deck.addEventListener('pointercancel',end);
-  deck.addEventListener('pointerleave',()=>{const t=cards[order[0]].querySelector('.tl');if(t)t.style.transform='';});
+  // fix605 (owner: "the scroll activates when swiping through and the card flip is a little wonky"): phones use touch
+  // events with a direction lock: a sideways swipe blocks page scroll and moves the card; an up/down swipe scrolls the page
+  // and leaves the card alone; a tap (no movement) turns the card over. Mouse keeps pointer events + the tilt.
+  let sx=0,sy=0,dx=0,dragging=false,moved=false,lock=null,tapOk=false;
+  const top=()=>cards[order[0]];
+  const drag=x=>{dx=x;top().style.transform=`translate3d(${dx}px,0,0) rotateZ(${dx/20}deg)`;};
+  const release=()=>{const t=top();t.classList.remove('drag');
+    if(Math.abs(dx)>70){t.style.transform=`translate3d(${dx<0?-520:520}px,40px,0) rotateZ(${dx<0?-24:24}deg)`;t.style.opacity=0;setTimeout(()=>{order.push(order.shift());lay();},240);}
+    else t.style.transform='';};
+  const flip=()=>{const t=top();t.classList.toggle('flip');};
+  deck.addEventListener('touchstart',e=>{const t=top();if(!t.contains(e.target)||e.target.closest('button')||e.touches.length>1){tapOk=false;return;}
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;dx=0;lock=null;tapOk=true;},{passive:true});
+  deck.addEventListener('touchmove',e=>{if(!tapOk&&lock!=='x')return;const x=e.touches[0].clientX-sx,y=e.touches[0].clientY-sy;
+    if(lock===null&&(Math.abs(x)>8||Math.abs(y)>8)){lock=Math.abs(x)>Math.abs(y)?'x':'y';tapOk=false;if(lock==='x')top().classList.add('drag');}
+    if(lock==='x'){e.preventDefault();drag(x);}},{passive:false});
+  deck.addEventListener('touchend',e=>{if(lock==='x')release();else if(tapOk&&!e.target.closest('button')){e.preventDefault();flip();}lock=null;tapOk=false;},{passive:false});
+  deck.addEventListener('touchcancel',()=>{if(lock==='x'){dx=0;release();}lock=null;tapOk=false;});
+  deck.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')return;const t=top();if(!t.contains(e.target)||e.target.closest('button'))return;dragging=true;moved=false;sx=e.clientX;dx=0;t.classList.add('drag');});
+  deck.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const t=top();if(!t.classList.contains('flip')&&!dragging){const r=t.getBoundingClientRect();const px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+      t.querySelector('.tl').style.transform=`rotateY(${(px-.5)*10}deg) rotateX(${(.5-py)*8}deg)`;const f=t.querySelector('.fr');f.style.setProperty('--gx',px*100+'%');f.style.setProperty('--gy',py*100+'%');}
+    if(!dragging)return;const x=e.clientX-sx;if(Math.abs(x)>6)moved=true;drag(x);});
+  const mend=e=>{if(!dragging)return;dragging=false;if(moved)release();else{top().classList.remove('drag');top().style.transform='';flip();}};
+  deck.addEventListener('pointerup',mend);deck.addEventListener('pointercancel',mend);
+  deck.addEventListener('pointerleave',e=>{if(e.pointerType!=='mouse')return;const t=top().querySelector('.tl');if(t)t.style.transform='';if(dragging){dragging=false;release();}});
   deck.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){next(1);}else if(e.key==='Enter'||e.key===' '){e.preventDefault();cards[order[0]].classList.toggle('flip');}});
   w.append(deck,dots,el('p',cards.length>1?'Swipe to flip through · tap a card to turn it over':'Tap the card to turn it over','mjdeckhint'));
   requestAnimationFrame(lay);return w;}
