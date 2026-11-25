@@ -1254,7 +1254,7 @@ function teamLive(name){const team=name==='Los Angeles Clippers'?'LA Clippers':n
   const f=teamPortraits.has(team)?String(teamPortraits.file(team)).replace(/\.webp$/,''):'';
   if(!f||!LIVE_PORTRAITS.has(f)||matchMedia('(prefers-reduced-motion: reduce)').matches)return teamBadge(name);
   const v=document.createElement('video');v.className='badge team-portrait live';v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');
-  v.setAttribute('muted','');v.preload='metadata';v.poster='portraits/'+f+'.webp?v=2';v.src='portraits/'+f+'.mp4?v=1';v.setAttribute('aria-hidden','true');
+  v.setAttribute('muted','');v.preload='metadata';v.poster='portraits/'+f+'.webp?v=2';v.src='portraits/'+f+'.mp4?v=2';v.setAttribute('aria-hidden','true');
   v.onerror=()=>{v.onerror=null;v.replaceWith(teamBadge(name));};return v;}
 function deckCss(){if(document.getElementById('mjdeckcss'))return;const s=document.createElement('style');s.id='mjdeckcss';s.textContent=`
 .mjdeck{position:relative;height:min(470px,64vh);min-height:400px;perspective:1100px;margin:6px 0 40px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
