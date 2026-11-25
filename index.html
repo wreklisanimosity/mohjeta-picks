@@ -1291,6 +1291,7 @@ function deckCss(){if(document.getElementById('mjdeckcss'))return;const s=docume
 .mjdeck .pd .go{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .mjdeck .pd .go button{font:inherit;font-weight:700;font-size:14px;color:#fff;padding:12px 8px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06)}
 .mjdeck .pd .go button.hot{background:linear-gradient(135deg,#b44dff,#ff4fd8);border-color:transparent}
+.mjdeck .pd.op{align-items:center;justify-content:center;text-align:center;gap:10px}.mjdeck .pd.op img{width:84px;height:84px;filter:drop-shadow(0 0 18px rgba(255,79,216,.55))}.mjdeck .pd.op b{font-size:20px}.mjdeck .pd.op small{color:var(--dim,#9d8fb5)}
 .mjdots{display:flex;justify-content:center;gap:6px;margin-top:-30px}.mjdots i{width:6px;height:6px;border-radius:99px;background:#33244a;transition:all .3s}.mjdots i.on{width:20px;background:linear-gradient(90deg,#b44dff,#ff4fd8)}
 .mjdeckhint{text-align:center;color:var(--dim,#9d8fb5);font-size:12px;margin:6px 0 2px}
 @media (prefers-reduced-motion:reduce){.mjdeck .dk,.mjdeck .in,.mjdeck .tl,.mjdeck .bar i{transition:none!important}}`;document.head.append(s);}
@@ -1299,7 +1300,7 @@ function homeDeckBlock(d){const gs=(d.games||[]).filter(g=>(g.state==='LIVE'||g.
   if(!gs.length)return null;deckCss();
   const w=el('div',null,'mjdeckw');w.append(el('h3',"Tonight’s deck",'sect'));const deck=el('div',null,'mjdeck');const dots=el('div',null,'mjdots');
   const col=n=>(typeof NHL_COLORS!=='undefined'&&NHL_COLORS[n]&&NHL_COLORS[n][0])||TEAM_COLORS[teamNick(n)]||'#5a2d81';
-  const cards=gs.map((g,i)=>{const [a,h]=g.teams;const c=el('div',null,'dk');c.tabIndex=0;c.style.setProperty('--c1',col(a.name)+'55');c.style.setProperty('--c2',col(h.name)+'55');
+  const cards=gs.map((g,i)=>{const [a,h]=g.teams;const c=el('div',null,'dk');c.tabIndex=0;c._gid=g.id||g.name;c.style.setProperty('--c1',col(a.name)+'55');c.style.setProperty('--c2',col(h.name)+'55');
     const chance=Math.round((g.pick.chance>1?g.pick.chance:g.pick.chance*100)||0);
     const side=t=>{const s=el('div',null,'sd');const pf=el('div',null,'pf');pf.style.setProperty('--tc',col(t.name));pf.append(teamLive(t.name));
       s.append(pf,el('span',t.name),el('small',(t.record||'')+(t.name===g.pick.team?(t.record?' · ':'')+'her pick':'')));return s;};
@@ -1310,9 +1311,8 @@ function homeDeckBlock(d){const gs=(d.games||[]).filter(g=>(g.state==='LIVE'||g.
     const ln=el('div',null,'ln');ln.append(el('em',g.pick.team),document.createTextNode(' wins'));const bar=el('div',null,'bar');const bi=el('i');bi.dataset.w=chance;bar.append(bi);
     const rw=el('div',null,'rw');rw.append(el('span',chance+'% chance'),el('span','Graded after the game'));pk.append(wh,ln,bar,rw);
     tl.append(mt,ar,pk);fr.append(tl);
-    const bk=el('div',null,'fc bk');const pd=el('div',null,'pd');pd.append(el('h4','Why she likes it'),el('p',String(g.thesis||g.why||('She has '+g.pick.team+' at '+chance+'%.')).slice(0,420)));
-    const go=el('div',null,'go');const ob=el('button','Open game','hot');ob.type='button';ob.onclick=e=>{e.stopPropagation();openGame(g.id||g.name,true);};
-    const nb=el('button','Next card');nb.type='button';nb.onclick=e=>{e.stopPropagation();next(1);};go.append(ob,nb);pd.append(go);bk.append(pd);
+    const bk=el('div',null,'fc bk');const pd=el('div',null,'pd op');const lg=el('img');lg.src='logo-cut.webp?v=2';lg.alt='';
+    pd.append(lg,el('b',(g.teams||[]).map(t=>teamNick(t.name)).join(' vs ')),el('small','Opening the game…'));bk.append(pd);
     const inn=el('div',null,'in');inn.append(fr,bk);c.append(inn);deck.append(c);dots.append(el('i'));return c;});
   let order=cards.map((_,i)=>i);
   function lay(){order.forEach((ci,pos)=>{const c=cards[ci];c.style.zIndex=20-pos;c.style.opacity=pos>2?0:1;c.style.pointerEvents=pos?'none':'auto';
@@ -1329,7 +1329,9 @@ function homeDeckBlock(d){const gs=(d.games||[]).filter(g=>(g.state==='LIVE'||g.
   const release=()=>{const t=top();t.classList.remove('drag');
     if(Math.abs(dx)>70){t.style.transform=`translate3d(${dx<0?-520:520}px,40px,0) rotateZ(${dx<0?-24:24}deg)`;t.style.opacity=0;setTimeout(()=>{order.push(order.shift());lay();},240);}
     else t.style.transform='';};
-  const flip=()=>{const t=top();t.classList.toggle('flip');};
+  // fix606 (owner: "maybe the flip takes you to the game card because the back is so empty"): a tap turns the card and opens the game.
+  const flip=()=>{const t=top();if(t._opening)return;t._opening=true;t.classList.add('flip');
+    setTimeout(()=>{try{openGame(t._gid,true);}catch(e){}setTimeout(()=>{t.classList.remove('flip');t._opening=false;},400);},430);};
   deck.addEventListener('touchstart',e=>{const t=top();if(!t.contains(e.target)||e.target.closest('button')||e.touches.length>1){tapOk=false;return;}
     sx=e.touches[0].clientX;sy=e.touches[0].clientY;dx=0;lock=null;tapOk=true;},{passive:true});
   deck.addEventListener('touchmove',e=>{if(!tapOk&&lock!=='x')return;const x=e.touches[0].clientX-sx,y=e.touches[0].clientY-sy;
@@ -1344,8 +1346,8 @@ function homeDeckBlock(d){const gs=(d.games||[]).filter(g=>(g.state==='LIVE'||g.
   const mend=e=>{if(!dragging)return;dragging=false;if(moved)release();else{top().classList.remove('drag');top().style.transform='';flip();}};
   deck.addEventListener('pointerup',mend);deck.addEventListener('pointercancel',mend);
   deck.addEventListener('pointerleave',e=>{if(e.pointerType!=='mouse')return;const t=top().querySelector('.tl');if(t)t.style.transform='';if(dragging){dragging=false;release();}});
-  deck.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){next(1);}else if(e.key==='Enter'||e.key===' '){e.preventDefault();cards[order[0]].classList.toggle('flip');}});
-  w.append(deck,dots,el('p',cards.length>1?'Swipe to flip through · tap a card to turn it over':'Tap the card to turn it over','mjdeckhint'));
+  deck.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){next(1);}else if(e.key==='Enter'||e.key===' '){e.preventDefault();flip();}});
+  w.append(deck,dots,el('p',cards.length>1?'Swipe to flip through · tap a card to open the game':'Tap the card to open the game','mjdeckhint'));
   requestAnimationFrame(lay);return w;}
 
 function teamPlate(name,full){const team=name==='Los Angeles Clippers'?'LA Clippers':name;
