@@ -1246,6 +1246,93 @@ const TEAM_COLORS={Celtics:'#007A33',Nets:'#2b2b2b',Knicks:'#006BB6','76ers':'#0
   Commanders:'#5A1414',Bears:'#0B162A',Lions:'#0076B6',Packers:'#203731',Vikings:'#4F2683',Falcons:'#A71930',Panthers:'#0085CA',
   Saints:'#8a7546','Crimson Tide':'#9E1B32',Tigers:'#0C2340',Buckeyes:'#BB0000',Ducks:'#154733',Buccaneers:'#D50A0A',Cardinals:'#97233F',Rams:'#003594','49ers':'#AA0000',Seahawks:'#002244'};
 function teamNick(name){const n=String(name||'');const m=n.match(/(Trail Blazers|Crimson Tide)$/);return m?m[1]:n.split(' ').pop();}
+// fix604 (owner: "better app visuals ... tiles raised off the screen ... flip through cards" / "I want the logos to actually move"):
+// Tonight's deck on Home: raised 3D game cards you swipe through and tap to turn over. Team portraits that have a moving
+// version (portraits/<file>.mp4, made from the same portrait) play as short silent loops; the rest show the still portrait.
+const LIVE_PORTRAITS=new Set(["arizona-cardinals","atlanta-falcons","baltimore-ravens","buffalo-bills","carolina-panthers","chicago-bears","cincinnati-bengals","cleveland-browns","dallas-cowboys","denver-broncos","detroit-lions","green-bay-packers","houston-texans","indianapolis-colts","jacksonville-jaguars","kansas-city-chiefs","las-vegas-raiders","los-angeles-chargers","los-angeles-rams","miami-dolphins","miami-heat","minnesota-vikings","new-england-patriots","new-orleans-saints","new-york-giants","new-york-jets","philadelphia-eagles","pittsburgh-steelers","san-francisco-49ers","seattle-seahawks","tampa-bay-buccaneers","tennessee-titans","washington-commanders"]);
+function teamLive(name){const team=name==='Los Angeles Clippers'?'LA Clippers':name;
+  const f=teamPortraits.has(team)?String(teamPortraits.file(team)).replace(/\.webp$/,''):'';
+  if(!f||!LIVE_PORTRAITS.has(f)||matchMedia('(prefers-reduced-motion: reduce)').matches)return teamBadge(name);
+  const v=document.createElement('video');v.className='badge team-portrait live';v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');
+  v.setAttribute('muted','');v.preload='metadata';v.poster='portraits/'+f+'.webp?v=2';v.src='portraits/'+f+'.mp4?v=1';v.setAttribute('aria-hidden','true');
+  v.onerror=()=>{v.onerror=null;v.replaceWith(teamBadge(name));};return v;}
+function deckCss(){if(document.getElementById('mjdeckcss'))return;const s=document.createElement('style');s.id='mjdeckcss';s.textContent=`
+.mjdeck{position:relative;height:min(470px,64vh);min-height:400px;perspective:1100px;margin:6px 0 40px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.mjdeck .dk{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1),opacity .35s;cursor:grab;outline:none}
+.mjdeck .dk.drag{transition:none}
+.mjdeck .in{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.8,.2,1)}
+.mjdeck .dk.flip .in{transform:rotateY(180deg)}
+.mjdeck .fc{position:absolute;inset:0;border-radius:24px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:linear-gradient(160deg,var(--c1,#22103a) 0%,transparent 55%),linear-gradient(#120a1c,#0c0714);border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 26px 50px -16px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.12)}
+.mjdeck .fc::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 40% at var(--gx,50%) var(--gy,0%),rgba(255,255,255,.14),transparent 70%)}
+.mjdeck .bk{transform:rotateY(180deg);background:linear-gradient(200deg,var(--c2,#14243c) 0%,transparent 60%),linear-gradient(#120a1c,#0c0714)}
+.mjdeck .tl{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .25s ease-out}
+.mjdeck .mt{position:absolute;top:16px;left:18px;right:18px;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#cbbfe0);transform:translateZ(30px)}
+.mjdeck .mt b{color:var(--text,#fff);background:rgba(255,255,255,.08);padding:4px 9px;border-radius:99px}
+.mjdeck .mt .lv{color:#ff4fd8}
+.mjdeck .ar{position:absolute;top:58px;left:0;right:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;transform-style:preserve-3d}
+.mjdeck .sd{display:flex;flex-direction:column;align-items:center;gap:5px;transform:translateZ(60px);min-width:0;padding:0 6px}
+.mjdeck .pf{width:min(150px,37vw);aspect-ratio:1;border-radius:22px;overflow:hidden;background:#0e0816;box-shadow:0 20px 28px -10px rgba(0,0,0,.8),0 0 0 2px var(--tc,#444),0 0 24px -4px var(--tc,#444)}
+.mjdeck .pf .badge{width:100%!important;height:100%!important;object-fit:cover;display:block;border-radius:0;margin:0}
+.mjdeck .sd span{font-weight:800;font-size:14px;text-align:center;line-height:1.15}
+.mjdeck .sd small{color:var(--dim,#9d8fb5);font-size:11.5px}
+.mjdeck .vs{font-family:Georgia,serif;font-size:18px;color:var(--dim,#9d8fb5);transform:translateZ(36px)}
+.mjdeck .pk{position:absolute;left:14px;right:14px;bottom:14px;padding:14px;border-radius:18px;background:rgba(10,6,16,.74);border:1px solid rgba(255,255,255,.07);transform:translateZ(40px)}
+.mjdeck .pk .w{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted,#cbbfe0);letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+.mjdeck .pk .w img{width:20px;height:20px}
+.mjdeck .pk .ln{font-size:19px;font-weight:800;margin:5px 0 9px}.mjdeck .pk .ln em{font-style:normal;color:#ff4fd8}
+.mjdeck .bar{height:8px;border-radius:99px;background:#2a1d3a;overflow:hidden}.mjdeck .bar i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#b44dff,#ff4fd8);transition:width 1s cubic-bezier(.2,.8,.2,1) .15s}
+.mjdeck .pk .rw{display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--dim,#9d8fb5);font-variant-numeric:tabular-nums}
+.mjdeck .pd{position:absolute;inset:0;padding:20px 18px;display:flex;flex-direction:column;gap:12px;overflow:auto}
+.mjdeck .pd h4{margin:0;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted,#cbbfe0)}
+.mjdeck .pd p{margin:0;font-size:15px;line-height:1.5}
+.mjdeck .pd .go{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mjdeck .pd .go button{font:inherit;font-weight:700;font-size:14px;color:#fff;padding:12px 8px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06)}
+.mjdeck .pd .go button.hot{background:linear-gradient(135deg,#b44dff,#ff4fd8);border-color:transparent}
+.mjdots{display:flex;justify-content:center;gap:6px;margin-top:-30px}.mjdots i{width:6px;height:6px;border-radius:99px;background:#33244a;transition:all .3s}.mjdots i.on{width:20px;background:linear-gradient(90deg,#b44dff,#ff4fd8)}
+.mjdeckhint{text-align:center;color:var(--dim,#9d8fb5);font-size:12px;margin:6px 0 2px}
+@media (prefers-reduced-motion:reduce){.mjdeck .dk,.mjdeck .in,.mjdeck .tl,.mjdeck .bar i{transition:none!important}}`;document.head.append(s);}
+function homeDeckBlock(d){const gs=(d.games||[]).filter(g=>(g.state==='LIVE'||g.state==='UPCOMING')&&g.pick&&g.pick.team&&(g.teams||[]).length===2&&!SOLO.has(g.league))
+    .sort((a,b)=>(a.state==='LIVE'?0:1)-(b.state==='LIVE'?0:1)||String(a.start).localeCompare(String(b.start))).slice(0,12);
+  if(!gs.length)return null;deckCss();
+  const w=el('div',null,'mjdeckw');w.append(el('h3',"Tonight’s deck",'sect'));const deck=el('div',null,'mjdeck');const dots=el('div',null,'mjdots');
+  const col=n=>(typeof NHL_COLORS!=='undefined'&&NHL_COLORS[n]&&NHL_COLORS[n][0])||TEAM_COLORS[teamNick(n)]||'#5a2d81';
+  const cards=gs.map((g,i)=>{const [a,h]=g.teams;const c=el('div',null,'dk');c.tabIndex=0;c.style.setProperty('--c1',col(a.name)+'55');c.style.setProperty('--c2',col(h.name)+'55');
+    const chance=Math.round((g.pick.chance>1?g.pick.chance:g.pick.chance*100)||0);
+    const side=t=>{const s=el('div',null,'sd');const pf=el('div',null,'pf');pf.style.setProperty('--tc',col(t.name));pf.append(teamLive(t.name));
+      s.append(pf,el('span',t.name),el('small',(t.record||'')+(t.name===g.pick.team?(t.record?' · ':'')+'her pick':'')));return s;};
+    const fr=el('div',null,'fc fr');const tl=el('div',null,'tl');const mt=el('div',null,'mt');
+    mt.append(el('span',sname(g.league)),g.state==='LIVE'?el('b','● LIVE','lv'):el('b',hm(g.start)));
+    const ar=el('div',null,'ar');ar.append(side(a),el('div','VS','vs'),side(h));
+    const pk=el('div',null,'pk');const wh=el('div',null,'w');const li=el('img');li.src='logo-cut.webp?v=2';li.alt='';wh.append(li,document.createTextNode('Mohjeta’s pick'));
+    const ln=el('div',null,'ln');ln.append(el('em',g.pick.team),document.createTextNode(' wins'));const bar=el('div',null,'bar');const bi=el('i');bi.dataset.w=chance;bar.append(bi);
+    const rw=el('div',null,'rw');rw.append(el('span',chance+'% chance'),el('span','Graded after the game'));pk.append(wh,ln,bar,rw);
+    tl.append(mt,ar,pk);fr.append(tl);
+    const bk=el('div',null,'fc bk');const pd=el('div',null,'pd');pd.append(el('h4','Why she likes it'),el('p',String(g.thesis||g.why||('She has '+g.pick.team+' at '+chance+'%.')).slice(0,420)));
+    const go=el('div',null,'go');const ob=el('button','Open game','hot');ob.type='button';ob.onclick=e=>{e.stopPropagation();openGame(g.id||g.name,true);};
+    const nb=el('button','Next card');nb.type='button';nb.onclick=e=>{e.stopPropagation();next(1);};go.append(ob,nb);pd.append(go);bk.append(pd);
+    const inn=el('div',null,'in');inn.append(fr,bk);c.append(inn);deck.append(c);dots.append(el('i'));return c;});
+  let order=cards.map((_,i)=>i);
+  function lay(){order.forEach((ci,pos)=>{const c=cards[ci];c.style.zIndex=20-pos;c.style.opacity=pos>2?0:1;c.style.pointerEvents=pos?'none':'auto';
+      c.style.transform=pos?`translate3d(0,${pos*24}px,${-pos*80}px) rotateX(${pos*4}deg) scale(${1-pos*.05})`:'';if(pos)c.classList.remove('flip');
+      for(const v of c.querySelectorAll('video')){if(pos===0){v.play().catch(()=>{});}else v.pause();}});
+    [...dots.children].forEach((x,i)=>x.classList.toggle('on',i===order[0]));const b=cards[order[0]].querySelector('.bar i');requestAnimationFrame(()=>{b.style.width=b.dataset.w+'%';});}
+  function next(dir){const top=cards[order[0]];top.style.transform=`translate3d(${dir*-520}px,30px,0) rotateZ(${dir*-22}deg)`;top.style.opacity=0;setTimeout(()=>{order.push(order.shift());lay();},240);}
+  let sx=0,dx=0,dragging=false,moved=false;
+  deck.addEventListener('pointerdown',e=>{const top=cards[order[0]];if(!top.contains(e.target)||e.target.closest('button'))return;dragging=true;moved=false;sx=e.clientX;dx=0;top.classList.add('drag');try{top.setPointerCapture(e.pointerId);}catch(_){}});
+  deck.addEventListener('pointermove',e=>{const top=cards[order[0]];if(!top.classList.contains('flip')&&e.pointerType==='mouse'){const r=top.getBoundingClientRect();const px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+      top.querySelector('.tl').style.transform=`rotateY(${(px-.5)*12}deg) rotateX(${(.5-py)*10}deg)`;const f=top.querySelector('.fr');f.style.setProperty('--gx',px*100+'%');f.style.setProperty('--gy',py*100+'%');}
+    if(!dragging)return;dx=e.clientX-sx;if(Math.abs(dx)>6)moved=true;top.style.transform=`translate3d(${dx}px,0,0) rotateZ(${dx/18}deg) rotateY(${dx/10}deg)`;});
+  const end=()=>{if(!dragging)return;dragging=false;const top=cards[order[0]];top.classList.remove('drag');
+    if(Math.abs(dx)>80){const dir=dx<0?1:-1;top.style.transform=`translate3d(${dx<0?-520:520}px,40px,0) rotateZ(${dx<0?-24:24}deg)`;top.style.opacity=0;setTimeout(()=>{order.push(order.shift());lay();},240);}
+    else{top.style.transform='';if(!moved)top.classList.toggle('flip');}};
+  deck.addEventListener('pointerup',end);deck.addEventListener('pointercancel',end);
+  deck.addEventListener('pointerleave',()=>{const t=cards[order[0]].querySelector('.tl');if(t)t.style.transform='';});
+  deck.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){next(1);}else if(e.key==='Enter'||e.key===' '){e.preventDefault();cards[order[0]].classList.toggle('flip');}});
+  w.append(deck,dots,el('p',cards.length>1?'Swipe to flip through · tap a card to turn it over':'Tap the card to turn it over','mjdeckhint'));
+  requestAnimationFrame(lay);return w;}
+
 function teamPlate(name,full){const team=name==='Los Angeles Clippers'?'LA Clippers':name;
   if(!teamPortraits.has(team))return el(full?'span':'b',full||String(name).length<=16?name:teamNick(name));
   const p=el('span',full?name:teamNick(name),'tplate');p.style.setProperty('--tc',(typeof NHL_COLORS!=='undefined'&&NHL_COLORS[name]&&NHL_COLORS[name][0])||TEAM_COLORS[teamNick(name)]||'#333');return p;}   // fix425: NHL plates use NHL colors (Kings/Panthers/Jets/Ducks share nicknames)
@@ -3264,6 +3351,7 @@ function renderHome(d){const box=$('homeBox');if(!box)return;box.replaceChildren
   try{txpFromPicks();B.favs=homeFavBlock();}catch(e){console.warn('home favs',e);}   // fix479
   try{B.today=homeTodayBlock(d);}catch(e){console.warn('home today',e);}try{B.bets=homeBetsBlock(d);}catch(e){console.warn('home bets',e);}   // fix476
   try{B.asks=homeAskBlock();}catch(e){}   // fix591
+  try{B.deck=homeDeckBlock(d);}catch(e){console.warn('home deck',e);}   // fix604
   try{B.allteams=homeTeamsBlock();}catch(e){}   // fix473 (owner: "Put teams on the home page")
   try{B.live=homeLiveBlock(d,live);B.combos=homeCombosBlock(d);B.trades=homeTradesBlock(d);}catch(e){}   // fix420: extra blocks people can switch on   // fix410 (owner): leaderboard + winner on Home, free for everyone
   {const w=el('div');w.append(el('div','Go to','hsec'));const tiles=el('div',null,'htiles');for(const p of PAGES.slice(0,12))tiles.append(pageTile(p,d));w.append(tiles);
@@ -5229,16 +5317,16 @@ function tradePopup(){if(document.querySelector('.trpop'))return;let seen=[];try
   setTimeout(()=>{p.classList.add('out');setTimeout(()=>p.remove(),400);},9000);}
 // ---------------- fix420 (owner: "give customers the option to customize their own home page" -> yes): ✏️ Edit Home.
 // Every Home section is a block people can show / hide and move; three presets; reset. Saved on this phone.
-const HOME_BLOCKS=[['twin','💵 Real vs paper','Real-money results next to the paper copy'],['favs','⭐ Your teams','Favorite team in each league + team rewards'],['asks','🗳 Mohjeta asks','Her question of the day: vote, see the split'],['today','🎯 Today’s picks','Every game she picks today'],['bets','💵 Her bets','Her open bets and what they pay'],['teams','⭐ My teams','Your followed teams tonight'],['voice','🎙 Her rundown','Her top picks in her own voice'],['stats','📊 Her numbers','Record, radio, tonight, combos'],
+const HOME_BLOCKS=[['deck','🃏 Tonight’s deck','Swipe through tonight’s games on 3D cards'],['twin','💵 Real vs paper','Real-money results next to the paper copy'],['favs','⭐ Your teams','Favorite team in each league + team rewards'],['asks','🗳 Mohjeta asks','Her question of the day: vote, see the split'],['today','🎯 Today’s picks','Every game she picks today'],['bets','💵 Her bets','Her open bets and what they pay'],['teams','⭐ My teams','Your followed teams tonight'],['voice','🎙 Her rundown','Her top picks in her own voice'],['stats','📊 Her numbers','Record, radio, tonight, combos'],
   ['next','⏰ Next up','Her next pick and the countdown'],['allteams','🏟 Teams','Every team by sport, with stats and rosters'],['live','● Live now','Every game being played right now'],['combos','🎟 Her open combos','Her combos waiting on results'],
   ['trades','🔁 Latest trades','New trades and her read'],['trivia','🧠 Daily trivia','5 quick questions a day'],['hub','🏟 Sports hub','Standings, trades, injuries, highlights'],
   ['board','🏆 Leaderboard','Pick’em leaders and the champion'],['tiles','🧭 Go to','Shortcuts to every page']];
-const HOME_DEFAULT={v:2,order:['favs','stats','asks','twin','next','today','bets','teams','voice','allteams','live','combos','trades','trivia','hub','board','tiles'],hidden:['allteams','live','combos','trades','trivia','hub','board','tiles']};   // fix476 (owner): Home = today's picks and her bets; teams, hub, trivia, leaderboard live in Teams / All pages
+const HOME_DEFAULT={v:2,order:['deck','favs','stats','asks','twin','next','today','bets','teams','voice','allteams','live','combos','trades','trivia','hub','board','tiles'],hidden:['allteams','live','combos','trades','trivia','hub','board','tiles']};   // fix476 (owner): Home = today's picks and her bets; teams, hub, trivia, leaderboard live in Teams / All pages
 const HOME_PRESETS={picks:['⚡ Picks first',['stats','next','combos','live','voice','tiles']],fan:['📺 Fan mode',['teams','live','stats','trades','hub','voice','tiles']],
   comp:['🏆 Competitor',['board','trivia','stats','combos','hub','tiles']]};
 let homeEditing=false;
 function homeLayout(){let L=null;try{L=JSON.parse(localStorage.getItem('mohjeta.homeLayout')||'null');}catch(e){}if(!L||!Array.isArray(L.order)||L.v!==2)L=JSON.parse(JSON.stringify(HOME_DEFAULT));
-  const ids=HOME_BLOCKS.map(b=>b[0]);L.order=L.order.filter(k=>ids.includes(k));for(const k of ids)if(!L.order.includes(k)){if(k==='asks'){const j=L.order.indexOf('stats');L.order.splice(j<0?1:j+1,0,k);}else L.order.push(k);if(HOME_DEFAULT.hidden.includes(k))(L.hidden=L.hidden||[]).push(k);}L.hidden=(L.hidden||[]).filter(k=>ids.includes(k));return L;}
+  const ids=HOME_BLOCKS.map(b=>b[0]);L.order=L.order.filter(k=>ids.includes(k));for(const k of ids)if(!L.order.includes(k)){if(k==='asks'){const j=L.order.indexOf('stats');L.order.splice(j<0?1:j+1,0,k);}else if(k==='deck')L.order.unshift(k);else L.order.push(k);if(HOME_DEFAULT.hidden.includes(k))(L.hidden=L.hidden||[]).push(k);}L.hidden=(L.hidden||[]).filter(k=>ids.includes(k));return L;}
 function homeLayoutSave(L){if(L)L.v=2;try{if(L)localStorage.setItem('mohjeta.homeLayout',JSON.stringify(L));else localStorage.removeItem('mohjeta.homeLayout');}catch(e){}}
 function homeLayoutApply(box,B){const L=homeLayout();if(homeEditing){box.append(homeEditor(L));return;}
   for(const k of L.order){if(L.hidden.includes(k))continue;const n=B[k];if(n)box.append(n);}
