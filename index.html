@@ -1295,8 +1295,11 @@ function deckCss(){if(document.getElementById('mjdeckcss'))return;const s=docume
 .mjdots{display:flex;justify-content:center;gap:6px;margin-top:-30px}.mjdots i{width:6px;height:6px;border-radius:99px;background:#33244a;transition:all .3s}.mjdots i.on{width:20px;background:linear-gradient(90deg,#b44dff,#ff4fd8)}
 .mjdeckhint{text-align:center;color:var(--dim,#9d8fb5);font-size:12px;margin:6px 0 2px}
 @media (prefers-reduced-motion:reduce){.mjdeck .dk,.mjdeck .in,.mjdeck .tl,.mjdeck .bar i{transition:none!important}}`;document.head.append(s);}
-function homeDeckBlock(d){const gs=(d.games||[]).filter(g=>(g.state==='LIVE'||g.state==='UPCOMING')&&g.pick&&g.pick.team&&(g.teams||[]).length===2&&!SOLO.has(g.league))
-    .sort((a,b)=>(a.state==='LIVE'?0:1)-(b.state==='LIVE'?0:1)||String(a.start).localeCompare(String(b.start))).slice(0,12);
+function homeDeckBlock(d){const gs0=(d.games||[]).filter(g=>(g.state==='LIVE'||g.state==='UPCOMING')&&g.pick&&g.pick.team&&(g.teams||[]).length===2&&!SOLO.has(g.league))
+    .map(g=>{const f=g.teams.map(t=>{const n=t.name==='Los Angeles Clippers'?'LA Clippers':t.name;return teamPortraits.has(n)?String(teamPortraits.file(n)).replace(/\.webp$/,''):'';});
+      g._dk=(f.some(x=>LIVE_PORTRAITS.has(x))?0:f.every(Boolean)?1:2);return g;})   // fix610: moving teams first, then pictured teams, initials last
+    .sort((a,b)=>a._dk-b._dk||(a.state==='LIVE'?0:1)-(b.state==='LIVE'?0:1)||String(a.start).localeCompare(String(b.start)));
+  const gs=(gs0.filter(g=>g._dk<2).length>=6?gs0.filter(g=>g._dk<2):gs0).slice(0,12);
   if(!gs.length)return null;deckCss();
   const w=el('div',null,'mjdeckw');w.append(el('h3',"Tonight’s deck",'sect'));const deck=el('div',null,'mjdeck');const dots=el('div',null,'mjdots');
   const col=n=>(typeof NHL_COLORS!=='undefined'&&NHL_COLORS[n]&&NHL_COLORS[n][0])||TEAM_COLORS[teamNick(n)]||'#5a2d81';
