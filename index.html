@@ -411,6 +411,7 @@ svg.badge.person{background:none;padding:0;overflow:visible;flex:none;border-rad
   text-shadow:0 1px 1px #000a;box-shadow:0 1px 4px #0006;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hero .side .tplate{white-space:normal;text-align:center;font-size:12px}
 .fighter .tplate{font-size:11px;margin-top:2px}
+.hero video.badge.live,.tphead video.badge.live{object-fit:cover;background:#0e0816;border:0;border-radius:18px;box-shadow:0 10px 24px -8px #000c}   /* fix615: moving portraits on the game and team pages */
 img.badge.team-portrait,.fighter.win img.badge.big.team-portrait{
   object-fit:contain;background:transparent;border:0;border-radius:0;box-shadow:none}
 .fighter.left .badge{animation:lungeR 1.5s ease-in-out both}.fighter.right .badge{animation:lungeL 1.5s ease-in-out both}
@@ -1254,7 +1255,7 @@ function teamLive(name){const team=name==='Los Angeles Clippers'?'LA Clippers':n
   const f=teamPortraits.has(team)?String(teamPortraits.file(team)).replace(/\.webp$/,''):'';
   if(!f||!LIVE_PORTRAITS.has(f)||matchMedia('(prefers-reduced-motion: reduce)').matches)return teamBadge(name);
   const v=document.createElement('video');v.className='badge team-portrait live';v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');
-  v.setAttribute('muted','');v.preload='metadata';v.poster='portraits/'+f+'.webp?v=2';v.src='portraits/'+f+'.mp4?v=2';v.setAttribute('aria-hidden','true');
+  v.setAttribute('muted','');v.autoplay=true;v.setAttribute('autoplay','');v.preload='metadata';v.poster='portraits/'+f+'.webp?v=2';v.src='portraits/'+f+'.mp4?v=2';v.setAttribute('aria-hidden','true');
   v.onerror=()=>{v.onerror=null;v.replaceWith(teamBadge(name));};return v;}
 function deckCss(){if(document.getElementById('mjdeckcss'))return;const s=document.createElement('style');s.id='mjdeckcss';s.textContent=`
 .mjdeck{position:relative;height:min(470px,64vh);min-height:400px;perspective:1100px;margin:6px 0 40px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
@@ -1281,7 +1282,7 @@ function deckCss(){if(document.getElementById('mjdeckcss'))return;const s=docume
 .mjdeck .nm b{font-family:'DIN Condensed','Bahnschrift','Roboto Condensed','Arial Narrow',sans-serif-condensed,system-ui,sans-serif;font-stretch:condensed;font-weight:800;font-size:clamp(20px,5.6vw,30px);line-height:1.02;letter-spacing:.02em;text-transform:uppercase;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.55),0 0 18px var(--tc,#5a2d81);overflow-wrap:anywhere}
 .mjdeck .nm::after{content:'';display:block;width:38px;height:3px;border-radius:2px;margin-top:6px;background:linear-gradient(90deg,transparent,var(--tc,#5a2d81),transparent);filter:brightness(1.8) saturate(1.3)}
 .mjdeck .sd small{color:var(--dim,#9d8fb5);font-size:11.5px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;gap:6px;white-space:nowrap;line-height:1.5}
-.mjdeck .sd small .hp{font-style:normal;font-size:9.5px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;line-height:1.3;border-radius:999px;color:#fff;background:linear-gradient(90deg,#b44dff,#ff4fd8);box-shadow:0 0 10px #ff4fd855}
+.mjdeck .sd small .mjhp{font-style:normal;font-size:9.5px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;line-height:1.3;border-radius:999px;color:#fff;background:linear-gradient(90deg,#b44dff,#ff4fd8);box-shadow:0 0 10px #ff4fd855}
 .mjdeck .vs{align-self:center;font-family:'DIN Condensed','Bahnschrift','Roboto Condensed','Arial Narrow',sans-serif;font-weight:800;font-style:italic;font-size:22px;letter-spacing:.06em;color:#ffffffb0;text-shadow:0 0 14px #ff4fd866;transform:translateZ(36px)}
 .mjdeck .pk{position:absolute;left:14px;right:14px;bottom:14px;padding:14px;border-radius:18px;background:rgba(10,6,16,.74);border:1px solid rgba(255,255,255,.07);transform:translateZ(40px)}
 .mjdeck .pk .w{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted,#cbbfe0);letter-spacing:.06em;text-transform:uppercase;font-weight:700}
@@ -1313,7 +1314,7 @@ function homeDeckBlock(d){const gs0=(d.games||[]).filter(g=>(g.state==='LIVE'||g
       // fix613 (owner: "better text for the team names"): city small and spaced, nickname big and bold with a team-color bar
       const pro=/^(NBA|NFL|NHL|MLB|WNBA)$/.test(String(g.league||''));const nk=pro?teamNick(t.name):'';const city=nk&&t.name.endsWith(nk)?t.name.slice(0,-nk.length).trim():'';
       const nm=el('div',null,'nm');nm.style.setProperty('--tc',col(t.name));if(city)nm.append(el('i',city));nm.append(el('b',city?nk:t.name));
-      const mine=t.name===g.pick.team;const rec=el('small',t.record||'');if(mine)rec.append(el('em','Her pick','hp'));
+      const mine=t.name===g.pick.team;const rec=el('small',t.record||'');if(mine)rec.append(el('em','Her pick','mjhp'));
       s.append(pf,nm,rec);return s;};
     const fr=el('div',null,'fc fr');const tl=el('div',null,'tl');const mt=el('div',null,'mt');
     mt.append(el('span',sname(g.league)),g.state==='LIVE'?el('b','● LIVE','lv'):el('b',hm(g.start)));
@@ -2545,7 +2546,7 @@ function teamSynopsis(name,lg,t,r,nextG){const done=t.g.filter(x=>x[4]),todo=t.g
 function ordinal(n){n=Number(n);const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
 async function openTeam(name,league){try{award('team');}catch(e){}try{txpEarn(name,'v'+tday(),5,league);}catch(e){}openSheet(()=>{const w=el('div',null,'teampage');w.id='teamView';w.append(el('p','Loading '+name+'…','hint'));return w;},'Team');
   const T=await loadTeams2();const w=$('teamView');if(!w)return;const f=findTeam(T,name,league);w.replaceChildren();
-  const head=el('div',null,'tphead');const cl=simColor(name)||(f&&f.t.c?'#'+f.t.c:null);if(cl)head.style.setProperty('--tc',cl);const b=teamBadge(name);b.classList.add('big');
+  const head=el('div',null,'tphead');const cl=simColor(name)||(f&&f.t.c?'#'+f.t.c:null);if(cl)head.style.setProperty('--tc',cl);const b=teamLive(name);b.classList.add('big');
   const tx=el('div');tx.append(el('span',(f?sname(f.lg):sname(league||'')).toUpperCase(),'simeyebrow'),el('h2',f?f.t.n:name),el('b',f?(f.t.rec||'')+(f.t.st?' · '+f.t.st:''):'','tprec'));head.append(b,tx);w.append(head);
   if(!f){w.append(el('p','Schedule for this team isn’t available yet (NFL, NBA, WNBA, NHL, MLB, FBS college football and Division I college basketball are covered). Check back after her next update.','hint'));return;}
   const lg=f.lg,t=f.t,r=teamRating(t.n,lg);const nextG=(D&&D.games||[]).filter(g=>g.state!=='FINAL'&&(!g.league||g.league===lg)&&(g.teams||[]).some(x=>sameTeam(x.name,t.n))).sort((a,b)=>String(a.start).localeCompare(String(b.start)))[0];
@@ -2911,7 +2912,7 @@ function renderMine(){const box=$('mineBox');if(!box)return;box.replaceChildren(
 function gameView(g){const b=el('div');const ln=laneOf(g);
   const head=el('div',null,'row');head.append(el('span',sname(g.league).toUpperCase(),'league'),el('span',null,'sp'),el('span',ln.t,'pill '+ln.c));b.append(head);
   const hero=el('div',null,'hero');const vs=el('div',null,'vs');
-  g.teams.forEach((t,i)=>{const sd=el('div',null,'side tside');sd.setAttribute('role','button');sd.tabIndex=0;sd.title='Team schedule and synopsis';sd.onclick=()=>openTeam(t.name,g.league);const sc=g.state==='LIVE'||(g.state==='FINAL'&&t.score!=null);sd.append(teamBadge(t.name),teamPlate(t.name,!sc),el('span',t.record||'','hint small'));if(!sc)sd.append(el('small','📅 Team page','tsidehint'));vs.append(sd);if(i===0)vs.append(sc?scoreBug(g,true):el('span','vs','hint'));});
+  g.teams.forEach((t,i)=>{const sd=el('div',null,'side tside');sd.setAttribute('role','button');sd.tabIndex=0;sd.title='Team schedule and synopsis';sd.onclick=()=>openTeam(t.name,g.league);const sc=g.state==='LIVE'||(g.state==='FINAL'&&t.score!=null);sd.append(teamLive(t.name),teamPlate(t.name,!sc),el('span',t.record||'','hint small'));if(!sc)sd.append(el('small','📅 Team page','tsidehint'));vs.append(sd);if(i===0)vs.append(sc?scoreBug(g,true):el('span','vs','hint'));});
   hero.append(vs);if(g.state!=='LIVE'&&g.state!=='FINAL')hero.append(el('div',when(g.start),'hint'));b.append(hero);
   try{const gl=gcLive(g);if(gl)b.append(gl);}catch(e){}   // fix564: the latest play, animated
   {const hub=el('div',null,'card hub');hub.append(el('div',null,'hubhead'));hub.firstChild.append(el('span','GAME HUB','hubeyebrow'),el('span','follow · watch · listen · save','hubsub'));   // fix401: one bold card
