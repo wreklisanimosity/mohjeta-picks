@@ -984,10 +984,10 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
   <section class="panel" id="recordp" role="tabpanel" aria-label="Track record">
     <h2>Track record</h2><div class="chips seg" id="recSwitch" role="tablist" aria-label="Show"><button type="button" data-rv="bets" aria-pressed="true">📒 Her picks</button><button type="button" data-rv="prac" aria-pressed="false">🧪 Practice</button></div><div id="dropNote"></div>
     <div class="chips" id="periodChips"></div><div class="stats" id="periodStats"></div>
+    <h3 id="everyPickH">Every pick</h3><div class="chips" id="sportChips"></div><div class="tablewrap" id="betTable"></div>
+    <p class="hint small">Tap any pick for the game recap and why she picked it. 🔒 = sealed: fingerprinted the moment she placed it.</p>
     <div class="card" hidden><div class="row"><b>Profit by day</b><span class="sp"></span><span class="hint small" id="barsNote"></span></div><div class="bars" id="dayBars"></div></div>
     <div id="dayCard"></div><div id="unitsBox"></div><div id="skipBox"></div><div id="bySport"></div><div id="bestWorst"></div>
-    <h3>Every pick</h3><div class="chips" id="sportChips"></div><div class="tablewrap" id="betTable"></div>
-    <p class="hint small">Tap any bet to see why she placed it. 🔒 = sealed: fingerprinted the moment she placed it.</p>
     <div id="practiceBox"></div>
     <div id="calib"></div><div id="proof"></div>
   </section>
@@ -3113,14 +3113,29 @@ let period=30,betSport='ALL';
 function windowStats(rows,days){const t0=days?Date.now()-days*864e5:0;const r=(rows||[]).filter(x=>x.pnl!=null&&!x.carried&&Date.parse(x.opened)>=t0);
   const won=r.filter(x=>x.pnl>0).length,lost=r.filter(x=>x.pnl<0).length,net=r.reduce((a,x)=>a+x.pnl,0),spent=r.reduce((a,x)=>a+(x.paid||0),0);
   return {rows:r,won,lost,net,spent,roi:spent?net/spent:null};}
+// fix619: every pick for the Results list. Bets (not carried over from the other mode), the picks she didn't bet
+// (d.skipped.rows: one per game, graded) and her open picks on games that have not finished (d.games, no bet, not practice).
+let ALLPICKS=null,allPicksAt=0,allPicksBusy=false;   // site/picks-all.json: every graded pick she didn't bet (data.json has the latest 600)
+async function loadAllPicks(){if(allPicksBusy||(ALLPICKS&&Date.now()-allPicksAt<300000))return false;allPicksBusy=true;try{const r=await fetch('picks-all.json?v='+Math.floor(Date.now()/300000),{cache:'no-cache'});if(!r.ok)throw Error();ALLPICKS=(await r.json()).rows||[];allPicksAt=Date.now();return true;}catch(e){allPicksAt=Date.now();return false;}finally{allPicksBusy=false;}}
+function evKey(e){const p=String(e||'').split('-');return p.length>=2?p[1]:p[0];}
+function pickRowsFor(d,b,per){const now=new Date();let t0=0;
+  if(per==='today'){const st=new Date(now);st.setHours(6,0,0,0);if(now<st)st.setDate(st.getDate()-1);t0=st.getTime();}else if(per)t0=Date.now()-per*864e5;
+  const out=[],seen=new Set();
+  for(const r of (b&&b.rows)||[]){if(r.carried)continue;if(r.event)seen.add(evKey(r.event));if(r.result!=='OPEN'&&Date.parse(r.opened)<t0)continue;out.push(r);}
+  const skr=(ALLPICKS&&ALLPICKS.length>=((d&&d.skipped&&d.skipped.rows)||[]).length)?ALLPICKS:((d&&d.skipped&&d.skipped.rows)||[]);
+  for(const x of skr){const k=evKey(x.event);if(k&&seen.has(k))continue;const t=(x.at||0)*1000;if(t<t0)continue;if(k)seen.add(k);
+    out.push({opened:new Date(t).toISOString(),bet:String(x.team||'').startsWith('Against ')?x.team:(x.team||'?')+' to win',result:x.result,league:x.league,event:x.event,pickOnly:true});}
+  for(const g of ((d&&d.games)||[])){if(!g.pick||!g.pick.team||g.bet||!g.event||g.state==='FINAL'||/^practice/.test(g.lane||''))continue;const k=evKey(g.event);if(seen.has(k))continue;seen.add(k);
+    out.push({opened:g.start,bet:g.pick.team+' to win',result:'OPEN',league:g.league,event:g.event,why:g.thesis||'',pickOnly:true});}
+  return out;}
 // fix616: Results tab helpers: pick groups, recaps (site/recaps.json, built by game_recaps.py) and one pick row.
 const PICK_GROUPS=[['open','🟡 Open'],['won','✅ Wins'],['lost','❌ Losses'],['other','⚠️ Other']];
 let pickOpen={open:true,won:false,lost:false,other:false},RECAPS=null,recapsAt=0;
 const MON3={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
-function evDate(e){const m=/^(\d\d)([A-Z]{3})(\d\d)/.exec(String(e||''));return m&&m[2] in MON3?new Date(2000+ +m[1],MON3[m[2]],+m[3]).getTime():0;}
+function evDate(e){const m=/^(\d\d)([A-Z]{3})(\d\d)/.exec(evKey(e));return m&&m[2] in MON3?new Date(2000+ +m[1],MON3[m[2]],+m[3]).getTime():0;}
 async function loadRecaps(){if(RECAPS&&Date.now()-recapsAt<300000)return RECAPS;try{const r=await fetch('recaps.json?v='+Math.floor(Date.now()/300000),{cache:'no-cache'});if(!r.ok)throw Error();RECAPS=(await r.json()).recaps||{};recapsAt=Date.now();}catch(e){RECAPS=RECAPS||{};recapsAt=Date.now()-240000;}return RECAPS;}
 function recapBox(r){const bx=el('div',null,'recap');bx.append(el('p','Loading the recap…','hint small'));
-  loadRecaps().then(R=>{const g=r.event&&R[r.event];bx.replaceChildren();
+  loadRecaps().then(R=>{const g=r.event&&R[evKey(r.event)];bx.replaceChildren();
     if(!g){bx.append(el('p','Recap coming soon','hint small'));return;}
     const fs=el('div',null,'fs');const t=(s)=>{const x=el('span',s.name+' '+s.score);if(g.winner&&s.abbr===g.winner)x.className='w';return x;};
     fs.append(el('small','Final'+(g.ot?' (OT)':'')+' · '),t(g.away),document.createTextNode(' – '),t(g.home));bx.append(fs);
@@ -3136,7 +3151,7 @@ function pickRow(tb,r){const tr=el('tr');tr.style.cursor='pointer';tr.tabIndex=0
     tr.append(a,res);tb.append(tr);const wr=el('tr');wr.hidden=true;const wd=el('td');wd.colSpan=2;wd.style.background='var(--card2)';let filled=false;
     const fill=()=>{if(filled)return;filled=true;
       if(r.result!=='OPEN')wd.append(recapBox(r));   // fix616: game recap above the why (open picks: just the why)
-      wd.append(el('div','Why she picked it: '+(r.why||'No reason recorded.'),'small'));if(typeof r.fair==='number')wd.append(el('div','She put it at '+Math.round(r.fair*100)+'%; Kalshi’s price said '+Math.round(r.price*100)+'%.','hint small'));
+      if(!r.pickOnly||r.why)wd.append(el('div','Why she picked it: '+(r.why||'No reason recorded.'),'small'));if(typeof r.fair==='number')wd.append(el('div','She put it at '+Math.round(r.fair*100)+'%; Kalshi’s price said '+Math.round(r.price*100)+'%.','hint small'));
       if(r.stamp){wd.append(el('div','Sealed '+new Date(r.sealed).toLocaleString()+' · '+r.stamp,'mono'));
         if(r.seal_status==='mismatch')wd.append(el('p','This entry differs from its saved seal.','down'));
         else if(r.seal_status==='matched')wd.append(el('p','Entry fields match the saved seal.','hint small'));}};
@@ -3154,7 +3169,7 @@ function renderRecord(d){const b=d.bets;if(!b)return;
     const list=el('div',null,'todaylist');if(!rs.length)list.append(el('p','No finished picks yet today.','hint'));
     for(const r of rs){const row=el('div',null,'trow');row.append(el('span',icon(r.result),'ti'),el('span',(r.bet||r.title||'').slice(0,60),'tn'),el('span',null,'sp'),
       el('span',r.result==='OPEN'?'open':r.result.toLowerCase(),r.result==='WON'?'up':r.result==='LOST'?'down':'open'));list.append(row);}
-    ps.after(list);}
+    void list;}   // fix619: the Every pick groups below list today's picks
   const w=period&&period!=='today'?windowStats(b.rows,period):null;
   if(period==='today'){}else if(w){const kw=skipWin(D,period),W=w.won+kw.won,L=w.lost+kw.n-kw.won;stat('Record',W+'-'+L);stat('Win rate',W+L?pct(W/(W+L)):'—');}
   else{const cb=combo(D,T.wins||0,T.losses||0);stat('Record',cb.w+'-'+cb.l);stat('Win rate',cb.rate==null?'—':pct(cb.rate));}
@@ -3190,12 +3205,19 @@ function renderRecord(d){const b=d.bets;if(!b)return;
     const blk=(t,rows)=>{const c=el('div',null,'card');c.append(el('h4',t));const ul=el('ul',null,'plain');for(const r of rows)ul.append(el('li',icon(r.result)+' '+(r.bet||r.title)+' at '+Math.round(r.price*100)+'¢ · '+signed(r.pnl)+' · '+new Date(r.opened).toLocaleDateString([], {month:'short',day:'numeric'})));c.append(ul);return c;};
     const gr=el('div',null,'grid');gr.append(blk('Best calls',best),blk('Worst calls',worst));bw.append(el('h3','Best and worst calls'),gr);}
   // every bet
-  const chips=$('sportChips');chips.replaceChildren();const sports=['ALL',...new Set(b.rows.map(r=>r.league))];
+  const chips=$('sportChips');chips.replaceChildren();const sports=['ALL',...new Set(pickRowsFor(d,b,period).map(r=>r.league).filter(Boolean))];
   for(const k of sports){const x=el('button',k==='ALL'?'All sports':sname(k));x.type='button';x.setAttribute('aria-pressed',String(k===betSport));x.onclick=()=>{betSport=k;renderRecord(d);};chips.append(x);}
   // fix616 (owner: "Reorganize Every pick"): three tap-to-open groups instead of one newest-first table:
   // 🟡 Open (soonest game first, open by default) → ✅ Wins → ❌ Losses (newest first, closed by default), plus Other
   // (⚠️ error rows / EVEN) only when there are any. 150 rows per group. A game that goes final moves groups on the next refresh.
-  const rows=b.rows.filter(r=>betSport==='ALL'||r.league===betSport);
+  // fix619 (owner: "Why doesn't it show all her wins ... put it above her track record ... todays, last 7 days and from the
+  // start just like the track"): the list holds EVERY pick her record counts (bets + the picks she didn't bet + open picks
+  // on upcoming games) and follows the Today / Last 7 days / Since the start chips, so the group counts match her record.
+  {const S=d.skipped;if(S&&S.all_n>((S.rows||[]).length)&&(!ALLPICKS||Date.now()-allPicksAt>300000))loadAllPicks().then(ok=>{if(ok)renderRecord(d);});}
+  const allRows=pickRowsFor(d,b,period);
+  {const W=allRows.filter(r=>r.result==='WON'&&!r.error).length,Lx=allRows.filter(r=>r.result==='LOST'&&!r.error).length;const h=$('everyPickH');
+   if(h)h.textContent=(period==='today'?"Today's picks":period?'Picks · last '+period+' days':'Every pick since the start')+' · '+W+'-'+Lx;}
+  const rows=allRows.filter(r=>betSport==='ALL'||r.league===betSport);
   const grpOf=r=>r.error||r.result==='EVEN'?'other':r.result==='OPEN'?'open':r.result==='WON'?'won':r.result==='LOST'?'lost':'other';
   const byNew=(x,y)=>String(y.opened).localeCompare(String(x.opened));
   const bySoon=(x,y)=>(evDate(x.event)||Date.parse(x.opened)||0)-(evDate(y.event)||Date.parse(y.opened)||0)||String(x.opened).localeCompare(String(y.opened));
