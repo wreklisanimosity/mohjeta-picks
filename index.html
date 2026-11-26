@@ -683,9 +683,9 @@ footer{max-width:1100px;margin:10px auto 0;padding:0 16px 20px;color:var(--dim);
 .plinfo{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;margin-left:6px;border-radius:50%;border:1px solid rgba(200,160,255,.45);color:#e0c2ff;font-size:16px;cursor:pointer;flex:none}
 .plinline{border:1px solid rgba(180,77,255,.3);background:rgba(20,10,35,.95);border-radius:12px;padding:10px 12px;margin:2px 0 8px}.plinline .plcard h3{font-size:18px}
 .tdgrp{margin:16px 0 8px;color:#f5c542;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
-.tdgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.tdgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .tdtile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border-radius:14px;border:1px solid rgba(180,77,255,.22);background:rgba(180,77,255,.06);color:inherit;font:inherit;cursor:pointer;text-align:center}
-.tdtile b{font-size:13px;line-height:1.2}.tdtile .badge{width:64px;height:64px}
+.tdtile b{font-size:13px;line-height:1.2}.tdtile .badge{width:min(132px,100%)!important;height:auto!important;aspect-ratio:1;font-size:30px}.tdtile video.badge.live{object-fit:cover;border-radius:20px;background:#0e0816;box-shadow:0 0 0 1px #ffffff14,0 14px 26px -12px #000}.tdtile b{font-size:15px!important}   /* fix621: bigger, moving team pictures */
 #tdFind{width:100%;box-sizing:border-box;margin:8px 0}
 .hteams{padding:12px 14px}.hteamshd{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}
 .hteamsrow{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px;scrollbar-width:none}.hteamsrow::-webkit-scrollbar{display:none}
@@ -1253,11 +1253,15 @@ function teamNick(name){const n=String(name||'');const m=n.match(/(Trail Blazers
 // Tonight's deck on Home: raised 3D game cards you swipe through and tap to turn over. Team portraits that have a moving
 // version (portraits/<file>.mp4, made from the same portrait) play as short silent loops; the rest show the still portrait.
 const LIVE_PORTRAITS=new Set(["brooklyn-nets","toronto-raptors","sacramento-kings","new-orleans-pelicans","portland-trail-blazers","utah-jazz","washington-wizards","philadelphia-76ers","charlotte-hornets","chicago-bulls","los-angeles-lakers","boston-celtics","golden-state-warriors","new-york-knicks","milwaukee-bucks","denver-nuggets","dallas-mavericks","phoenix-suns","cleveland-cavaliers","oklahoma-city-thunder","minnesota-timberwolves","la-clippers","houston-rockets","san-antonio-spurs","orlando-magic","indiana-pacers","atlanta-hawks","memphis-grizzlies","detroit-pistons","arizona-cardinals","atlanta-falcons","baltimore-ravens","buffalo-bills","carolina-panthers","chicago-bears","cincinnati-bengals","cleveland-browns","dallas-cowboys","denver-broncos","detroit-lions","green-bay-packers","houston-texans","indianapolis-colts","jacksonville-jaguars","kansas-city-chiefs","las-vegas-raiders","los-angeles-chargers","los-angeles-rams","miami-dolphins","miami-heat","minnesota-vikings","new-england-patriots","new-orleans-saints","new-york-giants","new-york-jets","philadelphia-eagles","pittsburgh-steelers","san-francisco-49ers","seattle-seahawks","tampa-bay-buccaneers","tennessee-titans","washington-commanders"]);
-function teamLive(name){const team=name==='Los Angeles Clippers'?'LA Clippers':name;
+// fix621: lazy=true -> loads and plays only while on screen (the Teams page shows up to 32 at once)
+const LIVE_IO=('IntersectionObserver' in window)?new IntersectionObserver(es=>{for(const e of es){const v=e.target;if(e.isIntersecting){if(v.preload!=='auto'){v.preload='auto';v.src=v.dataset.src;}v.play().catch(()=>{});}else v.pause();}},{threshold:.35}):null;
+function teamLive(name,lazy){const team=name==='Los Angeles Clippers'?'LA Clippers':name;
   const f=teamPortraits.has(team)?String(teamPortraits.file(team)).replace(/\.webp$/,''):'';
   if(!f||!LIVE_PORTRAITS.has(f)||matchMedia('(prefers-reduced-motion: reduce)').matches)return teamBadge(name);
   const v=document.createElement('video');v.className='badge team-portrait live';v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');
-  v.setAttribute('muted','');v.autoplay=true;v.setAttribute('autoplay','');v.preload='metadata';v.poster='portraits/'+f+'.webp?v=2';v.src='portraits/'+f+'.mp4?v=2';v.setAttribute('aria-hidden','true');
+  v.setAttribute('muted','');v.poster='portraits/'+f+'.webp?v=2';v.setAttribute('aria-hidden','true');
+  if(lazy&&LIVE_IO){v.preload='none';v.dataset.src='portraits/'+f+'.mp4?v=2';LIVE_IO.observe(v);}
+  else{v.autoplay=true;v.setAttribute('autoplay','');v.preload='metadata';v.src='portraits/'+f+'.mp4?v=2';}
   v.onerror=()=>{v.onerror=null;v.replaceWith(teamBadge(name));};return v;}
 function deckCss(){if(document.getElementById('mjdeckcss'))return;const s=document.createElement('style');s.id='mjdeckcss';s.textContent=`
 .mjdeck{position:relative;height:min(470px,64vh);min-height:400px;perspective:1100px;margin:6px 0 40px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
@@ -6085,7 +6089,7 @@ async function drawTeamsDir(){const box=$('tdBox'),chips=$('tdChips'),find=$('td
   const by=new Map();for(const t of teams){const g=tdGroup(t.st)||'Teams';if(!by.has(g))by.set(g,[]);by.get(g).push(t);}
   const keys=[...by.keys()].sort((a,b)=>a==='Teams'?1:b==='Teams'?-1:a.localeCompare(b));const parts=[];
   for(const g of keys){parts.push(el('h4',g+' · '+by.get(g).length,'tdgrp'));const grid=el('div',null,'tdgrid');
-    for(const t of by.get(g)){const b=el('button',null,'tdtile');b.type='button';const bd=teamBadge(t.n);bd.classList.add('big');b.append(bd,el('b',t.n),el('span',t.rec||'','hint small'));b.onclick=()=>openTeam(t.n,tdLg);grid.append(b);}
+    for(const t of by.get(g)){const b=el('button',null,'tdtile');b.type='button';const bd=teamLive(t.n,true);bd.classList.add('big');b.append(bd,el('b',t.n),el('span',t.rec||'','hint small'));b.onclick=()=>openTeam(t.n,tdLg);grid.append(b);}
     parts.push(grid);}
   box.replaceChildren(...parts);}
 
