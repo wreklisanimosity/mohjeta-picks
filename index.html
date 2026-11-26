@@ -3523,7 +3523,12 @@ function needDet(){if(!D||!(D.games||[]).some(g=>g.has_more)||detBusy||(DET&&Dat
   detBusy=fetchPublicSnapshot('details.json').then(r=>r.ok?r.json():null).then(x=>{if(!x||!x.games)return;DET=x;detAt=Date.now();if(!D)return;mergeDet(D);
     try{renderSim();}catch(e){}try{renderProps(D);}catch(e){}try{if(on('combos'))renderCombos(D);}catch(e){}refreshSheet();}).catch(()=>{}).finally(()=>{detBusy=null;});}
 function liveWording(d){const on=!!(d&&d.bets&&d.bets.mode==='live');for(const n of document.querySelectorAll('[data-live]')){if(n.dataset.paper==null)n.dataset.paper=n.innerHTML;n.innerHTML=on?n.dataset.live:n.dataset.paper;}}   // fix485
-function render(d){D=d;try{liveWording(d);}catch(e){}try{drawTicker();}catch(e){}try{setTimeout(tradePopup,1500);}catch(e){}try{if(document.querySelector('#more.on'))renderMine();}catch(e){}try{drawRadioTeaser(d);if(document.querySelector('#radio.on'))drawRadioPage();}catch(e){}notePeople(d);applyMembers(d);mergeDet(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
+// fix625 (owner: "take the games away" - soccer picks are $0 practice and left out of her public record, so the games come
+// off the public site too until her soccer model earns it): any soccer game / headline / live call that reaches the page is dropped.
+const NO_LG=new Set(['EPL','MLS','UCL','LA LIGA','SERIE A','BUNDESLIGA','LIGUE 1','UEL','UECL','EFL CHAMP','SOCCER']);
+const noLg=x=>!(x&&NO_LG.has(String(x.league||'').toUpperCase()));
+function mjNoSoccer(d){try{if(d&&Array.isArray(d.games))d.games=d.games.filter(noLg);for(const k of ['feed','headlines'])if(d&&Array.isArray(d[k]))d[k]=d[k].filter(noLg);}catch(e){}return d;}
+function render(d){d=mjNoSoccer(d);D=d;try{liveWording(d);}catch(e){}try{drawTicker();}catch(e){}try{setTimeout(tradePopup,1500);}catch(e){}try{if(document.querySelector('#more.on'))renderMine();}catch(e){}try{drawRadioTeaser(d);if(document.querySelector('#radio.on'))drawRadioPage();}catch(e){}notePeople(d);applyMembers(d);mergeDet(d);const up=new Date(d.updated);const u=$('updated');u.textContent='Updated '+hm(d.updated);u.classList.toggle('stale',Date.now()-up>20*60000);
   if(Date.now()-up>20*60000)u.textContent+=' (her PC may be offline)';
   $('disclaimer').textContent=d.disclaimer;for(const f of [()=>renderHome(d),()=>renderPicks(d),()=>renderGames(d),()=>renderRecord(d),()=>renderProps(d),()=>renderPractice(d),()=>renderSkipped(d),()=>renderUnits(d),()=>renderMore(d),()=>renderSimIfChanged(),()=>drawInstall()]){try{f();}catch(e){console.warn(e);}}   // one broken section never blanks the rest
   if(lastLive&&Date.parse(lastLive.updated)>Date.parse(d.updated))applyLive(lastLive);
@@ -4799,7 +4804,7 @@ function airFx(kind){const G=airGame().crowd||{},C=(RAD.feed&&RAD.feed.crowd)||{
   const u=G[kind]||(kind==='groan'&&G.ooh)||(kind==='roar'&&C.roar);if(!u)return;
   try{if(!RAD.fx)RAD.fx=new Audio();RAD.fx.src=u;RAD.fx.volume=0.4;RAD.fx.currentTime=0;RAD.fx.play().catch(()=>{});}catch(e){}}
 function airRoar(){const C=(RAD.feed&&RAD.feed.crowd)||{};if(!C.roar||RAD.stream)return;try{if(!RAD.roar)RAD.roar=new Audio(C.roar);RAD.roar.volume=0.45;RAD.roar.currentTime=0;RAD.roar.play().catch(()=>{});}catch(e){}}
-function radioFeed(R){if(!R||!R.games)return;RAD.feed=R;if(RAD.gid&&Date.now()-(RAD.pingAt||0)>(RAD.mute?10000:40000))radioPing();   // fix593: check-in rides the 4 s poll too (iPhones throttle the 45 s timer)
+function radioFeed(R){if(!R||!R.games)return;try{R.games=R.games.filter(noLg);}catch(e){}RAD.feed=R;if(RAD.gid&&Date.now()-(RAD.pingAt||0)>(RAD.mute?10000:40000))radioPing();   // fix593: check-in rides the 4 s poll too (iPhones throttle the 45 s timer)
   if(!RAD.gid&&!RAD.resumeSeen){RAD.resumeSeen=true;try{const sv=JSON.parse(localStorage.getItem('mohjeta.listen')||'null');const g0=sv&&(R.games||[]).find(x=>x.id===sv.gid&&x.state==='LIVE');if(g0&&Date.now()-sv.t<15*60000){RAD.resume=sv.gid;drawAir();}}catch(e){}}
   if(RAD.gid&&!RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);if(g){RAD.missAt=0;let mute=false;for(const l of g.lines||[])if(!RAD.played.has(l.id)&&!RAD.q.some(x=>x.id===l.id)){if(l.url)RAD.q.push(l);else{RAD.played.add(l.id);RAD.last=l.text;mute=true;}}RAD.mute=mute;radioNext();}else radioEndCheck();}   // fix532: text-only lines show, nothing plays
   if(RAD.stream){const g=(R.games||[]).find(x=>x.id===RAD.gid);const l=g&&(g.lines||[])[(g.lines||[]).length-1];if(l)RAD.last=l.text;}drawAir();}
@@ -6118,7 +6123,7 @@ function homeTeamsBlock(){const w=el('div',null,'card hteams');const hd=el('div'
 // Tap -> team card (fix470: stats, schedule, full roster -> player cards).
 const TD_ORDER=['NFL','NBA','NHL','NCAAF','NCAAB','WNBA','MLB'];let tdLg=null;
 function tdGroup(st){const m=String(st||'').match(/ in (?:the )?(.+)$/);return m?m[1].replace(/ Division$/,''):'';}
-async function drawTeamsDir(){const box=$('tdBox'),chips=$('tdChips'),find=$('tdFind');if(!box)return;const T=await loadTeams2();const L=T.leagues||{};
+async function drawTeamsDir(){const box=$('tdBox'),chips=$('tdChips'),find=$('tdFind');if(!box)return;const T=await loadTeams2();const L=Object.fromEntries(Object.entries(T.leagues||{}).filter(([k])=>!NO_LG.has(String(k).toUpperCase())));
   const lgs=TD_ORDER.filter(k=>L[k]&&Object.keys(L[k]).length).concat(Object.keys(L).filter(k=>!TD_ORDER.includes(k)&&Object.keys(L[k]||{}).length));
   if(!lgs.length){box.replaceChildren(el('p','Teams will show up after her next update.','hint'));return;}
   if(!tdLg||!lgs.includes(tdLg))tdLg=lgs[0];
