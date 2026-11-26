@@ -411,6 +411,7 @@ svg.badge.person{background:none;padding:0;overflow:visible;flex:none;border-rad
   text-shadow:0 1px 1px #000a;box-shadow:0 1px 4px #0006;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hero .side .tplate{white-space:normal;text-align:center;font-size:12px}
 .fighter .tplate{font-size:11px;margin-top:2px}
+.pgrp{margin:8px 0;border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}.pgrp>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:12px 14px;font-weight:800;cursor:pointer}.pgrp>summary::-webkit-details-marker{display:none}.pgrp>summary .n{margin-left:auto;min-width:28px;text-align:center;padding:1px 8px;border-radius:999px;background:#ffffff14;font-size:12px}.pgrp>summary::after{content:'›';font-size:20px;color:#ff4fd8;transition:transform .2s}.pgrp[open]>summary::after{transform:rotate(90deg)}.pgrp>.tablewrap{margin:0 10px 10px}.recap{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:2px 0 10px;background:#ffffff08}.recap .fs{font-weight:800;font-size:15px;margin-bottom:6px}.recap .fs small{color:var(--dim);font-weight:700}.recap .fs .w{color:var(--green)}.recap p{margin:4px 0;font-size:13px;line-height:1.45}.recap .tp{margin-top:8px;font-size:12.5px;color:var(--dim);display:grid;gap:2px}.recap .tp b{color:var(--text);font-size:12px;letter-spacing:.04em}.recap .hp2{margin-top:8px;font-weight:800;font-size:13px}   /* fix616 */
 .hero video.badge.live,.tphead video.badge.live{object-fit:cover;background:#0e0816;border:0;border-radius:18px;box-shadow:0 10px 24px -8px #000c}   /* fix615: moving portraits on the game and team pages */
 img.badge.team-portrait,.fighter.win img.badge.big.team-portrait{
   object-fit:contain;background:transparent;border:0;border-radius:0;box-shadow:none}
@@ -1250,7 +1251,7 @@ function teamNick(name){const n=String(name||'');const m=n.match(/(Trail Blazers
 // fix604 (owner: "better app visuals ... tiles raised off the screen ... flip through cards" / "I want the logos to actually move"):
 // Tonight's deck on Home: raised 3D game cards you swipe through and tap to turn over. Team portraits that have a moving
 // version (portraits/<file>.mp4, made from the same portrait) play as short silent loops; the rest show the still portrait.
-const LIVE_PORTRAITS=new Set(["philadelphia-76ers","charlotte-hornets","chicago-bulls","los-angeles-lakers","boston-celtics","golden-state-warriors","new-york-knicks","milwaukee-bucks","denver-nuggets","dallas-mavericks","phoenix-suns","cleveland-cavaliers","oklahoma-city-thunder","minnesota-timberwolves","la-clippers","houston-rockets","san-antonio-spurs","orlando-magic","indiana-pacers","atlanta-hawks","memphis-grizzlies","detroit-pistons","arizona-cardinals","atlanta-falcons","baltimore-ravens","buffalo-bills","carolina-panthers","chicago-bears","cincinnati-bengals","cleveland-browns","dallas-cowboys","denver-broncos","detroit-lions","green-bay-packers","houston-texans","indianapolis-colts","jacksonville-jaguars","kansas-city-chiefs","las-vegas-raiders","los-angeles-chargers","los-angeles-rams","miami-dolphins","miami-heat","minnesota-vikings","new-england-patriots","new-orleans-saints","new-york-giants","new-york-jets","philadelphia-eagles","pittsburgh-steelers","san-francisco-49ers","seattle-seahawks","tampa-bay-buccaneers","tennessee-titans","washington-commanders"]);
+const LIVE_PORTRAITS=new Set(["brooklyn-nets","toronto-raptors","sacramento-kings","new-orleans-pelicans","portland-trail-blazers","utah-jazz","washington-wizards","philadelphia-76ers","charlotte-hornets","chicago-bulls","los-angeles-lakers","boston-celtics","golden-state-warriors","new-york-knicks","milwaukee-bucks","denver-nuggets","dallas-mavericks","phoenix-suns","cleveland-cavaliers","oklahoma-city-thunder","minnesota-timberwolves","la-clippers","houston-rockets","san-antonio-spurs","orlando-magic","indiana-pacers","atlanta-hawks","memphis-grizzlies","detroit-pistons","arizona-cardinals","atlanta-falcons","baltimore-ravens","buffalo-bills","carolina-panthers","chicago-bears","cincinnati-bengals","cleveland-browns","dallas-cowboys","denver-broncos","detroit-lions","green-bay-packers","houston-texans","indianapolis-colts","jacksonville-jaguars","kansas-city-chiefs","las-vegas-raiders","los-angeles-chargers","los-angeles-rams","miami-dolphins","miami-heat","minnesota-vikings","new-england-patriots","new-orleans-saints","new-york-giants","new-york-jets","philadelphia-eagles","pittsburgh-steelers","san-francisco-49ers","seattle-seahawks","tampa-bay-buccaneers","tennessee-titans","washington-commanders"]);
 function teamLive(name){const team=name==='Los Angeles Clippers'?'LA Clippers':name;
   const f=teamPortraits.has(team)?String(teamPortraits.file(team)).replace(/\.webp$/,''):'';
   if(!f||!LIVE_PORTRAITS.has(f)||matchMedia('(prefers-reduced-motion: reduce)').matches)return teamBadge(name);
@@ -3112,6 +3113,35 @@ let period=30,betSport='ALL';
 function windowStats(rows,days){const t0=days?Date.now()-days*864e5:0;const r=(rows||[]).filter(x=>x.pnl!=null&&!x.carried&&Date.parse(x.opened)>=t0);
   const won=r.filter(x=>x.pnl>0).length,lost=r.filter(x=>x.pnl<0).length,net=r.reduce((a,x)=>a+x.pnl,0),spent=r.reduce((a,x)=>a+(x.paid||0),0);
   return {rows:r,won,lost,net,spent,roi:spent?net/spent:null};}
+// fix616: Results tab helpers: pick groups, recaps (site/recaps.json, built by game_recaps.py) and one pick row.
+const PICK_GROUPS=[['open','🟡 Open'],['won','✅ Wins'],['lost','❌ Losses'],['other','⚠️ Other']];
+let pickOpen={open:true,won:false,lost:false,other:false},RECAPS=null,recapsAt=0;
+const MON3={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
+function evDate(e){const m=/^(\d\d)([A-Z]{3})(\d\d)/.exec(String(e||''));return m&&m[2] in MON3?new Date(2000+ +m[1],MON3[m[2]],+m[3]).getTime():0;}
+async function loadRecaps(){if(RECAPS&&Date.now()-recapsAt<300000)return RECAPS;try{const r=await fetch('recaps.json?v='+Math.floor(Date.now()/300000),{cache:'no-cache'});if(!r.ok)throw Error();RECAPS=(await r.json()).recaps||{};recapsAt=Date.now();}catch(e){RECAPS=RECAPS||{};recapsAt=Date.now()-240000;}return RECAPS;}
+function recapBox(r){const bx=el('div',null,'recap');bx.append(el('p','Loading the recap…','hint small'));
+  loadRecaps().then(R=>{const g=r.event&&R[r.event];bx.replaceChildren();
+    if(!g){bx.append(el('p','Recap coming soon','hint small'));return;}
+    const fs=el('div',null,'fs');const t=(s)=>{const x=el('span',s.name+' '+s.score);if(g.winner&&s.abbr===g.winner)x.className='w';return x;};
+    fs.append(el('small','Final'+(g.ot?' (OT)':'')+' · '),t(g.away),document.createTextNode(' – '),t(g.home));bx.append(fs);
+    for(const l of g.lines||[])bx.append(el('p',l));
+    if((g.top||[]).length){const tp=el('div',null,'tp');tp.append(el('b','Top performers'));for(const p of g.top)tp.append(el('div',p.name+' ('+p.team+') · '+p.stats));bx.append(tp);}
+    if(r.result==='WON'||r.result==='LOST'){const W=g.winner?(g.home.abbr===g.winner?g.home:g.away):null,Lz=W?(W===g.home?g.away:g.home):null;
+      const why=W?W.name+' won by '+(W.score-Lz.score)+'.':'It finished level at '+g.home.score+'–'+g.away.score+'.';
+      bx.append(el('div','Her pick: '+(r.result==='WON'?'✅ Called it':'❌ Missed')+' — '+why,'hp2'));}});
+  return bx;}
+function pickRow(tb,r){const tr=el('tr');tr.style.cursor='pointer';tr.tabIndex=0;
+    const a=el('td');a.append(el('div',(r.stamp?'🔒 ':'')+(r.bet||r.side+' · '+r.title)),el('div',when(r.opened)+' · '+sname(r.league),'hint small'));if(r.error)a.append(el('div','⚠️ '+r.error,'hint small'));
+    const res=el('td');res.style.textAlign='right';res.style.whiteSpace='nowrap';res.append(el('div',r.error?'⚠️ not counted':r.sold!=null&&r.result!=='OPEN'?'↩ sold early':icon(r.result)+' '+(r.result==='OPEN'?'open':r.result.toLowerCase()),r.result==='WON'?'up':r.result==='LOST'?'down':'open'),el('div','','small'));
+    tr.append(a,res);tb.append(tr);const wr=el('tr');wr.hidden=true;const wd=el('td');wd.colSpan=2;wd.style.background='var(--card2)';let filled=false;
+    const fill=()=>{if(filled)return;filled=true;
+      if(r.result!=='OPEN')wd.append(recapBox(r));   // fix616: game recap above the why (open picks: just the why)
+      wd.append(el('div','Why she picked it: '+(r.why||'No reason recorded.'),'small'));if(typeof r.fair==='number')wd.append(el('div','She put it at '+Math.round(r.fair*100)+'%; Kalshi’s price said '+Math.round(r.price*100)+'%.','hint small'));
+      if(r.stamp){wd.append(el('div','Sealed '+new Date(r.sealed).toLocaleString()+' · '+r.stamp,'mono'));
+        if(r.seal_status==='mismatch')wd.append(el('p','This entry differs from its saved seal.','down'));
+        else if(r.seal_status==='matched')wd.append(el('p','Entry fields match the saved seal.','hint small'));}};
+    wr.append(wd);tb.append(wr);
+    const tog=()=>{fill();wr.hidden=!wr.hidden;};tr.onclick=tog;tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tog();}};}
 function renderRecord(d){const b=d.bets;if(!b)return;
   const dn=$('dropNote');dn.replaceChildren();const X=b.dropped;{const fb=streakBanner(b.rows);if(fb)dn.append(fb);}
   if(X)dn.append(el('div','Soccer was dropped in '+X.when+' after a '+X.won+'-'+X.lost+' run ('+signed(X.net)+'). The numbers here cover only the sports she still bets; every soccer bet is still in the sealed record below.','notice'));
@@ -3162,19 +3192,24 @@ function renderRecord(d){const b=d.bets;if(!b)return;
   // every bet
   const chips=$('sportChips');chips.replaceChildren();const sports=['ALL',...new Set(b.rows.map(r=>r.league))];
   for(const k of sports){const x=el('button',k==='ALL'?'All sports':sname(k));x.type='button';x.setAttribute('aria-pressed',String(k===betSport));x.onclick=()=>{betSport=k;renderRecord(d);};chips.append(x);}
-  const rows=b.rows.filter(r=>betSport==='ALL'||r.league===betSport).slice().sort((x,y)=>String(y.opened).localeCompare(String(x.opened)));
-  const tb=el('table');const hr=el('tr');for(const x of ['Pick','Result'])hr.append(el('th',x));tb.append(hr);
-  for(const r of rows.slice(0,150)){const tr=el('tr');tr.style.cursor='pointer';tr.tabIndex=0;
-    const a=el('td');a.append(el('div',(r.stamp?'🔒 ':'')+(r.bet||r.side+' · '+r.title)),el('div',when(r.opened)+' · '+sname(r.league),'hint small'));if(r.error)a.append(el('div','⚠️ '+r.error,'hint small'));
-    const res=el('td');res.style.textAlign='right';res.style.whiteSpace='nowrap';res.append(el('div',r.error?'⚠️ not counted':r.sold!=null&&r.result!=='OPEN'?'↩ sold early':icon(r.result)+' '+(r.result==='OPEN'?'open':r.result.toLowerCase()),r.result==='WON'?'up':r.result==='LOST'?'down':'open'),el('div','','small'));
-    tr.append(a,res);tb.append(tr);const wr=el('tr');wr.hidden=true;const wd=el('td');wd.colSpan=2;wd.style.background='var(--card2)';
-    wd.append(el('div','Why she picked it: '+(r.why||'No reason recorded.'),'small'));if(typeof r.fair==='number')wd.append(el('div','She put it at '+Math.round(r.fair*100)+'%; Kalshi’s price said '+Math.round(r.price*100)+'%.','hint small'));
-    if(r.stamp){wd.append(el('div','Sealed '+new Date(r.sealed).toLocaleString()+' · '+r.stamp,'mono'));
-      if(r.seal_status==='mismatch')wd.append(el('p','This entry differs from its saved seal.','down'));
-      else if(r.seal_status==='matched')wd.append(el('p','Entry fields match the saved seal.','hint small'));}wr.append(wd);tb.append(wr);
-    const tog=()=>{wr.hidden=!wr.hidden;};tr.onclick=tog;tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tog();}};}
-  if(!rows.length){const tr=el('tr');const td=el('td','No bets yet.');td.colSpan=2;tr.append(td);tb.append(tr);}
-  $('betTable').replaceChildren(tb);
+  // fix616 (owner: "Reorganize Every pick"): three tap-to-open groups instead of one newest-first table:
+  // 🟡 Open (soonest game first, open by default) → ✅ Wins → ❌ Losses (newest first, closed by default), plus Other
+  // (⚠️ error rows / EVEN) only when there are any. 150 rows per group. A game that goes final moves groups on the next refresh.
+  const rows=b.rows.filter(r=>betSport==='ALL'||r.league===betSport);
+  const grpOf=r=>r.error||r.result==='EVEN'?'other':r.result==='OPEN'?'open':r.result==='WON'?'won':r.result==='LOST'?'lost':'other';
+  const byNew=(x,y)=>String(y.opened).localeCompare(String(x.opened));
+  const bySoon=(x,y)=>(evDate(x.event)||Date.parse(x.opened)||0)-(evDate(y.event)||Date.parse(y.opened)||0)||String(x.opened).localeCompare(String(y.opened));
+  const box=el('div');
+  for(const [k,label] of PICK_GROUPS){const gr=rows.filter(r=>grpOf(r)===k).sort(k==='open'?bySoon:byNew);if(k==='other'&&!gr.length)continue;
+    const det=el('details',null,'pgrp');det.open=!!pickOpen[k];det.ontoggle=()=>{pickOpen[k]=det.open;};
+    const sm=el('summary');sm.append(el('span',label),el('span',String(gr.length),'n'));det.append(sm);
+    const tw=el('div',null,'tablewrap');const tb=el('table');const hr=el('tr');for(const x of ['Pick','Result'])hr.append(el('th',x));tb.append(hr);
+    for(const r of gr.slice(0,150))pickRow(tb,r);
+    if(!gr.length){const tr=el('tr');const td=el('td',k==='open'?'No open picks right now.':'None yet.','hint');td.colSpan=2;tr.append(td);tb.append(tr);}
+    else if(gr.length>150){const tr=el('tr');const td=el('td','Showing the latest 150 of '+gr.length+'.','hint small');td.colSpan=2;tr.append(td);tb.append(tr);}
+    tw.append(tb);det.append(tw);box.append(det);}
+  if(!rows.length)box.append(el('p','No picks yet.','hint'));
+  $('betTable').replaceChildren(box);
   const cal=$('calib');cal.replaceChildren();const C=d.calibration;
   if(C&&(C.picks.length||C.bets.length)){cal.append(el('h3','Are her percentages honest?'),el('p',C.note,'hint small'));
     for(const [label,rr,n] of [['Her game picks',C.picks,C.n_picks],['Her real bets',C.bets,C.n_bets]]){if(!rr.length)continue;cal.append(el('h4',label+' · '+n+' graded'));const g=el('div',null,'cal');g.append(el('b','Sure'),el('b','Said'),el('b','Happened'),el('b','Count'));
