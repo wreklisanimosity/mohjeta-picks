@@ -919,7 +919,7 @@ main{padding-bottom:56px!important;padding-left:max(12px,env(safe-area-inset-lef
 <style>/* fix520 Mohjeta Live */
 .airc{position:relative;overflow:hidden;border:1px solid #ff4fd855;background:radial-gradient(120% 90% at 0% 0%,#ff4fd822,transparent 55%),radial-gradient(90% 80% at 100% 100%,#8a2be233,transparent 60%),linear-gradient(160deg,#1d0d33,#120820);box-shadow:0 0 0 1px #8a2be222,0 10px 30px #8a2be22e}
 .mjair{min-width:0;max-width:100%}.airc{animation:none!important;opacity:1}.airc{min-width:0;max-width:100%;box-sizing:border-box}.airrow{min-width:0}.airteams{min-width:0;max-width:100%}.airtm{min-width:0}.airchip{flex:none}.airhd{min-width:0}.airtt{min-width:0}   /* fix541: long team names made the box wider than the phone */
-.airviz{margin:8px 0 2px;border-radius:12px;overflow:hidden;border:1px solid #ffffff1f;background:#0b1d12;line-height:0}.airviz svg{display:block;width:100%;height:auto}
+.wviz .airviz{margin:10px 0 6px}.wviz .airsb{display:none}.airviz{margin:8px 0 2px;border-radius:12px;overflow:hidden;border:1px solid #ffffff1f;background:#0b1d12;line-height:0}.airviz svg{display:block;width:100%;height:auto}
 .airsb{display:flex;align-items:center;gap:6px;padding:5px 8px;background:#000c;color:#fff;font-size:12px;line-height:1.2}.airsb b{font-weight:800}.airsbd{opacity:.6}.airsbt{margin-left:auto;opacity:.8;font-size:11px}
 .airviz.bb{background:#2a1a0e}.airviz.hk{background:#e9f1f7}.airvizl{display:block;font-size:11px;line-height:1.3;padding:4px 8px;background:#0008;color:#fff}   /* fix562 */
 .airc.onair{border-color:#ff4fd8aa;box-shadow:0 0 22px #ff4fd844,0 10px 30px #8a2be240}
@@ -1590,20 +1590,48 @@ function simGamePlan(s,fin,model){const sp=SIM_SPORT[s.league]||{per:4,len:15,la
   for(const [team,side,pts] of [[s.home,'h',fin.h],[s.away,'a',fin.a]]){const who=simScorers(s,team,model);
     for(const v of simSplit(pts,sp.kind)){let p=null;if(sp.kind==='gridiron')p=v===3?simWeighted(who,x=>x.pos==='K'):v===2?null:simWeighted(who,x=>/QB|RB|WR|TE/.test(x.pos));
       else if(sp.kind==='hoops'&&v===3)p=simWeighted(who,x=>/G|F/.test(x.pos));else p=simWeighted(who);
-      plays.push({t:Math.random(),side,v,txt:simPlayText(sp.kind,v,p,team)});}}
+      const mt=p&&(sp.kind==='hoops'||sp.kind==='puck')?simWeighted(who,x=>x!==p):null,qb=sp.kind==='gridiron'?simWeighted(who,x=>x.pos==='QB'):null;
+      plays.push({t:Math.random(),side,v,txt:simPlayText(sp.kind,v,p,team),who:p?p.name:'',pos:p?p.pos:'',mate:mt&&mt!==p?mt.name:'',qb:qb&&qb.pos==='QB'?qb.name:''});}}
   if(sp.kind==='diamond'){for(const p of plays)p.t=(Math.floor(p.t*9)+(p.side==='a'?0.05:0.55)+Math.random()*0.4)/9;}
   plays.sort((a,b)=>a.t-b.t);return {sp,plays};}
+// fix624 (owner: "Can watch a game use the same game animation when simulating a game"): "Watch a game" acts its plays out on the
+// same field / court / ice picture the live games use (airViz -> vizFb / vizBb / vizHk). A sim only has scoring plays, so each
+// picture is one of them; the shot spot / drive length / play type are invented to fit the score (same as the play text).
+function simVizPlay(s,sp,p,a,h,per,clk){const R=Math.random,pick=xs=>xs[Math.floor(R()*xs.length)],side=p.side,txt=String(p.txt||'');
+  const nm=p.who||simNick(side==='h'?s.home:s.away),base={s:side,sa:a,sh:h,per,clk};
+  if(sp.kind==='hoops'){const mate=p.mate?' ('+p.mate+' assists)':'';
+    if(p.v===1)return {text:txt,viz:{k:'bb',...base,x:25,y:19,m:true,p:'ft',tx:nm+' makes free throw '+pick(['1 of 2','2 of 2'])}};
+    if(p.v===3){const q=pick([[1.5,1.5],[48.5,1.5],[8,18.5],[42,18.5],[25,26],[16,24],[34,24]]);const ft=Math.round(Math.hypot(q[0]-25,q[1]))+1;
+      return {text:txt,viz:{k:'bb',...base,x:q[0],y:q[1],m:true,p:'shot',tx:nm+' makes '+ft+'-foot three point jumper'+(R()<.85?mate:'')}};}
+    let x,y,d;if(/dunk/.test(txt)){x=25+(R()-.5)*2;y=1;d=pick(['makes driving dunk','makes dunk','makes alley oop dunk shot']);}
+    else if(/layup/.test(txt)){x=25+(R()-.5)*6;y=1.5+R()*2;d=pick(['makes driving layup','makes layup','makes cutting layup shot']);}
+    else if(/floater/.test(txt)){x=25+(R()-.5)*10;y=6+R()*3;d='makes running floating jump shot';}
+    else{const an=R()*Math.PI,r=10+R()*10;x=25+Math.cos(an)*r;y=Math.max(2,Math.sin(an)*r);d='makes '+Math.round(r)+'-foot '+pick(['pullup jump shot','jump shot','step back jumpshot','turnaround jump shot']);}
+    return {text:txt,viz:{k:'bb',...base,x,y,m:true,p:'shot',tx:nm+' '+d+(R()<.5?mate:'')}};}
+  if(sp.kind==='gridiron'){
+    if(p.v===3){const yte=5+Math.floor(R()*30);return {text:txt,viz:{k:'fb',...base,d:4,ds:Math.min(yte,3+Math.floor(R()*8)),f:100-yte,t:100-yte,p:'fg',tx:nm+' '+(yte+17)+' yard field goal is GOOD.'}};}
+    if(p.v===2){const o=side==='h'?'a':'h';return {text:txt,viz:{k:'fb',...base,s:o,d:3,ds:10,f:2,t:0,p:'sack',tx:simNick(o==='h'?s.home:s.away)+' quarterback sacked in the end zone, SAFETY.'}};}
+    const yte=Math.max(1,Math.round(R()<.45?1+R()*8:6+R()*55)),pos=p.pos||'';const pass=/WR|TE/.test(pos)||(pos==='RB'?R()<.25:pos==='QB'?false:R()<.6);
+    const qb=p.qb&&p.qb!==nm?p.qb:'The quarterback';const ds=Math.min(yte,1+Math.floor(R()*10));
+    const tx=pass?qb+' pass '+(yte>15?'deep':'short')+' '+pick(['left','middle','right'])+' to '+nm+' for '+yte+' yards, TOUCHDOWN.'
+      :pos==='QB'?nm+' scrambles '+pick(['left end','right end','up the middle'])+' for '+yte+' yards, TOUCHDOWN.':nm+' '+pick(['up the middle','left tackle','right guard','left end','right end'])+' for '+yte+' yards, TOUCHDOWN.';
+    return {text:txt,viz:{k:'fb',...base,d:1+Math.floor(R()*3),ds,f:100-yte,t:100,p:'td',tx}};}
+  if(sp.kind==='puck'){const dir=(side==='a'?1:-1)*(per%2?1:-1);const x=dir*(60+R()*25),y=(R()-.5)*(Math.abs(x)>78?22:42);
+    return {text:txt,viz:{k:'hk',...base,x,y,m:true,p:'goal',tx:nm+' '+pick(['Wrist Shot','Snap Shot','Slap Shot','Backhand','Tip-In'])+(p.mate?', assists: '+p.mate:'')}};}
+  return null;}
 function simWatch(s,r,model){const fin=simPickFinal(s,r),plan=simGamePlan(s,fin,model),sp=plan.sp;award('sim_watch');
   openSheet(()=>{const w=el('div',null,'simwatch');w.append(el('span','ONE OF THE 10,000 GAMES','simeyebrow'),el('h2',simNick(s.away)+' @ '+simNick(s.home)));
     const board=el('div',null,'wboard');const team=(n)=>{const d=el('div',null,'wteam');const cl=simColor(n);if(cl)d.style.setProperty('--tc',cl);const b=teamBadge(n);b.classList.add('wbadge');d.append(b,el('span',simNick(n)),el('b','0','wpts'));return d;};
     const A=team(s.away),H=team(s.home);const clock=el('div',null,'wclock');const per=el('b','',''),tm=el('span','','');clock.append(per,tm);board.append(A,clock,H);w.append(board);
+    const canViz=/^(hoops|gridiron|puck)$/.test(sp.kind)&&typeof airViz==='function';const vz=el('div',null,'wviz');vz.hidden=true;w.append(vz);let vPend=null,vAt=0;   // fix624
+    const showViz=q=>{try{const l=simVizPlay(s,sp,q.p,q.a,q.h,q.per,q.clk);const v=l&&airViz(Object.assign({league:s.league},l),[s.away,s.home],'sim|');if(v){vz.replaceChildren(v);vz.hidden=false;}}catch(e){}};
     const P=sp.per;const grid=el('div',null,'wgrid');grid.style.setProperty('--n',String(P+1));const hd=[el('span','')];for(let i=1;i<=P;i++)hd.push(el('span',sp.lab?sp.lab+i:String(i)));hd.push(el('b','T'));
     const rowA=[el('span',simNick(s.away))],rowH=[el('span',simNick(s.home))];const cellA=[],cellH=[];for(let i=0;i<P;i++){const x=el('span','–'),y=el('span','–');cellA.push(x);cellH.push(y);rowA.push(x);rowH.push(y);}
     const tA=el('b','0'),tH=el('b','0');rowA.push(tA);rowH.push(tH);grid.append(...hd,...rowA,...rowH);grid.style.gridTemplateColumns='minmax(44px,auto) repeat('+P+',1fr) auto';w.append(grid);
     const feed=el('div',null,'wfeed');w.append(feed);
     const ctl=el('div',null,'wctl');const fast=el('button','⏩ Faster','btn ghost small');fast.type='button';const skip=el('button','⏭ Skip to final','btn ghost small');skip.type='button';ctl.append(fast,skip);w.append(ctl);
     const end=el('div',null,'wend');end.hidden=true;w.append(end);
-    let i=0,h=0,a=0,ph=new Array(P).fill(0),pa=new Array(P).fill(0),speed=calm()?50:1,done=false,timer=0;const DUR=sp.kind==='hoops'?30000:20000;
+    let i=0,h=0,a=0,ph=new Array(P).fill(0),pa=new Array(P).fill(0),speed=calm()?50:1,done=false,timer=0;const DUR=sp.kind==='hoops'?40000:canViz?28000:20000;
     const setClock=t=>{if(t>=1){per.textContent='FINAL';tm.textContent='';return;}const k=Math.min(P-1,Math.floor(t*P));per.textContent=sp.kind==='diamond'?(t*9%1<0.5?'Top ':'Bot ')+(k+1):(sp.lab==='Q'?'Q'+(k+1):sp.lab==='H'?(k===0?'1st half':'2nd half'):'P'+(k+1));
       if(sp.len){const rem=(1-(t*P-k))*sp.len;const mm=Math.floor(rem),ss=Math.floor((rem-mm)*60);tm.textContent=mm+':'+String(ss).padStart(2,'0');}else tm.textContent='';};
     const clockAt=t=>{const k=Math.min(P-1,Math.floor(t*P));if(sp.kind==='diamond')return (t*9%1<0.5?'Top ':'Bot ')+(k+1);const pl=sp.lab==='H'?(k===0?'1H':'2H'):(sp.lab+(k+1));
@@ -1611,16 +1639,18 @@ function simWatch(s,r,model){const fin=simPickFinal(s,r),plan=simGamePlan(s,fin,
     const draw=()=>{A.querySelector('.wpts').textContent=a;H.querySelector('.wpts').textContent=h;tA.textContent=a;tH.textContent=h;
       for(let k=0;k<P;k++){cellA[k].textContent=pa[k]||(k<curP?'0':'–');cellH[k].textContent=ph[k]||(k<curP?'0':'–');}A.classList.toggle('lead',a>h);H.classList.toggle('lead',h>a);};
     let curP=0,t0=performance.now(),tv=0;
-    const finish=()=>{done=true;clearInterval(timer);while(i<plan.plays.length)apply(plan.plays[i++],true);curP=P;setClock(1);draw();
+    const finish=()=>{done=true;clearInterval(timer);while(i<plan.plays.length)apply(plan.plays[i++],true);curP=P;setClock(1);draw();if(canViz&&!calm()&&plan.plays.length){const q=plan.plays[plan.plays.length-1];showViz({p:q,a,h,per:P,clk:'0:00'});}
       const win=h>a?s.home:s.away;end.hidden=false;end.replaceChildren(el('b','Final: '+simNick(win)+' win '+Math.max(h,a)+'–'+Math.min(h,a)),
         el('p','In all 10,000 simulated games, '+simNick(r.pH>=0.5?s.home:s.away)+' won '+pct(Math.max(r.pH,1-r.pH))+'. This was one of them; the order of the plays and who scored are made up to fit its final score.','hint small'));
       const again=el('button','🎲 Watch another','btn');again.type='button';again.onclick=()=>simWatch(s,r,model);end.append(again);ctl.hidden=true;};
     const apply=(p,quiet)=>{const k=Math.min(P-1,Math.floor(p.t*P));if(p.side==='h'){h+=p.v;ph[k]+=p.v;}else{a+=p.v;pa[k]+=p.v;}
       if(!quiet){const row=el('div',null,'wplay '+(p.side==='h'?'home':'away'));const cl=simColor(p.side==='h'?s.home:s.away);if(cl)row.style.setProperty('--tc',cl);
         row.append(el('span',clockAt(p.t),'wt'),el('span',p.txt,'wx'),el('b','+'+p.v,'wv'),el('span',simNick(s.away)+' '+a+' – '+h+' '+simNick(s.home),'ws'));
-        feed.prepend(row);while(feed.childElementCount>7)feed.lastChild.remove();}};
+        feed.prepend(row);while(feed.childElementCount>7)feed.lastChild.remove();
+        if(canViz){const k1=Math.min(P,Math.floor(p.t*P)+1),ck=clockAt(p.t).split(' ');vPend={p,a,h,per:k1,clk:ck.length>1?ck[ck.length-1]:''};}}};
     const tick=()=>{if(done)return;const now=performance.now();tv+=(now-t0)*speed/DUR;t0=now;if(tv>=1){finish();return;}curP=Math.min(P,Math.floor(tv*P));setClock(tv);
-      while(i<plan.plays.length&&plan.plays[i].t<=tv)apply(plan.plays[i++],false);draw();};
+      while(i<plan.plays.length&&plan.plays[i].t<=tv)apply(plan.plays[i++],false);draw();
+      if(vPend&&now-vAt>=Math.max(1300,2600/speed)){showViz(vPend);vPend=null;vAt=now;}};
     fast.onclick=()=>{speed=speed>=4?1:speed*2;fast.textContent=speed>=4?'▶ Normal speed':'⏩ Faster';};skip.onclick=finish;
     setClock(0);draw();timer=setInterval(()=>{if(!w.isConnected){clearInterval(timer);return;}tick();},120);if(calm())setTimeout(finish,50);
     return w;},'Sim game');}
